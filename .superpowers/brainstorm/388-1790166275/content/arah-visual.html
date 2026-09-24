@@ -1,0 +1,353 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Serif:wght@500;600&family=Atkinson+Hyperlegible+Next:wght@400;600;700&family=Atkinson+Hyperlegible+Mono:wght@400;500&family=Alegreya:wght@600;700&family=Alegreya+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+  .vd { max-width: 1180px; margin: 0 auto; }
+  .vd p { margin: 0; }
+  .vd-lead { color: var(--text-secondary); max-width: 760px; margin: 0 0 1.25rem; }
+
+  /* Logo reading */
+  .logo-read { display: flex; flex-wrap: wrap; gap: 1.25rem; align-items: center; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 2rem; }
+  .logo-read img { width: 44px; height: auto; }
+  .logo-read .txt { flex: 1 1 320px; font-size: .88rem; line-height: 1.5; }
+  .logo-read .txt small { display: block; color: var(--text-secondary); margin-top: .35rem; font-size: .8rem; }
+  .sw-row { display: flex; gap: .4rem; }
+  .sw { width: 64px; font-size: .68rem; color: var(--text-secondary); font-family: ui-monospace, monospace; }
+  .sw i { display: block; height: 30px; border-radius: 5px; margin-bottom: .25rem; }
+
+  /* Direction block */
+  .dir { border-top: 1px solid var(--border); padding: 1.75rem 0 2rem; }
+  .dir-head { display: flex; align-items: baseline; gap: .75rem; margin-bottom: 1rem; flex-wrap: wrap; }
+  .dir-letter { font-weight: 700; font-size: .8rem; background: var(--bg-tertiary); border-radius: 5px; padding: .15rem .45rem; }
+  .dir-head h3 { font-size: 1.15rem; margin: 0; }
+  .dir-head .tag { font-size: .72rem; font-weight: 600; color: var(--accent); border: 1px solid var(--accent); border-radius: 999px; padding: .05rem .55rem; }
+  .dir.is-picked .dir-letter { background: var(--accent); color: #fff; }
+  .dir-body { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: flex-start; }
+  .shot { flex: 1 1 540px; min-width: 0; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); position: relative; }
+  .dir.is-picked .shot { outline: 3px solid var(--accent); outline-offset: 3px; }
+  .screen { width: 800px; height: 450px; transform-origin: top left; position: absolute; left: 0; top: 0; }
+  .notes { flex: 1 1 280px; font-size: .86rem; line-height: 1.5; }
+  .notes .concept { font-size: .92rem; margin-bottom: .9rem; }
+  .notes dl { display: grid; grid-template-columns: 5.2rem 1fr; gap: .35rem .75rem; margin: .9rem 0 1rem; }
+  .notes dt { color: var(--text-secondary); font-size: .78rem; padding-top: .1rem; }
+  .notes dd { margin: 0; }
+  .pal { display: flex; gap: .3rem; flex-wrap: wrap; }
+  .pal span { font-size: .66rem; font-family: ui-monospace, monospace; color: var(--text-secondary); width: 56px; }
+  .pal i { display: block; height: 24px; border-radius: 4px; margin-bottom: .2rem; box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); }
+  .spec { font-size: 1.6rem; line-height: 1; margin-right: .5rem; }
+  .pick { margin-top: .4rem; font: inherit; font-weight: 600; font-size: .85rem; background: var(--bg-secondary); color: var(--text-primary); border: 2px solid var(--border); border-radius: 8px; padding: .45rem .9rem; cursor: pointer; }
+  .pick:hover { border-color: var(--accent); }
+  .dir.is-picked .pick { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  .common { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 10px; padding: 1rem 1.25rem; font-size: .86rem; line-height: 1.55; margin-top: .5rem; }
+  .common ul { margin: .4rem 0 0 1.1rem; }
+
+  /* shared mock atoms */
+  .screen * { box-sizing: border-box; }
+  .screen b, .screen i, .screen em { font-style: normal; }
+  .nik { display: inline-flex; gap: .38em; }
+
+  /* ============ A — REGISTER ============ */
+  .scr-a { --paper:#F6F4EE; --paper2:#ECE8DD; --sheet:#FFFEFA; --ink:#1B2631; --ink2:#5A636C; --rule:#DDD7CA; --tinta:#1F4E79; --ungu:#5B3F8C; --hijau:#2E7D5B; --oker:#8A6212;
+    display: grid; grid-template-columns: 180px 1fr; background: var(--paper); color: var(--ink); font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 12.5px; line-height: 1.35; }
+  .a-side { background: var(--paper2); border-right: 1px solid var(--rule); padding: 14px 10px 10px; display: flex; flex-direction: column; gap: 1px; }
+  .a-brand { display: flex; gap: 9px; align-items: center; padding: 0 6px 13px; border-bottom: 1px solid var(--rule); margin-bottom: 6px; }
+  .a-brand img { width: 24px; }
+  .a-desa { font-weight: 600; font-size: 12.5px; line-height: 1.2; }
+  .a-kec { font-size: 10.5px; color: var(--ink2); }
+  .a-lbl { font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink2); padding: 10px 8px 4px; font-weight: 500; }
+  .a-nav { display: flex; justify-content: space-between; padding: 5px 8px; border-radius: 2px; color: #38424B; }
+  .a-nav.on { background: var(--sheet); color: var(--ink); font-weight: 500; box-shadow: inset 2px 0 0 var(--tinta); }
+  .a-nav em { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: var(--tinta); font-weight: 500; }
+  .a-user { margin-top: auto; font-size: 10.5px; color: var(--ink2); padding: 8px 8px 0; border-top: 1px solid var(--rule); }
+  .a-main { padding: 18px 20px 14px; display: flex; flex-direction: column; min-width: 0; }
+  .a-crumb { font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink2); font-weight: 500; }
+  .a-titlerow { display: flex; justify-content: space-between; align-items: flex-end; margin: 2px 0 12px; }
+  .a-title { font-family: 'IBM Plex Serif', Georgia, serif; font-weight: 500; font-size: 23px; letter-spacing: -.01em; line-height: 1.15; }
+  .a-sub { font-size: 11.5px; color: var(--ink2); margin-top: 3px; }
+  .a-btn { background: var(--tinta); color: #fff; border-radius: 3px; padding: 7px 12px; font-weight: 500; font-size: 12px; white-space: nowrap; }
+  .a-tabs { display: flex; gap: 15px; border-bottom: 1px solid var(--rule); font-size: 11.5px; color: var(--ink2); align-items: flex-end; }
+  .a-tabs span { padding-bottom: 7px; }
+  .a-tabs b { font-family: 'IBM Plex Mono', monospace; font-weight: 500; font-size: 10.5px; margin-left: 3px; }
+  .a-tabs .on { color: var(--ink); box-shadow: inset 0 -2px 0 var(--ink); font-weight: 500; }
+  .a-tabs .search { margin-left: auto; margin-bottom: 5px; border: 1px solid var(--rule); background: var(--sheet); border-radius: 2px; padding: 3px 8px; width: 150px; color: #8B9299; font-size: 11px; }
+  .a-sheet { background: var(--sheet); border: 1px solid var(--rule); border-top: 0; }
+  .a-row { display: grid; grid-template-columns: 40px 1.4fr 1.3fr 64px 86px; gap: 10px; align-items: center; padding: 6px 12px; border-bottom: 1px solid var(--rule); }
+  .a-row.h { font-size: 9.5px; letter-spacing: .09em; text-transform: uppercase; color: var(--ink2); font-weight: 500; border-bottom: 1.5px solid var(--ink); padding: 8px 12px 5px; }
+  .a-row .no { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: var(--ink2); }
+  .a-row .nm { font-weight: 500; display: block; }
+  .a-row .nik { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: var(--ink2); }
+  .a-row .t { font-size: 12px; }
+  .a-row .when { font-size: 11.5px; }
+  .a-row .when i { display: block; font-size: 10px; color: var(--ink2); }
+  .st-a { display: inline-block; font-size: 9.5px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; border: 1.25px solid currentColor; border-radius: 2px; padding: 2px 5px 1px; }
+  .st-a.wait { color: var(--oker); } .st-a.proc { color: var(--tinta); } .st-a.sign { color: var(--ungu); } .st-a.done { color: var(--hijau); }
+  .a-foot { font-size: 10.5px; color: var(--ink2); padding-top: 8px; display: flex; justify-content: space-between; }
+
+  /* ============ B — JELAS ============ */
+  .scr-b { --text:#0B0C0C; --text2:#4F5A60; --biru:#1B5E91; --hijau:#1E7F55; --line:#B1B4B6; --focus:#FFDD00;
+    background: #fff; color: var(--text); font-family: 'Atkinson Hyperlegible Next', system-ui, sans-serif; font-size: 14px; line-height: 1.35; display: grid; grid-template-rows: 48px 1fr; }
+  .b-top { background: var(--biru); color: #fff; display: flex; align-items: center; gap: 10px; padding: 0 16px; border-bottom: 4px solid #0F3E63; }
+  .b-tile { background: #fff; border-radius: 4px; width: 28px; height: 28px; display: grid; place-items: center; }
+  .b-tile img { width: 17px; }
+  .b-prod { font-weight: 700; font-size: 15.5px; }
+  .b-desa { font-size: 14.5px; padding-left: 10px; border-left: 1px solid rgba(255,255,255,.45); }
+  .b-who { margin-left: auto; font-size: 13.5px; text-decoration: underline; text-underline-offset: 3px; }
+  .b-body { display: grid; grid-template-columns: 172px 1fr; min-height: 0; }
+  .b-side { padding: 14px 0 0 12px; border-right: 1px solid #DDE0E2; }
+  .b-nav { display: block; padding: 6px 10px; font-size: 14.5px; color: var(--biru); text-decoration: underline; text-underline-offset: 3px; }
+  .b-nav.on { color: var(--text); font-weight: 700; text-decoration: none; box-shadow: inset 4px 0 0 var(--text); }
+  .b-main { padding: 16px 22px; min-width: 0; }
+  .b-title { font-size: 27px; font-weight: 700; line-height: 1.1; }
+  .b-lead { font-size: 15.5px; margin: 6px 0 12px; }
+  .b-tools { display: flex; gap: 12px; align-items: center; margin-bottom: 14px; }
+  .b-input { flex: 1; height: 38px; border: 2px solid var(--text); padding: 0 10px; display: flex; align-items: center; color: var(--text2); font-size: 14.5px; outline: 3px solid var(--focus); box-shadow: inset 0 0 0 1px var(--text); }
+  .b-btn { background: var(--hijau); color: #fff; font-weight: 700; font-size: 15px; height: 38px; padding: 0 16px; display: flex; align-items: center; box-shadow: 0 3px 0 #0E4A30; border-radius: 2px; white-space: nowrap; }
+  .b-row { display: grid; grid-template-columns: 1.5fr 1.25fr 112px; gap: 12px; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--line); }
+  .b-row.h { font-weight: 700; font-size: 13.5px; padding: 6px 0; border-bottom: 2px solid var(--text); }
+  .b-row .nm { font-weight: 700; font-size: 15px; display: block; }
+  .b-row .nik { font-family: 'Atkinson Hyperlegible Mono', monospace; font-size: 13px; color: var(--text2); }
+  .b-row .t { font-size: 14.5px; }
+  .st-b { display: inline-block; font-weight: 700; font-size: 13.5px; padding: 3px 8px 2px; }
+  .st-b.wait { background: #FFF2B3; color: #463C00; } .st-b.proc { background: #D3E5F4; color: #0E3A5E; } .st-b.sign { background: #E8DFF5; color: #3B2663; } .st-b.done { background: #CFE7DA; color: #0C4A2C; }
+  .b-more { display: inline-block; margin-top: 12px; color: var(--biru); text-decoration: underline; text-underline-offset: 3px; font-size: 15px; }
+
+  /* ============ C — TENUN ============ */
+  .scr-c { --krem:#FAF6EE; --tt:#103E3A; --teal:#1E6B62; --emas:#B8892F; --text:#2A2520; --text2:#6F665B; --line:#EADFCB;
+    display: grid; grid-template-columns: 192px 1fr; background: var(--krem); color: var(--text); font-family: 'Alegreya Sans', system-ui, sans-serif; font-size: 13.5px; line-height: 1.35; font-variant-numeric: lining-nums tabular-nums; }
+  .c-side { background: var(--tt); color: #E9DFC9; display: flex; flex-direction: column; position: relative; padding: 24px 10px 12px; gap: 2px; }
+  .c-side::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 10px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='10' viewBox='0 0 16 10'%3E%3Crect width='16' height='10' fill='%23103E3A'/%3E%3Cpath d='M0 10 8 0l8 10z' fill='%23B8892F'/%3E%3Cpath d='M4.5 10 8 5.6l3.5 4.4z' fill='%23103E3A'/%3E%3C/svg%3E") repeat-x; }
+  .c-brand { display: flex; gap: 10px; align-items: center; padding: 0 6px 16px; }
+  .c-tile { background: var(--krem); border-radius: 9px; width: 32px; height: 32px; display: grid; place-items: center; flex: none; }
+  .c-tile img { width: 19px; }
+  .c-desa { font-family: 'Alegreya', Georgia, serif; font-weight: 700; font-size: 15.5px; line-height: 1.1; color: #FBF7EF; }
+  .c-kec { font-size: 11px; opacity: .72; }
+  .c-nav { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; border-radius: 8px; color: #E2D8C2; }
+  .c-nav.on { background: rgba(250,246,238,.1); color: #fff; box-shadow: inset 3px 0 0 var(--emas); }
+  .c-nav em { background: var(--emas); color: #21190A; border-radius: 999px; font-size: 11px; font-weight: 700; padding: 0 7px; line-height: 18px; }
+  .c-user { margin-top: auto; font-size: 11.5px; opacity: .75; padding: 8px 10px 0; border-top: 1px solid rgba(233,223,201,.18); }
+  .c-main { padding: 20px 24px; min-width: 0; }
+  .c-title { font-family: 'Alegreya', Georgia, serif; font-weight: 700; font-size: 28px; line-height: 1.05; color: #1D2B28; }
+  .c-sub { color: var(--text2); margin: 5px 0 14px; font-size: 14px; }
+  .c-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .c-chips { display: flex; gap: 6px; }
+  .c-chip { border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 3px 11px; font-size: 12.5px; color: var(--text2); }
+  .c-chip.on { background: var(--teal); border-color: var(--teal); color: #fff; }
+  .c-btn { background: var(--teal); color: var(--krem); border-radius: 10px; padding: 8px 14px; font-weight: 700; font-size: 13.5px; }
+  .c-card { background: #fff; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+  .c-row { display: grid; grid-template-columns: 1.5fr 1.3fr 70px 108px; gap: 12px; align-items: center; padding: 9px 16px; border-bottom: 1px solid #F2EBDD; }
+  .c-row:last-child { border-bottom: 0; }
+  .c-row.h { font-size: 12px; color: var(--text2); font-weight: 500; background: #FCF9F3; padding: 7px 16px; }
+  .c-row .nm { font-weight: 700; display: block; font-size: 14px; }
+  .c-row .nik { font-size: 12px; color: var(--text2); }
+  .c-row .when { font-size: 12.5px; color: var(--text2); }
+  .st-c { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 3px 10px 3px 8px; font-size: 12.5px; font-weight: 500; }
+  .st-c::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .st-c.wait { background: #F6EBD3; color: #74550F; } .st-c.proc { background: #DCEFEA; color: #135048; } .st-c.sign { background: #F2E4EC; color: #6B2E57; } .st-c.done { background: #E3F0DF; color: #2D6429; }
+</style>
+
+<div class="vd">
+  <h2>Arah visual Sinfodes</h2>
+  <p class="vd-lead">Tiga arah visual, diterapkan ke isi yang sama: layar <b>Permohonan Surat</b> di panel admin Desa Sungai Sialang. Semua warna utama diturunkan dari logo, lalu digelapkan secukupnya supaya teks tetap terbaca jelas (lolos standar kontras WCAG AA). Pilih yang paling terasa seperti Sinfodes. Kamu juga boleh mencampur, misalnya "A, tapi status gaya C".</p>
+
+  <div class="logo-read">
+    <img src="/files/sinfodes-mark.svg" alt="Logo Sinfodes">
+    <div class="sw-row">
+      <div class="sw"><i style="background:#3587B8"></i>#3587B8</div>
+      <div class="sw"><i style="background:#318EA6"></i>#318EA6</div>
+      <div class="sw"><i style="background:#48ADA0"></i>#48ADA0</div>
+      <div class="sw"><i style="background:#4EC18D"></i>#4EC18D</div>
+    </div>
+    <div class="txt">
+      <b>Tentang logonya:</b> huruf S yang sekaligus berbentuk pin lokasi, dengan sinyal di atasnya: desa yang terhubung. Warnanya bergradasi dari biru, ke teal, ke hijau.
+      <small>Catatan teknis: file logo saat ini hasil tracing otomatis (116 KB, 289 path, tepinya bergerigi). Nantinya perlu versi vektor yang bersih, entah dari desainermu atau saya gambar ulang.</small>
+    </div>
+  </div>
+
+  <!-- ===================== A ===================== -->
+  <section class="dir" id="dir-a">
+    <div class="dir-head">
+      <span class="dir-letter">A</span>
+      <h3>Register: arsip dinas yang rapi</h3>
+      <span class="tag">Rekomendasi saya</span>
+    </div>
+    <div class="dir-body">
+      <div class="shot"><div class="screen scr-a">
+        <aside class="a-side">
+          <div class="a-brand"><img src="/files/sinfodes-mark.svg" alt=""><div><div class="a-desa">Desa Sungai Sialang</div><div class="a-kec">Teluk Meranti · Pelalawan</div></div></div>
+          <div class="a-lbl">Pelayanan</div>
+          <div class="a-nav">Beranda</div>
+          <div class="a-nav on">Layanan Surat <em>7</em></div>
+          <div class="a-nav">Pengaduan <em>2</em></div>
+          <div class="a-lbl">Administrasi</div>
+          <div class="a-nav">Kependudukan</div>
+          <div class="a-nav">Keuangan</div>
+          <div class="a-nav">Pembangunan</div>
+          <div class="a-nav">Bantuan Sosial</div>
+          <div class="a-nav">Buku Administrasi</div>
+          <div class="a-user">Rosmiati · Operator desa</div>
+        </aside>
+        <div class="a-main">
+          <div class="a-crumb">Layanan Surat</div>
+          <div class="a-titlerow">
+            <div><div class="a-title">Permohonan Surat</div><div class="a-sub">7 menunggu diproses · 3 menunggu tanda tangan Kepala Desa</div></div>
+            <div class="a-btn">+ Buat surat</div>
+          </div>
+          <div class="a-tabs">
+            <span class="on">Semua<b>42</b></span><span>Menunggu<b>7</b></span><span>Diproses<b>5</b></span><span>Perlu TTD<b>3</b></span><span>Selesai<b>27</b></span>
+            <span class="search">Cari nama atau NIK…</span>
+          </div>
+          <div class="a-sheet">
+            <div class="a-row h"><span>No.</span><span>Pemohon</span><span>Jenis surat</span><span>Masuk</span><span>Status</span></div>
+            <div class="a-row"><span class="no">0142</span><span><span class="nm">Siti Rahmah</span><span class="nik"><span>140509</span><span>520391</span><span>0002</span></span></span><span class="t">Keterangan Tidak Mampu</span><span class="when">09.12<i>Online</i></span><span><span class="st-a wait">Menunggu</span></span></div>
+            <div class="a-row"><span class="no">0141</span><span><span class="nm">Zulkifli</span><span class="nik"><span>140509</span><span>170684</span><span>0005</span></span></span><span class="t">Keterangan Usaha</span><span class="when">08.47<i>Loket</i></span><span><span class="st-a proc">Diproses</span></span></div>
+            <div class="a-row"><span class="no">0140</span><span><span class="nm">Rizky Pratama</span><span class="nik"><span>140509</span><span>030801</span><span>0003</span></span></span><span class="t">Pengantar SKCK</span><span class="when">Kemarin<i>Online</i></span><span><span class="st-a sign">Perlu TTD</span></span></div>
+            <div class="a-row"><span class="no">0139</span><span><span class="nm">Hendra Simanjuntak</span><span class="nik"><span>120203</span><span>251179</span><span>0004</span></span></span><span class="t">Keterangan Domisili</span><span class="when">Kemarin<i>Loket</i></span><span><span class="st-a done">Selesai</span></span></div>
+            <div class="a-row"><span class="no">0138</span><span><span class="nm">Suparmi</span><span class="nik"><span>331015</span><span>480276</span><span>0002</span></span></span><span class="t">Keterangan Kelahiran</span><span class="when">21 Sep<i>Loket</i></span><span><span class="st-a done">Selesai</span></span></div>
+          </div>
+          <div class="a-foot"><span>Menampilkan 5 dari 42 permohonan</span><span>Halaman 1 dari 9</span></div>
+        </div>
+      </div></div>
+      <div class="notes">
+        <p class="concept">Pekerjaan kantor desa sehari-hari berkisar di buku register, formulir, dan surat. Antarmukanya memakai bahasa yang sama: garis pemisah, bukan kotak berbayang; angka ditulis dengan huruf mono supaya mudah dicocokkan; status tampil seperti cap stempel.</p>
+        <dl>
+          <dt>Karakter</dt><dd>Resmi, tertib, dapat dipercaya.</dd>
+          <dt>Ciri khas</dt><dd>NIK dipecah sesuai maknanya: <i>kode wilayah · tanggal lahir · nomor urut</i>. Status "Perlu TTD" memakai warna ungu tinta stempel. Judul halaman serif, seperti kepala surat.</dd>
+          <dt>Cocok untuk</dt><dd>Operator yang mengolah ribuan data di laptop kantor 1366×768.</dd>
+          <dt>Risiko</dt><dd>Bisa terasa kaku kalau berlebihan. Website publiknya perlu versi yang lebih hangat, misalnya bergaya "warta desa".</dd>
+          <dt>Warna</dt><dd><div class="pal"><span><i style="background:#F6F4EE"></i>kertas</span><span><i style="background:#1B2631"></i>tinta</span><span><i style="background:#1F4E79"></i>biru</span><span><i style="background:#5B3F8C"></i>stempel</span><span><i style="background:#2E7D5B"></i>hijau</span><span><i style="background:#8A6212"></i>oker</span></div></dd>
+          <dt>Huruf</dt><dd><span class="spec" style="font-family:'IBM Plex Serif'">Aa</span><span class="spec" style="font-family:'IBM Plex Sans'">Aa</span><span class="spec" style="font-family:'IBM Plex Mono'">14</span><br>IBM Plex Serif · Sans · Mono</dd>
+        </dl>
+        <button class="pick" data-choice="A-register" data-label="Pilih arah A" onclick="pickDir(this)">Pilih arah A</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== B ===================== -->
+  <section class="dir" id="dir-b">
+    <div class="dir-head">
+      <span class="dir-letter">B</span>
+      <h3>Jelas: mudah dibaca siapa saja</h3>
+    </div>
+    <div class="dir-body">
+      <div class="shot"><div class="screen scr-b">
+        <div class="b-top"><div class="b-tile"><img src="/files/sinfodes-mark.svg" alt=""></div><span class="b-prod">Sinfodes</span><span class="b-desa">Desa Sungai Sialang</span><span class="b-who">Rosmiati (Operator)</span></div>
+        <div class="b-body">
+          <nav class="b-side">
+            <span class="b-nav">Beranda</span>
+            <span class="b-nav on">Layanan surat</span>
+            <span class="b-nav">Pengaduan</span>
+            <span class="b-nav">Kependudukan</span>
+            <span class="b-nav">Keuangan</span>
+            <span class="b-nav">Pembangunan</span>
+            <span class="b-nav">Bantuan sosial</span>
+          </nav>
+          <div class="b-main">
+            <div class="b-title">Permohonan surat</div>
+            <p class="b-lead">Ada <b>7 permohonan</b> yang menunggu diproses.</p>
+            <div class="b-tools"><div class="b-input">Cari nama atau NIK</div><div class="b-btn">Buat surat baru</div></div>
+            <div class="b-row h"><span>Pemohon</span><span>Jenis surat</span><span>Status</span></div>
+            <div class="b-row"><span><span class="nm">Siti Rahmah</span><span class="nik">1405 0952 0391 0002</span></span><span class="t">Keterangan tidak mampu</span><span><span class="st-b wait">Menunggu</span></span></div>
+            <div class="b-row"><span><span class="nm">Zulkifli</span><span class="nik">1405 0917 0684 0005</span></span><span class="t">Keterangan usaha</span><span><span class="st-b proc">Diproses</span></span></div>
+            <div class="b-row"><span><span class="nm">Rizky Pratama</span><span class="nik">1405 0903 0801 0003</span></span><span class="t">Pengantar SKCK</span><span><span class="st-b sign">Perlu TTD</span></span></div>
+            <span class="b-more">Lihat semua 42 permohonan</span>
+          </div>
+        </div>
+      </div></div>
+      <div class="notes">
+        <p class="concept">Dirancang untuk pengguna yang paling jarang memakai komputer dan HP paling tua di desa. Hurufnya besar, kontrasnya tinggi, label selalu ditulis (tidak hanya ikon), dan tombolnya jelas terlihat bisa ditekan.</p>
+        <dl>
+          <dt>Karakter</dt><dd>Tegas, lugas, ramah untuk semua usia.</dd>
+          <dt>Ciri khas</dt><dd>Font Atkinson Hyperlegible, dirancang Braille Institute supaya 0/O dan 1/l/I mudah dibedakan. Ini penting untuk NIK 16 digit. Elemen yang sedang aktif ditandai bingkai kuning tebal, dan tombol utamanya hijau dengan tepi timbul.</dd>
+          <dt>Cocok untuk</dt><dd>Layanan mandiri warga, dan perangkat desa yang jarang memakai komputer.</dd>
+          <dt>Risiko</dt><dd>Data yang muat per layar lebih sedikit, jadi lebih banyak scroll. Kesannya juga kurang "premium" saat demo penjualan.</dd>
+          <dt>Warna</dt><dd><div class="pal"><span><i style="background:#0B0C0C"></i>hitam</span><span><i style="background:#1B5E91"></i>biru</span><span><i style="background:#1E7F55"></i>hijau</span><span><i style="background:#FFDD00"></i>fokus</span><span><i style="background:#F3F4F5"></i>abu</span></div></dd>
+          <dt>Huruf</dt><dd><span class="spec" style="font-family:'Atkinson Hyperlegible Next'">Aa</span><span class="spec" style="font-family:'Atkinson Hyperlegible Mono'">10</span><br>Atkinson Hyperlegible Next · Mono</dd>
+        </dl>
+        <button class="pick" data-choice="B-jelas" data-label="Pilih arah B" onclick="pickDir(this)">Pilih arah B</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== C ===================== -->
+  <section class="dir" id="dir-c">
+    <div class="dir-head">
+      <span class="dir-letter">C</span>
+      <h3>Tenun: hangat dan berakar lokal</h3>
+    </div>
+    <div class="dir-body">
+      <div class="shot"><div class="screen scr-c">
+        <aside class="c-side">
+          <div class="c-brand"><div class="c-tile"><img src="/files/sinfodes-mark.svg" alt=""></div><div><div class="c-desa">Sungai Sialang</div><div class="c-kec">Teluk Meranti · Pelalawan</div></div></div>
+          <div class="c-nav">Beranda</div>
+          <div class="c-nav on">Layanan Surat <em>7</em></div>
+          <div class="c-nav">Pengaduan <em>2</em></div>
+          <div class="c-nav">Kependudukan</div>
+          <div class="c-nav">Keuangan</div>
+          <div class="c-nav">Pembangunan</div>
+          <div class="c-nav">Bantuan Sosial</div>
+          <div class="c-user">Rosmiati · Operator desa</div>
+        </aside>
+        <div class="c-main">
+          <div class="c-title">Permohonan Surat</div>
+          <p class="c-sub">7 permohonan baru sejak Senin · 3 menunggu tanda tangan Pak Kades</p>
+          <div class="c-bar">
+            <div class="c-chips"><span class="c-chip on">Semua 42</span><span class="c-chip">Menunggu 7</span><span class="c-chip">Diproses 5</span><span class="c-chip">Perlu TTD 3</span></div>
+            <span class="c-btn">+ Buat surat</span>
+          </div>
+          <div class="c-card">
+            <div class="c-row h"><span>Pemohon</span><span>Jenis surat</span><span>Masuk</span><span>Status</span></div>
+            <div class="c-row"><span><span class="nm">Siti Rahmah</span><span class="nik">1405 0952 0391 0002</span></span><span>Keterangan Tidak Mampu</span><span class="when">09.12</span><span><span class="st-c wait">Menunggu</span></span></div>
+            <div class="c-row"><span><span class="nm">Zulkifli</span><span class="nik">1405 0917 0684 0005</span></span><span>Keterangan Usaha</span><span class="when">08.47</span><span><span class="st-c proc">Diproses</span></span></div>
+            <div class="c-row"><span><span class="nm">Rizky Pratama</span><span class="nik">1405 0903 0801 0003</span></span><span>Pengantar SKCK</span><span class="when">Kemarin</span><span><span class="st-c sign">Perlu TTD</span></span></div>
+            <div class="c-row"><span><span class="nm">Hendra Simanjuntak</span><span class="nik">1202 0325 1179 0004</span></span><span>Keterangan Domisili</span><span class="when">Kemarin</span><span><span class="st-c done">Selesai</span></span></div>
+          </div>
+        </div>
+      </div></div>
+      <div class="notes">
+        <p class="concept">Terasa milik desa, bukan sekadar mesin pemerintahan. Warnanya tanah dan teal dari logo dengan aksen emas songket, bentuknya membulat, dan ada satu motif pucuk rebung sebagai ciri visual.</p>
+        <dl>
+          <dt>Karakter</dt><dd>Hangat, bersahabat, membanggakan.</dd>
+          <dt>Ciri khas</dt><dd>Pita motif pucuk rebung di sidebar, yang bisa diganti motif khas daerah tiap desa. Judulnya memakai Alegreya yang bernuansa kaligrafi, dan status ditandai titik warna.</dd>
+          <dt>Cocok untuk</dt><dd>Website publik dan layanan warga. Identitas daerahnya juga menonjol saat demo ke pemda.</dd>
+          <dt>Risiko</dt><dd>Motif gampang terlihat seperti tempelan kalau dipakai berlebihan. Di tabel yang padat, nuansa hangatnya bisa membuat tampilan kurang tegas.</dd>
+          <dt>Warna</dt><dd><div class="pal"><span><i style="background:#FAF6EE"></i>krem</span><span><i style="background:#103E3A"></i>teal tua</span><span><i style="background:#1E6B62"></i>teal</span><span><i style="background:#B8892F"></i>emas</span><span><i style="background:#9A4B2B"></i>tanah</span></div></dd>
+          <dt>Huruf</dt><dd><span class="spec" style="font-family:'Alegreya'">Aa</span><span class="spec" style="font-family:'Alegreya Sans'">Aa</span><br>Alegreya · Alegreya Sans</dd>
+        </dl>
+        <button class="pick" data-choice="C-tenun" data-label="Pilih arah C" onclick="pickDir(this)">Pilih arah C</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="common">
+    <b>Kenapa saya merekomendasikan A:</b> pekerjaan inti kantor desa memang register dan surat. Arah ini membuat Sinfodes jelas berbeda dari banyak SID lain yang memakai template admin generik. Apa pun pilihanmu, beberapa hal tetap berlaku di semua arah:
+    <ul>
+      <li>Prinsip keterbacaan dari B: ukuran huruf minimum, kontras cukup, label tertulis, dan bingkai fokus yang terlihat.</li>
+      <li>Istilah administrasi yang benar ("Pemohon", "Perlu TTD", "Kartu Keluarga"), bukan terjemahan kaku.</li>
+      <li>Data dummy Pelalawan yang realistis, termasuk pendatang yang NIK-nya dari daerah asal (Hendra: 1202…, Suparmi: 3310…).</li>
+      <li>Tanpa gradasi ungu, efek kaca buram (glassmorphism), emoji sebagai ikon, atau deretan kartu angka yang generik.</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+  function fitShots() {
+    document.querySelectorAll('.shot').forEach(function (s) {
+      var scr = s.firstElementChild;
+      var k = Math.min(1, s.clientWidth / 800);
+      scr.style.transform = 'scale(' + k + ')';
+      s.style.height = (450 * k) + 'px';
+    });
+  }
+  function pickDir(btn) {
+    document.querySelectorAll('.dir').forEach(function (d) { d.classList.remove('is-picked'); });
+    document.querySelectorAll('.pick').forEach(function (b) { b.textContent = b.dataset.label; });
+    btn.closest('.dir').classList.add('is-picked');
+    btn.textContent = '✓ Dipilih';
+  }
+  window.addEventListener('resize', fitShots);
+  if (document.fonts) document.fonts.ready.then(fitShots);
+  fitShots();
+</script>

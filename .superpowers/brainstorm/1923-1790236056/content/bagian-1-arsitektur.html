@@ -1,0 +1,229 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Serif:wght@500;600&display=swap" rel="stylesheet">
+
+<style>
+  .s1 { max-width: 1120px; margin: 0 auto; --paper:#F6F4EE; --paper2:#ECE8DD; --sheet:#FFFEFA; --ink:#1B2631; --ink2:#5A636C; --rule:#DDD7CA; --tinta:#1F4E79; --stempel:#5B3F8C; --hijau:#2E7D5B; --oker:#8A6212; }
+  .s1 p { margin: 0; }
+  .s1-lead { color: var(--text-secondary); max-width: 780px; margin-bottom: 1rem; }
+  .recap { display: inline-flex; align-items: center; gap: .6rem; font-size: .8rem; color: var(--text-secondary); border: 1px solid var(--border); border-radius: 999px; padding: .25rem .8rem .25rem .35rem; margin-bottom: 1.5rem; }
+  .recap .dot { width: 1.3rem; height: 1.3rem; border-radius: 50%; background: var(--paper); display: grid; place-items: center; }
+  .recap .dot i { width: .55rem; height: .55rem; border-radius: 1px; background: var(--tinta); }
+  .recap b { color: var(--text-primary); }
+
+  .panel { background: var(--paper); color: var(--ink); border: 1px solid var(--rule); border-radius: 6px; padding: 1.25rem 1.4rem 1.4rem; margin-bottom: 1.25rem; font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 13.5px; line-height: 1.45; }
+  .p-label { font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink2); font-weight: 500; margin-bottom: .2rem; }
+  .p-title { font-family: 'IBM Plex Serif', Georgia, serif; font-weight: 500; font-size: 20px; margin-bottom: 1rem; letter-spacing: -.005em; }
+  .mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
+
+  /* surfaces */
+  .surfaces { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: .75rem; }
+  .sf { background: var(--sheet); border: 1px solid var(--rule); border-top: 3px solid var(--tinta); padding: .8rem .9rem .9rem; display: flex; flex-direction: column; gap: .45rem; }
+  .sf h4 { margin: 0; font-size: 14.5px; font-weight: 600; }
+  .sf .url { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--tinta); }
+  .sf .prod { font-size: 11.5px; color: var(--ink2); }
+  .sf .prod .mono { font-size: 11px; color: var(--ink); }
+  .sf dl { display: grid; grid-template-columns: 4.3rem 1fr; gap: .2rem .5rem; margin: .15rem 0 0; font-size: 12px; }
+  .sf dt { color: var(--ink2); }
+  .sf dd { margin: 0; overflow-wrap: anywhere; }
+  .join { height: 22px; margin: 0 12%; border: 1px solid var(--ink2); border-top: 0; border-radius: 0 0 6px 6px; position: relative; }
+  .join::after { content: ''; position: absolute; left: 50%; bottom: -12px; height: 12px; border-left: 1px solid var(--ink2); }
+  .core { margin-top: 12px; background: var(--ink); color: #F3F1EA; border-radius: 4px; padding: .9rem 1rem; display: grid; grid-template-columns: auto 1fr; gap: .4rem 1rem; align-items: center; }
+  .core img { width: 30px; background: var(--paper); border-radius: 5px; padding: 3px; grid-row: span 2; }
+  .core .ct { font-weight: 600; font-size: 14.5px; }
+  .core .layers { display: flex; flex-wrap: wrap; gap: .45rem; }
+  .core .layers span { border: 1px solid rgba(243,241,234,.3); border-radius: 3px; padding: .15rem .5rem; font-size: 12px; }
+  .core .layers .mono { color: #C9D8E6; font-size: 11.5px; margin-right: .25rem; }
+  .split-note { margin-top: .7rem; font-size: 12.5px; color: var(--ink2); }
+
+  /* flow */
+  .lane { margin-bottom: 1.1rem; }
+  .lane-h { display: flex; align-items: baseline; gap: .6rem; margin-bottom: .45rem; }
+  .lane-h b { font-size: 13px; }
+  .lane-h span { font-size: 11.5px; color: var(--ink2); }
+  .flow { display: flex; flex-wrap: wrap; align-items: stretch; gap: 0; row-gap: .5rem; }
+  .node { background: var(--sheet); border: 1px solid var(--rule); padding: .5rem .7rem; min-width: 118px; max-width: 170px; font-size: 12.5px; line-height: 1.3; }
+  .node small { display: block; color: var(--ink2); font-size: 11px; margin-top: .15rem; }
+  .node.same { border-color: #A9B8C6; background: #F5F8FB; }
+  .node.mock { border: 1.5px dashed var(--oker); background: #FBF5E6; }
+  .node.real { border-color: var(--hijau); background: #EFF6F1; }
+  .arr { align-self: center; width: 26px; height: 1px; background: var(--ink2); position: relative; margin: 0 2px; }
+  .arr::after { content: ''; position: absolute; right: -1px; top: -3.5px; border: 4px solid transparent; border-left: 5px solid var(--ink2); border-right: 0; }
+  .arr.both::before { content: ''; position: absolute; left: -1px; top: -3.5px; border: 4px solid transparent; border-right: 5px solid var(--ink2); border-left: 0; }
+  .legend { display: flex; flex-wrap: wrap; gap: 1rem; font-size: 11.5px; color: var(--ink2); border-top: 1px solid var(--rule); padding-top: .7rem; }
+  .legend i { display: inline-block; width: 12px; height: 12px; vertical-align: -2px; margin-right: .35rem; border: 1px solid; }
+
+  .two { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 1.25rem; }
+  .two .panel { margin-bottom: 0; }
+  .tree { font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; line-height: 1.75; white-space: pre; overflow-x: auto; }
+  .tree .c { color: var(--ink2); font-family: 'IBM Plex Sans', sans-serif; font-size: 12px; }
+  .tree .d { color: var(--tinta); font-weight: 500; }
+
+  .demo-shot { background: #E9E5DA; border: 1px solid var(--rule); border-radius: 4px; height: 130px; position: relative; overflow: hidden; margin-bottom: .8rem; }
+  .demo-shot .ghost { position: absolute; inset: 14px 14px 58px 14px; background: repeating-linear-gradient(180deg, var(--sheet) 0 22px, var(--rule) 22px 23px); border: 1px solid var(--rule); opacity: .8; }
+  .dbar { position: absolute; left: 12px; bottom: 12px; display: flex; align-items: stretch; background: var(--ink); color: #F3F1EA; border-radius: 3px; font-size: 11.5px; box-shadow: 0 1px 0 rgba(0,0,0,.2); }
+  .dbar > span { padding: .4rem .65rem; border-right: 1px solid rgba(243,241,234,.18); white-space: nowrap; }
+  .dbar > span:last-child { border-right: 0; color: #B9C0C7; }
+  .dbar .tag { font-size: 9.5px; letter-spacing: .1em; font-weight: 600; color: #E7C77A; }
+  .dbar u { text-decoration: none; border-bottom: 1px dotted rgba(243,241,234,.6); }
+  .demo-list { margin: .2rem 0 0 1.05rem; font-size: 12.5px; }
+  .demo-list li { margin-bottom: .2rem; }
+
+  table.tools { width: 100%; border-collapse: collapse; font-size: 12.8px; }
+  .tools th { text-align: left; font-size: 10.5px; letter-spacing: .09em; text-transform: uppercase; color: var(--ink2); font-weight: 500; padding: 0 .6rem .4rem 0; border-bottom: 1.5px solid var(--ink); }
+  .tools td { padding: .5rem .6rem .5rem 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  .tools td:first-child { color: var(--ink2); width: 22%; }
+  .tools td:nth-child(2) { font-weight: 500; width: 24%; white-space: nowrap; }
+
+  .ask { margin-top: 1.5rem; font-size: .92rem; border-left: 3px solid var(--accent); padding: .3rem 0 .3rem .9rem; }
+</style>
+
+<div class="s1">
+  <h2>Bagian 1 dari 10 · Arsitektur dan tools</h2>
+  <p class="s1-lead">Isinya sama dengan yang saya tulis di chat, tapi dalam bentuk gambar. Tujuannya satu: kode yang dibuat sekarang adalah kode sungguhan. Data dummy dipasang dengan cara yang nanti tinggal diganti backend asli, tanpa menulis ulang layar.</p>
+  <div class="recap"><span class="dot"><i></i></span>Arah visual yang dipilih: <b>A · Register</b> ✓</div>
+
+  <!-- Surfaces -->
+  <section class="panel">
+    <div class="p-label">Struktur</div>
+    <div class="p-title">Empat bagian, satu aplikasi</div>
+    <div class="surfaces">
+      <div class="sf">
+        <h4>Panel admin desa</h4>
+        <div class="url">/admin/…</div>
+        <div class="prod">Nanti: <span class="mono">app.sinfodes.id</span></div>
+        <dl><dt>Pengguna</dt><dd>Operator, Kasi/Kaur, Sekdes, Kades</dd><dt>Perangkat</dt><dd>Laptop kantor 1366×768; tetap bisa dibuka di HP</dd></dl>
+      </div>
+      <div class="sf">
+        <h4>Website publik desa</h4>
+        <div class="url">/desa/sungai-sialang/…</div>
+        <div class="prod">Nanti: <span class="mono">sungaisialang.desa.id</span></div>
+        <dl><dt>Pengguna</dt><dd>Warga, perantau, publik</dd><dt>Perangkat</dt><dd>Kebanyakan HP</dd></dl>
+      </div>
+      <div class="sf">
+        <h4>Layanan mandiri warga</h4>
+        <div class="url">/warga/…</div>
+        <div class="prod">Nanti: <span class="mono">layanan.sinfodes.id</span></div>
+        <dl><dt>Pengguna</dt><dd>Warga (login NIK + PIN)</dd><dt>Perangkat</dt><dd>HP dulu, dengan sinyal lemah</dd></dl>
+      </div>
+      <div class="sf">
+        <h4>Konsol Sinfodes</h4>
+        <div class="url">/konsol/…</div>
+        <div class="prod">Nanti: <span class="mono">konsol.sinfodes.id</span></div>
+        <dl><dt>Pengguna</dt><dd>Tim Sinfodes; pemantau kecamatan/kabupaten</dd><dt>Perangkat</dt><dd>Desktop</dd></dl>
+      </div>
+    </div>
+    <div class="join"></div>
+    <div class="core">
+      <img src="/files/sinfodes-mark.svg" alt="">
+      <div class="ct">Satu aplikasi Vite · React 19 · TypeScript</div>
+      <div class="layers">
+        <span><span class="mono">ui/</span>Design system Register</span>
+        <span><span class="mono">domain/</span>Skema data dan aturan</span>
+        <span><span class="mono">api/</span>Pemanggil API</span>
+        <span><span class="mono">mocks/</span>API tiruan</span>
+      </div>
+    </div>
+    <p class="split-note">Kode tiap bagian dimuat terpisah. Warga yang membuka lewat HP tidak ikut mengunduh kode panel admin.</p>
+  </section>
+
+  <!-- Data flow -->
+  <section class="panel">
+    <div class="p-label">Alur data</div>
+    <div class="p-title">Sekarang dan nanti: hanya ujungnya yang berganti</div>
+
+    <div class="lane">
+      <div class="lane-h"><b>Sekarang</b><span>tahap desain, tanpa backend</span></div>
+      <div class="flow">
+        <div class="node same">Layar<small>React</small></div><span class="arr"></span>
+        <div class="node same">Pengelola data<small>TanStack Query</small></div><span class="arr"></span>
+        <div class="node same">Pemanggil API<small class="mono">fetch /api/v1/…</small></div><span class="arr"></span>
+        <div class="node mock">API tiruan<small>MSW, berjalan di browser</small></div><span class="arr both"></span>
+        <div class="node mock">Data dummy Pelalawan<small>seed tetap, perubahan disimpan di IndexedDB</small></div>
+      </div>
+    </div>
+
+    <div class="lane">
+      <div class="lane-h"><b>Nanti</b><span>setelah backend siap</span></div>
+      <div class="flow">
+        <div class="node same">Layar<small>React</small></div><span class="arr"></span>
+        <div class="node same">Pengelola data<small>TanStack Query</small></div><span class="arr"></span>
+        <div class="node same">Pemanggil API<small class="mono">fetch /api/v1/…</small></div><span class="arr"></span>
+        <div class="node real">Backend<small>TypeScript · Node.js</small></div><span class="arr both"></span>
+        <div class="node real">PostgreSQL<small>server di Indonesia</small></div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <span><i style="background:#F5F8FB;border-color:#A9B8C6"></i>Sama persis, tidak ditulis ulang</span>
+      <span><i style="background:#FBF5E6;border-color:#8A6212;border-style:dashed"></i>Hanya untuk tahap desain; nanti tinggal dimatikan</span>
+      <span><i style="background:#EFF6F1;border-color:#2E7D5B"></i>Dibangun di tahap backend</span>
+    </div>
+  </section>
+
+  <div class="two">
+    <!-- Folder tree -->
+    <section class="panel">
+      <div class="p-label">Susunan kode</div>
+      <div class="p-title">Struktur folder</div>
+<div class="tree"><span class="d">src/</span>
+├─ <span class="d">routes/</span>      <span class="c">daftar halaman per bagian</span>
+├─ <span class="d">features/</span>    <span class="c">layar dan komponen per modul</span>
+│  ├─ penduduk/
+│  ├─ surat/
+│  └─ keuangan/, bansos/, …
+├─ <span class="d">ui/</span>          <span class="c">design system Register</span>
+├─ <span class="d">domain/</span>      <span class="c">skema dan aturan, tanpa React</span>
+├─ <span class="d">api/</span>         <span class="c">pemanggil API dan hook data</span>
+├─ <span class="d">mocks/</span>       <span class="c">API tiruan dan data dummy</span>
+└─ <span class="d">assets/brand/</span> <span class="c">logo Sinfodes</span></div>
+    </section>
+
+    <!-- Demo mode -->
+    <section class="panel">
+      <div class="p-label">Untuk presentasi</div>
+      <div class="p-title">Mode demo</div>
+      <div class="demo-shot">
+        <div class="ghost"></div>
+        <div class="dbar">
+          <span class="tag">DEMO</span>
+          <span><u>Operator ▾</u></span>
+          <span><u>Koneksi normal ▾</u></span>
+          <span>⟲ Reset</span>
+          <span>✕</span>
+        </div>
+      </div>
+      <ul class="demo-list">
+        <li><b>Ganti peran</b> tanpa logout: operator menyiapkan surat, lalu Kades menandatangani.</li>
+        <li><b>Simulasi koneksi</b> normal, lambat (3G), atau gagal, untuk menunjukkan tampilan loading dan error.</li>
+        <li><b>Reset data</b> mengembalikan semuanya ke data awal Desa Sungai Sialang.</li>
+        <li>Tidak ikut di versi produksi. Demo bisa dipasang online di Vercel atau Netlify.</li>
+      </ul>
+    </section>
+  </div>
+
+  <!-- Tools -->
+  <section class="panel" style="margin-top:1.25rem">
+    <div class="p-label">Tools</div>
+    <div class="p-title">Yang dipasang, dan alasannya</div>
+    <table class="tools">
+      <thead><tr><th>Kebutuhan</th><th>Tool</th><th>Alasan</th></tr></thead>
+      <tbody>
+        <tr><td>Navigasi halaman</td><td>TanStack Router</td><td>Filter tabel ikut tersimpan di URL, jadi hasil filter bisa dibagikan atau di-bookmark.</td></tr>
+        <tr><td>Pengambilan data</td><td>TanStack Query</td><td>Cache, tampilan loading, dan percobaan ulang saat gagal ditangani rapi.</td></tr>
+        <tr><td>API tiruan</td><td>MSW</td><td>Frontend memanggil HTTP sungguhan; saat backend siap, MSW tinggal dimatikan.</td></tr>
+        <tr><td>Tabel</td><td>TanStack Table + Virtual</td><td>Sortir, filter, dan pengaturan kolom; tetap lancar untuk ribuan baris.</td></tr>
+        <tr><td>Formulir</td><td>React Hook Form + Zod</td><td>Aturan validasinya sama dengan skema API.</td></tr>
+        <tr><td>Komponen dasar</td><td>React Aria Components</td><td>Aksesibel dan paham format tanggal Indonesia. Tidak punya gaya bawaan, jadi tidak terlihat seperti template.</td></tr>
+        <tr><td>Styling</td><td>Tailwind CSS v4</td><td>Dikunci hanya boleh memakai warna, font, dan jarak dari Register.</td></tr>
+        <tr><td>Grafik</td><td>Recharts</td><td>Piramida penduduk dan realisasi APBDes.</td></tr>
+        <tr><td>Peta</td><td>MapLibre + OpenFreeMap</td><td>Gratis tanpa API key, gayanya bisa disamakan dengan tema kertas, dan hanya dimuat di halaman peta.</td></tr>
+        <tr><td>Ikon</td><td>Phosphor</td><td>Dipakai seperlunya; label teks tetap yang utama.</td></tr>
+        <tr><td>Font</td><td>IBM Plex (Fontsource)</td><td>Disimpan di aplikasi sendiri, tidak bergantung pada Google Fonts.</td></tr>
+        <tr><td>Pengujian</td><td>Vitest + Testing Library</td><td>Aturan NIK, nomor surat, dan kontrak API diuji otomatis.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <p class="ask">Sudah pas? Balas di chat. Setelah itu kita lanjut ke <b>Bagian 2: design system Register</b>, yang juga akan tampil di sini.</p>
+</div>
