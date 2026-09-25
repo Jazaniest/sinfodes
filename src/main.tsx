@@ -1,3 +1,5 @@
+import '@/ui/styles/fonts'
+import '@/ui/styles/register.css'
 import { createRouter, RouterProvider } from '@tanstack/react-router'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
