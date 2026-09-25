@@ -1,10 +1,20 @@
+import { createRouter, RouterProvider } from '@tanstack/react-router'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.tsx'
+import { routeTree } from './routeTree.gen'
 
-createRoot(document.getElementById('root')!).render(
+const router = createRouter({ routeTree })
+
+declare module '@tanstack/react-router' {
+  interface Register {
+    router: typeof router
+  }
+}
+
+const akar = document.getElementById('root')
+if (!akar) throw new Error('Elemen #root tidak ditemukan')
+createRoot(akar).render(
   <StrictMode>
-    <App />
+    <RouterProvider router={router} />
   </StrictMode>,
 )

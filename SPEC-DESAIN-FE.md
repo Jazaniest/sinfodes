@@ -414,7 +414,7 @@ Semua Cap berupa teks kapital bergaris tepi. **Status tidak pernah hanya warna.*
 |---|---|
 | Surat | "24 September 2026" |
 | Tabel | "24 Sep 2026" |
-| Kepala halaman | "Rabu, 24 September 2026" |
+| Kepala halaman | "Kamis, 24 September 2026" |
 | Hari ini | "09.12" |
 | Kemarin | "Kemarin" |
 | Lebih lama | "21 Sep" |
@@ -1008,7 +1008,7 @@ Setiap modul punya halaman utama dengan data realistis dan semua kondisi tampila
 ▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼   ← pita motif, warna aksen desa
 [lambang]  Sungai Sialang                      (Plex Serif, besar)
            DESA · KECAMATAN TELUK MERANTI · KABUPATEN PELALAWAN
-           Rabu, 24 September 2026        Beranda Profil Kabar Transparansi …
+           Kamis, 24 September 2026       Beranda Profil Kabar Transparansi …
 ════════════════════════════════════════════   ← garis ganda seperti kop
 ```
 
