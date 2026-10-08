@@ -1,4 +1,4 @@
-import { afterAll, afterEach, beforeAll, vi } from 'vitest'
+import { afterAll, afterEach, beforeAll, beforeEach, vi } from 'vitest'
 import { aturTokenSesi } from '@/api/client'
 import { muatDb } from '@/mocks/db'
 import { aturModeJaringan } from '@/mocks/jaringan'
@@ -16,14 +16,24 @@ export const AKUN_UJI = {
   kadus: 'pgn_sukardi',
 } as const
 
+type OpsiApiTiruan = {
+  /** Muat ulang data seed sebelum setiap uji. Wajib untuk uji yang menulis data, supaya uji tidak saling memengaruhi. */
+  dbSegarTiapUji?: boolean
+}
+
 /** Nyalakan API tiruan untuk satu file uji. Hanya `Date` yang dipalsukan; timer dan fetch tetap berjalan normal. */
-export function pakaiApiTiruan(): void {
+export function pakaiApiTiruan({ dbSegarTiapUji = false }: OpsiApiTiruan = {}): void {
   beforeAll(async () => {
     vi.useFakeTimers({ toFake: ['Date'] })
     vi.setSystemTime(SEKARANG_UJI)
     await muatDb(penyimpananMemori(), SEKARANG_UJI)
     serverUji.listen({ onUnhandledRequest: 'error' })
   })
+  if (dbSegarTiapUji) {
+    beforeEach(async () => {
+      await muatDb(penyimpananMemori(), SEKARANG_UJI)
+    })
+  }
   afterEach(() => {
     serverUji.resetHandlers()
     serverUji.events.removeAllListeners()

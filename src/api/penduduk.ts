@@ -2,6 +2,7 @@ import { queryOptions } from '@tanstack/react-query'
 import { z } from 'zod'
 import { daftarSchema } from '@/domain/api'
 import type { FilterPenduduk } from '@/domain/penduduk/filter'
+import { hasilCekNikSchema, type MasukanPenduduk, type UbahPenduduk } from '@/domain/penduduk/masukan'
 import { entriRiwayatSchema } from '@/domain/penduduk/riwayat'
 import { barisPendudukSchema, pendudukSchema, ringkasanPendudukSchema } from '@/domain/penduduk/schema'
 import { panggilApi } from './client'
@@ -38,6 +39,20 @@ export function ambilPenduduk(id: string, signal?: AbortSignal) {
 
 export function ambilRiwayatPenduduk(id: string, signal?: AbortSignal) {
   return panggilApi('GET', `/penduduk/${encodeURIComponent(id)}/riwayat`, { skema: daftarRiwayatSchema, signal })
+}
+
+export function tambahPenduduk(masukan: MasukanPenduduk) {
+  return panggilApi('POST', '/penduduk', { skema: pendudukSchema, body: masukan })
+}
+
+/** Kirim hanya field yang berubah; setiap perubahan dicatat ke Riwayat (SPEC §6.4). */
+export function ubahPenduduk(id: string, ubah: UbahPenduduk) {
+  return panggilApi('PATCH', `/penduduk/${encodeURIComponent(id)}`, { skema: pendudukSchema, body: ubah })
+}
+
+/** Cek NIK ganda saat kolom NIK ditinggalkan. NIK dikirim di body, bukan di URL (SPEC §3.4). */
+export function cekNik(nik: string, kecualiId?: string) {
+  return panggilApi('POST', '/penduduk/cek-nik', { skema: hasilCekNikSchema, body: { nik, kecualiId } })
 }
 
 export const opsiDaftarPenduduk = (filter: Partial<FilterPenduduk>) =>

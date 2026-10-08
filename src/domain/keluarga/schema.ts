@@ -12,7 +12,8 @@ export const keluargaSchema = z.object({
   rw: nomor3,
   rt: nomor3,
   tanggalTerbit: z.iso.date(),
-  anggotaIds: z.array(z.string()).min(1),
+  /** Kosong bila seluruh anggotanya sudah meninggal atau pindah; KK seperti ini tidak tampil di daftar (SPEC §6.6). */
+  anggotaIds: z.array(z.string()),
 })
 export type Keluarga = z.infer<typeof keluargaSchema>
 

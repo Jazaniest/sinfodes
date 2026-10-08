@@ -1,6 +1,6 @@
 import { http, HttpResponse } from 'msw'
 import { tanggalIsoWib } from '@/domain/format/tanggal'
-import { JENIS_MUTASI, type JenisMutasi } from '@/domain/mutasi/schema'
+import { hitungMutasiBulan } from '@/domain/mutasi/buku'
 import { dataBelumLengkap } from '@/domain/penduduk/filter'
 import { dataMilik } from '../cakupan'
 import { API, denganJaringan } from '../http'
@@ -19,9 +19,7 @@ export const handlerBeranda = [
       const hidup = milik.penduduk.filter((p) => p.statusDasar === 'Hidup')
       const petugas = pengguna.peran === 'operator' || pengguna.peran === 'sekdes'
       const belumLengkap = hidup.filter((p) => dataBelumLengkap(p, sekarang)).length
-      const mutasiBulanIni = Object.fromEntries(
-        JENIS_MUTASI.map((j) => [j, milik.mutasi.filter((m) => m.jenis === j && m.tanggal.startsWith(bulanIni)).length]),
-      ) as Record<JenisMutasi, number>
+      const mutasiBulanIni = hitungMutasiBulan(milik.mutasi, bulanIni)
       return HttpResponse.json({
         tindakan: petugas ? (belumLengkap > 0 ? [{ jenis: 'data-belum-lengkap', jumlah: belumLengkap }] : []) : null,
         bukuHariIni: petugas

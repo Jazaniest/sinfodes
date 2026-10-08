@@ -23,7 +23,7 @@ export const handlerCari = [
       }
       const milik = dataMilik(pengguna)
       const perId = new Map(milik.penduduk.map((p) => [p.id, p] as const))
-      const nomorKk = new Map(milik.keluarga.map((k) => [k.id, k.nomorKk] as const))
+      const nomorKk = new Map(milik.semuaKeluarga.map((k) => [k.id, k.nomorKk] as const))
       const penduduk = milik.penduduk
         .filter((p) => cocokPenduduk(p, kata, nomorKk.get(p.keluargaId) ?? ''))
         .sort((a, b) => a.nama.localeCompare(b.nama, 'id'))

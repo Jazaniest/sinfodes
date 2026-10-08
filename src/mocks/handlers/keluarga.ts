@@ -75,7 +75,7 @@ export const handlerKeluarga = [
       const pengguna = butuhPembaca(request)
       if (pengguna instanceof Response) return pengguna
       const milik = dataMilik(pengguna)
-      const keluarga = milik.keluarga.find((k) => k.id === String(params.id))
+      const keluarga = milik.semuaKeluarga.find((k) => k.id === String(params.id))
       if (!keluarga) return balasGalat('NOT_FOUND', 'Data keluarga tidak ditemukan.', 404)
       return HttpResponse.json({ keluarga, anggota: anggotaDari(keluarga, new Map(milik.penduduk.map((p) => [p.id, p] as const))) })
     }),

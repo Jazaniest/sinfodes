@@ -79,3 +79,18 @@ export function formatDiperbarui(iso: string, sekarang: Date): string {
   if (/^\d{2}\.\d{2}$/.test(relatif)) return `hari ini ${relatif}`
   return relatif === 'Kemarin' ? 'kemarin' : relatif
 }
+
+/** "2026-09" → "September 2026". */
+export function formatBulan(bulan: string): string {
+  const [tahun, b] = bulan.split('-').map(Number)
+  return `${BULAN[b - 1]} ${tahun}`
+}
+
+/** `jumlah` bulan terakhir ("YYYY-MM"), dimulai dari bulan berjalan menurut WIB. */
+export function daftarBulanTerakhir(sekarang: Date, jumlah: number): string[] {
+  const [tahun, bulan] = tanggalIsoWib(sekarang).split('-').map(Number)
+  return Array.from({ length: jumlah }, (_, i) => {
+    const urutan = tahun * 12 + (bulan - 1) - i
+    return `${Math.floor(urutan / 12)}-${String((urutan % 12) + 1).padStart(2, '0')}`
+  })
+}

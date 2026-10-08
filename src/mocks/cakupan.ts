@@ -11,12 +11,16 @@ export function dataMilik(pengguna: Pengguna) {
     x.desaId === pengguna.desaId && (dusunSaja === null || x.dusunId === dusunSaja)
   const penduduk = db.penduduk.filter(diDalam)
   const idPenduduk = new Set(penduduk.map((p) => p.id))
+  const semuaKeluarga = db.keluarga.filter(diDalam)
   return {
     db,
     dusunSaja,
     dusun: db.dusun.filter((d) => d.desaId === pengguna.desaId),
     penduduk,
-    keluarga: db.keluarga.filter(diDalam),
+    /** KK yang masih punya anggota: yang tampil di daftar dan dihitung. */
+    keluarga: semuaKeluarga.filter((k) => k.anggotaIds.length > 0),
+    /** Termasuk KK yang seluruh anggotanya sudah meninggal/pindah: untuk detail dan nomor KK mantan penduduk. */
+    semuaKeluarga,
     mutasi: db.mutasi.filter((m) => m.desaId === pengguna.desaId && m.pendudukIds.some((id) => idPenduduk.has(id))),
     riwayat: db.riwayat.filter((r) => idPenduduk.has(r.pendudukId)),
     aktivitas: db.aktivitas.filter(diDalam),

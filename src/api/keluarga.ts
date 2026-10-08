@@ -1,6 +1,7 @@
 import { queryOptions } from '@tanstack/react-query'
 import { daftarSchema } from '@/domain/api'
 import { barisKeluargaSchema, detailKeluargaSchema, type FilterKeluarga } from '@/domain/keluarga/schema'
+import type { GantiKepala, MasukanPecahKeluarga } from '@/domain/keluarga/masukan'
 import { panggilApi } from './client'
 
 const daftarKeluargaSchema = daftarSchema(barisKeluargaSchema)
@@ -23,6 +24,15 @@ export function cariKeluarga(kata: string, filter: Partial<FilterKeluarga>, sign
 
 export function ambilKeluarga(id: string, signal?: AbortSignal) {
   return panggilApi('GET', `/keluarga/${encodeURIComponent(id)}`, { skema: detailKeluargaSchema, signal })
+}
+
+export function gantiKepala(id: string, masukan: GantiKepala) {
+  return panggilApi('POST', `/keluarga/${encodeURIComponent(id)}/ganti-kepala`, { skema: detailKeluargaSchema, body: masukan })
+}
+
+/** Mengembalikan detail KK baru (SPEC §6.5). */
+export function pecahKeluarga(id: string, masukan: MasukanPecahKeluarga) {
+  return panggilApi('POST', `/keluarga/${encodeURIComponent(id)}/pecah`, { skema: detailKeluargaSchema, body: masukan })
 }
 
 export const opsiKeluarga = (id: string) =>

@@ -25,7 +25,7 @@ function butuhPembaca(request: Request): Pengguna | Response {
 function daftarTersaring(pengguna: Pengguna, filter: FilterPenduduk, kata: string | null): Response {
   const milik = dataMilik(pengguna)
   const hariIni = new Date()
-  const nomorKkPerId = new Map(milik.keluarga.map((k) => [k.id, k.nomorKk] as const))
+  const nomorKkPerId = new Map(milik.semuaKeluarga.map((k) => [k.id, k.nomorKk] as const))
   const nomorKk = (p: Penduduk) => nomorKkPerId.get(p.keluargaId) ?? ''
   const calon = kata === null ? milik.penduduk : milik.penduduk.filter((p) => cocokPenduduk(p, kata, nomorKk(p)))
   const tersaring = saringPenduduk(calon, filter, {

@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
+  daftarBulanTerakhir,
+  formatBulan,
   formatDiperbarui,
   formatJam,
   formatTanggal,
@@ -59,4 +61,12 @@ describe('formatDiperbarui (meta kepala halaman)', () => {
   it('hari ini → jam', () => expect(formatDiperbarui('2026-09-24T08:15:00+07:00', sekarang)).toBe('hari ini 08.15'))
   it('kemarin', () => expect(formatDiperbarui('2026-09-23T14:00:00+07:00', sekarang)).toBe('kemarin'))
   it('lebih lama → tanggal', () => expect(formatDiperbarui('2026-09-21T10:00:00+07:00', sekarang)).toBe('21 Sep'))
+})
+
+describe('bulan', () => {
+  it('formatBulan', () => expect(formatBulan('2026-09')).toBe('September 2026'))
+  it('daftarBulanTerakhir melewati pergantian tahun (WIB)', () => {
+    // 1 Januari 2027 pukul 06.00 WIB = 31 Desember 2026 23.00 UTC
+    expect(daftarBulanTerakhir(new Date('2026-12-31T23:00:00Z'), 3)).toEqual(['2027-01', '2026-12', '2026-11'])
+  })
 })
