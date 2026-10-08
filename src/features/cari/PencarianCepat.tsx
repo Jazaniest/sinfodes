@@ -1,11 +1,11 @@
 import { MagnifyingGlass } from '@phosphor-icons/react'
 import { useQuery } from '@tanstack/react-query'
-import { useState } from 'react'
+import { useRef, useState, type KeyboardEvent } from 'react'
 import {
   Autocomplete, Dialog, Header, Input, Menu, MenuItem, MenuSection, Modal, ModalOverlay, SearchField, Text,
 } from 'react-aria-components'
 import { opsiCari } from '@/api/cari'
-import { cocokNama, kataCukup } from '@/domain/penduduk/cari'
+import { cocokNama, kataAngka, kataCukup } from '@/domain/penduduk/cari'
 import { kelompokkanNik } from '@/domain/penduduk/nik'
 import { boleh } from '@/domain/pengguna/hak-akses'
 import type { Peran } from '@/domain/pengguna/schema'
@@ -45,9 +45,20 @@ export function PencarianCepat({ isOpen, onOpenChange, peran }: Props) {
   )
   const penduduk = bolehCari ? (hasil.data?.penduduk ?? []) : []
   const keluarga = bolehCari ? (hasil.data?.keluarga ?? []) : []
+  // Nomor KK yang diketik lengkap: yang dicari KK-nya, bukan anggotanya, jadi Keluarga tampil lebih dulu.
+  const angka = kataAngka(kataTunda)
+  const kkDulu = angka !== null && keluarga.some((k) => k.nomorKk === angka)
+  const menuRef = useRef<HTMLDivElement>(null)
   const ubahBuka = (buka: boolean) => {
     if (!buka) setKata('')
     onOpenChange(buka)
+  }
+  // React Aria sengaja tidak memfokuskan hasil saat teks ditempel (demi pembaca layar). Padahal NIK dan nomor KK
+  // sering ditempel; Enter tanpa hasil terfokus tetap membuka hasil pertama.
+  const enterTanpaFokus = (e: KeyboardEvent) => {
+    const menu = menuRef.current
+    if (e.key !== 'Enter' || !menu || menu.querySelector('[data-focused]')) return
+    menu.querySelector<HTMLElement>('[role="menuitem"]')?.click()
   }
   const teksKosong =
     kata.trim() === ''
@@ -55,6 +66,20 @@ export function PencarianCepat({ isOpen, onOpenChange, peran }: Props) {
       : hasil.isFetching
         ? 'Mencari…'
         : 'Tidak ada yang cocok.'
+  const bagianKeluarga = keluarga.length > 0 && (
+    <MenuSection>
+      <Header className={kelasKepala}>Keluarga</Header>
+      {keluarga.map((k) => (
+        <ItemHasil
+          key={k.id}
+          id={`keluarga:${k.id}`}
+          href={`/admin/kependudukan/keluarga/${k.id}`}
+          judul={`KK ${k.namaKepala}`}
+          keterangan={kelompokkanNik(k.nomorKk)}
+        />
+      ))}
+    </MenuSection>
+  )
 
   return (
     <ModalOverlay
@@ -69,11 +94,13 @@ export function PencarianCepat({ isOpen, onOpenChange, peran }: Props) {
             <SearchField aria-label="Cari penduduk, nomor KK, atau halaman" autoFocus className="flex items-center gap-2 border-b border-garis px-4">
               <MagnifyingGlass aria-hidden size={16} className="text-tinta-2" />
               <Input
+                onKeyDown={enterTanpaFokus}
                 placeholder="Cari nama, NIK, nomor KK, atau halaman…"
                 className="h-12 flex-1 bg-transparent text-teks-isian outline-none [&::-webkit-search-cancel-button]:hidden"
               />
             </SearchField>
             <Menu
+              ref={menuRef}
               aria-label="Hasil pencarian"
               onAction={() => ubahBuka(false)}
               renderEmptyState={() => <p className="px-5 py-6 text-tinta-2">{teksKosong}</p>}
@@ -87,6 +114,7 @@ export function PencarianCepat({ isOpen, onOpenChange, peran }: Props) {
                   ))}
                 </MenuSection>
               )}
+              {kkDulu && bagianKeluarga}
               {penduduk.length > 0 && (
                 <MenuSection>
                   <Header className={kelasKepala}>Penduduk</Header>
@@ -103,20 +131,7 @@ export function PencarianCepat({ isOpen, onOpenChange, peran }: Props) {
                   ))}
                 </MenuSection>
               )}
-              {keluarga.length > 0 && (
-                <MenuSection>
-                  <Header className={kelasKepala}>Keluarga</Header>
-                  {keluarga.map((k) => (
-                    <ItemHasil
-                      key={k.id}
-                      id={`keluarga:${k.id}`}
-                      href={`/admin/kependudukan/keluarga/${k.id}`}
-                      judul={`KK ${k.namaKepala}`}
-                      keterangan={kelompokkanNik(k.nomorKk)}
-                    />
-                  ))}
-                </MenuSection>
-              )}
+              {!kkDulu && bagianKeluarga}
             </Menu>
           </Autocomplete>
           <p className="border-t border-garis px-5 py-2 text-teks-kecil text-tinta-2">↑↓ memilih · Enter membuka · Esc menutup</p>

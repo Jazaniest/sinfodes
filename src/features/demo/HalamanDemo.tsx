@@ -1,9 +1,15 @@
-import { useQuery } from '@tanstack/react-query'
-import { Link } from '@tanstack/react-router'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { Link, useRouter } from '@tanstack/react-router'
+import { useState } from 'react'
+import { pesanGalat } from '@/api/galat'
 import logoMark from '@/assets/brand/sinfodes-mark.svg'
 import { formatAngka } from '@/domain/format/angka'
 import { formatTanggal } from '@/domain/format/tanggal'
+import { LABEL_PERAN } from '@/domain/pengguna/schema'
+import { tampilkanToast } from '@/ui/toast/antrean'
+import { Tombol } from '@/ui/tombol/Tombol'
 import { Skeleton } from '@/ui/umpan-balik/Skeleton'
+import { masukDemo } from './masuk-demo'
 import { useKendaliDemo } from './useKendaliDemo'
 
 /** Halaman `/`: pintu masuk demo. Hanya menampilkan bagian yang sudah dibangun (tidak ada tombol mati). */
@@ -14,6 +20,21 @@ export function HalamanDemo() {
     queryFn: () => kendali!.infoDataDemo(),
     enabled: kendali !== null,
   })
+  const queryClient = useQueryClient()
+  const router = useRouter()
+  const [sedangMasuk, setSedangMasuk] = useState<string | null>(null)
+  const masukPanel = async (akun: { id: string; email: string }) => {
+    if (!kendali) return
+    setSedangMasuk(akun.id)
+    try {
+      await masukDemo(akun.email, kendali.KATA_SANDI_DEMO, queryClient)
+      await router.navigate({ to: '/admin' })
+    } catch (e) {
+      tampilkanToast({ pesan: pesanGalat(e), nada: 'galat' })
+    } finally {
+      setSedangMasuk(null)
+    }
+  }
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-14">
@@ -50,6 +71,27 @@ export function HalamanDemo() {
           Bagian aplikasi
         </h2>
         <ul className="mt-3 divide-y divide-garis border-y border-garis">
+          <li className="flex flex-col gap-3 py-4">
+            <div>
+              <p className="font-medium">Panel admin desa</p>
+              <p className="text-tinta-2">
+                Masuk sebagai salah satu perangkat desa. Kata sandi semua akun: <span className="font-mono">demo</span>.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {kendali?.AKUN_DEMO_ADMIN.map((a) => (
+                <Tombol
+                  key={a.id}
+                  ukuran="kecil"
+                  varian={a.peran === 'operator' ? 'utama' : 'sekunder'}
+                  memuat={sedangMasuk === a.id}
+                  onPress={() => void masukPanel(a)}
+                >
+                  {a.nama} · {LABEL_PERAN[a.peran]}
+                </Tombol>
+              ))}
+            </div>
+          </li>
           <li className="flex flex-wrap items-center justify-between gap-4 py-4">
             <div>
               <p className="font-medium">Katalog Register</p>

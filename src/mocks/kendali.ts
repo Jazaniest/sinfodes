@@ -1,4 +1,4 @@
-import { ID_SUNGAI_SIALANG } from './data/desa-demo'
+import { ID_SUNGAI_SIALANG, PENGGUNA_DEMO } from './data/desa-demo'
 import { ambilDb, resetDb } from './db'
 
 export { aturModeJaringan, bacaModeJaringan, MODE_JARINGAN } from './jaringan'
@@ -21,3 +21,13 @@ export async function resetDataDemo(): Promise<InfoDataDemo> {
   await resetDb()
   return infoDataDemo()
 }
+
+export { KATA_SANDI_DEMO } from './data/desa-demo'
+
+/** Akun panel admin Desa Sungai Sialang untuk tombol masuk dan pilihan peran (SPEC §12.9). */
+export const AKUN_DEMO_ADMIN = PENGGUNA_DEMO.filter((p) => p.desaId === ID_SUNGAI_SIALANG).map(({ id, nama, peran, email }) => ({
+  id,
+  nama,
+  peran,
+  email,
+}))

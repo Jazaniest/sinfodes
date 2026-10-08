@@ -1,6 +1,6 @@
 import { ArrowCounterClockwise, X } from '@phosphor-icons/react'
 import { useQueryClient } from '@tanstack/react-query'
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import type { ModeJaringan } from '@/mocks/kendali'
 import { tampilkanToast } from '@/ui/toast/antrean'
 import { useKendaliDemo } from './useKendaliDemo'
@@ -22,7 +22,7 @@ function bacaTerbuka(): boolean {
 }
 
 /** Toolbar mode demo (SPEC §3.6). Tidak dirender di build produksi (VITE_DEMO=false). */
-export function DemoToolbar() {
+export function DemoToolbar({ sisipan }: { sisipan?: ReactNode }) {
   const kendali = useKendaliDemo()
   const queryClient = useQueryClient()
   const [terbuka, setTerbuka] = useState(bacaTerbuka)
@@ -73,6 +73,7 @@ export function DemoToolbar() {
       className="fixed bottom-3 left-3 z-40 flex max-w-[calc(100vw-1.5rem)] flex-wrap items-stretch rounded-1 bg-tinta text-teks-kecil text-kapur shadow-melayang [&_:focus-visible]:-outline-offset-2 [&_:focus-visible]:outline-kapur"
     >
       <span className="flex items-center px-2 text-label font-semibold tracking-widest text-oker-muda sm:px-3">DEMO</span>
+      {sisipan && <span className={bagian}>{sisipan}</span>}
       <span className={bagian}>
         {/* Di ponsel 360 px toolbar tidak muat satu baris; label tetap terbaca pembaca layar. */}
         <label htmlFor="demo-koneksi" className="max-sm:sr-only">
