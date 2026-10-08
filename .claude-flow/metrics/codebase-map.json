@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-10-08T07:16:45.800Z",
+  "timestamp": "2026-10-08T07:46:45.849Z",
   "projectRoot": "C:\\Users\\ASUS\\OneDrive\\Desktop\\startup\\sinfodes",
   "structure": {
     "hasPackageJson": true,
@@ -7,5 +7,5 @@
     "hasClaudeConfig": true,
     "hasClaudeFlow": true
   },
-  "scannedAt": 1791443805801
+  "scannedAt": 1791445605850
 }

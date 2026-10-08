@@ -1,6 +1,9 @@
 import '@testing-library/jest-dom/vitest'
-import { cleanup } from '@testing-library/react'
+import { cleanup, configure } from '@testing-library/react'
 import { afterEach } from 'vitest'
+
+// Seluruh suite berjalan paralel; kueri peran pada tabel berisi 25 baris bisa melewati 1 detik bawaan.
+configure({ asyncUtilTimeout: 3000 })
 
 // jsdom tidak menyediakan API berikut; beberapa komponen React Aria memakainya.
 if (typeof window !== 'undefined') {

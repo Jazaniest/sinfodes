@@ -39,8 +39,8 @@ function IsiNavigasi({ sesi, jalur, onCari, onKeluar, onPilih }: Omit<Props, 'ch
         )}
       >
         <MagnifyingGlass aria-hidden size={14} />
-        <span className="flex-1">Cari NIK, nama, nomor KK…</span>
-        <kbd className="font-mono text-label">Ctrl K</kbd>
+        <span className="min-w-0 flex-1 truncate">Cari NIK, nama, nomor KK…</span>
+        <kbd className="shrink-0 font-mono text-label">Ctrl K</kbd>
       </Button>
       <nav aria-label="Menu utama" className="flex-1 overflow-y-auto">
         {menuUntuk(pengguna.peran).map((k) => (

@@ -72,3 +72,10 @@ export function formatUmur(tanggalLahir: string, pada: Date): string {
   if (tahun >= 1) return `${tahun} tahun`
   return bulan === 0 ? 'kurang dari 1 bulan' : `${bulan} bulan`
 }
+
+/** Meta kepala halaman: "hari ini 08.15", "kemarin", atau "21 Sep" (SPEC §6.2). */
+export function formatDiperbarui(iso: string, sekarang: Date): string {
+  const relatif = formatWaktuRelatif(iso, sekarang)
+  if (/^\d{2}\.\d{2}$/.test(relatif)) return `hari ini ${relatif}`
+  return relatif === 'Kemarin' ? 'kemarin' : relatif
+}

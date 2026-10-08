@@ -14,6 +14,9 @@ import { Route as KatalogRouteImport } from './routes/katalog'
 import { Route as AdminPanelRouteImport } from './routes/admin/_panel'
 import { Route as AdminMasukRouteImport } from './routes/admin/masuk'
 import { Route as AdminPanelIndexRouteImport } from './routes/admin/_panel/index'
+import { Route as AdminPanelKependudukanIndexRouteImport } from './routes/admin/_panel/kependudukan/index'
+import { Route as AdminPanelKependudukanPendudukIndexRouteImport } from './routes/admin/_panel/kependudukan/penduduk/index'
+import { Route as AdminPanelKependudukanPendudukIdRouteImport } from './routes/admin/_panel/kependudukan/penduduk/$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -40,6 +43,24 @@ const AdminPanelIndexRoute = AdminPanelIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminPanelRoute,
 } as any)
+const AdminPanelKependudukanIndexRoute =
+  AdminPanelKependudukanIndexRouteImport.update({
+    id: '/kependudukan/',
+    path: '/kependudukan/',
+    getParentRoute: () => AdminPanelRoute,
+  } as any)
+const AdminPanelKependudukanPendudukIndexRoute =
+  AdminPanelKependudukanPendudukIndexRouteImport.update({
+    id: '/kependudukan/penduduk/',
+    path: '/kependudukan/penduduk/',
+    getParentRoute: () => AdminPanelRoute,
+  } as any)
+const AdminPanelKependudukanPendudukIdRoute =
+  AdminPanelKependudukanPendudukIdRouteImport.update({
+    id: '/kependudukan/penduduk/$id',
+    path: '/kependudukan/penduduk/$id',
+    getParentRoute: () => AdminPanelRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -47,12 +68,18 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminPanelRouteWithChildren
   '/admin/masuk': typeof AdminMasukRoute
   '/admin/': typeof AdminPanelIndexRoute
+  '/admin/kependudukan/': typeof AdminPanelKependudukanIndexRoute
+  '/admin/kependudukan/penduduk/$id': typeof AdminPanelKependudukanPendudukIdRoute
+  '/admin/kependudukan/penduduk/': typeof AdminPanelKependudukanPendudukIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/katalog': typeof KatalogRoute
   '/admin/masuk': typeof AdminMasukRoute
   '/admin': typeof AdminPanelIndexRoute
+  '/admin/kependudukan': typeof AdminPanelKependudukanIndexRoute
+  '/admin/kependudukan/penduduk/$id': typeof AdminPanelKependudukanPendudukIdRoute
+  '/admin/kependudukan/penduduk': typeof AdminPanelKependudukanPendudukIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -61,12 +88,30 @@ export interface FileRoutesById {
   '/admin/_panel': typeof AdminPanelRouteWithChildren
   '/admin/masuk': typeof AdminMasukRoute
   '/admin/_panel/': typeof AdminPanelIndexRoute
+  '/admin/_panel/kependudukan/': typeof AdminPanelKependudukanIndexRoute
+  '/admin/_panel/kependudukan/penduduk/$id': typeof AdminPanelKependudukanPendudukIdRoute
+  '/admin/_panel/kependudukan/penduduk/': typeof AdminPanelKependudukanPendudukIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/katalog' | '/admin' | '/admin/masuk' | '/admin/'
+  fullPaths:
+    | '/'
+    | '/katalog'
+    | '/admin'
+    | '/admin/masuk'
+    | '/admin/'
+    | '/admin/kependudukan/'
+    | '/admin/kependudukan/penduduk/$id'
+    | '/admin/kependudukan/penduduk/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/katalog' | '/admin/masuk' | '/admin'
+  to:
+    | '/'
+    | '/katalog'
+    | '/admin/masuk'
+    | '/admin'
+    | '/admin/kependudukan'
+    | '/admin/kependudukan/penduduk/$id'
+    | '/admin/kependudukan/penduduk'
   id:
     | '__root__'
     | '/'
@@ -74,6 +119,9 @@ export interface FileRouteTypes {
     | '/admin/_panel'
     | '/admin/masuk'
     | '/admin/_panel/'
+    | '/admin/_panel/kependudukan/'
+    | '/admin/_panel/kependudukan/penduduk/$id'
+    | '/admin/_panel/kependudukan/penduduk/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -120,15 +168,43 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPanelIndexRouteImport
       parentRoute: typeof AdminPanelRoute
     }
+    '/admin/_panel/kependudukan/': {
+      id: '/admin/_panel/kependudukan/'
+      path: '/kependudukan'
+      fullPath: '/admin/kependudukan/'
+      preLoaderRoute: typeof AdminPanelKependudukanIndexRouteImport
+      parentRoute: typeof AdminPanelRoute
+    }
+    '/admin/_panel/kependudukan/penduduk/': {
+      id: '/admin/_panel/kependudukan/penduduk/'
+      path: '/kependudukan/penduduk'
+      fullPath: '/admin/kependudukan/penduduk/'
+      preLoaderRoute: typeof AdminPanelKependudukanPendudukIndexRouteImport
+      parentRoute: typeof AdminPanelRoute
+    }
+    '/admin/_panel/kependudukan/penduduk/$id': {
+      id: '/admin/_panel/kependudukan/penduduk/$id'
+      path: '/kependudukan/penduduk/$id'
+      fullPath: '/admin/kependudukan/penduduk/$id'
+      preLoaderRoute: typeof AdminPanelKependudukanPendudukIdRouteImport
+      parentRoute: typeof AdminPanelRoute
+    }
   }
 }
 
 interface AdminPanelRouteChildren {
   AdminPanelIndexRoute: typeof AdminPanelIndexRoute
+  AdminPanelKependudukanIndexRoute: typeof AdminPanelKependudukanIndexRoute
+  AdminPanelKependudukanPendudukIdRoute: typeof AdminPanelKependudukanPendudukIdRoute
+  AdminPanelKependudukanPendudukIndexRoute: typeof AdminPanelKependudukanPendudukIndexRoute
 }
 
 const AdminPanelRouteChildren: AdminPanelRouteChildren = {
   AdminPanelIndexRoute: AdminPanelIndexRoute,
+  AdminPanelKependudukanIndexRoute: AdminPanelKependudukanIndexRoute,
+  AdminPanelKependudukanPendudukIdRoute: AdminPanelKependudukanPendudukIdRoute,
+  AdminPanelKependudukanPendudukIndexRoute:
+    AdminPanelKependudukanPendudukIndexRoute,
 }
 
 const AdminPanelRouteWithChildren = AdminPanelRoute._addFileChildren(

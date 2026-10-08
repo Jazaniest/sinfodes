@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  formatDiperbarui,
   formatJam,
   formatTanggal,
   formatUmur,
@@ -51,4 +52,11 @@ describe('umur', () => {
   it('bayi ditulis dalam bulan', () => expect(formatUmur('2026-01-10', SEKARANG)).toBe('8 bulan'))
   it('bayi di bawah sebulan', () => expect(formatUmur('2026-09-10', SEKARANG)).toBe('kurang dari 1 bulan'))
   it('dewasa ditulis dalam tahun', () => expect(formatUmur('1991-03-12', SEKARANG)).toBe('35 tahun'))
+})
+
+describe('formatDiperbarui (meta kepala halaman)', () => {
+  const sekarang = new Date('2026-09-24T02:00:00Z')
+  it('hari ini → jam', () => expect(formatDiperbarui('2026-09-24T08:15:00+07:00', sekarang)).toBe('hari ini 08.15'))
+  it('kemarin', () => expect(formatDiperbarui('2026-09-23T14:00:00+07:00', sekarang)).toBe('kemarin'))
+  it('lebih lama → tanggal', () => expect(formatDiperbarui('2026-09-21T10:00:00+07:00', sekarang)).toBe('21 Sep'))
 })

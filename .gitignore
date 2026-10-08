@@ -26,3 +26,6 @@ dist-ssr
 .superpowers/
 SPEC-DESAIN-FE.md
 RENCANA-*.md
+
+# Berkas sementara generator rute TanStack
+.tanstack/
