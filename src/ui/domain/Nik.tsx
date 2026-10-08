@@ -30,7 +30,7 @@ export function Nik({ nik, salin = false, className }: { nik: string | null; sal
           <Button
             aria-label="Salin NIK"
             onPress={salinNik}
-            className="rounded-1 p-0.5 text-tinta-2 outline-none hover:text-tinta data-[focus-visible]:outline-2 data-[focus-visible]:outline-biru"
+            className="rounded-1 p-0.5 text-tinta-2 outline-none hover:text-tinta data-[focus-visible]:outline-2 data-[focus-visible]:outline-solid data-[focus-visible]:outline-biru"
           >
             <Copy size={14} />
           </Button>

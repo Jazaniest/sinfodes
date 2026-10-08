@@ -29,7 +29,8 @@ export function Tombol({ varian = 'sekunder', ukuran = 'biasa', memuat = false, 
       isPending={memuat}
       className={cn(
         'inline-flex items-center justify-center gap-2 rounded-1 font-medium whitespace-nowrap transition-colors select-none',
-        'outline-none data-[focus-visible]:outline-2 data-[focus-visible]:outline-offset-2 data-[focus-visible]:outline-biru',
+        // outline-none mengisi --tw-outline-style: none, jadi gaya garis harus dipulihkan dengan outline-solid.
+        'outline-none data-[focus-visible]:outline-2 data-[focus-visible]:outline-solid data-[focus-visible]:outline-offset-2 data-[focus-visible]:outline-biru',
         'data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50 data-[pending]:cursor-progress',
         VARIAN[varian],
         varian !== 'teks' && UKURAN[ukuran],

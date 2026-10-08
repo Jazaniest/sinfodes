@@ -1,10 +1,4 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { HalamanDemo } from '@/features/demo/HalamanDemo'
 
-export const Route = createFileRoute('/')({
-  component: () => (
-    <main>
-      <h1>Sinfodes</h1>
-      <p>Fondasi sedang disiapkan.</p>
-    </main>
-  ),
-})
+export const Route = createFileRoute('/')({ component: HalamanDemo })

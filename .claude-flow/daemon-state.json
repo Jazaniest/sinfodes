@@ -3,43 +3,43 @@
   "startedAt": "2026-10-08T01:53:54.130Z",
   "workers": {
     "map": {
-      "runCount": 11,
-      "successCount": 11,
+      "runCount": 12,
+      "successCount": 12,
       "failureCount": 0,
-      "averageDurationMs": 8.272727272727273,
-      "lastRun": "2026-10-08T02:23:54.192Z",
-      "lastStartedAt": "2026-10-08T02:23:54.188Z",
-      "nextRun": "2026-10-08T02:23:54.174Z",
+      "averageDurationMs": 8,
+      "lastRun": "2026-10-08T02:38:54.208Z",
+      "lastStartedAt": "2026-10-08T02:38:54.203Z",
+      "nextRun": "2026-10-08T02:53:54.211Z",
       "isRunning": false
     },
     "audit": {
-      "runCount": 14,
-      "successCount": 14,
+      "runCount": 16,
+      "successCount": 16,
       "failureCount": 0,
-      "averageDurationMs": 77.71428571428571,
-      "lastRun": "2026-10-08T02:15:54.448Z",
-      "lastStartedAt": "2026-10-08T02:15:54.445Z",
-      "nextRun": "2026-10-08T02:25:54.450Z",
+      "averageDurationMs": 68.8125,
+      "lastRun": "2026-10-08T02:38:54.216Z",
+      "lastStartedAt": "2026-10-08T02:38:54.211Z",
+      "nextRun": "2026-10-08T02:45:54.483Z",
       "isRunning": false
     },
     "optimize": {
-      "runCount": 10,
-      "successCount": 10,
+      "runCount": 11,
+      "successCount": 11,
       "failureCount": 0,
-      "averageDurationMs": 8.6,
-      "lastRun": "2026-10-08T02:12:54.183Z",
-      "lastStartedAt": "2026-10-08T02:12:54.175Z",
-      "nextRun": "2026-10-08T02:27:54.198Z",
+      "averageDurationMs": 8.454545454545455,
+      "lastRun": "2026-10-08T02:27:54.208Z",
+      "lastStartedAt": "2026-10-08T02:27:54.201Z",
+      "nextRun": "2026-10-08T02:42:54.213Z",
       "isRunning": false
     },
     "consolidate": {
-      "runCount": 5,
-      "successCount": 5,
+      "runCount": 6,
+      "successCount": 6,
       "failureCount": 0,
-      "averageDurationMs": 18.2,
-      "lastRun": "2026-10-08T01:59:54.156Z",
-      "lastStartedAt": "2026-10-08T01:59:54.144Z",
-      "nextRun": "2026-10-08T02:29:54.163Z",
+      "averageDurationMs": 16.833333333333332,
+      "lastRun": "2026-10-08T02:29:54.179Z",
+      "lastStartedAt": "2026-10-08T02:29:54.169Z",
+      "nextRun": "2026-10-08T02:59:54.185Z",
       "isRunning": false
     },
     "testgaps": {
@@ -175,5 +175,5 @@
       }
     ]
   },
-  "savedAt": "2026-10-08T02:23:54.193Z"
+  "savedAt": "2026-10-08T02:38:54.216Z"
 }
