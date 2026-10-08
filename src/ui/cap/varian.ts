@@ -1,5 +1,5 @@
 export const VARIAN_CAP = [
-  'draf', 'menunggu', 'diproses', 'perlu-ttd', 'selesai', 'ditolak', 'dibatalkan', 'hidup', 'meninggal', 'pindah',
+  'draf', 'menunggu', 'diproses', 'perlu-ttd', 'selesai', 'ditolak', 'dibatalkan', 'hidup', 'meninggal', 'pindah', 'hilang',
   'pendatang', 'belum-ktp-el', 'belum-ada-nik', 'data-belum-lengkap', 'asli',
 ] as const
 export type VarianCap = (typeof VARIAN_CAP)[number]
@@ -16,6 +16,7 @@ export const LABEL_CAP: Readonly<Record<VarianCap, string>> = {
   hidup: 'Hidup',
   meninggal: 'Meninggal',
   pindah: 'Pindah',
+  hilang: 'Hilang',
   pendatang: 'Pendatang',
   'belum-ktp-el': 'Belum KTP-el',
   'belum-ada-nik': 'Belum ada NIK',
@@ -35,6 +36,7 @@ export const WARNA_CAP: Readonly<Record<VarianCap, string>> = {
   hidup: 'text-hijau',
   meninggal: 'text-merah',
   pindah: 'text-tinta-2',
+  hilang: 'text-oker',
   pendatang: 'text-biru',
   'belum-ktp-el': 'text-oker',
   'belum-ada-nik': 'text-oker',

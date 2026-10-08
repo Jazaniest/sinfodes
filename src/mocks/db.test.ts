@@ -11,7 +11,7 @@ describe('basis data tiruan (SPEC §12.7)', () => {
     const db = await muatDb(s, ACUAN)
     expect(db.versiData).toBe(VERSI_DATA)
     expect(db.tanggalAcuan).toBe('2026-09-24T09:00:00+07:00')
-    expect(db.penduduk).toHaveLength(2812)
+    expect(db.penduduk.filter((p) => p.statusDasar === 'Hidup')).toHaveLength(2812)
     expect(s.isi.has(KUNCI_DB)).toBe(true)
   })
   it('data tersimpan dengan versi yang sama dipakai apa adanya', async () => {
@@ -24,7 +24,7 @@ describe('basis data tiruan (SPEC §12.7)', () => {
   it('versi berbeda: dibangkitkan ulang', async () => {
     const s = penyimpananMemori()
     await s.tulis(KUNCI_DB, { versiData: -1, penduduk: [] })
-    expect((await muatDb(s, ACUAN)).penduduk).toHaveLength(2812)
+    expect((await muatDb(s, ACUAN)).penduduk.filter((p) => p.statusDasar === 'Hidup')).toHaveLength(2812)
   })
   it('ubahDb lalu simpanSekarang menulis perubahan', async () => {
     const s = penyimpananMemori()

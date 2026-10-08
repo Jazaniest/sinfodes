@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { desaSchema } from '../wilayah/schema'
+import { desaSchema, dusunSchema } from '../wilayah/schema'
 
 export const PERAN = ['operator', 'sekdes', 'kades', 'kaur-keuangan', 'kadus'] as const
 export type Peran = (typeof PERAN)[number]
@@ -26,5 +26,11 @@ export const penggunaSchema = z
   .refine((p) => p.peran !== 'kadus' || p.dusunId !== null, { message: 'Kepala dusun wajib punya dusun', path: ['dusunId'] })
 export type Pengguna = z.infer<typeof penggunaSchema>
 
-export const sesiAdminSchema = z.object({ jenis: z.literal('admin'), pengguna: penggunaSchema, desa: desaSchema })
+/** Sesi admin membawa daftar dusun desanya: dipakai semua label alamat dan filter (SPEC §4.5). */
+export const sesiAdminSchema = z.object({
+  jenis: z.literal('admin'),
+  pengguna: penggunaSchema,
+  desa: desaSchema,
+  dusun: z.array(dusunSchema),
+})
 export type SesiAdmin = z.infer<typeof sesiAdminSchema>

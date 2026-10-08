@@ -51,13 +51,17 @@ export function dataBelumLengkap(p: Penduduk, hariIni: Date): boolean {
   return p.nik === null && hitungUmur(p.tanggalLahir, hariIni).bulan >= 3
 }
 
+/** SPEC §6.2: wajib KTP-el = umur ≥ 17 atau pernah kawin; belum rekam. */
+export function wajibKtpBelumRekam(p: Penduduk, hariIni: Date): boolean {
+  const pernahKawin = p.statusPerkawinan !== null && p.statusPerkawinan !== 'Belum Kawin'
+  return (hitungUmur(p.tanggalLahir, hariIni).tahun >= 17 || pernahKawin) && p.ktpEl === 'Belum rekam'
+}
+
 export function cocokPreset(p: Penduduk, preset: PresetPenduduk, ctx: KonteksSaring): boolean {
   const umur = hitungUmur(p.tanggalLahir, ctx.hariIni).tahun
   switch (preset) {
-    case 'wajib-ktp-belum-rekam': {
-      const pernahKawin = p.statusPerkawinan !== null && p.statusPerkawinan !== 'Belum Kawin'
-      return (umur >= 17 || pernahKawin) && p.ktpEl === 'Belum rekam'
-    }
+    case 'wajib-ktp-belum-rekam':
+      return wajibKtpBelumRekam(p, ctx.hariIni)
     case 'balita':
       return umur <= 4
     case 'lansia':

@@ -2,14 +2,23 @@ import { waktuIsoWib } from '@/domain/format/tanggal'
 import { DESA_DEMO, DUSUN_DEMO, ID_SUNGAI_SIALANG, PENGGUNA_DEMO } from '../data/desa-demo'
 import { buatAcak } from '../prng'
 import { VERSI_DATA, type DbDemo } from '../tipe-db'
+import { bangkitkanMutasi } from './mutasi'
 import { bangkitkanPenduduk } from './penduduk'
 
 export const SEED_DEMO = 20260924
 
 export function bangkitkanDb(sekarang: Date): DbDemo {
-  const { penduduk, keluarga } = bangkitkanPenduduk(buatAcak(SEED_DEMO), {
+  const dasar = bangkitkanPenduduk(buatAcak(SEED_DEMO), {
     desaId: ID_SUNGAI_SIALANG,
     dusun: DUSUN_DEMO.filter((d) => d.desaId === ID_SUNGAI_SIALANG),
+    acuan: sekarang,
+  })
+  // Aliran acak terpisah: penduduk dasar tetap identik dengan Tahap 1.
+  const hasil = bangkitkanMutasi(buatAcak(SEED_DEMO + 1), {
+    desaId: ID_SUNGAI_SIALANG,
+    penduduk: dasar.penduduk,
+    keluarga: dasar.keluarga,
+    pengguna: PENGGUNA_DEMO,
     acuan: sekarang,
   })
   return {
@@ -18,7 +27,6 @@ export function bangkitkanDb(sekarang: Date): DbDemo {
     desa: structuredClone(DESA_DEMO),
     dusun: structuredClone(DUSUN_DEMO),
     pengguna: structuredClone(PENGGUNA_DEMO),
-    penduduk,
-    keluarga,
+    ...hasil,
   }
 }

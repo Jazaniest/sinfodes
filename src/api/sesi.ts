@@ -1,8 +1,15 @@
+import { queryOptions } from '@tanstack/react-query'
 import { z } from 'zod'
 import { sesiAdminSchema } from '@/domain/pengguna/schema'
 import { panggilApi } from './client'
 
 export const hasilMasukSchema = z.object({ token: z.string(), sesi: sesiAdminSchema })
+export const hasilKenaliSchema = z.object({
+  desa: z.object({ nama: z.string(), kecamatan: z.string(), kabupaten: z.string() }).nullable(),
+})
+
+/** Langkah pertama halaman masuk: kenali akun, lalu tampilkan desanya (SPEC §5.6). */
+export const kenali = (email: string) => panggilApi('POST', '/sesi/kenali', { skema: hasilKenaliSchema, body: { email } })
 
 export const masuk = (email: string, kataSandi: string) =>
   panggilApi('POST', '/sesi/masuk', { skema: hasilMasukSchema, body: { email, kataSandi } })
@@ -10,3 +17,9 @@ export const masuk = (email: string, kataSandi: string) =>
 export const ambilSesi = (signal?: AbortSignal) => panggilApi('GET', '/sesi', { skema: sesiAdminSchema, signal })
 
 export const keluar = () => panggilApi('POST', '/sesi/keluar', { skema: z.undefined() })
+
+export const kunciSesi = ['sesi'] as const
+
+/** Sesi tidak basi dengan sendirinya; cache dibersihkan saat masuk, keluar, atau ganti peran. */
+export const opsiSesi = () =>
+  queryOptions({ queryKey: kunciSesi, queryFn: ({ signal }) => ambilSesi(signal), staleTime: Infinity })

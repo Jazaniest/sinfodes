@@ -38,3 +38,15 @@ export const pendudukSchema = z.object({
   diubahPada: z.iso.datetime({ offset: true }),
 })
 export type Penduduk = z.infer<typeof pendudukSchema>
+
+/** Baris daftar penduduk: data penduduk + nomor KK-nya (kolom "Hubungan · No. KK", SPEC §6.2). */
+export const barisPendudukSchema = pendudukSchema.extend({ nomorKk: z.string().regex(/^\d{16}$/) })
+export type BarisPenduduk = z.infer<typeof barisPendudukSchema>
+
+/** Kepala halaman Penduduk: "2.812 jiwa · diperbarui hari ini 08.15". */
+export const ringkasanPendudukSchema = z.object({
+  jiwa: z.number().int().min(0),
+  kk: z.number().int().min(0),
+  diperbaruiPada: z.iso.datetime({ offset: true }).nullable(),
+})
+export type RingkasanPenduduk = z.infer<typeof ringkasanPendudukSchema>

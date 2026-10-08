@@ -11,9 +11,14 @@ export function balasGalat(code: KodeGalat, message: string, status: number, fie
   return HttpResponse.json({ error: fields ? { code, message, fields } : { code, message } }, { status })
 }
 
-export function balasDaftar<T>(semua: readonly T[], page: number, pageSize: number): Response {
+/** Respons daftar (SPEC §3.4). `ubah` melengkapi baris pada halaman yang dikirim saja. */
+export function balasDaftar<T, U = T>(semua: readonly T[], page: number, pageSize: number, ubah?: (x: T) => U): Response {
   const mulai = (page - 1) * pageSize
-  return HttpResponse.json({ data: semua.slice(mulai, mulai + pageSize), meta: { page, pageSize, total: semua.length } })
+  const potongan = semua.slice(mulai, mulai + pageSize)
+  return HttpResponse.json({
+    data: ubah ? potongan.map(ubah) : potongan,
+    meta: { page, pageSize, total: semua.length },
+  })
 }
 
 /** Menerapkan simulasi jaringan dari toolbar demo ke setiap handler (SPEC §3.6). */
