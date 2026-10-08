@@ -11,12 +11,14 @@ type Props = {
   /** Galat dari luar, mis. "NIK sudah terdaftar". */
   galat?: string
   isRequired?: boolean
+  /** Dipanggil saat kolom ditinggalkan, mis. untuk cek NIK ganda (SPEC §6.4). */
+  onBlur?: () => void
   hariIni?: Date
   className?: string
 }
 
 /** Isian NIK yang langsung membaca maknanya (SPEC §4.5). Galat bentuk muncul setelah kolom ditinggalkan. */
-export function NikField({ label = 'NIK', nilai, onUbah, galat, isRequired, hariIni, className }: Props) {
+export function NikField({ label = 'NIK', nilai, onUbah, onBlur, galat, isRequired, hariIni, className }: Props) {
   const [disentuh, setDisentuh] = useState(false)
   const hasil = periksaNik(nilai, hariIni)
   const galatBentuk =
@@ -34,7 +36,10 @@ export function NikField({ label = 'NIK', nilai, onUbah, galat, isRequired, hari
           const digit = bersihkanNik(teks)
           onUbah(digit, periksaNik(digit, hariIni))
         }}
-        onBlur={() => setDisentuh(true)}
+        onBlur={() => {
+          setDisentuh(true)
+          onBlur?.()
+        }}
         galat={galat ?? galatBentuk}
         keterangan={hasil.status === 'valid' ? ringkasanNik(hasil) : 'Isi 16 angka sesuai KTP atau KK.'}
         inputClassName="font-mono tracking-wide tabular-nums"

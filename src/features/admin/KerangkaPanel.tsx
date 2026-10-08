@@ -6,6 +6,7 @@ import { hapusSesi } from '@/app/sesi'
 import { PencarianCepat } from '../cari/PencarianCepat'
 import { AdminShell } from './AdminShell'
 import { SesiAdminKonteks } from './sesi-konteks'
+import { hapusSemuaDraf } from './useDrafFormulir'
 
 const rute = getRouteApi('/admin/_panel')
 
@@ -35,6 +36,8 @@ export function KerangkaPanel() {
       // Sesi tetap dihapus dari perangkat ini walaupun server tidak terjangkau.
     }
     hapusSesi()
+    // Draf formulir bisa berisi NIK; jangan tertinggal di perangkat setelah keluar.
+    hapusSemuaDraf()
     queryClient.clear()
     await router.navigate({ to: '/admin/masuk' })
   }
