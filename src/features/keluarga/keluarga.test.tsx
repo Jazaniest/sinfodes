@@ -54,7 +54,7 @@ describe('Detail keluarga (SPEC §6.5)', () => {
   it('ditata seperti kartu KK dengan tabel anggota', async () => {
     masukSebagai(AKUN_UJI.operator)
     const onBukaPenduduk = vi.fn()
-    renderPanel(<DetailKeluarga id="kk_syahrial" onBukaPenduduk={onBukaPenduduk} />, contohSesi())
+    renderPanel(<DetailKeluarga id="kk_syahrial" onBukaPenduduk={onBukaPenduduk} onBukaKeluarga={vi.fn()} />, contohSesi())
     expect(await screen.findByRole('heading', { level: 1, name: 'KK Syahrial' })).toBeInTheDocument()
     const kartu = screen.getByRole('region', { name: 'Kartu Keluarga' })
     expect(within(kartu).getByText('No. 140509 201123 8004')).toBeInTheDocument()
@@ -66,7 +66,7 @@ describe('Detail keluarga (SPEC §6.5)', () => {
   })
   it('KK dusun lain untuk Kepala Dusun → tidak ditemukan', async () => {
     masukSebagai(AKUN_UJI.kadus)
-    renderPanel(<DetailKeluarga id="kk_syahrial" onBukaPenduduk={vi.fn()} />, contohSesi('kadus'))
+    renderPanel(<DetailKeluarga id="kk_syahrial" onBukaPenduduk={vi.fn()} onBukaKeluarga={vi.fn()} />, contohSesi('kadus'))
     expect(await screen.findByText('Data keluarga tidak ditemukan')).toBeInTheDocument()
   })
 })

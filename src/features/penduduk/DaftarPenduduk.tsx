@@ -1,3 +1,4 @@
+import { Plus } from '@phosphor-icons/react'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
 import { pesanGalat } from '@/api/galat'
@@ -6,6 +7,7 @@ import { formatAngka } from '@/domain/format/angka'
 import { formatDiperbarui } from '@/domain/format/tanggal'
 import { URUTAN_PENDUDUK, type FilterPenduduk as Filter } from '@/domain/penduduk/filter'
 import { penandaPenduduk } from '@/domain/penduduk/penanda'
+import { boleh } from '@/domain/pengguna/hak-akses'
 import type { BarisPenduduk } from '@/domain/penduduk/schema'
 import { kodeWilayahNik } from '@/domain/wilayah/alamat'
 import { AturKolom } from '@/ui/data/AturKolom'
@@ -15,6 +17,7 @@ import { useKolomTampil } from '@/ui/data/useKolomTampil'
 import { Nik } from '@/ui/domain/Nik'
 import { useTunda } from '@/ui/hooks/useTunda'
 import { PageHeader } from '@/ui/tata-letak/PageHeader'
+import { TautanTombol } from '@/ui/tombol/TautanTombol'
 import { Tombol } from '@/ui/tombol/Tombol'
 import { EmptyState } from '@/ui/umpan-balik/EmptyState'
 import { Skeleton } from '@/ui/umpan-balik/Skeleton'
@@ -100,7 +103,19 @@ export function DaftarPenduduk({ filter, onUbahFilter, onBukaProfil, sekarang }:
 
   return (
     <div>
-      <PageHeader jejak={[{ label: 'Kependudukan' }]} judul="Penduduk" meta={meta} tab={<TabKependudukan aktif="penduduk" />} />
+      <PageHeader
+        jejak={[{ label: 'Kependudukan' }]}
+        judul="Penduduk"
+        meta={meta}
+        aksi={
+          boleh(pengguna.peran, 'penduduk.ubah') && (
+            <TautanTombol href="/admin/kependudukan/penduduk/tambah" varian="utama" ikon={<Plus aria-hidden size={16} />}>
+              Tambah penduduk
+            </TautanTombol>
+          )
+        }
+        tab={<TabKependudukan aktif="penduduk" />}
+      />
       <FilterPenduduk
         filter={filter}
         onUbah={onUbahFilter}

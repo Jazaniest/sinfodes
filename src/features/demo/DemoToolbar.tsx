@@ -58,7 +58,7 @@ export function DemoToolbar({ sisipan }: { sisipan?: ReactNode }) {
         type="button"
         aria-label="Tampilkan kontrol demo"
         onClick={() => ubahTerbuka(true)}
-        className="fixed bottom-3 left-3 z-40 rounded-1 bg-tinta px-3 py-1.5 text-label font-semibold tracking-widest text-oker-muda shadow-melayang"
+        className="fixed bottom-3 left-3 z-40 rounded-1 bg-tinta px-3 py-1.5 text-label font-semibold tracking-widest text-oker-muda shadow-melayang print:hidden"
       >
         DEMO
       </button>
@@ -70,7 +70,7 @@ export function DemoToolbar({ sisipan }: { sisipan?: ReactNode }) {
       role="region"
       aria-label="Kontrol demo"
       // Cincin fokus biru tidak terlihat di atas tinta; di dalam toolbar dipakai kapur.
-      className="fixed bottom-3 left-3 z-40 flex max-w-[calc(100vw-1.5rem)] flex-wrap items-stretch rounded-1 bg-tinta text-teks-kecil text-kapur shadow-melayang [&_:focus-visible]:-outline-offset-2 [&_:focus-visible]:outline-kapur"
+      className="fixed bottom-3 left-3 z-40 flex max-w-[calc(100vw-1.5rem)] flex-wrap print:hidden items-stretch rounded-1 bg-tinta text-teks-kecil text-kapur shadow-melayang [&_:focus-visible]:-outline-offset-2 [&_:focus-visible]:outline-kapur"
     >
       <span className="flex items-center px-2 text-label font-semibold tracking-widest text-oker-muda sm:px-3">DEMO</span>
       {sisipan && <span className={bagian}>{sisipan}</span>}

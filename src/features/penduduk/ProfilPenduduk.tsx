@@ -1,3 +1,4 @@
+import { PencilSimple } from '@phosphor-icons/react'
 import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import { GalatApi, pesanGalat } from '@/api/galat'
@@ -8,6 +9,7 @@ import type { JenisMutasi } from '@/domain/mutasi/schema'
 import { kelompokkanNik } from '@/domain/penduduk/nik'
 import { penandaPenduduk, penandaStatus } from '@/domain/penduduk/penanda'
 import { LABEL_FIELD, type EntriRiwayat } from '@/domain/penduduk/riwayat'
+import { boleh } from '@/domain/pengguna/hak-akses'
 import { alamatLengkap, kodeWilayahNik } from '@/domain/wilayah/alamat'
 import { DescriptionList } from '@/ui/data/DescriptionList'
 import { Timeline, type EntriTimeline } from '@/ui/data/Timeline'
@@ -15,6 +17,7 @@ import { Nik } from '@/ui/domain/Nik'
 import { Tabs } from '@/ui/navigasi/Tabs'
 import { Tautan } from '@/ui/navigasi/Tautan'
 import { PageHeader } from '@/ui/tata-letak/PageHeader'
+import { TautanTombol } from '@/ui/tombol/TautanTombol'
 import { Banner } from '@/ui/umpan-balik/Banner'
 import { EmptyState } from '@/ui/umpan-balik/EmptyState'
 import { ErrorState } from '@/ui/umpan-balik/ErrorState'
@@ -57,7 +60,7 @@ function keTimeline(e: EntriRiwayat): EntriTimeline {
 
 /** Profil penduduk (SPEC §6.3): lembar utama + kolom samping Riwayat. */
 export function ProfilPenduduk({ id, sekarang }: { id: string; sekarang?: Date }) {
-  const { desa, dusun } = useSesiAdmin()
+  const { pengguna, desa, dusun } = useSesiAdmin()
   const hariIni = useMemo(() => sekarang ?? new Date(), [sekarang])
   const kueri = useQuery(opsiPenduduk(id))
   const riwayat = useQuery(opsiRiwayatPenduduk(id))
@@ -107,6 +110,13 @@ export function ProfilPenduduk({ id, sekarang }: { id: string; sekarang?: Date }
             <Nik nik={p.nik} salin />
             <PenandaCap penanda={penanda} />
           </span>
+        }
+        aksi={
+          boleh(pengguna.peran, 'penduduk.ubah') && (
+            <TautanTombol href={`/admin/kependudukan/penduduk/${p.id}/ubah`} ikon={<PencilSimple aria-hidden size={16} />}>
+              Ubah
+            </TautanTombol>
+          )
         }
       />
       {!hidup && (

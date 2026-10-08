@@ -32,7 +32,7 @@ export function PageHeader({ jejak, judul, meta, aksi, tab }: Props) {
           <h1 className="font-serif text-judul-halaman font-medium">{judul}</h1>
           {meta && <div className="mt-1 text-teks-kecil text-tinta-2">{meta}</div>}
         </div>
-        {aksi && <div className="flex flex-wrap items-center gap-2">{aksi}</div>}
+        {aksi && <div className="flex flex-wrap items-center gap-2 print:hidden">{aksi}</div>}
       </div>
       {tab}
     </header>

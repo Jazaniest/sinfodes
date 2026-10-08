@@ -100,11 +100,11 @@ export function AdminShell({ children, ...nav }: Props) {
         Langsung ke isi
       </a>
       {lebar ? (
-        <aside className="sticky top-0 h-screen w-[216px] shrink-0 border-r border-garis bg-kertas-2 xl:w-[240px]">
+        <aside className="sticky top-0 h-screen w-[216px] shrink-0 border-r border-garis bg-kertas-2 xl:w-[240px] print:hidden">
           <IsiNavigasi {...nav} />
         </aside>
       ) : (
-        <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-garis bg-kertas-2 px-4">
+        <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-garis bg-kertas-2 px-4 print:hidden">
           <LambangDesa nama={nav.sesi.desa.nama} />
           <p className="min-w-0 flex-1 truncate font-serif font-medium">Desa {nav.sesi.desa.nama}</p>
           <Button aria-label="Cari" onPress={nav.onCari} className={cn('rounded-1 p-2', fokus)}>
@@ -119,7 +119,7 @@ export function AdminShell({ children, ...nav }: Props) {
           </Drawer>
         </header>
       )}
-      <main id="isi" tabIndex={-1} className="min-w-0 flex-1 px-4 py-6 outline-none sm:px-6 lg:px-8">
+      <main id="isi" tabIndex={-1} className="min-w-0 flex-1 px-4 py-6 outline-none sm:px-6 lg:px-8 print:p-0">
         {children}
       </main>
     </div>

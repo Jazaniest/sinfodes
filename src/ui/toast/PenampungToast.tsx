@@ -9,7 +9,7 @@ export function PenampungToast({ durasi = 5000 }: { durasi?: number }) {
   return (
     <section
       aria-label="Notifikasi"
-      className="pointer-events-none fixed right-4 bottom-4 z-50 flex w-[min(92vw,380px)] flex-col gap-2"
+      className="pointer-events-none fixed right-4 bottom-4 z-50 flex w-[min(92vw,380px)] flex-col gap-2 print:hidden"
     >
       {daftar.map((t) => (
         <ItemToast key={t.id} toast={t} durasi={durasi} />

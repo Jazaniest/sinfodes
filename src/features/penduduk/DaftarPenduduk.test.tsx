@@ -127,4 +127,19 @@ describe('Daftar penduduk (SPEC §6.2)', () => {
     expect(await screen.findByRole('list', { name: 'Daftar penduduk' })).toBeInTheDocument()
     expect(screen.queryByRole('grid')).not.toBeInTheDocument()
   })
+  it('tombol Tambah penduduk hanya untuk peran yang boleh mengubah data (SPEC §5.1)', async () => {
+    masukSebagai(AKUN_UJI.operator)
+    const { unmount } = renderPanel(
+      <DaftarPenduduk filter={FILTER_PENDUDUK_BAWAAN} onUbahFilter={vi.fn()} onBukaProfil={vi.fn()} sekarang={SEKARANG_UJI} />,
+      contohSesi('operator'),
+    )
+    expect(screen.getByRole('link', { name: 'Tambah penduduk' })).toHaveAttribute('href', '/admin/kependudukan/penduduk/tambah')
+    unmount()
+    masukSebagai(AKUN_UJI.kades)
+    renderPanel(
+      <DaftarPenduduk filter={FILTER_PENDUDUK_BAWAAN} onUbahFilter={vi.fn()} onBukaProfil={vi.fn()} sekarang={SEKARANG_UJI} />,
+      contohSesi('kades'),
+    )
+    expect(screen.queryByRole('link', { name: 'Tambah penduduk' })).not.toBeInTheDocument()
+  })
 })

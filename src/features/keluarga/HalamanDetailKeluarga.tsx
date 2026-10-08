@@ -13,6 +13,7 @@ export function HalamanDetailKeluarga() {
         key={id}
         id={id}
         onBukaPenduduk={(idPenduduk) => void navigate({ to: '/admin/kependudukan/penduduk/$id', params: { id: idPenduduk } })}
+        onBukaKeluarga={(idKk) => void navigate({ to: '/admin/kependudukan/keluarga/$id', params: { id: idKk } })}
       />
     </ButuhAkses>
   )

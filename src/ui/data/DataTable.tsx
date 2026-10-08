@@ -77,7 +77,7 @@ export function DataTable<T extends { id: string }>(props: Props<T>) {
   const idUtama = kolomUtama ?? kolom[0]?.id
 
   return (
-    <div className="overflow-x-auto border-y border-garis bg-lembar">
+    <div className="overflow-x-auto border-y border-garis bg-lembar print:overflow-visible">
       <Table
         aria-label={label}
         sortDescriptor={sortDescriptor}
