@@ -10,9 +10,28 @@ if (typeof window !== 'undefined') {
     disconnect() {}
   }
   Element.prototype.scrollIntoView ??= function () {}
+  // matchMedia sederhana: memahami min-width/max-width terhadap window.innerWidth (jsdom: 1024px).
+  window.matchMedia ??= (kueri: string): MediaQueryList => {
+    const min = /min-width:\s*(\d+)px/.exec(kueri)
+    const max = /max-width:\s*(\d+)px/.exec(kueri)
+    const lebar = window.innerWidth
+    return {
+      matches: (!min || lebar >= Number(min[1])) && (!max || lebar <= Number(max[1])),
+      media: kueri,
+      onchange: null,
+      addEventListener() {},
+      removeEventListener() {},
+      addListener() {},
+      removeListener() {},
+      dispatchEvent: () => false,
+    } as MediaQueryList
+  }
 }
 
 afterEach(() => {
   cleanup()
   if (typeof localStorage !== 'undefined') localStorage.clear()
+  if (typeof window !== 'undefined') {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1024 })
+  }
 })
