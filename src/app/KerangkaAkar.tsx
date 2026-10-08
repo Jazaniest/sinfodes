@@ -1,14 +1,17 @@
-import { Link, Outlet } from '@tanstack/react-router'
+import { Link, Outlet, useRouter } from '@tanstack/react-router'
+import { RouterProvider } from 'react-aria-components'
 import { DemoToolbar } from '@/features/demo/DemoToolbar'
 import { PenampungToast } from '@/ui/toast/PenampungToast'
 
+/** Akar aplikasi. Link/Menu React Aria di ui/ menavigasi lewat TanStack Router tanpa memuat ulang halaman. */
 export function KerangkaAkar() {
+  const router = useRouter()
   return (
-    <>
+    <RouterProvider navigate={(href) => void router.navigate({ href })}>
       <Outlet />
       {import.meta.env.VITE_DEMO === 'true' && <DemoToolbar />}
       <PenampungToast />
-    </>
+    </RouterProvider>
   )
 }
 

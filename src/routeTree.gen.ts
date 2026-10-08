@@ -11,6 +11,9 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as KatalogRouteImport } from './routes/katalog'
+import { Route as AdminPanelRouteImport } from './routes/admin/_panel'
+import { Route as AdminMasukRouteImport } from './routes/admin/masuk'
+import { Route as AdminPanelIndexRouteImport } from './routes/admin/_panel/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -22,31 +25,62 @@ const KatalogRoute = KatalogRouteImport.update({
   path: '/katalog',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminPanelRoute = AdminPanelRouteImport.update({
+  id: '/admin/_panel',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminMasukRoute = AdminMasukRouteImport.update({
+  id: '/admin/masuk',
+  path: '/admin/masuk',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminPanelIndexRoute = AdminPanelIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminPanelRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/katalog': typeof KatalogRoute
+  '/admin': typeof AdminPanelRouteWithChildren
+  '/admin/masuk': typeof AdminMasukRoute
+  '/admin/': typeof AdminPanelIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/katalog': typeof KatalogRoute
+  '/admin/masuk': typeof AdminMasukRoute
+  '/admin': typeof AdminPanelIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/katalog': typeof KatalogRoute
+  '/admin/_panel': typeof AdminPanelRouteWithChildren
+  '/admin/masuk': typeof AdminMasukRoute
+  '/admin/_panel/': typeof AdminPanelIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/katalog'
+  fullPaths: '/' | '/katalog' | '/admin' | '/admin/masuk' | '/admin/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/katalog'
-  id: '__root__' | '/' | '/katalog'
+  to: '/' | '/katalog' | '/admin/masuk' | '/admin'
+  id:
+    | '__root__'
+    | '/'
+    | '/katalog'
+    | '/admin/_panel'
+    | '/admin/masuk'
+    | '/admin/_panel/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   KatalogRoute: typeof KatalogRoute
+  AdminPanelRoute: typeof AdminPanelRouteWithChildren
+  AdminMasukRoute: typeof AdminMasukRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -65,12 +99,47 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof KatalogRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/_panel': {
+      id: '/admin/_panel'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminPanelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/masuk': {
+      id: '/admin/masuk'
+      path: '/admin/masuk'
+      fullPath: '/admin/masuk'
+      preLoaderRoute: typeof AdminMasukRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/_panel/': {
+      id: '/admin/_panel/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminPanelIndexRouteImport
+      parentRoute: typeof AdminPanelRoute
+    }
   }
 }
+
+interface AdminPanelRouteChildren {
+  AdminPanelIndexRoute: typeof AdminPanelIndexRoute
+}
+
+const AdminPanelRouteChildren: AdminPanelRouteChildren = {
+  AdminPanelIndexRoute: AdminPanelIndexRoute,
+}
+
+const AdminPanelRouteWithChildren = AdminPanelRoute._addFileChildren(
+  AdminPanelRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   KatalogRoute: KatalogRoute,
+  AdminPanelRoute: AdminPanelRouteWithChildren,
+  AdminMasukRoute: AdminMasukRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
