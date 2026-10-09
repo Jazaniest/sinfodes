@@ -24,7 +24,7 @@ import { Tombol } from '@/ui/tombol/Tombol'
 import { useSesiAdmin } from '../../admin/sesi-konteks'
 import { PilihPenduduk } from '../../penduduk/PilihPenduduk'
 import { terapkanGalatServer } from './galat'
-import { buatSkemaLahir, isianLahirAwal, keMasukanLahir, type IsianLahir } from './isian'
+import { buatSkemaLahir, isianLahirAwal, keMasukanLahir, saranDariKk, type IsianLahir } from './isian'
 
 const BAGIAN = [
   { id: 'ibu', judul: 'Ibu' },
@@ -42,10 +42,19 @@ const PETA_GALAT: Readonly<Record<string, keyof IsianLahir>> = {
   'bayi.panjangCm': 'panjangCm',
 }
 
-type Props = { onTersimpan: (bayi: Penduduk) => void; onBatal: () => void; onKotor?: (kotor: boolean) => void; sekarang?: Date }
+type Props = {
+  onTersimpan: (bayi: Penduduk) => void
+  onBatal: () => void
+  onKotor?: (kotor: boolean) => void
+  sekarang?: Date
+  /** Isian awal, mis. dari laporan kelahiran warga. */
+  awal?: Partial<IsianLahir>
+  /** Laporan warga yang ikut selesai saat kelahiran ini disimpan. */
+  laporanId?: string
+}
 
 /** Alur Lahir (SPEC §6.6): ibu → data bayi → ayah dan pelapor. Bayi dicatat tanpa NIK dan masuk KK ibunya. */
-export function CatatLahir({ onTersimpan, onBatal, onKotor, sekarang }: Props) {
+export function CatatLahir({ onTersimpan, onBatal, onKotor, sekarang, awal, laporanId }: Props) {
   const { desa, dusun } = useSesiAdmin()
   const hariIni = useMemo(() => sekarang ?? new Date(), [sekarang])
   const queryClient = useQueryClient()
@@ -53,7 +62,7 @@ export function CatatLahir({ onTersimpan, onBatal, onKotor, sekarang }: Props) {
   const [skema] = useState(() => buatSkemaLahir(hariIni))
   const { control, handleSubmit, setValue, getValues, setError, formState } = useForm<IsianLahir>({
     resolver: zodResolver(skema),
-    defaultValues: isianLahirAwal(hariIni, desa.kabupaten.nama),
+    defaultValues: { ...isianLahirAwal(hariIni, desa.kabupaten.nama), ...awal },
     mode: 'onTouched',
   })
   const ibu = useWatch({ control, name: 'ibu' })
@@ -69,19 +78,16 @@ export function CatatLahir({ onTersimpan, onBatal, onKotor, sekarang }: Props) {
 
   /** Saran dari KK ibu, hanya untuk isian yang masih kosong. */
   const sarankanDariKk = async (p: Penduduk) => {
-    const detail = await queryClient.fetchQuery(opsiKeluarga(p.keluargaId))
-    if (getValues('anakKe') === null) {
-      setValue('anakKe', detail.anggota.filter((a) => a.namaIbu === p.nama).length + 1, { shouldDirty: true })
-    }
-    const kepala = detail.anggota.find((a) => a.id === detail.keluarga.kepalaKeluargaId)
-    if (getValues('ayah') === null && p.hubunganKeluarga === 'Istri' && kepala?.jenisKelamin === 'L') {
-      setValue('ayah', kepala, { shouldDirty: true })
+    const saran = saranDariKk(p, await queryClient.fetchQuery(opsiKeluarga(p.keluargaId)))
+    if (getValues('anakKe') === null) setValue('anakKe', saran.anakKe, { shouldDirty: true })
+    if (getValues('ayah') === null && saran.ayah) {
+      setValue('ayah', saran.ayah, { shouldDirty: true })
       setKunciAyah((k) => k + 1)
     }
   }
 
   const simpan = useMutation({
-    mutationFn: (isi: IsianLahir) => catatLahir(keMasukanLahir(isi)),
+    mutationFn: (isi: IsianLahir) => catatLahir({ ...keMasukanLahir(isi), laporanId: laporanId ?? null }),
     onSuccess: (hasil) => {
       const [bayi] = hasil.penduduk
       void segarkanKependudukan(queryClient)

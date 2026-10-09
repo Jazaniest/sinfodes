@@ -60,8 +60,9 @@ export function LangkahPeriksa({ laporan, pilihan, galatServer, memuat, hariIni,
         )}
       </div>
       {ditampilkan.length > 0 && (
-        <div className="overflow-x-auto border-y border-garis bg-lembar">
-          <table className="w-full text-teks">
+        <div className="relative overflow-x-auto border-y border-garis bg-lembar">
+          {/* Di HP tabel digeser di dalam wadah ini. relative: elemen sr-only (absolut) ikut terpotong, jadi halaman tidak melebar. */}
+          <table className="w-full min-w-[40rem] text-teks">
             <caption className="sr-only">Baris yang perlu diperhatikan</caption>
             <thead>
               <tr className="border-b border-garis text-left text-label text-tinta-2 uppercase">

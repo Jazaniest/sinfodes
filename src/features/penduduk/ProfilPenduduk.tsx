@@ -25,6 +25,7 @@ import { EmptyState } from '@/ui/umpan-balik/EmptyState'
 import { ErrorState } from '@/ui/umpan-balik/ErrorState'
 import { BarisKerangka, Skeleton } from '@/ui/umpan-balik/Skeleton'
 import { useSesiAdmin } from '../admin/sesi-konteks'
+import { BannerLaporan } from '../laporan/BannerLaporan'
 import { menuMutasiPenduduk } from '../mutasi/menu'
 import { jenisKelaminPanjang } from './kolom'
 import { PenandaCap } from './PenandaCap'
@@ -131,6 +132,7 @@ export function ProfilPenduduk({ id, sekarang }: { id: string; sekarang?: Date }
           )
         }
       />
+      <BannerLaporan penduduk={p} hariIni={hariIni} />
       {!hidup && (
         <Banner
           nada="info"

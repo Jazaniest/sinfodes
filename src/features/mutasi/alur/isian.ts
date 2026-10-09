@@ -1,5 +1,7 @@
 import { z } from 'zod'
 import { hitungUmur, tanggalIsoWib } from '@/domain/format/tanggal'
+import type { DetailKeluarga } from '@/domain/keluarga/schema'
+import type { IsiKelahiran } from '@/domain/laporan/schema'
 import {
   ALASAN_PINDAH, JENIS_KELAHIRAN, PENOLONG_KELAHIRAN, SEBAB_KEMATIAN, TEMPAT_DILAHIRKAN, YANG_MENERANGKAN_KEMATIAN,
 } from '@/domain/mutasi/enum'
@@ -77,6 +79,24 @@ export function keMasukanLahir(i: IsianLahir): MasukanLahir {
       beratGram: i.beratGram, panjangCm: i.panjangCm,
     },
   })
+}
+
+/** Saran dari KK ibu (SPEC §6.6): anak ke berapa, dan ayah = kepala keluarga bila ibu berstatus istri. */
+export function saranDariKk(ibu: Penduduk, detail: DetailKeluarga): { anakKe: number; ayah: Penduduk | null } {
+  const kepala = detail.anggota.find((a) => a.id === detail.keluarga.kepalaKeluargaId)
+  return {
+    anakKe: detail.anggota.filter((a) => a.namaIbu === ibu.nama).length + 1,
+    ayah: ibu.hubunganKeluarga === 'Istri' && kepala?.jenisKelamin === 'L' ? kepala : null,
+  }
+}
+
+/** Isian awal alur Lahir dari laporan kelahiran warga (SPEC §5.3), ditambah saran dari KK ibu. */
+export function isianDariLaporan(isi: IsiKelahiran, ibu: Penduduk, kkIbu: DetailKeluarga, pelapor: string): Partial<IsianLahir> {
+  return {
+    ibu, nama: isi.nama, jenisKelamin: isi.jenisKelamin, tanggalLahir: isi.tanggalLahir, jam: isi.jam ?? '',
+    tempatDilahirkan: isi.tempatDilahirkan ?? '', penolong: isi.penolong ?? '', beratGram: isi.beratGram, panjangCm: isi.panjangCm,
+    pelapor, ...saranDariKk(ibu, kkIbu),
+  }
 }
 
 /* ---------- Kematian ---------- */

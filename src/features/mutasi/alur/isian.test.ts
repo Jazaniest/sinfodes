@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { contohPenduduk } from '@/test/contoh'
 import {
-  anggotaDatangKosong, buatSkemaDatang, buatSkemaLahir, buatSkemaMeninggal, isianDatangAwal, isianLahirAwal, isianMeninggalAwal, keMasukanDatang,
+  anggotaDatangKosong, buatSkemaDatang, isianDariLaporan, buatSkemaLahir, buatSkemaMeninggal, isianDatangAwal, isianLahirAwal, isianMeninggalAwal, keMasukanDatang,
   keMasukanLahir, keMasukanMeninggal,
 } from './isian'
 
@@ -67,5 +67,28 @@ describe('isian kedatangan', () => {
     expect(masukan.anggota.map((a) => a.ktpEl)).toEqual(['Sudah rekam', 'Belum wajib'])
     expect(masukan.anggota[0]).toMatchObject({ pendidikan: null, golonganDarah: 'Tidak Tahu', kewarganegaraan: 'WNI' })
     expect(masukan.keluarga).toEqual({ jenis: 'baru', dusunId: 'dsn_ss_3', rw: '005', rt: '012' })
+  })
+})
+
+describe('isian dari laporan kelahiran (2A-3)', () => {
+  it('terisi dari laporan; saran ayah dan anak ke- dari KK ibu', () => {
+    const ibu = contohPenduduk({ id: 'pdk_rosnani', nama: 'Rosnani', hubunganKeluarga: 'Istri', keluargaId: 'kk_z' })
+    const ayah = contohPenduduk({ id: 'pdk_zulkifli', nama: 'Zulkifli', jenisKelamin: 'L', hubunganKeluarga: 'Kepala Keluarga', keluargaId: 'kk_z' })
+    const anak = contohPenduduk({ id: 'pdk_anak', nama: 'Fauzan', namaIbu: 'Rosnani', hubunganKeluarga: 'Anak', keluargaId: 'kk_z' })
+    const kk = {
+      keluarga: {
+        id: 'kk_z', desaId: 'desa_sungai_sialang', nomorKk: '1405091803198004', kepalaKeluargaId: 'pdk_zulkifli', dusunId: 'dsn_ss_3',
+        rw: '005', rt: '012', tanggalTerbit: '2019-03-18', anggotaIds: ['pdk_zulkifli', 'pdk_rosnani', 'pdk_anak'],
+      },
+      anggota: [ayah, ibu, anak],
+    }
+    const isi = {
+      jenis: 'kelahiran' as const, ibuId: 'pdk_rosnani', nama: 'Nayla Safitri', jenisKelamin: 'P' as const, tanggalLahir: '2026-09-21',
+      jam: null, tempatDilahirkan: 'Puskesmas' as const, penolong: null, beratGram: 3050, panjangCm: null, catatan: null,
+    }
+    expect(isianDariLaporan(isi, ibu, kk, 'Zulkifli')).toMatchObject({
+      ibu, ayah, anakKe: 2, nama: 'Nayla Safitri', jam: '', tempatDilahirkan: 'Puskesmas', penolong: '', beratGram: 3050,
+      panjangCm: null, pelapor: 'Zulkifli',
+    })
   })
 })

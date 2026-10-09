@@ -7,6 +7,7 @@ export function unduhBerkas(namaBerkas: string, isi: string, tipe = 'text/csv;ch
   document.body.append(tautan)
   tautan.click()
   tautan.remove()
-  // Dilepas setelah klik diproses; tanpa ini blob tertahan di memori sampai tab ditutup.
-  setTimeout(() => URL.revokeObjectURL(url), 0)
+  // Dilepas belakangan: Firefox dan Safari bisa membatalkan unduhan bila blob dilepas terlalu cepat; tanpa dilepas,
+  // blob tertahan di memori sampai tab ditutup.
+  setTimeout(() => URL.revokeObjectURL(url), 40_000)
 }
