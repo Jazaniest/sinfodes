@@ -22,7 +22,7 @@ export async function resetDataDemo(): Promise<InfoDataDemo> {
   return infoDataDemo()
 }
 
-export { KATA_SANDI_DEMO } from './data/desa-demo'
+export { KATA_SANDI_DEMO, PASSPHRASE_TTE_DEMO } from './data/desa-demo'
 
 /** Akun panel admin Desa Sungai Sialang untuk tombol masuk dan pilihan peran (SPEC §12.9). */
 export const AKUN_DEMO_ADMIN = PENGGUNA_DEMO.filter((p) => p.desaId === ID_SUNGAI_SIALANG).map(({ id, nama, peran, email }) => ({

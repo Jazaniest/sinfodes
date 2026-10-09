@@ -38,4 +38,11 @@ describe('penjaga keluar halaman (SPEC §6.4)', () => {
     expect(await screen.findByText('Halaman lain')).toBeInTheDocument()
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
   })
+  it('keterangan bisa disesuaikan halaman', async () => {
+    const { router } = await renderDenganRouter(<PenjagaKeluar aktif keterangan="Perubahan isian surat yang belum disimpan akan hilang." />)
+    await act(async () => {
+      router.history.push('/lain')
+    })
+    expect(await screen.findByText('Perubahan isian surat yang belum disimpan akan hilang.')).toBeInTheDocument()
+  })
 })

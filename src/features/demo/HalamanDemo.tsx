@@ -76,6 +76,12 @@ export function HalamanDemo() {
               <p className="font-medium">Panel admin desa</p>
               <p className="text-tinta-2">
                 Masuk sebagai salah satu perangkat desa. Kata sandi semua akun: <span className="font-mono">demo</span>.
+                {kendali && (
+                  <>
+                    {' '}
+                    Passphrase tanda tangan elektronik (simulasi): <span className="font-mono">{kendali.PASSPHRASE_TTE_DEMO}</span>.
+                  </>
+                )}
               </p>
             </div>
             <div className="flex flex-wrap gap-2">

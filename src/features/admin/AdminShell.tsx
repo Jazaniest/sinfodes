@@ -2,20 +2,30 @@ import { List, MagnifyingGlass } from '@phosphor-icons/react'
 import { useState, type ReactNode } from 'react'
 import { Button, Link } from 'react-aria-components'
 import logoMark from '@/assets/brand/sinfodes-mark.svg'
+import { formatAngka } from '@/domain/format/angka'
 import { LABEL_PERAN, type SesiAdmin } from '@/domain/pengguna/schema'
 import { cn } from '@/ui/cn'
 import { LambangDesa } from '@/ui/domain/LambangDesa'
 import { useMediaQuery } from '@/ui/hooks/useMediaQuery'
+import { Hitungan } from '@/ui/hitungan/Hitungan'
 import { Drawer } from '@/ui/lapisan/Drawer'
 import { MenuAksi } from '@/ui/lapisan/Menu'
-import { menuAktif, menuUntuk } from './navigasi'
+import { menuAktif, menuUntuk, type KunciHitungan } from './navigasi'
 
-type Props = { sesi: SesiAdmin; jalur: string; onCari: () => void; onKeluar: () => void; children: ReactNode }
+type Props = {
+  sesi: SesiAdmin
+  jalur: string
+  onCari: () => void
+  onKeluar: () => void
+  /** Angka di samping menu; nol atau kosong tidak ditampilkan. */
+  hitungan?: Partial<Record<KunciHitungan, number>>
+  children: ReactNode
+}
 
 const fokus =
   'outline-none data-[focus-visible]:outline-2 data-[focus-visible]:outline-solid data-[focus-visible]:outline-offset-2 data-[focus-visible]:outline-biru'
 
-function IsiNavigasi({ sesi, jalur, onCari, onKeluar, onPilih }: Omit<Props, 'children'> & { onPilih?: () => void }) {
+function IsiNavigasi({ sesi, jalur, onCari, onKeluar, onPilih, hitungan }: Omit<Props, 'children'> & { onPilih?: () => void }) {
   const { desa, pengguna } = sesi
   return (
     <div className="flex h-full flex-col gap-5 px-4 py-5">
@@ -49,19 +59,22 @@ function IsiNavigasi({ sesi, jalur, onCari, onKeluar, onPilih }: Omit<Props, 'ch
             <ul>
               {k.item.map((i) => {
                 const aktif = menuAktif(i, jalur)
+                const angka = i.hitungan ? hitungan?.[i.hitungan] : undefined
                 return (
                   <li key={i.href}>
                     <Link
                       href={i.href}
                       onPress={onPilih}
                       aria-current={aktif ? 'page' : undefined}
+                      aria-label={angka ? `${i.label}, ${formatAngka(angka)} perlu ditindaklanjuti` : undefined}
                       className={cn(
                         'flex h-9 items-center rounded-1 border-l-2 px-2 text-teks',
                         aktif ? 'border-biru bg-lembar font-medium text-tinta' : 'border-transparent text-tinta-2 hover:bg-lembar hover:text-tinta',
                         fokus,
                       )}
                     >
-                      {i.label}
+                      <span className="min-w-0 flex-1 truncate">{i.label}</span>
+                      {angka !== undefined && angka > 0 && <Hitungan nilai={angka} className="ml-2 text-tinta" />}
                     </Link>
                   </li>
                 )

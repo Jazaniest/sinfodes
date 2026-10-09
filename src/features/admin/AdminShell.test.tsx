@@ -74,4 +74,18 @@ describe('ButuhAkses (SPEC §3.5)', () => {
     )
     expect(screen.getByText('Isi dusun')).toBeInTheDocument()
   })
+  it('angka di samping menu: yang perlu ditindaklanjuti peran aktif (SPEC §5.2)', () => {
+    const { rerender } = render(
+      <AdminShell sesi={contohSesi('operator')} jalur="/admin" onCari={vi.fn()} onKeluar={vi.fn()} hitungan={{ surat: 8 }}>
+        <p>Isi halaman</p>
+      </AdminShell>,
+    )
+    expect(screen.getByRole('link', { name: 'Layanan Surat, 8 perlu ditindaklanjuti' })).toHaveAttribute('href', '/admin/surat')
+    rerender(
+      <AdminShell sesi={contohSesi('operator')} jalur="/admin" onCari={vi.fn()} onKeluar={vi.fn()} hitungan={{ surat: 0 }}>
+        <p>Isi halaman</p>
+      </AdminShell>,
+    )
+    expect(screen.getByRole('link', { name: 'Layanan Surat' })).toBeInTheDocument()
+  })
 })

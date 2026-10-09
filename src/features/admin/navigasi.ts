@@ -1,15 +1,23 @@
 import { boleh, type Kemampuan } from '@/domain/pengguna/hak-akses'
 import type { Peran } from '@/domain/pengguna/schema'
 
-export type ItemMenu = { label: string; href: string; kemampuan: Kemampuan | null; awalan: string }
+/** Kunci angka di samping menu: jumlah yang perlu ditindaklanjuti peran aktif (SPEC §5.2). */
+export type KunciHitungan = 'surat'
+export type ItemMenu = { label: string; href: string; kemampuan: Kemampuan | null; awalan: string; hitungan: KunciHitungan | null }
 export type KelompokMenu = { judul: string | null; item: ItemMenu[] }
 
 /** SPEC §5.2. Hanya modul yang sudah dibangun; modul lain ditambahkan di tahapnya masing-masing. */
 export const MENU_ADMIN: readonly KelompokMenu[] = [
-  { judul: null, item: [{ label: 'Beranda', href: '/admin', kemampuan: null, awalan: '/admin' }] },
+  { judul: null, item: [{ label: 'Beranda', href: '/admin', kemampuan: null, awalan: '/admin', hitungan: null }] },
+  {
+    judul: 'Pelayanan',
+    item: [{ label: 'Layanan Surat', href: '/admin/surat', kemampuan: 'surat.lihat', awalan: '/admin/surat', hitungan: 'surat' }],
+  },
   {
     judul: 'Data desa',
-    item: [{ label: 'Kependudukan', href: '/admin/kependudukan/penduduk', kemampuan: 'penduduk.lihat', awalan: '/admin/kependudukan' }],
+    item: [
+      { label: 'Kependudukan', href: '/admin/kependudukan/penduduk', kemampuan: 'penduduk.lihat', awalan: '/admin/kependudukan', hitungan: null },
+    ],
   },
 ]
 

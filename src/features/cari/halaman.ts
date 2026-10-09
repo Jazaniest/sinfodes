@@ -6,6 +6,7 @@ export type HalamanCari = { label: string; keterangan: string; href: string; kem
 /** Halaman dan aksi yang bisa dicari lewat Ctrl+K (SPEC §5.4). */
 export const HALAMAN_CARI: readonly HalamanCari[] = [
   { label: 'Beranda', keterangan: 'Halaman', href: '/admin', kemampuan: null },
+  { label: 'Permohonan surat', keterangan: 'Layanan Surat', href: '/admin/surat', kemampuan: 'surat.lihat' },
   { label: 'Penduduk', keterangan: 'Kependudukan', href: '/admin/kependudukan/penduduk', kemampuan: 'penduduk.lihat' },
   { label: 'Keluarga (KK)', keterangan: 'Kependudukan', href: '/admin/kependudukan/keluarga', kemampuan: 'penduduk.lihat' },
   { label: 'Tambah penduduk', keterangan: 'Aksi', href: '/admin/kependudukan/penduduk/tambah', kemampuan: 'penduduk.ubah' },

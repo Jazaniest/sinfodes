@@ -5,7 +5,9 @@ import { ConfirmDialog } from '@/ui/lapisan/ConfirmDialog'
  * Penjaga keluar halaman saat ada perubahan yang belum disimpan (SPEC §6.4). Juga menjaga tutup/muat ulang tab.
  * Navigasi setelah simpan berhasil memakai `ignoreBlocker: true`, supaya dialog ini tidak muncul.
  */
-export function PenjagaKeluar({ aktif }: { aktif: boolean }) {
+const KETERANGAN_BAWAAN = 'Perubahan yang belum disimpan tidak ikut tersimpan ke data desa. Drafnya tetap ada di perangkat ini.'
+
+export function PenjagaKeluar({ aktif, keterangan = KETERANGAN_BAWAAN }: { aktif: boolean; keterangan?: string }) {
   const penjaga = useBlocker({ shouldBlockFn: () => aktif, enableBeforeUnload: () => aktif, withResolver: true })
   return (
     <ConfirmDialog
@@ -19,7 +21,7 @@ export function PenjagaKeluar({ aktif }: { aktif: boolean }) {
       bahaya
       onSetuju={() => penjaga.proceed?.()}
     >
-      Perubahan yang belum disimpan tidak ikut tersimpan ke data desa. Drafnya tetap ada di perangkat ini.
+      {keterangan}
     </ConfirmDialog>
   )
 }
