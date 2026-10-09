@@ -175,7 +175,14 @@ export function CatatDatang({ onTersimpan, onBatal, onKotor, sekarang }: Props) 
                   { id: 'ada', label: 'Masuk ke KK yang sudah ada' },
                 ]}
                 nilai={field.value}
-                onUbah={(id) => field.onChange(id === 'ada' ? 'ada' : 'baru')}
+                onUbah={(id) => {
+                  field.onChange(id === 'ada' ? 'ada' : 'baru')
+                  if (id !== 'ada') return
+                  // KK tujuan sudah punya kepala; pilihan itu hilang dari daftar, jadi nilainya dikosongkan supaya diminta dipilih ulang.
+                  getValues('anggota').forEach((a, i) => {
+                    if (a.hubunganKeluarga === 'Kepala Keluarga') setValue(`anggota.${i}.hubunganKeluarga`, '', { shouldDirty: true })
+                  })
+                }}
               />
             )}
           />
