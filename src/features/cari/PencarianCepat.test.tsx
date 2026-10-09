@@ -90,4 +90,10 @@ describe('Pencarian cepat (SPEC §5.4)', () => {
     await user.type(screen.getByLabelText(LABEL_KOTAK), 'catat')
     expect(screen.queryByRole('menuitem', { name: /Catat kelahiran/ })).not.toBeInTheDocument()
   })
+  it('halaman Statistik penduduk bisa dicari (SPEC §5.4)', async () => {
+    masukSebagai(AKUN_UJI.kades)
+    const { user } = pasang('kades')
+    await user.type(screen.getByLabelText(LABEL_KOTAK), 'statistik')
+    expect(screen.getByRole('menuitem', { name: /^Statistik penduduk/ })).toBeInTheDocument()
+  })
 })

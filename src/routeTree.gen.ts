@@ -15,6 +15,7 @@ import { Route as AdminPanelRouteImport } from './routes/admin/_panel'
 import { Route as AdminMasukRouteImport } from './routes/admin/masuk'
 import { Route as AdminPanelIndexRouteImport } from './routes/admin/_panel/index'
 import { Route as AdminPanelKependudukanIndexRouteImport } from './routes/admin/_panel/kependudukan/index'
+import { Route as AdminPanelKependudukanStatistikRouteImport } from './routes/admin/_panel/kependudukan/statistik'
 import { Route as AdminPanelKependudukanKeluargaIndexRouteImport } from './routes/admin/_panel/kependudukan/keluarga/index'
 import { Route as AdminPanelKependudukanKeluargaIdRouteImport } from './routes/admin/_panel/kependudukan/keluarga/$id'
 import { Route as AdminPanelKependudukanMutasiIndexRouteImport } from './routes/admin/_panel/kependudukan/mutasi/index'
@@ -56,6 +57,12 @@ const AdminPanelKependudukanIndexRoute =
   AdminPanelKependudukanIndexRouteImport.update({
     id: '/kependudukan/',
     path: '/kependudukan/',
+    getParentRoute: () => AdminPanelRoute,
+  } as any)
+const AdminPanelKependudukanStatistikRoute =
+  AdminPanelKependudukanStatistikRouteImport.update({
+    id: '/kependudukan/statistik',
+    path: '/kependudukan/statistik',
     getParentRoute: () => AdminPanelRoute,
   } as any)
 const AdminPanelKependudukanKeluargaIndexRoute =
@@ -131,6 +138,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminPanelRouteWithChildren
   '/admin/masuk': typeof AdminMasukRoute
   '/admin/': typeof AdminPanelIndexRoute
+  '/admin/kependudukan/statistik': typeof AdminPanelKependudukanStatistikRoute
   '/admin/kependudukan/': typeof AdminPanelKependudukanIndexRoute
   '/admin/kependudukan/keluarga/$id': typeof AdminPanelKependudukanKeluargaIdRoute
   '/admin/kependudukan/mutasi/datang': typeof AdminPanelKependudukanMutasiDatangRoute
@@ -149,6 +157,7 @@ export interface FileRoutesByTo {
   '/katalog': typeof KatalogRoute
   '/admin/masuk': typeof AdminMasukRoute
   '/admin': typeof AdminPanelIndexRoute
+  '/admin/kependudukan/statistik': typeof AdminPanelKependudukanStatistikRoute
   '/admin/kependudukan': typeof AdminPanelKependudukanIndexRoute
   '/admin/kependudukan/keluarga/$id': typeof AdminPanelKependudukanKeluargaIdRoute
   '/admin/kependudukan/mutasi/datang': typeof AdminPanelKependudukanMutasiDatangRoute
@@ -169,6 +178,7 @@ export interface FileRoutesById {
   '/admin/_panel': typeof AdminPanelRouteWithChildren
   '/admin/masuk': typeof AdminMasukRoute
   '/admin/_panel/': typeof AdminPanelIndexRoute
+  '/admin/_panel/kependudukan/statistik': typeof AdminPanelKependudukanStatistikRoute
   '/admin/_panel/kependudukan/': typeof AdminPanelKependudukanIndexRoute
   '/admin/_panel/kependudukan/keluarga/$id': typeof AdminPanelKependudukanKeluargaIdRoute
   '/admin/_panel/kependudukan/mutasi/datang': typeof AdminPanelKependudukanMutasiDatangRoute
@@ -190,6 +200,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/admin/masuk'
     | '/admin/'
+    | '/admin/kependudukan/statistik'
     | '/admin/kependudukan/'
     | '/admin/kependudukan/keluarga/$id'
     | '/admin/kependudukan/mutasi/datang'
@@ -208,6 +219,7 @@ export interface FileRouteTypes {
     | '/katalog'
     | '/admin/masuk'
     | '/admin'
+    | '/admin/kependudukan/statistik'
     | '/admin/kependudukan'
     | '/admin/kependudukan/keluarga/$id'
     | '/admin/kependudukan/mutasi/datang'
@@ -227,6 +239,7 @@ export interface FileRouteTypes {
     | '/admin/_panel'
     | '/admin/masuk'
     | '/admin/_panel/'
+    | '/admin/_panel/kependudukan/statistik'
     | '/admin/_panel/kependudukan/'
     | '/admin/_panel/kependudukan/keluarga/$id'
     | '/admin/_panel/kependudukan/mutasi/datang'
@@ -290,6 +303,13 @@ declare module '@tanstack/react-router' {
       path: '/kependudukan'
       fullPath: '/admin/kependudukan/'
       preLoaderRoute: typeof AdminPanelKependudukanIndexRouteImport
+      parentRoute: typeof AdminPanelRoute
+    }
+    '/admin/_panel/kependudukan/statistik': {
+      id: '/admin/_panel/kependudukan/statistik'
+      path: '/kependudukan/statistik'
+      fullPath: '/admin/kependudukan/statistik'
+      preLoaderRoute: typeof AdminPanelKependudukanStatistikRouteImport
       parentRoute: typeof AdminPanelRoute
     }
     '/admin/_panel/kependudukan/keluarga/': {
@@ -374,6 +394,7 @@ declare module '@tanstack/react-router' {
 
 interface AdminPanelRouteChildren {
   AdminPanelIndexRoute: typeof AdminPanelIndexRoute
+  AdminPanelKependudukanStatistikRoute: typeof AdminPanelKependudukanStatistikRoute
   AdminPanelKependudukanIndexRoute: typeof AdminPanelKependudukanIndexRoute
   AdminPanelKependudukanKeluargaIdRoute: typeof AdminPanelKependudukanKeluargaIdRoute
   AdminPanelKependudukanMutasiDatangRoute: typeof AdminPanelKependudukanMutasiDatangRoute
@@ -390,6 +411,7 @@ interface AdminPanelRouteChildren {
 
 const AdminPanelRouteChildren: AdminPanelRouteChildren = {
   AdminPanelIndexRoute: AdminPanelIndexRoute,
+  AdminPanelKependudukanStatistikRoute: AdminPanelKependudukanStatistikRoute,
   AdminPanelKependudukanIndexRoute: AdminPanelKependudukanIndexRoute,
   AdminPanelKependudukanKeluargaIdRoute: AdminPanelKependudukanKeluargaIdRoute,
   AdminPanelKependudukanMutasiDatangRoute:

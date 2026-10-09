@@ -2,7 +2,15 @@ import type { ReactElement } from 'react'
 import { Menu, MenuItem, MenuTrigger, Popover, type PopoverProps } from 'react-aria-components'
 import { cn } from '../cn'
 
-export type ItemMenuAksi = { id: string; label: string; onAction?: () => void; href?: string; bahaya?: boolean }
+export type ItemMenuAksi = {
+  id: string
+  label: string
+  onAction?: () => void
+  href?: string
+  bahaya?: boolean
+  /** Tetap tampil tetapi tidak bisa dipilih, mis. "Unduh CSV" saat daftar kosong. */
+  nonaktif?: boolean
+}
 
 type Props = { pemicu: ReactElement; items: readonly ItemMenuAksi[]; placement?: PopoverProps['placement'] }
 
@@ -22,9 +30,11 @@ export function MenuAksi({ pemicu, items, placement = 'bottom start' }: Props) {
               key={i.id}
               id={i.id}
               href={i.href}
+              isDisabled={i.nonaktif}
               className={cn(
                 'cursor-default px-3 py-2 text-teks outline-none data-[focused]:bg-biru-muda',
                 i.bahaya ? 'text-merah' : 'text-tinta',
+                'data-[disabled]:text-tinta-3',
               )}
             >
               {i.label}

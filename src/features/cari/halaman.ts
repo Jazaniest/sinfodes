@@ -10,6 +10,7 @@ export const HALAMAN_CARI: readonly HalamanCari[] = [
   { label: 'Keluarga (KK)', keterangan: 'Kependudukan', href: '/admin/kependudukan/keluarga', kemampuan: 'penduduk.lihat' },
   { label: 'Tambah penduduk', keterangan: 'Aksi', href: '/admin/kependudukan/penduduk/tambah', kemampuan: 'penduduk.ubah' },
   { label: 'Mutasi', keterangan: 'Kependudukan', href: '/admin/kependudukan/mutasi', kemampuan: 'penduduk.lihat' },
+  { label: 'Statistik penduduk', keterangan: 'Kependudukan', href: '/admin/kependudukan/statistik', kemampuan: 'penduduk.lihat' },
   { label: 'Catat kelahiran', keterangan: 'Aksi', href: '/admin/kependudukan/mutasi/lahir', kemampuan: 'penduduk.ubah' },
   { label: 'Catat kematian', keterangan: 'Aksi', href: '/admin/kependudukan/mutasi/meninggal', kemampuan: 'penduduk.ubah' },
   { label: 'Catat pindah keluar', keterangan: 'Aksi', href: '/admin/kependudukan/mutasi/pindah', kemampuan: 'penduduk.ubah' },
