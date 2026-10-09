@@ -1,10 +1,10 @@
 import { z } from 'zod'
 import { pelakuSchema } from '../mutasi/schema'
 
-/** Jenis kejadian di Buku hari ini (SPEC §5.3). 2B menambah jenis surat. */
+/** Jenis kejadian di Buku hari ini (SPEC §5.3), termasuk unduhan data pribadi. 2B menambah jenis surat. */
 export const JENIS_AKTIVITAS = [
   'mutasi-lahir', 'mutasi-meninggal', 'mutasi-pindah', 'mutasi-datang', 'penduduk-ubah', 'penduduk-tambah',
-  'keluarga-pecah', 'keluarga-ganti-kepala',
+  'keluarga-pecah', 'keluarga-ganti-kepala', 'penduduk-ekspor', 'penduduk-impor', 'laporan-diterapkan', 'laporan-ditolak',
 ] as const
 export type JenisAktivitas = (typeof JENIS_AKTIVITAS)[number]
 

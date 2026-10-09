@@ -28,7 +28,9 @@ function buatUrl(jalur: string, query?: Query): URL {
 /** Satu pintu untuk semua panggilan API: token, galat seragam (SPEC §3.4), dan validasi skema. */
 export async function panggilApi<T>(metode: Metode, jalur: string, opsi: Opsi<T>): Promise<T> {
   const headers: Record<string, string> = { Accept: 'application/json' }
-  if (opsi.body !== undefined) headers['Content-Type'] = 'application/json'
+  // FormData (unggah berkas): Content-Type beserta batasnya diisi browser sendiri.
+  const formulir = opsi.body instanceof FormData
+  if (opsi.body !== undefined && !formulir) headers['Content-Type'] = 'application/json'
   if (tokenSesi) headers.Authorization = `Bearer ${tokenSesi}`
 
   let respons: Response
@@ -36,7 +38,7 @@ export async function panggilApi<T>(metode: Metode, jalur: string, opsi: Opsi<T>
     respons = await fetch(buatUrl(jalur, opsi.query), {
       method: metode,
       headers,
-      body: opsi.body === undefined ? undefined : JSON.stringify(opsi.body),
+      body: opsi.body === undefined ? undefined : formulir ? (opsi.body as FormData) : JSON.stringify(opsi.body),
       signal: opsi.signal,
     })
   } catch (e) {

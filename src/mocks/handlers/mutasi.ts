@@ -65,6 +65,9 @@ export const handlerMutasi = [
       const milik = dataMilik(pengguna)
       const { db } = milik
       const sekarang = new Date()
+      const laporan = m.laporanId ? milik.laporanData.find((l) => l.id === m.laporanId) : undefined
+      if (m.laporanId && (!laporan || laporan.isi.jenis !== 'kelahiran')) return balasField('laporanId', 'Laporan kelahiran tidak ditemukan')
+      if (laporan && laporan.status !== 'baru') return balasGalat('CONFLICT', 'Laporan kelahiran ini sudah ditangani.', 409)
       const ibu = milik.penduduk.find((p) => p.id === m.ibuId)
       if (!ibu || ibu.jenisKelamin !== 'P' || ibu.statusDasar !== 'Hidup') {
         return balasField('ibuId', 'Pilih ibu: penduduk perempuan yang masih hidup')
@@ -101,6 +104,10 @@ export const handlerMutasi = [
         },
       }
       ubahDb((d) => {
+        if (laporan) {
+          laporan.status = 'diterapkan'
+          laporan.ditangani = { oleh, pada: waktu, alasan: null }
+        }
         d.penduduk.push(bayi)
         kk.anggotaIds.push(bayi.id)
         d.mutasi.push(mutasi)

@@ -1,4 +1,5 @@
 import { http, HttpResponse } from 'msw'
+import type { Tindakan } from '@/domain/beranda/schema'
 import { tanggalIsoWib } from '@/domain/format/tanggal'
 import { hitungMutasiBulan } from '@/domain/mutasi/buku'
 import { dataBelumLengkap } from '@/domain/penduduk/filter'
@@ -20,8 +21,19 @@ export const handlerBeranda = [
       const petugas = pengguna.peran === 'operator' || pengguna.peran === 'sekdes'
       const belumLengkap = hidup.filter((p) => dataBelumLengkap(p, sekarang)).length
       const mutasiBulanIni = hitungMutasiBulan(milik.mutasi, bulanIni)
+      // Laporan warga terlama dulu: butirnya membuka laporan itu (SPEC §5.3).
+      const laporanBaru = milik.laporanData
+        .filter((l) => l.status === 'baru')
+        .sort((a, b) => a.dibuatPada.localeCompare(b.dibuatPada))
+      const kelahiran = laporanBaru.filter((l) => l.isi.jenis === 'kelahiran')
+      const perbaikan = laporanBaru.flatMap((l) => (l.isi.jenis === 'perbaikan' ? [l.isi] : []))
+      const tindakan: Tindakan[] = [
+        ...(kelahiran.length > 0 ? [{ jenis: 'kelahiran-dilaporkan' as const, jumlah: kelahiran.length, laporanId: kelahiran[0].id }] : []),
+        ...(perbaikan.length > 0 ? [{ jenis: 'laporan-perbaikan' as const, jumlah: perbaikan.length, pendudukId: perbaikan[0].pendudukId }] : []),
+        ...(belumLengkap > 0 ? [{ jenis: 'data-belum-lengkap' as const, jumlah: belumLengkap }] : []),
+      ]
       return HttpResponse.json({
-        tindakan: petugas ? (belumLengkap > 0 ? [{ jenis: 'data-belum-lengkap', jumlah: belumLengkap }] : []) : null,
+        tindakan: petugas ? tindakan : null,
         bukuHariIni: petugas
           ? milik.aktivitas
               .filter((a) => tanggalIsoWib(new Date(a.waktu)) === hariIni)

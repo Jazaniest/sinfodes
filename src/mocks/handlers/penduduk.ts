@@ -1,19 +1,27 @@
 import { http, HttpResponse } from 'msw'
 import { z } from 'zod'
-import { tanggalIsoWib } from '@/domain/format/tanggal'
+import { formatAngka } from '@/domain/format/angka'
+import { tanggalIsoWib, waktuIsoWib } from '@/domain/format/tanggal'
 import { cocokPenduduk } from '@/domain/penduduk/cari'
 import { filterPendudukSchema, saringPenduduk, urutkanPenduduk, type FilterPenduduk } from '@/domain/penduduk/filter'
 import type { EntriRiwayat } from '@/domain/penduduk/riwayat'
-import type { Penduduk } from '@/domain/penduduk/schema'
-import { boleh } from '@/domain/pengguna/hak-akses'
+import type { BarisPenduduk, Penduduk } from '@/domain/penduduk/schema'
+import { boleh, cakupanDusun } from '@/domain/pengguna/hak-akses'
 import type { Pengguna } from '@/domain/pengguna/schema'
 import { dataMilik, idPendatangTahun } from '../cakupan'
+import { ubahDb } from '../db'
 import { API, balasDaftar, balasGalat, denganJaringan } from '../http'
 import { butuhPengguna } from '../sesi-mock'
+import { catatAktivitas, pelakuDari } from '../tulis'
 
 const TIDAK_BERHAK = 'Peran Anda tidak berhak melihat data penduduk.'
 const TIDAK_DITEMUKAN = 'Data penduduk tidak ditemukan.'
 const cariSchema = z.object({ kata: z.string().trim().min(1).max(100), filter: filterPendudukSchema })
+const eksporSchema = z.object({
+  kata: z.string().trim().min(1).max(100).nullable(),
+  filter: filterPendudukSchema,
+  format: z.enum(['csv', 'cetak']),
+})
 
 /** Pengguna yang boleh melihat data penduduk, atau Response galat yang langsung dikembalikan. */
 function butuhPembaca(request: Request): Pengguna | Response {
@@ -22,7 +30,8 @@ function butuhPembaca(request: Request): Pengguna | Response {
   return boleh(pengguna.peran, 'penduduk.lihat') ? pengguna : balasGalat('FORBIDDEN', TIDAK_BERHAK, 403)
 }
 
-function daftarTersaring(pengguna: Pengguna, filter: FilterPenduduk, kata: string | null): Response {
+/** Penduduk sesuai filter dan kata cari, sudah diurutkan, lengkap dengan nomor KK (tanpa halaman). */
+function barisTersaring(pengguna: Pengguna, filter: FilterPenduduk, kata: string | null): BarisPenduduk[] {
   const milik = dataMilik(pengguna)
   const hariIni = new Date()
   const nomorKkPerId = new Map(milik.semuaKeluarga.map((k) => [k.id, k.nomorKk] as const))
@@ -34,10 +43,11 @@ function daftarTersaring(pengguna: Pengguna, filter: FilterPenduduk, kata: strin
     idPendatangTahunIni: idPendatangTahun(milik.mutasi, tanggalIsoWib(hariIni).slice(0, 4)),
   })
   const nomorDusun = (id: string) => milik.dusun.find((d) => d.id === id)?.nomor ?? Number.MAX_SAFE_INTEGER
-  return balasDaftar(urutkanPenduduk(tersaring, filter.urut, { nomorDusun }), filter.page, filter.pageSize, (p) => ({
-    ...p,
-    nomorKk: nomorKk(p),
-  }))
+  return urutkanPenduduk(tersaring, filter.urut, { nomorDusun }).map((p) => ({ ...p, nomorKk: nomorKk(p) }))
+}
+
+function daftarTersaring(pengguna: Pengguna, filter: FilterPenduduk, kata: string | null): Response {
+  return balasDaftar(barisTersaring(pengguna, filter, kata), filter.page, filter.pageSize)
 }
 
 export const handlerPenduduk = [
@@ -76,6 +86,28 @@ export const handlerPenduduk = [
       const isian = cariSchema.safeParse(await request.json().catch(() => null))
       if (!isian.success) return balasGalat('VALIDATION', 'Kata pencarian atau filter tidak valid.', 422)
       return daftarTersaring(pengguna, isian.data.filter, isian.data.kata)
+    }),
+  ),
+  http.post(
+    `${API}/penduduk/ekspor`,
+    denganJaringan(async ({ request }) => {
+      const pengguna = butuhPembaca(request)
+      if (pengguna instanceof Response) return pengguna
+      const isian = eksporSchema.safeParse(await request.json().catch(() => null))
+      if (!isian.success) return balasGalat('VALIDATION', 'Permintaan unduhan tidak valid.', 422)
+      const { kata, filter, format } = isian.data
+      const baris = barisTersaring(pengguna, filter, kata)
+      if (baris.length === 0) return balasGalat('VALIDATION', 'Tidak ada data penduduk untuk diunduh.', 422)
+      const jumlah = formatAngka(baris.length)
+      // Unduhan data pribadi selalu tercatat di Buku hari ini (SPEC §5.3, §6.2).
+      ubahDb((d) =>
+        catatAktivitas(d, {
+          desaId: pengguna.desaId, dusunId: cakupanDusun(pengguna), waktu: waktuIsoWib(new Date()), jenis: 'penduduk-ekspor',
+          ringkasan: format === 'csv' ? `Data penduduk diunduh (${jumlah} baris)` : `Buku Induk Penduduk dicetak (${jumlah} baris)`,
+          oleh: pelakuDari(pengguna), rujukan: null,
+        }),
+      )
+      return HttpResponse.json({ baris })
     }),
   ),
   http.get(

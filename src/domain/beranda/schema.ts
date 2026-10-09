@@ -1,8 +1,13 @@
 import { z } from 'zod'
 import { aktivitasSchema } from '../aktivitas/schema'
 
-/** "Perlu ditindaklanjuti" (SPEC §5.3). 2A-2 dan 2B menambah jenis baru. */
+/**
+ * "Perlu ditindaklanjuti" (SPEC §5.3). Butir laporan warga membawa laporan terlama yang belum ditangani; Tahap 2B
+ * menambah jenis untuk surat dan pengaduan.
+ */
 export const tindakanSchema = z.discriminatedUnion('jenis', [
+  z.object({ jenis: z.literal('kelahiran-dilaporkan'), jumlah: z.number().int().min(1), laporanId: z.string() }),
+  z.object({ jenis: z.literal('laporan-perbaikan'), jumlah: z.number().int().min(1), pendudukId: z.string() }),
   z.object({ jenis: z.literal('data-belum-lengkap'), jumlah: z.number().int().min(1) }),
 ])
 export type Tindakan = z.infer<typeof tindakanSchema>

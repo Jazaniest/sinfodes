@@ -56,3 +56,23 @@ describe('panggilApi', () => {
     await expect(panggilApi('GET', '/uji', { skema: z.object({ benar: z.boolean() }) })).rejects.toThrow()
   })
 })
+
+describe('unggah berkas (2A-3)', () => {
+  it('FormData dikirim apa adanya: tanpa Content-Type JSON, berkas sampai ke server', async () => {
+    let jenis: string | null = null
+    let nama: string | null = null
+    serverUji.use(
+      http.post('*/api/v1/uji-unggah', async ({ request }) => {
+        jenis = request.headers.get('Content-Type')
+        const berkas = (await request.formData()).get('berkas')
+        nama = berkas instanceof File ? berkas.name : null
+        return HttpResponse.json({ ok: true })
+      }),
+    )
+    const isi = new FormData()
+    isi.append('berkas', new File(['a;b'], 'data.csv', { type: 'text/csv' }))
+    await panggilApi('POST', '/uji-unggah', { skema: z.object({ ok: z.boolean() }), body: isi })
+    expect(jenis).toMatch(/^multipart\/form-data; boundary=/)
+    expect(nama).toBe('data.csv')
+  })
+})

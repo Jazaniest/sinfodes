@@ -80,3 +80,11 @@ describe('urutkanPenduduk', () => {
   it('dusun', () => expect(ids(urutkanPenduduk(hidup, 'dusun', { nomorDusun })).at(-1)).toBe('pdk_lansia'))
   it('terakhir diubah dulu', () => expect(ids(urutkanPenduduk(hidup, 'diubah', { nomorDusun }))[0]).toBe('pdk_datang'))
 })
+
+describe('filter KTP-el (2A-3, dari grafik Statistik)', () => {
+  it('hanya penduduk dengan status KTP-el itu', () => {
+    const daftar = [contohPenduduk({ id: 'a', ktpEl: 'Belum rekam' }), contohPenduduk({ id: 'b' })]
+    expect(saringPenduduk(daftar, filterPendudukSchema.parse({ ktpEl: 'Belum rekam' }), ctx).map((p) => p.id)).toEqual(['a'])
+  })
+  it('nilai asing ditolak skema', () => expect(filterPendudukSchema.safeParse({ ktpEl: 'Hilang' }).success).toBe(false))
+})

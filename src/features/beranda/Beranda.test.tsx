@@ -38,4 +38,16 @@ describe('Beranda (SPEC §5.3)', () => {
     renderPanel(<Beranda sekarang={SEKARANG_UJI} />, contohSesi('operator'))
     expect(await screen.findByRole('button', { name: 'Coba lagi' })).toBeInTheDocument()
   })
+  it('operator: laporan warga di Perlu ditindaklanjuti (2A-3)', async () => {
+    masukSebagai(AKUN_UJI.operator)
+    renderPanel(<Beranda sekarang={SEKARANG_UJI} />, contohSesi())
+    expect(await screen.findByRole('link', { name: '1 kelahiran dilaporkan warga, belum dicatat' })).toHaveAttribute(
+      'href',
+      '/admin/kependudukan/mutasi/lahir?laporan=lap_kelahiran_rosnani',
+    )
+    expect(screen.getByRole('link', { name: '1 laporan perbaikan data dari warga' })).toHaveAttribute(
+      'href',
+      '/admin/kependudukan/penduduk/pdk_syahrial',
+    )
+  })
 })

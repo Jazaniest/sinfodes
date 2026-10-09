@@ -28,6 +28,8 @@ export const masukanLahirSchema = z.object({
     panjangCm: z.number().int().min(30).max(65),
   }),
   pelapor: teksWajib('Nama pelapor wajib diisi'),
+  /** Laporan kelahiran dari warga yang dicatat lewat alur ini (SPEC §5.3); laporannya ikut selesai. */
+  laporanId: z.string().min(1).nullable().optional(),
 })
 export type MasukanLahir = z.infer<typeof masukanLahirSchema>
 

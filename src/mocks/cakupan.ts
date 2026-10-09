@@ -24,6 +24,7 @@ export function dataMilik(pengguna: Pengguna) {
     mutasi: db.mutasi.filter((m) => m.desaId === pengguna.desaId && m.pendudukIds.some((id) => idPenduduk.has(id))),
     riwayat: db.riwayat.filter((r) => idPenduduk.has(r.pendudukId)),
     aktivitas: db.aktivitas.filter(diDalam),
+    laporanData: db.laporanData.filter(diDalam),
   }
 }
 

@@ -10,7 +10,7 @@ export const bacaFilterPenduduk = (cari: Record<string, unknown>): FilterPendudu
 /** Mengembalikan semua filter ke bawaan; urutan dan ukuran halaman tetap. */
 export const HAPUS_SEMUA_FILTER: Partial<FilterPenduduk> = {
   dusun: undefined, rt: undefined, jk: undefined, umurMin: undefined, umurMax: undefined, agama: undefined,
-  pendidikan: undefined, pekerjaan: undefined, kawin: undefined, status: 'Hidup', preset: undefined, page: 1,
+  pendidikan: undefined, pekerjaan: undefined, kawin: undefined, ktpEl: undefined, status: 'Hidup', preset: undefined, page: 1,
 }
 
 export type FilterAktif = { kunci: string; label: string; hapus: Partial<FilterPenduduk> }
@@ -36,7 +36,17 @@ export function daftarFilterAktif(f: FilterPenduduk, dusun: readonly Dusun[], is
   if (f.pendidikan) hasil.push({ kunci: 'pendidikan', label: f.pendidikan, hapus: { pendidikan: undefined, page: 1 } })
   if (f.pekerjaan) hasil.push({ kunci: 'pekerjaan', label: f.pekerjaan, hapus: { pekerjaan: undefined, page: 1 } })
   if (f.kawin) hasil.push({ kunci: 'kawin', label: f.kawin, hapus: { kawin: undefined, page: 1 } })
+  if (f.ktpEl) hasil.push({ kunci: 'ktpEl', label: `KTP-el: ${f.ktpEl}`, hapus: { ktpEl: undefined, page: 1 } })
   if (f.status !== 'Hidup') hasil.push({ kunci: 'status', label: `Status: ${f.status}`, hapus: { status: 'Hidup', page: 1 } })
   if (f.preset) hasil.push({ kunci: 'preset', label: LABEL_PRESET[f.preset], hapus: { preset: undefined, page: 1 } })
   return hasil
+}
+
+/** Tautan ke daftar penduduk dengan filter tertentu, mis. dari batang Statistik (SPEC §6.7). */
+export function hrefDaftarPenduduk(filter: Partial<FilterPenduduk>): string {
+  const cari = Object.entries(filter)
+    .filter(([, nilai]) => nilai !== undefined)
+    .map(([kunci, nilai]) => `${kunci}=${encodeURIComponent(String(nilai))}`)
+    .join('&')
+  return cari ? `/admin/kependudukan/penduduk?${cari}` : '/admin/kependudukan/penduduk'
 }

@@ -2,6 +2,7 @@ import { waktuIsoWib } from '@/domain/format/tanggal'
 import { DESA_DEMO, DUSUN_DEMO, ID_SUNGAI_SIALANG, PENGGUNA_DEMO } from '../data/desa-demo'
 import { buatAcak } from '../prng'
 import { VERSI_DATA, type DbDemo } from '../tipe-db'
+import { bangkitkanLaporan } from './laporan'
 import { bangkitkanMutasi } from './mutasi'
 import { bangkitkanPenduduk } from './penduduk'
 
@@ -28,5 +29,7 @@ export function bangkitkanDb(sekarang: Date): DbDemo {
     dusun: structuredClone(DUSUN_DEMO),
     pengguna: structuredClone(PENGGUNA_DEMO),
     ...hasil,
+    laporanData: bangkitkanLaporan({ desaId: ID_SUNGAI_SIALANG, penduduk: hasil.penduduk, acuan: sekarang }),
+    impor: [],
   }
 }

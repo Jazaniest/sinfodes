@@ -39,3 +39,11 @@ describe('masukan mutasi (SPEC §6.6)', () => {
     expect(hubunganBayi('Famili Lain')).toBe('Famili Lain')
   })
 })
+
+describe('laporan kelahiran (2A-3)', () => {
+  it('masukan Lahir boleh membawa ID laporan warga', () => {
+    expect(masukanLahirSchema.shape.laporanId.safeParse('lap_kelahiran_rosnani').success).toBe(true)
+    expect(masukanLahirSchema.shape.laporanId.safeParse(undefined).success).toBe(true)
+    expect(masukanLahirSchema.shape.laporanId.safeParse('').success).toBe(false)
+  })
+})

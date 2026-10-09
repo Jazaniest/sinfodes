@@ -10,7 +10,11 @@ describe('GET /beranda (SPEC §5.3)', () => {
   it('operator: tindakan, buku hari ini berurutan jam, keadaan desa', async () => {
     masukSebagai(AKUN_UJI.operator)
     const b = await ambilBeranda()
-    expect(b.tindakan).toEqual([{ jenis: 'data-belum-lengkap', jumlah: 12 }])
+    expect(b.tindakan).toEqual([
+      { jenis: 'kelahiran-dilaporkan', jumlah: 1, laporanId: 'lap_kelahiran_rosnani' },
+      { jenis: 'laporan-perbaikan', jumlah: 1, pendudukId: 'pdk_syahrial' },
+      { jenis: 'data-belum-lengkap', jumlah: 12 },
+    ])
     const waktu = b.bukuHariIni?.map((a) => a.waktu) ?? []
     expect(waktu.length).toBeGreaterThanOrEqual(3)
     expect(waktu.every((w) => w.startsWith('2026-09-24'))).toBe(true)

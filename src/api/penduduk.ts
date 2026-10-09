@@ -69,3 +69,10 @@ export const opsiPenduduk = (id: string) =>
 
 export const opsiRiwayatPenduduk = (id: string) =>
   queryOptions({ queryKey: kunciPenduduk.riwayat(id), queryFn: ({ signal }) => ambilRiwayatPenduduk(id, signal) })
+
+const hasilEksporSchema = z.object({ baris: z.array(barisPendudukSchema) })
+
+/** Data untuk "Unduh CSV" atau "Cetak Buku Induk" sesuai filter dan kata cari (SPEC §6.2). Dicatat di Buku hari ini. */
+export function eksporPenduduk(masukan: { kata: string | null; filter: FilterPenduduk; format: 'csv' | 'cetak' }) {
+  return panggilApi('POST', '/penduduk/ekspor', { skema: hasilEksporSchema, body: masukan })
+}

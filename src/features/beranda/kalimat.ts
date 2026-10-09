@@ -13,6 +13,16 @@ export function kalimatKeadaan(k: Keadaan): string {
 /** Teks dan tujuan tiap butir "Perlu ditindaklanjuti". */
 export function isiTindakan(t: Tindakan): { teks: string; href: string } {
   switch (t.jenis) {
+    case 'kelahiran-dilaporkan':
+      return {
+        teks: `${formatAngka(t.jumlah)} kelahiran dilaporkan warga, belum dicatat`,
+        href: `/admin/kependudukan/mutasi/lahir?laporan=${t.laporanId}`,
+      }
+    case 'laporan-perbaikan':
+      return {
+        teks: `${formatAngka(t.jumlah)} laporan perbaikan data dari warga`,
+        href: `/admin/kependudukan/penduduk/${t.pendudukId}`,
+      }
     case 'data-belum-lengkap':
       return {
         teks: `${formatAngka(t.jumlah)} penduduk datanya belum lengkap`,

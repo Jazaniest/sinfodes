@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { hitungUmur } from '../format/tanggal'
-import { AGAMA, JENIS_KELAMIN, PEKERJAAN, PENDIDIKAN, STATUS_DASAR, STATUS_PERKAWINAN } from './enum'
+import { AGAMA, JENIS_KELAMIN, KTP_EL, PEKERJAAN, PENDIDIKAN, STATUS_DASAR, STATUS_PERKAWINAN } from './enum'
 import type { Penduduk } from './schema'
 
 export const PRESET_PENDUDUK = ['wajib-ktp-belum-rekam', 'balita', 'lansia', 'pendatang-tahun-ini', 'data-belum-lengkap'] as const
@@ -28,6 +28,7 @@ export const filterPendudukSchema = z.object({
   pendidikan: z.enum(PENDIDIKAN).optional(),
   pekerjaan: z.enum(PEKERJAAN).optional(),
   kawin: z.enum(STATUS_PERKAWINAN).optional(),
+  ktpEl: z.enum(KTP_EL).optional(),
   status: z.enum(STATUS_DASAR).default('Hidup'),
   preset: z.enum(PRESET_PENDUDUK).optional(),
   urut: z.enum(URUTAN_PENDUDUK).default('nama'),
@@ -84,6 +85,7 @@ export function saringPenduduk(semua: readonly Penduduk[], f: FilterPenduduk, ct
     if (f.pendidikan !== undefined && p.pendidikan !== f.pendidikan) return false
     if (f.pekerjaan !== undefined && p.pekerjaan !== f.pekerjaan) return false
     if (f.kawin !== undefined && p.statusPerkawinan !== f.kawin) return false
+    if (f.ktpEl !== undefined && p.ktpEl !== f.ktpEl) return false
     if (f.umurMin !== undefined || f.umurMax !== undefined) {
       const umur = hitungUmur(p.tanggalLahir, ctx.hariIni).tahun
       if (f.umurMin !== undefined && umur < f.umurMin) return false
