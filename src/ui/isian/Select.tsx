@@ -17,9 +17,13 @@ type Props = {
   galat?: string
   isDisabled?: boolean
   className?: string
+  /** Label tidak tampil (tetap menjadi nama aksesibel), mis. di baris tabel yang judulnya sudah terlihat. */
+  labelTersembunyi?: boolean
 }
 
-export function Select({ label, pilihan, nilai, onUbah, placeholder = 'Pilih…', keterangan, galat, isDisabled, className }: Props) {
+export function Select({
+  label, pilihan, nilai, onUbah, placeholder = 'Pilih…', keterangan, galat, isDisabled, className, labelTersembunyi,
+}: Props) {
   return (
     <RacSelect
       value={nilai}
@@ -29,7 +33,7 @@ export function Select({ label, pilihan, nilai, onUbah, placeholder = 'Pilih…'
       isDisabled={isDisabled}
       className={cn('flex flex-col gap-1.5', className)}
     >
-      <Label className={gayaLabel}>{label}</Label>
+      <Label className={cn(gayaLabel, labelTersembunyi && 'sr-only')}>{label}</Label>
       <Button className={cn(gayaInput, 'flex items-center justify-between gap-2 text-left')}>
         <SelectValue className="truncate data-[placeholder]:text-tinta-3" />
         <CaretDown aria-hidden size={14} className="shrink-0 text-tinta-2" />

@@ -1,4 +1,4 @@
-import { DownloadSimple, Plus } from '@phosphor-icons/react'
+import { DownloadSimple, FileArrowUp, Plus } from '@phosphor-icons/react'
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
 import { pesanGalat } from '@/api/galat'
@@ -126,7 +126,20 @@ export function DaftarPenduduk({ filter, onUbahFilter, onBukaProfil, sekarang }:
       aksi={<Tombol onPress={() => onUbahFilter(HAPUS_SEMUA_FILTER)}>Hapus filter</Tombol>}
     />
   ) : (
-    <EmptyState judul="Belum ada data penduduk" keterangan="Data penduduk desa ini masih kosong." />
+    <EmptyState
+      judul="Belum ada data penduduk"
+      keterangan="Data penduduk desa ini masih kosong."
+      aksi={
+        boleh(pengguna.peran, 'penduduk.ubah') && (
+          <div className="flex flex-wrap gap-2">
+            <TautanTombol href="/admin/kependudukan/penduduk/impor" varian="utama">
+              Impor dari Excel
+            </TautanTombol>
+            <TautanTombol href="/admin/kependudukan/penduduk/tambah">Tambah satu per satu</TautanTombol>
+          </div>
+        )
+      }
+    />
   )
 
   const meta = ringkasan.data ? (
@@ -148,9 +161,14 @@ export function DaftarPenduduk({ filter, onUbahFilter, onBukaProfil, sekarang }:
           aksi={
             <>
               {boleh(pengguna.peran, 'penduduk.ubah') && (
-                <TautanTombol href="/admin/kependudukan/penduduk/tambah" varian="utama" ikon={<Plus aria-hidden size={16} />}>
-                  Tambah penduduk
-                </TautanTombol>
+                <>
+                  <TautanTombol href="/admin/kependudukan/penduduk/tambah" varian="utama" ikon={<Plus aria-hidden size={16} />}>
+                    Tambah penduduk
+                  </TautanTombol>
+                  <TautanTombol href="/admin/kependudukan/penduduk/impor" ikon={<FileArrowUp aria-hidden size={16} />}>
+                    Impor Excel
+                  </TautanTombol>
+                </>
               )}
               <MenuAksi
                 pemicu={<Tombol ikon={<DownloadSimple aria-hidden size={16} />}>Unduh</Tombol>}

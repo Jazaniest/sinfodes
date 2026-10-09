@@ -25,6 +25,7 @@ import { Route as AdminPanelKependudukanMutasiMeninggalRouteImport } from './rou
 import { Route as AdminPanelKependudukanMutasiPindahRouteImport } from './routes/admin/_panel/kependudukan/mutasi/pindah'
 import { Route as AdminPanelKependudukanPendudukIndexRouteImport } from './routes/admin/_panel/kependudukan/penduduk/index'
 import { Route as AdminPanelKependudukanPendudukIdRouteImport } from './routes/admin/_panel/kependudukan/penduduk/$id'
+import { Route as AdminPanelKependudukanPendudukImporRouteImport } from './routes/admin/_panel/kependudukan/penduduk/impor'
 import { Route as AdminPanelKependudukanPendudukTambahRouteImport } from './routes/admin/_panel/kependudukan/penduduk/tambah'
 import { Route as AdminPanelKependudukanPendudukIdUbahRouteImport } from './routes/admin/_panel/kependudukan/penduduk/$id_.ubah'
 
@@ -119,6 +120,12 @@ const AdminPanelKependudukanPendudukIdRoute =
     path: '/kependudukan/penduduk/$id',
     getParentRoute: () => AdminPanelRoute,
   } as any)
+const AdminPanelKependudukanPendudukImporRoute =
+  AdminPanelKependudukanPendudukImporRouteImport.update({
+    id: '/kependudukan/penduduk/impor',
+    path: '/kependudukan/penduduk/impor',
+    getParentRoute: () => AdminPanelRoute,
+  } as any)
 const AdminPanelKependudukanPendudukTambahRoute =
   AdminPanelKependudukanPendudukTambahRouteImport.update({
     id: '/kependudukan/penduduk/tambah',
@@ -146,6 +153,7 @@ export interface FileRoutesByFullPath {
   '/admin/kependudukan/mutasi/meninggal': typeof AdminPanelKependudukanMutasiMeninggalRoute
   '/admin/kependudukan/mutasi/pindah': typeof AdminPanelKependudukanMutasiPindahRoute
   '/admin/kependudukan/penduduk/$id': typeof AdminPanelKependudukanPendudukIdRoute
+  '/admin/kependudukan/penduduk/impor': typeof AdminPanelKependudukanPendudukImporRoute
   '/admin/kependudukan/penduduk/tambah': typeof AdminPanelKependudukanPendudukTambahRoute
   '/admin/kependudukan/keluarga/': typeof AdminPanelKependudukanKeluargaIndexRoute
   '/admin/kependudukan/mutasi/': typeof AdminPanelKependudukanMutasiIndexRoute
@@ -165,6 +173,7 @@ export interface FileRoutesByTo {
   '/admin/kependudukan/mutasi/meninggal': typeof AdminPanelKependudukanMutasiMeninggalRoute
   '/admin/kependudukan/mutasi/pindah': typeof AdminPanelKependudukanMutasiPindahRoute
   '/admin/kependudukan/penduduk/$id': typeof AdminPanelKependudukanPendudukIdRoute
+  '/admin/kependudukan/penduduk/impor': typeof AdminPanelKependudukanPendudukImporRoute
   '/admin/kependudukan/penduduk/tambah': typeof AdminPanelKependudukanPendudukTambahRoute
   '/admin/kependudukan/keluarga': typeof AdminPanelKependudukanKeluargaIndexRoute
   '/admin/kependudukan/mutasi': typeof AdminPanelKependudukanMutasiIndexRoute
@@ -186,6 +195,7 @@ export interface FileRoutesById {
   '/admin/_panel/kependudukan/mutasi/meninggal': typeof AdminPanelKependudukanMutasiMeninggalRoute
   '/admin/_panel/kependudukan/mutasi/pindah': typeof AdminPanelKependudukanMutasiPindahRoute
   '/admin/_panel/kependudukan/penduduk/$id': typeof AdminPanelKependudukanPendudukIdRoute
+  '/admin/_panel/kependudukan/penduduk/impor': typeof AdminPanelKependudukanPendudukImporRoute
   '/admin/_panel/kependudukan/penduduk/tambah': typeof AdminPanelKependudukanPendudukTambahRoute
   '/admin/_panel/kependudukan/keluarga/': typeof AdminPanelKependudukanKeluargaIndexRoute
   '/admin/_panel/kependudukan/mutasi/': typeof AdminPanelKependudukanMutasiIndexRoute
@@ -208,6 +218,7 @@ export interface FileRouteTypes {
     | '/admin/kependudukan/mutasi/meninggal'
     | '/admin/kependudukan/mutasi/pindah'
     | '/admin/kependudukan/penduduk/$id'
+    | '/admin/kependudukan/penduduk/impor'
     | '/admin/kependudukan/penduduk/tambah'
     | '/admin/kependudukan/keluarga/'
     | '/admin/kependudukan/mutasi/'
@@ -227,6 +238,7 @@ export interface FileRouteTypes {
     | '/admin/kependudukan/mutasi/meninggal'
     | '/admin/kependudukan/mutasi/pindah'
     | '/admin/kependudukan/penduduk/$id'
+    | '/admin/kependudukan/penduduk/impor'
     | '/admin/kependudukan/penduduk/tambah'
     | '/admin/kependudukan/keluarga'
     | '/admin/kependudukan/mutasi'
@@ -247,6 +259,7 @@ export interface FileRouteTypes {
     | '/admin/_panel/kependudukan/mutasi/meninggal'
     | '/admin/_panel/kependudukan/mutasi/pindah'
     | '/admin/_panel/kependudukan/penduduk/$id'
+    | '/admin/_panel/kependudukan/penduduk/impor'
     | '/admin/_panel/kependudukan/penduduk/tambah'
     | '/admin/_panel/kependudukan/keluarga/'
     | '/admin/_panel/kependudukan/mutasi/'
@@ -375,6 +388,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPanelKependudukanPendudukIdRouteImport
       parentRoute: typeof AdminPanelRoute
     }
+    '/admin/_panel/kependudukan/penduduk/impor': {
+      id: '/admin/_panel/kependudukan/penduduk/impor'
+      path: '/kependudukan/penduduk/impor'
+      fullPath: '/admin/kependudukan/penduduk/impor'
+      preLoaderRoute: typeof AdminPanelKependudukanPendudukImporRouteImport
+      parentRoute: typeof AdminPanelRoute
+    }
     '/admin/_panel/kependudukan/penduduk/tambah': {
       id: '/admin/_panel/kependudukan/penduduk/tambah'
       path: '/kependudukan/penduduk/tambah'
@@ -402,6 +422,7 @@ interface AdminPanelRouteChildren {
   AdminPanelKependudukanMutasiMeninggalRoute: typeof AdminPanelKependudukanMutasiMeninggalRoute
   AdminPanelKependudukanMutasiPindahRoute: typeof AdminPanelKependudukanMutasiPindahRoute
   AdminPanelKependudukanPendudukIdRoute: typeof AdminPanelKependudukanPendudukIdRoute
+  AdminPanelKependudukanPendudukImporRoute: typeof AdminPanelKependudukanPendudukImporRoute
   AdminPanelKependudukanPendudukTambahRoute: typeof AdminPanelKependudukanPendudukTambahRoute
   AdminPanelKependudukanKeluargaIndexRoute: typeof AdminPanelKependudukanKeluargaIndexRoute
   AdminPanelKependudukanMutasiIndexRoute: typeof AdminPanelKependudukanMutasiIndexRoute
@@ -423,6 +444,8 @@ const AdminPanelRouteChildren: AdminPanelRouteChildren = {
   AdminPanelKependudukanMutasiPindahRoute:
     AdminPanelKependudukanMutasiPindahRoute,
   AdminPanelKependudukanPendudukIdRoute: AdminPanelKependudukanPendudukIdRoute,
+  AdminPanelKependudukanPendudukImporRoute:
+    AdminPanelKependudukanPendudukImporRoute,
   AdminPanelKependudukanPendudukTambahRoute:
     AdminPanelKependudukanPendudukTambahRoute,
   AdminPanelKependudukanKeluargaIndexRoute:
