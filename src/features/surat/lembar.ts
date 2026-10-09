@@ -1,6 +1,6 @@
 import { tanggalIsoWib } from '@/domain/format/tanggal'
 import { susunLembar } from '@/domain/surat/lembar'
-import type { DetailPermohonan } from '@/domain/surat/permohonan'
+import type { DetailPermohonan, Permohonan } from '@/domain/surat/permohonan'
 import { domainDesa, tautanVerifikasi } from '@/domain/surat/verifikasi'
 import type { Desa, Dusun } from '@/domain/wilayah/schema'
 import type { PropsLembarSurat } from '@/ui/dokumen/LembarSurat'
@@ -18,8 +18,13 @@ export type KonteksLembarLayar = {
   asal: string
 }
 
+/** Bahan lembar: detail permohonan tersimpan, atau surat yang sedang dibuat di loket (belum terbit). */
+export type BahanLembar = Pick<DetailPermohonan, 'jenis' | 'pemohon' | 'subjek' | 'mutasi' | 'pengaturan' | 'pejabat'> & {
+  permohonan: Pick<Permohonan, 'terbit'>
+}
+
 /** Lembar dari isi yang dibekukan bila surat sudah terbit; selain itu pratinjau draf dari isian di layar (SPEC §7.4). */
-export function dataLembar(d: DetailPermohonan, k: KonteksLembarLayar): Omit<PropsLembarSurat, 'penanda'> {
+export function dataLembar(d: BahanLembar, k: KonteksLembarLayar): Omit<PropsLembarSurat, 'penanda'> {
   const kop = {
     kabupaten: k.desa.kabupaten.nama,
     kecamatan: k.desa.kecamatan.nama,

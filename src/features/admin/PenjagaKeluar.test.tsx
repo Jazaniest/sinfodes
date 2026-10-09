@@ -45,4 +45,12 @@ describe('penjaga keluar halaman (SPEC §6.4)', () => {
     })
     expect(await screen.findByText('Perubahan isian surat yang belum disimpan akan hilang.')).toBeInTheDocument()
   })
+  it('pindah langkah di halaman yang sama (hanya parameter cari) tidak dijaga', async () => {
+    const { router } = await renderDenganRouter(<PenjagaKeluar aktif />)
+    await act(async () => {
+      router.history.push('/?langkah=2')
+    })
+    expect(router.state.location.search).toEqual({ langkah: 2 })
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+  })
 })

@@ -1,9 +1,5 @@
 import { FilePdf, PenNib, Printer, WhatsappLogo } from '@phosphor-icons/react'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
-import { GalatApi, pesanGalat } from '@/api/galat'
-import { segarkanSurat } from '@/api/segarkan'
-import { jalankanAksi, kunciSurat } from '@/api/surat'
 import { samarkanTelepon } from '@/domain/format/telepon'
 import { boleh } from '@/domain/pengguna/hak-akses'
 import { aksiTersedia } from '@/domain/surat/alur'
@@ -15,6 +11,7 @@ import { DialogAlasan } from './DialogAlasan'
 import { DialogKirimWa } from './DialogKirimWa'
 import { DialogTandaTangani } from './DialogTandaTangani'
 import { pesanWhatsApp } from './pesan-wa'
+import { DIALOG_ALASAN, useAksiSurat, type AksiAlasan } from './useAksiSurat'
 
 type Props = {
   d: DetailPermohonan
@@ -25,96 +22,34 @@ type Props = {
   onCetak: () => void
 }
 
-type AksiAlasan = 'tolak' | 'kembalikan' | 'batalkan'
 type JenisDialog = AksiAlasan | 'tandatangani' | 'kirim-wa'
-
-const DIALOG_ALASAN: Readonly<
-  Record<AksiAlasan, { judul: string; label: string; keterangan: string; labelSetuju: string; bahaya: boolean; kunci: 'alasan' | 'catatan' }>
-> = {
-  tolak: {
-    judul: 'Tolak permohonan?', label: 'Alasan penolakan', labelSetuju: 'Tolak permohonan', bahaya: true, kunci: 'alasan',
-    keterangan: 'Alasan ini dibaca pemohon. Tulis apa yang perlu diperbaiki atau dilengkapi.',
-  },
-  kembalikan: {
-    judul: 'Kembalikan ke operator?', label: 'Catatan perbaikan', labelSetuju: 'Kembalikan', bahaya: false, kunci: 'catatan',
-    keterangan: 'Tulis apa yang perlu diperbaiki sebelum surat diajukan lagi.',
-  },
-  batalkan: {
-    judul: 'Batalkan surat ini?', label: 'Alasan pembatalan', labelSetuju: 'Batalkan surat', bahaya: true, kunci: 'alasan',
-    keterangan: 'Surat yang sudah terbit tidak dihapus. Nomornya tetap tercatat dan tidak dipakai ulang.',
-  },
-}
-
-function pesanBerhasil(baru: DetailPermohonan, aksi: Aksi): string {
-  const p = baru.permohonan
-  switch (aksi) {
-    case 'proses':
-      return 'Permohonan mulai diproses.'
-    case 'tolak':
-      return 'Permohonan ditolak.'
-    case 'ajukan-ttd':
-      return p.tahap === 'paraf' ? 'Diajukan ke Sekretaris Desa untuk paraf.' : 'Diajukan ke Kepala Desa untuk tanda tangan.'
-    case 'paraf':
-      return 'Surat diparaf. Kini menunggu tanda tangan Kepala Desa.'
-    case 'kembalikan':
-      return 'Surat dikembalikan ke operator untuk diperbaiki.'
-    case 'tandatangani':
-      return `Surat ditandatangani. Nomor ${p.terbit?.nomor ?? ''}.`
-    case 'batalkan':
-      return 'Surat dibatalkan. Nomornya tetap tercatat.'
-    case 'tandai-diambil':
-      return 'Ditandai sudah diambil.'
-    case 'kirim-wa':
-      return `Pesan terkirim ke ${samarkanTelepon(baru.pemohon.telepon ?? '')}`
-  }
-}
 
 /** Aksi sesuai status dan peran (SPEC §7.4). Tombol yang tidak berhak disembunyikan; API tiruan tetap memeriksa. */
 export function AksiSurat({ d, isian, onBerhasil, onGalatIsian, onCetak }: Props) {
   const { pengguna, desa } = useSesiAdmin()
-  const queryClient = useQueryClient()
   const [dialog, setDialog] = useState<JenisDialog | null>(null)
   const [galatDialog, setGalatDialog] = useState<string | undefined>()
   const p = d.permohonan
   const aksi = aksiTersedia(p, d.jenis, pengguna.peran).filter((a) => a !== 'kirim-wa' || d.pemohon.telepon !== null)
   const bolehCetak = p.status === 'selesai' && (boleh(pengguna.peran, 'surat.proses') || boleh(pengguna.peran, 'surat.tandatangani'))
-
-  const jalankan = useMutation({
-    mutationFn: ({ aksi: a, body }: { aksi: Aksi; body?: object }) => jalankanAksi(p.id, a, body),
-    onSuccess: (baru, { aksi: a }) => {
-      queryClient.setQueryData(kunciSurat.detail(p.id), baru)
-      void segarkanSurat(queryClient)
+  const { jalan: kirim, sedang, berjalan } = useAksiSurat(p.id, {
+    onBerhasil: (_baru, a) => {
       setDialog(null)
       onBerhasil(a)
-      tampilkanToast({ pesan: pesanBerhasil(baru, a), nada: 'berhasil' })
     },
-    onError: (galat) => {
-      if (galat instanceof GalatApi && galat.kode === 'VALIDATION') {
-        const isianSalah = Object.fromEntries(
-          Object.entries(galat.fields).flatMap(([kunci, pesan]) => (kunci.startsWith('isian.') ? [[kunci.slice(6), pesan]] : [])),
-        )
-        if (Object.keys(isianSalah).length > 0) {
-          onGalatIsian(isianSalah)
-          tampilkanToast({ pesan: 'Isian surat belum lengkap. Periksa isian yang ditandai.', nada: 'galat' })
-          return
-        }
-        const pesanKolom = Object.values(galat.fields)[0]
-        if (dialog && pesanKolom) {
-          setGalatDialog(pesanKolom)
-          return
-        }
-      }
-      if (galat instanceof GalatApi && galat.kode === 'CONFLICT') void queryClient.invalidateQueries({ queryKey: kunciSurat.detail(p.id) })
-      tampilkanToast({ pesan: pesanGalat(galat), nada: 'galat' })
+    onGalatIsian,
+    onGalatKolom: (pesan) => {
+      if (!dialog) return false
+      setGalatDialog(pesan)
+      return true
     },
   })
 
-  const sedang = jalankan.isPending
   const ada = (a: Aksi) => aksi.includes(a)
-  const memuat = (a: Aksi) => sedang && jalankan.variables?.aksi === a
+  const memuat = (a: Aksi) => berjalan === a
   const jalan = (a: Aksi, body?: object) => {
     setGalatDialog(undefined)
-    jalankan.mutate({ aksi: a, body })
+    kirim(a, body)
   }
   const buka = (jenis: JenisDialog) => {
     setGalatDialog(undefined)

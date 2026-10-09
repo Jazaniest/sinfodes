@@ -12,20 +12,23 @@ type Props = {
   memuat: boolean
   galat?: string
   onSetuju: (passphrase: string) => void
+  /** Tumpukan tanda tangan: tanda tangani lalu langsung ke surat berikutnya. Bila ada, ini aksi utama dan aksi Enter. */
+  onSetujuLanjut?: (passphrase: string) => void
   onTutup: () => void
 }
 
 /** Tanda tangan elektronik dengan passphrase (SPEC §7.4). Di demo, TTE disimulasikan. */
-export function DialogTandaTangani({ judulSurat, pemohon, atasNama, memuat, galat, onSetuju, onTutup }: Props) {
+export function DialogTandaTangani({ judulSurat, pemohon, atasNama, memuat, galat, onSetuju, onSetujuLanjut, onTutup }: Props) {
   const [passphrase, setPassphrase] = useState('')
   const [kosong, setKosong] = useState(false)
-  const kirim = () => {
+  const kirim = (setuju: (passphrase: string) => void) => {
     if (passphrase === '') {
       setKosong(true)
       return
     }
-    onSetuju(passphrase)
+    setuju(passphrase)
   }
+  const utama = onSetujuLanjut ?? onSetuju
   return (
     <Dialog
       isOpen
@@ -37,9 +40,20 @@ export function DialogTandaTangani({ judulSurat, pemohon, atasNama, memuat, gala
       aksi={
         <>
           <Tombol onPress={onTutup}>Batal</Tombol>
-          <Tombol varian="utama" memuat={memuat} onPress={kirim}>
-            Tanda tangani
-          </Tombol>
+          {onSetujuLanjut ? (
+            <>
+              <Tombol memuat={memuat} onPress={() => kirim(onSetuju)}>
+                Tanda tangani
+              </Tombol>
+              <Tombol varian="utama" memuat={memuat} onPress={() => kirim(onSetujuLanjut)}>
+                Tanda tangani &amp; lanjut
+              </Tombol>
+            </>
+          ) : (
+            <Tombol varian="utama" memuat={memuat} onPress={() => kirim(onSetuju)}>
+              Tanda tangani
+            </Tombol>
+          )}
         </>
       }
     >
@@ -57,7 +71,7 @@ export function DialogTandaTangani({ judulSurat, pemohon, atasNama, memuat, gala
             setKosong(false)
           }}
           onKeyDown={(e) => {
-            if (e.key === 'Enter') kirim()
+            if (e.key === 'Enter') kirim(utama)
           }}
           galat={kosong ? 'Passphrase wajib diisi' : galat}
           keterangan={MODE_DEMO ? 'Simulasi TTE: passphrase demo tertulis di halaman demo.' : undefined}

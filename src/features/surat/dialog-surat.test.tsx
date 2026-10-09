@@ -62,6 +62,23 @@ describe('DialogTandaTangani (SPEC §7.4)', () => {
     pasang({ atasNama: true })
     expect(screen.getByRole('dialog')).toHaveTextContent('Anda menandatangani atas nama Kepala Desa.')
   })
+  it('tumpukan: "Tanda tangani & lanjut" menjadi aksi utama, juga untuk Enter', async () => {
+    const onSetuju = vi.fn()
+    const onSetujuLanjut = vi.fn()
+    const user = userEvent.setup()
+    render(
+      <DialogTandaTangani judulSurat="Surat Keterangan Domisili" pemohon="Siti Rahmah" atasNama={false} memuat={false}
+        onSetuju={onSetuju} onSetujuLanjut={onSetujuLanjut} onTutup={vi.fn()} />,
+    )
+    const dialog = screen.getByRole('dialog', { name: 'Tanda tangani surat?' })
+    await user.click(within(dialog).getByLabelText('Passphrase tanda tangan elektronik'))
+    await user.paste('sialang2026')
+    await user.keyboard('{Enter}')
+    expect(onSetujuLanjut).toHaveBeenCalledWith('sialang2026')
+    await user.click(within(dialog).getByRole('button', { name: 'Tanda tangani' }))
+    expect(onSetuju).toHaveBeenCalledWith('sialang2026')
+    expect(within(dialog).getByRole('button', { name: 'Tanda tangani & lanjut' })).toBeInTheDocument()
+  })
 })
 
 describe('DialogKirimWa (SPEC §7.4)', () => {

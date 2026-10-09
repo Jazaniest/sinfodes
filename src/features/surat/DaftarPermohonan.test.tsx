@@ -20,11 +20,11 @@ function pasang(filter: Partial<FilterPermohonan> = {}, peran: Peran = 'operator
   masukSebagai(peran === 'kadus' ? AKUN_UJI.kadus : AKUN_UJI.operator)
   const onUbahFilter = vi.fn()
   const onBuka = vi.fn()
-  renderPanel(
+  const hasil = renderPanel(
     <DaftarPermohonan filter={{ ...FILTER_PERMOHONAN_BAWAAN, ...filter }} onUbahFilter={onUbahFilter} onBuka={onBuka} sekarang={SEKARANG_UJI} />,
     contohSesi(peran),
   )
-  return { onUbahFilter, onBuka, user: userEvent.setup() }
+  return { ...hasil, onUbahFilter, onBuka, user: userEvent.setup() }
 }
 
 describe('Daftar permohonan (SPEC §7.4 layar 1)', () => {
@@ -94,5 +94,13 @@ describe('Daftar permohonan (SPEC §7.4 layar 1)', () => {
       (p) => p.dusunId === 'dsn_ss_2' && p.status === 'selesai' && p.masukPada.slice(0, 10) >= awal,
     ).length
     expect(await screen.findByText(`1–25 dari ${formatAngka(jumlah)}`)).toBeInTheDocument()
+  })
+  it('Buat surat untuk petugas; tidak untuk Kepala Desa (fokus review 5)', async () => {
+    const { unmount } = pasang()
+    expect(await screen.findByRole('link', { name: 'Buat surat' })).toHaveAttribute('href', '/admin/surat/baru')
+    unmount()
+    pasang({}, 'kades')
+    await screen.findByRole('grid', TABEL)
+    expect(screen.queryByRole('link', { name: 'Buat surat' })).not.toBeInTheDocument()
   })
 })

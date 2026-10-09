@@ -1,3 +1,4 @@
+import { Plus } from '@phosphor-icons/react'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
 import { pesanGalat } from '@/api/galat'
@@ -5,6 +6,7 @@ import { cariPermohonan, daftarPermohonan, kunciSurat, opsiJenisSurat, opsiJumla
 import { formatAngka } from '@/domain/format/angka'
 import { formatWaktuRelatif } from '@/domain/format/tanggal'
 import { kataCukup } from '@/domain/penduduk/cari'
+import { boleh } from '@/domain/pengguna/hak-akses'
 import {
   LABEL_KANAL, LABEL_PERIODE, LABEL_STATUS, PERIODE_PERMOHONAN, STATUS_PERMOHONAN, STATUS_TERBUKA,
   type BarisPermohonan, type FilterPermohonan, type StatusPermohonan,
@@ -18,9 +20,11 @@ import { SearchField } from '@/ui/isian/SearchField'
 import { Select } from '@/ui/isian/Select'
 import { TabNav } from '@/ui/navigasi/TabNav'
 import { PageHeader } from '@/ui/tata-letak/PageHeader'
+import { TautanTombol } from '@/ui/tombol/TautanTombol'
 import { Tombol } from '@/ui/tombol/Tombol'
 import { EmptyState } from '@/ui/umpan-balik/EmptyState'
 import { Skeleton } from '@/ui/umpan-balik/Skeleton'
+import { useSesiAdmin } from '../admin/sesi-konteks'
 import { CapPermohonan } from './CapPermohonan'
 import { hrefPermohonan } from './filter-url'
 
@@ -47,6 +51,7 @@ const noUrut = (n: number) => String(n).padStart(3, '0')
 
 /** Permohonan surat (SPEC §7.4 layar 1). Status, periode, dan jenis di URL; kata cari hanya di memori dan dikirim lewat POST. */
 export function DaftarPermohonan({ filter, onUbahFilter, onBuka, sekarang }: Props) {
+  const { pengguna } = useSesiAdmin()
   const hariIni = useMemo(() => sekarang ?? new Date(), [sekarang])
   const [kata, setKata] = useState('')
   const kataTunda = useTunda(kata.trim(), 300)
@@ -125,7 +130,18 @@ export function DaftarPermohonan({ filter, onUbahFilter, onBuka, sekarang }: Pro
 
   return (
     <div>
-      <PageHeader jejak={[{ label: 'Layanan Surat' }]} judul="Permohonan" meta={meta} />
+      <PageHeader
+        jejak={[{ label: 'Layanan Surat' }]}
+        judul="Permohonan"
+        meta={meta}
+        aksi={
+          boleh(pengguna.peran, 'surat.proses') && (
+            <TautanTombol varian="utama" href="/admin/surat/baru" ikon={<Plus aria-hidden size={16} />}>
+              Buat surat
+            </TautanTombol>
+          )
+        }
+      />
       <div className="border-b border-garis pt-4">
         <TabNav
           label="Status permohonan"
