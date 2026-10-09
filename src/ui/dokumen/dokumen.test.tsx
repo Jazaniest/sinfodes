@@ -76,6 +76,13 @@ describe('LembarSurat (SPEC §7.5)', () => {
     expect(document.querySelector('footer')).toBeNull()
     expect(screen.getByText('Draf')).toBeInTheDocument()
   })
+  it('jarak baris 1,15 dan kaki surat rapat, supaya surat terpanjang tetap satu halaman A4 (diukur di browser)', () => {
+    lembar()
+    const surat = screen.getByRole('article')
+    expect(surat).toHaveClass('leading-[1.15]')
+    expect(surat).not.toHaveClass('leading-normal')
+    expect(surat.querySelector('footer')).toHaveClass('pt-[0.4cm]')
+  })
   it('kertas F4 dan huruf Arimo', () => {
     lembar({ kertas: 'F4', huruf: 'Arimo' })
     expect(screen.getByRole('article')).toHaveClass('min-h-[33cm]', 'w-[21.5cm]', 'font-surat-arimo')
@@ -107,6 +114,8 @@ describe('NomorSurat dan PratinjauLembar', () => {
     )
     const wilayah = screen.getByRole('region', { name: 'Pratinjau surat' })
     expect(wilayah).toHaveClass('print:hidden')
+    // Tanpa min-w-0, lebar wadah mengikuti lembar 21 cm dan skala terkunci di 1 di layar sempit.
+    expect(wilayah).toHaveClass('min-w-0')
     expect(within(wilayah).getByText('isi')).toBeInTheDocument()
   })
 })

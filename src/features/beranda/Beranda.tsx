@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { opsiBeranda } from '@/api/beranda'
 import { pesanGalat } from '@/api/galat'
+import type { Aktivitas } from '@/domain/aktivitas/schema'
 import { sapaanWaktu } from '@/domain/format/sapaan'
 import { formatJam, formatTanggal, tanggalIsoWib } from '@/domain/format/tanggal'
 import { namaDusun } from '@/domain/wilayah/alamat'
@@ -12,6 +13,13 @@ import { useSesiAdmin } from '../admin/sesi-konteks'
 import { isiTindakan, kalimatKeadaan } from './kalimat'
 
 const judulBagian = 'text-label font-medium text-tinta-2 uppercase'
+
+/** Butir Buku hari ini yang bisa dibuka: profil penduduk atau ruang kerja surat. */
+function hrefRujukan(r: Aktivitas['rujukan']): string | null {
+  if (r?.jenis === 'penduduk') return `/admin/kependudukan/penduduk/${r.id}`
+  if (r?.jenis === 'permohonan') return `/admin/surat/${r.id}`
+  return null
+}
 
 /** Beranda per peran (SPEC §5.3): tanpa deretan kartu angka; bagian bernilai null tidak tampil. */
 export function Beranda({ sekarang = new Date() }: { sekarang?: Date }) {
@@ -62,23 +70,26 @@ export function Beranda({ sekarang = new Date() }: { sekarang?: Date }) {
                 <p className="mt-2 text-tinta-2">Belum ada kejadian hari ini.</p>
               ) : (
                 <ol className="mt-2 divide-y divide-garis border-y border-garis bg-lembar">
-                  {kueri.data.bukuHariIni.map((a) => (
-                    <li key={a.id} className="grid grid-cols-[3.5rem_1fr] gap-3 px-4 py-2.5">
-                      <time dateTime={a.waktu} className="font-mono text-teks-kecil text-tinta-2">
-                        {formatJam(a.waktu)}
-                      </time>
-                      <p>
-                        {a.rujukan?.jenis === 'penduduk' ? (
-                          <Tautan href={`/admin/kependudukan/penduduk/${a.rujukan.id}`} nada="tinta">
-                            {a.ringkasan}
-                          </Tautan>
-                        ) : (
-                          a.ringkasan
-                        )}
-                        {a.oleh && <span className="text-tinta-2"> · {a.oleh.nama}</span>}
-                      </p>
-                    </li>
-                  ))}
+                  {kueri.data.bukuHariIni.map((a) => {
+                    const href = hrefRujukan(a.rujukan)
+                    return (
+                      <li key={a.id} className="grid grid-cols-[3.5rem_1fr] gap-3 px-4 py-2.5">
+                        <time dateTime={a.waktu} className="font-mono text-teks-kecil text-tinta-2">
+                          {formatJam(a.waktu)}
+                        </time>
+                        <p>
+                          {href ? (
+                            <Tautan href={href} nada="tinta">
+                              {a.ringkasan}
+                            </Tautan>
+                          ) : (
+                            a.ringkasan
+                          )}
+                          {a.oleh && <span className="text-tinta-2"> · {a.oleh.nama}</span>}
+                        </p>
+                      </li>
+                    )
+                  })}
                 </ol>
               )}
             </section>

@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest'
-import { tanggalIsoWib, waktuIsoWib } from '@/domain/format/tanggal'
+import { keWaktuWib, tanggalIsoWib, waktuIsoWib } from '@/domain/format/tanggal'
 import { jenisSuratSchema } from '@/domain/surat/jenis'
 import { permohonanSchema, type StatusPermohonan } from '@/domain/surat/permohonan'
 import { hariKerjaBerlalu } from '@/domain/surat/waktu'
@@ -124,5 +124,15 @@ describe('data surat demo (SPEC §12.6)', () => {
     const catatan = db.aktivitas.filter((a) => a.jenis === 'permohonan-masuk')
     expect(catatan.map((a) => a.rujukan?.id)).toEqual(expect.arrayContaining(masuk))
     expect(catatan.every((a) => a.waktu.startsWith(hariIni) && a.rujukan?.jenis === 'permohonan')).toBe(true)
+  })
+  it('loket hanya melayani di hari kerja pukul 08.00–15.30, juga bila demo dibuka malam hari', () => {
+    for (const dbUji of [db, bangkitkanDb(new Date('2026-09-24T14:00:00Z'))]) {
+      for (const p of dbUji.permohonan.filter((x) => x.kanal === 'loket')) {
+        const w = keWaktuWib(p.masukPada)
+        const menit = w.getUTCHours() * 60 + w.getUTCMinutes()
+        expect(w.getUTCDay() !== 0 && w.getUTCDay() !== 6, p.masukPada).toBe(true)
+        expect(menit >= 8 * 60 && menit <= 15 * 60 + 30, p.masukPada).toBe(true)
+      }
+    }
   })
 })

@@ -50,4 +50,11 @@ describe('Beranda (SPEC §5.3)', () => {
       '/admin/kependudukan/penduduk/pdk_syahrial',
     )
   })
+  it('butir surat di Buku hari ini membuka ruang kerja surat (2B-1)', async () => {
+    masukSebagai(AKUN_UJI.operator)
+    renderPanel(<Beranda sekarang={SEKARANG_UJI} />, contohSesi('operator'))
+    const buku = await screen.findByRole('region', { name: 'Buku hari ini' })
+    const tautan = await within(buku).findAllByRole('link', { name: /^Permohonan / })
+    expect(tautan[0]).toHaveAttribute('href', expect.stringMatching(/^\/admin\/surat\/srt_/))
+  })
 })

@@ -16,7 +16,7 @@ export type DataTandaTangan = {
 /** Blok tanda tangan di kanan, lebar 7 cm (SPEC §7.5). */
 export function BlokTandaTangan({ data }: { data: DataTandaTangan }) {
   return (
-    <div className="mt-[0.8cm] ml-auto w-[7cm] break-inside-avoid">
+    <div className="mt-[0.6cm] ml-auto w-[7cm] break-inside-avoid">
       <p>{data.tempatTanggal}</p>
       {data.atasNama ? (
         <p>

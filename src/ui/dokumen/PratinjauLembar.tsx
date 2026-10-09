@@ -18,7 +18,7 @@ export function PratinjauLembar({ label, children }: { label: string; children: 
     return () => pengamat.disconnect()
   }, [])
   return (
-    <div role="region" aria-label={label} className="rounded-2 border border-garis bg-kertas-2 p-3 sm:p-6 print:hidden">
+    <div role="region" aria-label={label} className="min-w-0 rounded-2 border border-garis bg-kertas-2 p-3 sm:p-6 print:hidden">
       <div ref={wadah} className="overflow-hidden">
         <div style={{ zoom: skala }} className="mx-auto w-fit shadow-melayang">
           {children}

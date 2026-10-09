@@ -32,14 +32,17 @@ export type PropsLembarSurat = {
 /** A4 21 × 29,7 cm; F4 21,5 × 33 cm (SPEC §7.5). */
 const KERTAS: Readonly<Record<UkuranKertas, string>> = { A4: 'w-[21cm] min-h-[29.7cm]', F4: 'w-[21.5cm] min-h-[33cm]' }
 
-/** Lembar surat siap cetak (SPEC §7.5): margin atas 2, kiri 3, kanan 2, bawah 2 cm; huruf 12 pt. */
+/**
+ * Lembar surat siap cetak (SPEC §7.5): margin atas 2, kiri 3, kanan 2, bawah 2 cm; huruf 12 pt. Jarak baris 1,15
+ * (lazim di naskah dinas) supaya jenis surat terpanjang tetap muat satu halaman A4.
+ */
 export function LembarSurat({ kop, isi, nomor, tandaTangan, kertas, huruf, verifikasi, simulasi, penanda }: PropsLembarSurat) {
   const qrDiKaki = tandaTangan.mode === 'basah' && verifikasi !== null
   return (
     <article
       aria-label={`Lembar ${isi.judul.toLocaleLowerCase('id-ID')}`}
       className={cn(
-        'relative flex flex-col bg-putih pt-[2cm] pr-[2cm] pb-[2cm] pl-[3cm] text-[12pt] leading-normal text-tinta',
+        'relative flex flex-col bg-putih pt-[2cm] pr-[2cm] pb-[2cm] pl-[3cm] text-[12pt] leading-[1.15] text-tinta',
         KERTAS[kertas],
         huruf === 'Arimo' ? 'font-surat-arimo' : 'font-surat-tinos',
       )}
@@ -55,9 +58,9 @@ export function LembarSurat({ kop, isi, nomor, tandaTangan, kertas, huruf, verif
             <tbody>
               {b.baris.map((r) => (
                 <tr key={r.label}>
-                  <td className="w-[5cm] py-px align-top">{r.label}</td>
-                  <td className="w-[0.5cm] py-px align-top">:</td>
-                  <td className={cn('py-px align-top', r.tebal && 'font-bold')}>{r.nilai}</td>
+                  <td className="w-[5cm] align-top">{r.label}</td>
+                  <td className="w-[0.5cm] align-top">:</td>
+                  <td className={cn('align-top', r.tebal && 'font-bold')}>{r.nilai}</td>
                 </tr>
               ))}
             </tbody>
@@ -70,7 +73,7 @@ export function LembarSurat({ kop, isi, nomor, tandaTangan, kertas, huruf, verif
       )}
       <BlokTandaTangan data={tandaTangan} />
       {verifikasi && (
-        <footer className="mt-auto flex items-end gap-[0.3cm] pt-[0.8cm] text-[8pt] leading-snug">
+        <footer className="mt-auto flex items-end gap-[0.3cm] pt-[0.4cm] text-[8pt] leading-snug">
           {qrDiKaki && <QrVerifikasi isi={verifikasi.isiQr} label={`Kode QR verifikasi ${verifikasi.kode}`} className="size-[1.8cm] shrink-0" />}
           <p>
             Keaslian surat dapat diperiksa di {verifikasi.domain}/verifikasi dengan kode{' '}

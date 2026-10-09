@@ -390,8 +390,11 @@ export function bangkitkanSurat(acak: Acak, o: Opsi): HasilSurat {
     const t = batas - mundur * MENIT_MS
     return t >= pada(hariIni, AWAL_HARI_INI) ? t : pada(kemarin, cadangan)
   }
-  /** Seperti `hariIniAtau`, untuk loket: hanya di hari kerja. */
-  const loketHariIniAtau = (mundur: number, cadangan: number) => (hariKerja(hariIni) ? hariIniAtau(mundur, cadangan) : pada(kemarin, cadangan))
+  /** Untuk loket: hanya hari kerja 08.00–15.00; bila demo dibuka malam, jamnya ditarik ke sore tadi. */
+  const loketHariIniAtau = (mundur: number, cadangan: number) => {
+    const t = Math.min(batas, pada(hariIni, 15 * 60)) - mundur * MENIT_MS
+    return hariKerja(hariIni) && t >= pada(hariIni, BUKA) ? t : pada(kemarin, cadangan)
+  }
   const sudahDipakai = new Set<string>()
   const ambilPemohon = (calon: readonly Penduduk[]) => {
     const bebas = calon.filter((p) => !sudahDipakai.has(p.id))
