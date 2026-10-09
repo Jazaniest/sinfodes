@@ -25,6 +25,8 @@ export function dataMilik(pengguna: Pengguna) {
     riwayat: db.riwayat.filter((r) => idPenduduk.has(r.pendudukId)),
     aktivitas: db.aktivitas.filter(diDalam),
     laporanData: db.laporanData.filter(diDalam),
+    permohonan: db.permohonan.filter(diDalam),
+    jenisSurat: db.jenisSurat.filter((j) => j.desaId === pengguna.desaId),
   }
 }
 

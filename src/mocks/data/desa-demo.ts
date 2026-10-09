@@ -5,6 +5,8 @@ export const ID_SUNGAI_SIALANG = 'desa_sungai_sialang'
 export const ID_TANJUNG_LAMO = 'desa_tanjung_lamo'
 /** Semua akun demo memakai kata sandi ini (ditampilkan di halaman demo). */
 export const KATA_SANDI_DEMO = 'demo'
+/** Passphrase tanda tangan elektronik tiruan (SPEC §12.9), ditampilkan di halaman demo. */
+export const PASSPHRASE_TTE_DEMO = 'sialang2026'
 
 const RIAU = { kode: '14', nama: 'Riau' }
 const PELALAWAN = { kode: '14.05', nama: 'Pelalawan' }

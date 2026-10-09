@@ -47,7 +47,7 @@ export function balasField(field: string, pesan: string, kode: 'VALIDATION' | 'C
 /** ID baru yang belum dipakai di basis data: `${awalan}_` + 6 karakter base36. */
 export function idBaru(db: DbDemo, awalan: string): string {
   const terpakai = new Set<string>()
-  for (const daftar of [db.penduduk, db.keluarga, db.mutasi, db.riwayat, db.aktivitas, db.laporanData, db.impor]) {
+  for (const daftar of [db.penduduk, db.keluarga, db.mutasi, db.riwayat, db.aktivitas, db.laporanData, db.impor, db.permohonan]) {
     for (const x of daftar) terpakai.add(x.id)
   }
   for (;;) {

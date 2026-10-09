@@ -94,3 +94,8 @@ export function daftarBulanTerakhir(sekarang: Date, jumlah: number): string[] {
     return `${Math.floor(urutan / 12)}-${String((urutan % 12) + 1).padStart(2, '0')}`
   })
 }
+
+/** Waktu catatan riwayat: "24 Sep 2026 · pukul 09.12 WIB" (SPEC §4.5). */
+export function formatWaktuLog(iso: string): string {
+  return `${formatTanggal(iso, 'pendek')} · pukul ${formatJam(iso)} WIB`
+}

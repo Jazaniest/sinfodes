@@ -6,10 +6,13 @@ import type { Mutasi } from '@/domain/mutasi/schema'
 import type { Riwayat } from '@/domain/penduduk/riwayat'
 import type { Penduduk } from '@/domain/penduduk/schema'
 import type { Pengguna } from '@/domain/pengguna/schema'
+import type { JenisSurat } from '@/domain/surat/jenis'
+import type { PengaturanSurat } from '@/domain/surat/pengaturan'
+import type { Permohonan } from '@/domain/surat/permohonan'
 import type { Desa, Dusun } from '@/domain/wilayah/schema'
 
 /** Naikkan setiap kali seed atau struktur data berubah; data lama di IndexedDB otomatis diganti (SPEC §12). */
-export const VERSI_DATA = 3
+export const VERSI_DATA = 4
 
 /** Berkas impor yang sudah diperiksa dan menunggu konfirmasi (SPEC §6.8). */
 export type SesiImpor = { id: string; desaId: string; olehId: string; laporan: LaporanImpor; selesai: boolean }
@@ -30,4 +33,8 @@ export type DbDemo = {
   /** Laporan dari warga: perbaikan data dan kelahiran yang belum dicatat (SPEC §5.3, §10). */
   laporanData: LaporanData[]
   impor: SesiImpor[]
+  /** Layanan Surat (SPEC §7, §12.6). */
+  jenisSurat: JenisSurat[]
+  permohonan: Permohonan[]
+  pengaturanSurat: PengaturanSurat[]
 }
