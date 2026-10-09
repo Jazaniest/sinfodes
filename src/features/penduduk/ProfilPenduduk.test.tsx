@@ -1,4 +1,5 @@
 import { screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import { daftarPenduduk } from '@/api/penduduk'
 import { LABEL_FIELD } from '@/domain/penduduk/riwayat'
@@ -51,5 +52,25 @@ describe('Profil penduduk (SPEC §6.3)', () => {
     renderPanel(<ProfilPenduduk id="pdk_siti_rahmah" sekarang={SEKARANG_UJI} />, contohSesi('kades'))
     expect(await screen.findByRole('heading', { level: 1, name: 'Siti Rahmah' })).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Ubah' })).not.toBeInTheDocument()
+  })
+  it('menu Catat mutasi di profil penduduk yang masih hidup (SPEC §6.3)', async () => {
+    masukSebagai(AKUN_UJI.operator)
+    renderPanel(<ProfilPenduduk id="pdk_siti_rahmah" sekarang={SEKARANG_UJI} />, contohSesi())
+    await userEvent.click(await screen.findByRole('button', { name: 'Catat mutasi' }))
+    expect(await screen.findByRole('menuitem', { name: 'Meninggal' })).toHaveAttribute(
+      'href',
+      '/admin/kependudukan/mutasi/meninggal?penduduk=pdk_siti_rahmah',
+    )
+    expect(screen.getByRole('menuitem', { name: 'Pindah keluar' })).toHaveAttribute(
+      'href',
+      '/admin/kependudukan/mutasi/pindah?penduduk=pdk_siti_rahmah',
+    )
+  })
+  it('mantan penduduk tidak punya menu Catat mutasi', async () => {
+    masukSebagai(AKUN_UJI.operator)
+    const [almarhum] = (await daftarPenduduk({ status: 'Meninggal' })).data
+    renderPanel(<ProfilPenduduk id={almarhum.id} sekarang={SEKARANG_UJI} />, contohSesi())
+    expect(await screen.findByRole('heading', { level: 1, name: almarhum.nama })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Catat mutasi' })).not.toBeInTheDocument()
   })
 })

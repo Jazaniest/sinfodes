@@ -7,9 +7,11 @@ import { ambilDaftarToast, dengarkanToast, tutupToast, type Toast } from './antr
 export function PenampungToast({ durasi = 5000 }: { durasi?: number }) {
   const daftar = useSyncExternalStore(dengarkanToast, ambilDaftarToast)
   return (
+    // Layar sempit: toast di atas, di bawah header, karena bagian bawah dipakai bilah aksi formulir dan toolbar demo.
+    // Layar lebih lebar: di halaman formulir panjang, toast naik di atas bilah aksi supaya tidak menutupi tombol Simpan.
     <section
       aria-label="Notifikasi"
-      className="pointer-events-none fixed right-4 bottom-4 z-50 flex w-[min(92vw,380px)] flex-col gap-2 print:hidden"
+      className="pointer-events-none fixed right-4 bottom-4 z-50 flex w-[min(92vw,380px)] flex-col gap-2 print:hidden max-sm:top-16 max-sm:bottom-auto sm:[html[data-bilah-aksi]_&]:bottom-20"
     >
       {daftar.map((t) => (
         <ItemToast key={t.id} toast={t} durasi={durasi} />

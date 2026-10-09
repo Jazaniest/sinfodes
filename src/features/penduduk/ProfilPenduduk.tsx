@@ -1,4 +1,4 @@
-import { PencilSimple } from '@phosphor-icons/react'
+import { CaretDown, PencilSimple } from '@phosphor-icons/react'
 import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import { GalatApi, pesanGalat } from '@/api/galat'
@@ -14,15 +14,18 @@ import { alamatLengkap, kodeWilayahNik } from '@/domain/wilayah/alamat'
 import { DescriptionList } from '@/ui/data/DescriptionList'
 import { Timeline, type EntriTimeline } from '@/ui/data/Timeline'
 import { Nik } from '@/ui/domain/Nik'
+import { MenuAksi } from '@/ui/lapisan/Menu'
 import { Tabs } from '@/ui/navigasi/Tabs'
 import { Tautan } from '@/ui/navigasi/Tautan'
 import { PageHeader } from '@/ui/tata-letak/PageHeader'
 import { TautanTombol } from '@/ui/tombol/TautanTombol'
+import { Tombol } from '@/ui/tombol/Tombol'
 import { Banner } from '@/ui/umpan-balik/Banner'
 import { EmptyState } from '@/ui/umpan-balik/EmptyState'
 import { ErrorState } from '@/ui/umpan-balik/ErrorState'
 import { BarisKerangka, Skeleton } from '@/ui/umpan-balik/Skeleton'
 import { useSesiAdmin } from '../admin/sesi-konteks'
+import { menuMutasiPenduduk } from '../mutasi/menu'
 import { jenisKelaminPanjang } from './kolom'
 import { PenandaCap } from './PenandaCap'
 
@@ -113,9 +116,18 @@ export function ProfilPenduduk({ id, sekarang }: { id: string; sekarang?: Date }
         }
         aksi={
           boleh(pengguna.peran, 'penduduk.ubah') && (
-            <TautanTombol href={`/admin/kependudukan/penduduk/${p.id}/ubah`} ikon={<PencilSimple aria-hidden size={16} />}>
-              Ubah
-            </TautanTombol>
+            <>
+              <TautanTombol href={`/admin/kependudukan/penduduk/${p.id}/ubah`} ikon={<PencilSimple aria-hidden size={16} />}>
+                Ubah
+              </TautanTombol>
+              {hidup && (
+                <MenuAksi
+                  pemicu={<Tombol ikon={<CaretDown aria-hidden size={14} />}>Catat mutasi</Tombol>}
+                  items={menuMutasiPenduduk(p.id)}
+                  placement="bottom end"
+                />
+              )}
+            </>
           )
         }
       />

@@ -17,6 +17,7 @@ import { Route as AdminPanelIndexRouteImport } from './routes/admin/_panel/index
 import { Route as AdminPanelKependudukanIndexRouteImport } from './routes/admin/_panel/kependudukan/index'
 import { Route as AdminPanelKependudukanKeluargaIndexRouteImport } from './routes/admin/_panel/kependudukan/keluarga/index'
 import { Route as AdminPanelKependudukanKeluargaIdRouteImport } from './routes/admin/_panel/kependudukan/keluarga/$id'
+import { Route as AdminPanelKependudukanMutasiIndexRouteImport } from './routes/admin/_panel/kependudukan/mutasi/index'
 import { Route as AdminPanelKependudukanMutasiDatangRouteImport } from './routes/admin/_panel/kependudukan/mutasi/datang'
 import { Route as AdminPanelKependudukanMutasiLahirRouteImport } from './routes/admin/_panel/kependudukan/mutasi/lahir'
 import { Route as AdminPanelKependudukanMutasiMeninggalRouteImport } from './routes/admin/_panel/kependudukan/mutasi/meninggal'
@@ -67,6 +68,12 @@ const AdminPanelKependudukanKeluargaIdRoute =
   AdminPanelKependudukanKeluargaIdRouteImport.update({
     id: '/kependudukan/keluarga/$id',
     path: '/kependudukan/keluarga/$id',
+    getParentRoute: () => AdminPanelRoute,
+  } as any)
+const AdminPanelKependudukanMutasiIndexRoute =
+  AdminPanelKependudukanMutasiIndexRouteImport.update({
+    id: '/kependudukan/mutasi/',
+    path: '/kependudukan/mutasi/',
     getParentRoute: () => AdminPanelRoute,
   } as any)
 const AdminPanelKependudukanMutasiDatangRoute =
@@ -133,6 +140,7 @@ export interface FileRoutesByFullPath {
   '/admin/kependudukan/penduduk/$id': typeof AdminPanelKependudukanPendudukIdRoute
   '/admin/kependudukan/penduduk/tambah': typeof AdminPanelKependudukanPendudukTambahRoute
   '/admin/kependudukan/keluarga/': typeof AdminPanelKependudukanKeluargaIndexRoute
+  '/admin/kependudukan/mutasi/': typeof AdminPanelKependudukanMutasiIndexRoute
   '/admin/kependudukan/penduduk/': typeof AdminPanelKependudukanPendudukIndexRoute
   '/admin/kependudukan/penduduk/$id/ubah': typeof AdminPanelKependudukanPendudukIdUbahRoute
 }
@@ -150,6 +158,7 @@ export interface FileRoutesByTo {
   '/admin/kependudukan/penduduk/$id': typeof AdminPanelKependudukanPendudukIdRoute
   '/admin/kependudukan/penduduk/tambah': typeof AdminPanelKependudukanPendudukTambahRoute
   '/admin/kependudukan/keluarga': typeof AdminPanelKependudukanKeluargaIndexRoute
+  '/admin/kependudukan/mutasi': typeof AdminPanelKependudukanMutasiIndexRoute
   '/admin/kependudukan/penduduk': typeof AdminPanelKependudukanPendudukIndexRoute
   '/admin/kependudukan/penduduk/$id/ubah': typeof AdminPanelKependudukanPendudukIdUbahRoute
 }
@@ -169,6 +178,7 @@ export interface FileRoutesById {
   '/admin/_panel/kependudukan/penduduk/$id': typeof AdminPanelKependudukanPendudukIdRoute
   '/admin/_panel/kependudukan/penduduk/tambah': typeof AdminPanelKependudukanPendudukTambahRoute
   '/admin/_panel/kependudukan/keluarga/': typeof AdminPanelKependudukanKeluargaIndexRoute
+  '/admin/_panel/kependudukan/mutasi/': typeof AdminPanelKependudukanMutasiIndexRoute
   '/admin/_panel/kependudukan/penduduk/': typeof AdminPanelKependudukanPendudukIndexRoute
   '/admin/_panel/kependudukan/penduduk/$id_/ubah': typeof AdminPanelKependudukanPendudukIdUbahRoute
 }
@@ -189,6 +199,7 @@ export interface FileRouteTypes {
     | '/admin/kependudukan/penduduk/$id'
     | '/admin/kependudukan/penduduk/tambah'
     | '/admin/kependudukan/keluarga/'
+    | '/admin/kependudukan/mutasi/'
     | '/admin/kependudukan/penduduk/'
     | '/admin/kependudukan/penduduk/$id/ubah'
   fileRoutesByTo: FileRoutesByTo
@@ -206,6 +217,7 @@ export interface FileRouteTypes {
     | '/admin/kependudukan/penduduk/$id'
     | '/admin/kependudukan/penduduk/tambah'
     | '/admin/kependudukan/keluarga'
+    | '/admin/kependudukan/mutasi'
     | '/admin/kependudukan/penduduk'
     | '/admin/kependudukan/penduduk/$id/ubah'
   id:
@@ -224,6 +236,7 @@ export interface FileRouteTypes {
     | '/admin/_panel/kependudukan/penduduk/$id'
     | '/admin/_panel/kependudukan/penduduk/tambah'
     | '/admin/_panel/kependudukan/keluarga/'
+    | '/admin/_panel/kependudukan/mutasi/'
     | '/admin/_panel/kependudukan/penduduk/'
     | '/admin/_panel/kependudukan/penduduk/$id_/ubah'
   fileRoutesById: FileRoutesById
@@ -291,6 +304,13 @@ declare module '@tanstack/react-router' {
       path: '/kependudukan/keluarga/$id'
       fullPath: '/admin/kependudukan/keluarga/$id'
       preLoaderRoute: typeof AdminPanelKependudukanKeluargaIdRouteImport
+      parentRoute: typeof AdminPanelRoute
+    }
+    '/admin/_panel/kependudukan/mutasi/': {
+      id: '/admin/_panel/kependudukan/mutasi/'
+      path: '/kependudukan/mutasi'
+      fullPath: '/admin/kependudukan/mutasi/'
+      preLoaderRoute: typeof AdminPanelKependudukanMutasiIndexRouteImport
       parentRoute: typeof AdminPanelRoute
     }
     '/admin/_panel/kependudukan/mutasi/datang': {
@@ -363,6 +383,7 @@ interface AdminPanelRouteChildren {
   AdminPanelKependudukanPendudukIdRoute: typeof AdminPanelKependudukanPendudukIdRoute
   AdminPanelKependudukanPendudukTambahRoute: typeof AdminPanelKependudukanPendudukTambahRoute
   AdminPanelKependudukanKeluargaIndexRoute: typeof AdminPanelKependudukanKeluargaIndexRoute
+  AdminPanelKependudukanMutasiIndexRoute: typeof AdminPanelKependudukanMutasiIndexRoute
   AdminPanelKependudukanPendudukIndexRoute: typeof AdminPanelKependudukanPendudukIndexRoute
   AdminPanelKependudukanPendudukIdUbahRoute: typeof AdminPanelKependudukanPendudukIdUbahRoute
 }
@@ -384,6 +405,8 @@ const AdminPanelRouteChildren: AdminPanelRouteChildren = {
     AdminPanelKependudukanPendudukTambahRoute,
   AdminPanelKependudukanKeluargaIndexRoute:
     AdminPanelKependudukanKeluargaIndexRoute,
+  AdminPanelKependudukanMutasiIndexRoute:
+    AdminPanelKependudukanMutasiIndexRoute,
   AdminPanelKependudukanPendudukIndexRoute:
     AdminPanelKependudukanPendudukIndexRoute,
   AdminPanelKependudukanPendudukIdUbahRoute:

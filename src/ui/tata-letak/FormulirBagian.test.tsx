@@ -42,4 +42,10 @@ describe('FormulirBagian (SPEC §6.4)', () => {
     fokusIsianSalah(container)
     await waitFor(() => expect(screen.getByRole('textbox', { name: 'Tempat lahir' })).toHaveFocus())
   })
+  it('menandai <html> selama terpasang, supaya toast naik di atas bilah aksi', () => {
+    const { unmount } = render(<Contoh />)
+    expect(document.documentElement).toHaveAttribute('data-bilah-aksi')
+    unmount()
+    expect(document.documentElement).not.toHaveAttribute('data-bilah-aksi')
+  })
 })

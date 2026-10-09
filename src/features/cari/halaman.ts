@@ -9,6 +9,11 @@ export const HALAMAN_CARI: readonly HalamanCari[] = [
   { label: 'Penduduk', keterangan: 'Kependudukan', href: '/admin/kependudukan/penduduk', kemampuan: 'penduduk.lihat' },
   { label: 'Keluarga (KK)', keterangan: 'Kependudukan', href: '/admin/kependudukan/keluarga', kemampuan: 'penduduk.lihat' },
   { label: 'Tambah penduduk', keterangan: 'Aksi', href: '/admin/kependudukan/penduduk/tambah', kemampuan: 'penduduk.ubah' },
+  { label: 'Mutasi', keterangan: 'Kependudukan', href: '/admin/kependudukan/mutasi', kemampuan: 'penduduk.lihat' },
+  { label: 'Catat kelahiran', keterangan: 'Aksi', href: '/admin/kependudukan/mutasi/lahir', kemampuan: 'penduduk.ubah' },
+  { label: 'Catat kematian', keterangan: 'Aksi', href: '/admin/kependudukan/mutasi/meninggal', kemampuan: 'penduduk.ubah' },
+  { label: 'Catat pindah keluar', keterangan: 'Aksi', href: '/admin/kependudukan/mutasi/pindah', kemampuan: 'penduduk.ubah' },
+  { label: 'Catat kedatangan', keterangan: 'Aksi', href: '/admin/kependudukan/mutasi/datang', kemampuan: 'penduduk.ubah' },
   ...PRESET_PENDUDUK.map(
     (p): HalamanCari => ({
       label: LABEL_PRESET[p],

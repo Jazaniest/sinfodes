@@ -1,6 +1,6 @@
 import { ArrowCounterClockwise, X } from '@phosphor-icons/react'
 import { useQueryClient } from '@tanstack/react-query'
-import { useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import type { ModeJaringan } from '@/mocks/kendali'
 import { tampilkanToast } from '@/ui/toast/antrean'
 import { useKendaliDemo } from './useKendaliDemo'
@@ -29,6 +29,14 @@ export function DemoToolbar({ sisipan }: { sisipan?: ReactNode }) {
   const [mode, setMode] = useState<ModeJaringan | null>(null)
   const [konfirmasi, setKonfirmasi] = useState(false)
   const [mereset, setMereset] = useState(false)
+  useEffect(() => {
+    if (!terbuka || !kendali) return
+    // Penanda di <html>: bilah aksi formulir memberi ruang di bawahnya pada layar sempit (lihat FormulirBagian).
+    document.documentElement.dataset.demoToolbar = ''
+    return () => {
+      delete document.documentElement.dataset.demoToolbar
+    }
+  }, [terbuka, kendali])
   if (!kendali) return null
 
   const modeAktif = mode ?? kendali.bacaModeJaringan()
