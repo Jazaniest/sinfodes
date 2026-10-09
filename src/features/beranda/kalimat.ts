@@ -13,6 +13,16 @@ export function kalimatKeadaan(k: Keadaan): string {
 /** Teks dan tujuan tiap butir "Perlu ditindaklanjuti". */
 export function isiTindakan(t: Tindakan): { teks: string; href: string } {
   switch (t.jenis) {
+    case 'permohonan-menunggu':
+      return {
+        teks: `${formatAngka(t.jumlah)} permohonan surat menunggu (${t.tertuaHariKerja === 0 ? 'masuk hari ini' : `tertua ${formatAngka(t.tertuaHariKerja)} hari kerja`})`,
+        href: '/admin/surat',
+      }
+    case 'surat-dikembalikan':
+      return {
+        teks: `${formatAngka(t.jumlah)} surat dikembalikan untuk diperbaiki (${t.ringkas})`,
+        href: `/admin/surat/${t.permohonanId}`,
+      }
     case 'kelahiran-dilaporkan':
       return {
         teks: `${formatAngka(t.jumlah)} kelahiran dilaporkan warga, belum dicatat`,

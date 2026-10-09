@@ -1,8 +1,10 @@
 import { http, HttpResponse } from 'msw'
 import type { Tindakan } from '@/domain/beranda/schema'
-import { tanggalIsoWib } from '@/domain/format/tanggal'
+import { tanggalIsoWib, waktuIsoWib } from '@/domain/format/tanggal'
 import { hitungMutasiBulan } from '@/domain/mutasi/buku'
 import { dataBelumLengkap } from '@/domain/penduduk/filter'
+import { ringkasSuratTerbit } from '@/domain/surat/ringkas'
+import { hariKerjaBerlalu } from '@/domain/surat/waktu'
 import { dataMilik } from '../cakupan'
 import { API, denganJaringan } from '../http'
 import { butuhPengguna } from '../sesi-mock'
@@ -27,9 +29,30 @@ export const handlerBeranda = [
         .sort((a, b) => a.dibuatPada.localeCompare(b.dibuatPada))
       const kelahiran = laporanBaru.filter((l) => l.isi.jenis === 'kelahiran')
       const perbaikan = laporanBaru.flatMap((l) => (l.isi.jenis === 'perbaikan' ? [l.isi] : []))
+      // Surat (SPEC §5.3): permohonan menunggu (terlama dulu) dan surat yang dikembalikan untuk diperbaiki.
+      const lebihLama = (a: { masukPada: string }, b: { masukPada: string }) => a.masukPada.localeCompare(b.masukPada)
+      const menunggu = milik.permohonan.filter((p) => p.status === 'menunggu').sort(lebihLama)
+      const dikembalikan = milik.permohonan.filter((p) => p.status === 'diproses' && p.dikembalikan !== null).sort(lebihLama)
+      const kodeJenis = (id: string) => milik.jenisSurat.find((j) => j.id === id)?.kode ?? 'Surat'
+      const namaPemohon = (id: string) => milik.penduduk.find((p) => p.id === id)?.nama ?? 'pemohon'
+      const perluTtd = (tahap: 'paraf' | 'tanda-tangan') =>
+        milik.permohonan.filter((p) => p.status === 'perlu-ttd' && p.tahap === tahap).length
       const tindakan: Tindakan[] = [
+        ...(menunggu.length > 0
+          ? [{ jenis: 'permohonan-menunggu' as const, jumlah: menunggu.length, tertuaHariKerja: hariKerjaBerlalu(menunggu[0].masukPada, waktuIsoWib(sekarang)) }]
+          : []),
         ...(kelahiran.length > 0 ? [{ jenis: 'kelahiran-dilaporkan' as const, jumlah: kelahiran.length, laporanId: kelahiran[0].id }] : []),
         ...(perbaikan.length > 0 ? [{ jenis: 'laporan-perbaikan' as const, jumlah: perbaikan.length, pendudukId: perbaikan[0].pendudukId }] : []),
+        ...(dikembalikan.length > 0
+          ? [
+              {
+                jenis: 'surat-dikembalikan' as const,
+                jumlah: dikembalikan.length,
+                permohonanId: dikembalikan[0].id,
+                ringkas: `${kodeJenis(dikembalikan[0].jenisId)} · ${namaPemohon(dikembalikan[0].pemohonId)}`,
+              },
+            ]
+          : []),
         ...(belumLengkap > 0 ? [{ jenis: 'data-belum-lengkap' as const, jumlah: belumLengkap }] : []),
       ]
       return HttpResponse.json({
@@ -39,6 +62,12 @@ export const handlerBeranda = [
               .filter((a) => tanggalIsoWib(new Date(a.waktu)) === hariIni)
               .sort((a, b) => a.waktu.localeCompare(b.waktu))
           : null,
+        suratSaya:
+          pengguna.peran === 'sekdes'
+            ? { tahap: 'paraf', jumlah: perluTtd('paraf') }
+            : pengguna.peran === 'kades'
+              ? { tahap: 'tanda-tangan', jumlah: perluTtd('tanda-tangan') }
+              : null,
         keadaan: {
           cakupan: milik.dusunSaja === null ? 'desa' : 'dusun',
           dusunId: milik.dusunSaja,
@@ -47,6 +76,7 @@ export const handlerBeranda = [
           laki: hidup.filter((p) => p.jenisKelamin === 'L').length,
           perempuan: hidup.filter((p) => p.jenisKelamin === 'P').length,
           bulanIni: mutasiBulanIni,
+          surat: ringkasSuratTerbit(milik.permohonan, sekarang),
         },
       })
     }),

@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { keluargaSchema } from '../keluarga/schema'
 import { pendudukSchema } from '../penduduk/schema'
+import { STATUS_PERMOHONAN } from '../surat/permohonan'
 
 /** POST /cari: hasil campuran pencarian cepat (SPEC §5.4). Halaman dan aksi disusun di layar. */
 export const hasilCariSchema = z.object({
@@ -11,6 +12,16 @@ export const hasilCariSchema = z.object({
   ),
   keluarga: z.array(
     keluargaSchema.pick({ id: true, nomorKk: true, dusunId: true, rw: true, rt: true }).extend({ namaKepala: z.string() }),
+  ),
+  surat: z.array(
+    z.object({
+      id: z.string(),
+      kode: z.string(),
+      jenisNama: z.string(),
+      pemohon: z.string(),
+      nomor: z.string().nullable(),
+      status: z.enum(STATUS_PERMOHONAN),
+    }),
   ),
 })
 export type HasilCari = z.infer<typeof hasilCariSchema>

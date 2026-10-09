@@ -35,7 +35,7 @@ const TIDAK_BERHAK: Readonly<Record<AksiSurat, string>> = {
   'kirim-wa': 'Peran Anda tidak berhak mengirim surat.',
 }
 
-function catatRiwayatSurat(db: DbDemo, p: Permohonan, kejadian: KejadianSurat, oleh: Pelaku, waktu: string, catatan: string | null = null) {
+export function catatRiwayatSurat(db: DbDemo, p: Permohonan, kejadian: KejadianSurat, oleh: Pelaku, waktu: string, catatan: string | null = null) {
   p.riwayat.push({ id: idBaru(db, 'rws'), kejadian, waktu, oleh, catatan })
 }
 

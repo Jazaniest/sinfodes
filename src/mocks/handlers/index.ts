@@ -11,8 +11,9 @@ import { handlerSesi } from './sesi'
 import { handlerStatistik } from './statistik'
 import { handlerSurat } from './surat'
 import { handlerSuratAksi } from './surat-aksi'
+import { handlerSuratLoket } from './surat-loket'
 
 export const handlers = [
   ...handlerSesi, ...handlerBeranda, ...handlerCari, ...handlerPenduduk, ...handlerPendudukTulis, ...handlerKeluarga,
-  ...handlerKeluargaTulis, ...handlerMutasi, ...handlerStatistik, ...handlerLaporan, ...handlerImpor, ...handlerSurat, ...handlerSuratAksi,
+  ...handlerKeluargaTulis, ...handlerMutasi, ...handlerStatistik, ...handlerLaporan, ...handlerImpor, ...handlerSuratLoket, ...handlerSurat, ...handlerSuratAksi,
 ]

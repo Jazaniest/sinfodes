@@ -19,7 +19,7 @@ export const handlerCari = [
       if (!isian.success) return balasGalat('VALIDATION', 'Kata pencarian tidak valid.', 422)
       const kata = isian.data.kata
       if (!kataCukup(kata) || !boleh(pengguna.peran, 'penduduk.lihat')) {
-        return HttpResponse.json({ penduduk: [], keluarga: [] })
+        return HttpResponse.json({ penduduk: [], keluarga: [], surat: [] })
       }
       const milik = dataMilik(pengguna)
       const perId = new Map(milik.penduduk.map((p) => [p.id, p] as const))
@@ -38,7 +38,23 @@ export const handlerCari = [
         .sort((a, b) => a.namaKepala.localeCompare(b.namaKepala, 'id'))
         .slice(0, MAKS_PER_JENIS)
         .map(({ k, namaKepala }) => ({ id: k.id, nomorKk: k.nomorKk, namaKepala, dusunId: k.dusunId, rw: k.rw, rt: k.rt }))
-      return HttpResponse.json({ penduduk, keluarga })
+      // Surat (SPEC §5.4): kata bergaris miring dicari di nomor surat; selain itu di nama pemohon. Kadus: dusunnya.
+      const jenisPeta = new Map(milik.jenisSurat.map((j) => [j.id, j] as const))
+      const surat = (boleh(pengguna.peran, 'surat.lihat') ? milik.permohonan : [])
+        .filter((p) =>
+          kata.includes('/') ? (p.terbit?.nomor.includes(kata.toUpperCase()) ?? false) : cocokNama(perId.get(p.pemohonId)?.nama ?? '', kata),
+        )
+        .sort((a, b) => b.masukPada.localeCompare(a.masukPada))
+        .slice(0, MAKS_PER_JENIS)
+        .map((p) => ({
+          id: p.id,
+          kode: jenisPeta.get(p.jenisId)?.kode ?? '?',
+          jenisNama: jenisPeta.get(p.jenisId)?.nama ?? 'Jenis surat tidak dikenal',
+          pemohon: perId.get(p.pemohonId)?.nama ?? '',
+          nomor: p.terbit?.nomor ?? null,
+          status: p.status,
+        }))
+      return HttpResponse.json({ penduduk, keluarga, surat })
     }),
   ),
 ]

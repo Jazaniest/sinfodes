@@ -1,13 +1,14 @@
 import { queryOptions } from '@tanstack/react-query'
+import { z } from 'zod'
 import { daftarSchema } from '@/domain/api'
-import { jenisSuratSchema } from '@/domain/surat/jenis'
+import { jenisDenganPakaiSchema } from '@/domain/surat/jenis'
 import {
-  barisPermohonanSchema, detailPermohonanSchema, jumlahPermohonanSchema,
-  type AksiSurat, type FilterPermohonan, type PeriodePermohonan,
+  barisPermohonanSchema, detailPermohonanSchema, jumlahPermohonanSchema, saranSuratSchema,
+  type AksiSurat, type BuatPermohonan, type FilterPermohonan, type PeriodePermohonan,
 } from '@/domain/surat/permohonan'
 import { panggilApi } from './client'
 
-const daftarJenisSchema = daftarSchema(jenisSuratSchema)
+const daftarJenisSchema = daftarSchema(jenisDenganPakaiSchema)
 const daftarPermohonanSchema = daftarSchema(barisPermohonanSchema)
 
 export const kunciSurat = {
@@ -18,6 +19,9 @@ export const kunciSurat = {
   cari: (kata: string, jenis: string | null) => ['permohonan', 'cari', kata, jenis] as const,
   jumlah: (periode: PeriodePermohonan, jenis: string | null) => ['permohonan', 'jumlah', periode, jenis] as const,
   detail: (id: string) => ['permohonan', 'detail', id] as const,
+  antrian: ['permohonan', 'antrian-ttd'] as const,
+  penduduk: (id: string) => ['permohonan', 'penduduk', id] as const,
+  saran: (jenis: string, pemohon: string | null, subjek: string | null) => ['permohonan', 'saran', jenis, pemohon, subjek] as const,
 }
 
 export function daftarJenisSurat(signal?: AbortSignal) {
@@ -59,3 +63,34 @@ export function ubahPermohonan(id: string, ubah: { isian?: Record<string, string
 export function jalankanAksi(id: string, aksi: AksiSurat, body: object = {}) {
   return panggilApi('POST', `/permohonan/${encodeURIComponent(id)}/${aksi}`, { skema: detailPermohonanSchema, body })
 }
+
+/** Surat dari loket (SPEC §7.4 layar 2): Simpan draf (Diproses) atau langsung diajukan tanda tangan. */
+export function buatPermohonan(masukan: BuatPermohonan) {
+  return panggilApi('POST', '/permohonan', { skema: detailPermohonanSchema, body: masukan })
+}
+
+export function ambilAntrianTtd(signal?: AbortSignal) {
+  return panggilApi('GET', '/permohonan/antrian-ttd', { skema: z.array(detailPermohonanSchema), signal })
+}
+
+/** Surat yang menunggu tanda tangan pengguna, terlama dulu (SPEC §7.4 layar 4). */
+export const opsiAntrianTtd = () => queryOptions({ queryKey: kunciSurat.antrian, queryFn: ({ signal }) => ambilAntrianTtd(signal) })
+
+export function daftarSuratPenduduk(id: string, signal?: AbortSignal) {
+  return panggilApi('GET', `/permohonan/penduduk/${encodeURIComponent(id)}`, { skema: daftarPermohonanSchema, signal })
+}
+
+/** Semua surat seorang penduduk, sebagai pemohon atau yang diterangkan; terbaru dulu (SPEC §6.2, §6.3). */
+export const opsiSuratPenduduk = (id: string) =>
+  queryOptions({ queryKey: kunciSurat.penduduk(id), queryFn: ({ signal }) => daftarSuratPenduduk(id, signal) })
+
+export function ambilSaranSurat(jenis: string, pemohon: string | null, subjek: string | null, signal?: AbortSignal) {
+  return panggilApi('GET', '/permohonan/saran', { skema: saranSuratSchema, query: { jenis, pemohon, subjek }, signal })
+}
+
+/** Isian awal dari mutasi yang baru dicatat (SPEC §6.6). */
+export const opsiSaranSurat = (jenis: string, pemohon: string | null, subjek: string | null) =>
+  queryOptions({
+    queryKey: kunciSurat.saran(jenis, pemohon, subjek),
+    queryFn: ({ signal }) => ambilSaranSurat(jenis, pemohon, subjek, signal),
+  })

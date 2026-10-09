@@ -45,6 +45,10 @@ export const jenisSuratSchema = z.object({
 })
 export type JenisSurat = z.infer<typeof jenisSuratSchema>
 
+/** Jenis surat beserta pemakaiannya 12 bulan terakhir: urutan langkah 1 Buat surat dan halaman Jenis Surat. */
+export const jenisDenganPakaiSchema = jenisSuratSchema.extend({ jumlahPakai: z.number().int().min(0) })
+export type JenisDenganPakai = z.infer<typeof jenisDenganPakaiSchema>
+
 /** Sisipan yang selalu tersedia; setiap isian tambahan menambah sisipan sesuai `kunci`-nya (SPEC §7.3). */
 export const SISIPAN_UMUM = [
   { kunci: 'nama', label: 'Nama' },

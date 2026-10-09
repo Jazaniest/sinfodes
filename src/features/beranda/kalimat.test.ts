@@ -12,4 +12,16 @@ describe('butir Perlu ditindaklanjuti (SPEC §5.3)', () => {
       teks: '2 laporan perbaikan data dari warga',
       href: '/admin/kependudukan/penduduk/pdk_syahrial',
     }))
+  it('permohonan menunggu membuka daftar permohonan; umur yang tertua dalam hari kerja', () => {
+    expect(isiTindakan({ jenis: 'permohonan-menunggu', jumlah: 7, tertuaHariKerja: 2 })).toEqual({
+      teks: '7 permohonan surat menunggu (tertua 2 hari kerja)',
+      href: '/admin/surat',
+    })
+    expect(isiTindakan({ jenis: 'permohonan-menunggu', jumlah: 1, tertuaHariKerja: 0 }).teks).toBe('1 permohonan surat menunggu (masuk hari ini)')
+  })
+  it('surat yang dikembalikan membuka ruang kerja surat terlama', () =>
+    expect(isiTindakan({ jenis: 'surat-dikembalikan', jumlah: 1, permohonanId: 'srt_contoh', ringkas: 'SKU · Zulkifli' })).toEqual({
+      teks: '1 surat dikembalikan untuk diperbaiki (SKU · Zulkifli)',
+      href: '/admin/surat/srt_contoh',
+    }))
 })

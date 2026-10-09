@@ -179,3 +179,27 @@ export const ubahPermohonanSchema = z.object({
   catatanInternal: z.string().trim().max(1000).nullable().optional(),
 })
 export const cariPermohonanSchema = z.object({ kata: z.string().trim().min(1).max(100), jenis: kodeJenis.nullable() })
+
+/** POST /permohonan dari loket (SPEC §7.4 layar 2). `ajukan` langsung mengajukan tanda tangan; selain itu Simpan draf. */
+export const buatPermohonanSchema = z.object({
+  jenisId: z.string().min(1),
+  pemohonId: z.string().min(1),
+  subjekId: z.string().nullable(),
+  mutasiId: z.string().nullable(),
+  isian: isianSchema,
+  ajukan: z.boolean(),
+})
+export type BuatPermohonan = z.infer<typeof buatPermohonanSchema>
+
+/**
+ * GET /permohonan/saran: bahan surat baru di loket. Isian awal dari mutasi yang baru dicatat (beserta mutasinya),
+ * ditambah pengaturan surat desa dan nama pejabat untuk pratinjau lembar.
+ */
+export const saranSuratSchema = z.object({
+  mutasi: mutasiSchema.nullable(),
+  pemohonId: z.string().nullable(),
+  isian: z.record(z.string(), z.string()),
+  pengaturan: pengaturanSuratSchema,
+  pejabat: z.object({ kades: z.string(), sekdes: z.string() }),
+})
+export type SaranSurat = z.infer<typeof saranSuratSchema>

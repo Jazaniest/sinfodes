@@ -23,25 +23,35 @@ const butuhPembaca = (request: Request) =>
 export const pengaturanDesa = (db: DbDemo, desaId: string): PengaturanSurat =>
   db.pengaturanSurat.find((p) => p.desaId === desaId) ?? pengaturanBawaan(desaId)
 
-/** Detail permohonan untuk ruang kerja; juga balasan setiap aksi (Tugas 7). */
-export function balasDetail(db: DbDemo, p: Permohonan): Response {
+/** Detail permohonan untuk ruang kerja dan tumpukan tanda tangan; null bila datanya tidak utuh. */
+export function detailPermohonan(db: DbDemo, p: Permohonan): DetailPermohonan | null {
   const jenis = db.jenisSurat.find((j) => j.id === p.jenisId)
   const pemohon = db.penduduk.find((x) => x.id === p.pemohonId)
-  if (!jenis || !pemohon) return balasGalat('SERVER', 'Data permohonan tidak utuh.', 500)
-  const pejabat = (peran: Peran) => db.pengguna.find((u) => u.desaId === p.desaId && u.peran === peran && u.aktif)?.nama ?? '—'
-  const detail: DetailPermohonan = {
+  if (!jenis || !pemohon) return null
+  return {
     permohonan: p,
     jenis,
     pemohon,
     subjek: p.subjekId ? (db.penduduk.find((x) => x.id === p.subjekId) ?? null) : null,
     mutasi: p.mutasiId ? (db.mutasi.find((m) => m.id === p.mutasiId) ?? null) : null,
     pengaturan: pengaturanDesa(db, p.desaId),
-    pejabat: { kades: pejabat('kades'), sekdes: pejabat('sekdes') },
+    pejabat: namaPejabat(db, p.desaId),
   }
-  return HttpResponse.json(detail)
 }
 
-function keBaris(p: Permohonan, jenis: ReadonlyMap<string, JenisSurat>, penduduk: ReadonlyMap<string, Penduduk>): BarisPermohonan {
+/** Nama Kepala Desa dan Sekretaris Desa yang sedang menjabat, untuk blok tanda tangan draf. */
+export function namaPejabat(db: DbDemo, desaId: string): { kades: string; sekdes: string } {
+  const nama = (peran: Peran) => db.pengguna.find((u) => u.desaId === desaId && u.peran === peran && u.aktif)?.nama ?? '—'
+  return { kades: nama('kades'), sekdes: nama('sekdes') }
+}
+
+/** Balasan GET detail dan setiap aksi (Tugas 7 tahap 2B-1). */
+export function balasDetail(db: DbDemo, p: Permohonan): Response {
+  const detail = detailPermohonan(db, p)
+  return detail ? HttpResponse.json(detail) : balasGalat('SERVER', 'Data permohonan tidak utuh.', 500)
+}
+
+export function keBaris(p: Permohonan, jenis: ReadonlyMap<string, JenisSurat>, penduduk: ReadonlyMap<string, Penduduk>): BarisPermohonan {
   const j = jenis.get(p.jenisId)
   const orang = penduduk.get(p.pemohonId)
   return {
@@ -60,7 +70,7 @@ function keBaris(p: Permohonan, jenis: ReadonlyMap<string, JenisSurat>, penduduk
 }
 
 /** Permohonan yang boleh dilihat (Kepala Dusun: dusunnya), beserta peta jenis dan penduduk desa untuk baris daftar. */
-function suratMilik(pengguna: Parameters<typeof dataMilik>[0]) {
+export function suratMilik(pengguna: Parameters<typeof dataMilik>[0]) {
   const milik = dataMilik(pengguna)
   return {
     ...milik,
@@ -86,7 +96,12 @@ export const handlerSurat = [
     denganJaringan(({ request }) => {
       const pengguna = butuhPembaca(request)
       if (pengguna instanceof Response) return pengguna
-      const daftar = dataMilik(pengguna).jenisSurat
+      const { jenisSurat, permohonan } = dataMilik(pengguna)
+      // Jumlah pemakaian 12 bulan: urutan langkah 1 Buat surat (SPEC §7.4) dan halaman Jenis Surat.
+      const awal = awalPeriode(365)
+      const pakai = new Map<string, number>()
+      for (const p of permohonan) if (p.masukPada.slice(0, 10) >= awal) pakai.set(p.jenisId, (pakai.get(p.jenisId) ?? 0) + 1)
+      const daftar = jenisSurat.map((j) => ({ ...j, jumlahPakai: pakai.get(j.id) ?? 0 }))
       return balasDaftar(daftar, 1, Math.max(daftar.length, 1))
     }),
   ),
