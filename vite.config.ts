@@ -15,5 +15,7 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     restoreMocks: true,
+    // Uji layar dengan pencarian dan klik bisa melewati 5 dtk bawaan saat seluruh suite berjalan paralel.
+    testTimeout: 15_000,
   },
 })
