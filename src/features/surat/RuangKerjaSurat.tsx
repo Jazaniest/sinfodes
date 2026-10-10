@@ -1,15 +1,13 @@
-import { FileImage, FilePdf } from '@phosphor-icons/react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react'
 import { GalatApi, pesanGalat } from '@/api/galat'
 import { segarkanSurat } from '@/api/segarkan'
 import { kunciSurat, opsiPermohonan, ubahPermohonan } from '@/api/surat'
-import { formatAngka } from '@/domain/format/angka'
 import { formatJam, formatTanggal, formatWaktuLog } from '@/domain/format/tanggal'
 import { boleh } from '@/domain/pengguna/hak-akses'
 import { JUDUL_KEJADIAN } from '@/domain/surat/alur'
 import { samaIsian } from '@/domain/surat/jenis'
-import { LABEL_KANAL, type DetailPermohonan, type Permohonan } from '@/domain/surat/permohonan'
+import { LABEL_KANAL, type DetailPermohonan } from '@/domain/surat/permohonan'
 import { alamatLengkap } from '@/domain/wilayah/alamat'
 import { Cap } from '@/ui/cap/Cap'
 import { DescriptionList } from '@/ui/data/DescriptionList'
@@ -32,6 +30,7 @@ import { useSesiAdmin } from '../admin/sesi-konteks'
 import { AksiSurat } from './AksiSurat'
 import { CapPermohonan } from './CapPermohonan'
 import { CetakSurat } from './CetakSurat'
+import { DaftarLampiran } from './DaftarLampiran'
 import { IsianSurat } from './IsianSurat'
 import { dataLembar } from './lembar'
 
@@ -94,31 +93,6 @@ function KeteranganStatus({ d }: { d: DetailPermohonan }) {
         />
       )}
     </>
-  )
-}
-
-/** Berkas persyaratan dari layanan warga. Demo tidak menyimpan gambarnya, jadi hanya nama dan ukurannya. */
-function DaftarLampiran({ p }: { p: Permohonan }) {
-  if (p.kanal === 'loket') return <p className="text-tinta-2">Permohonan loket: berkas persyaratan diperiksa langsung di kantor desa.</p>
-  if (p.lampiran.length === 0) return <p className="text-tinta-2">Tidak ada lampiran.</p>
-  return (
-    <ul aria-label="Lampiran dari warga" className="flex flex-col gap-2">
-      {p.lampiran.map((l) => (
-        <li key={l.id} className="flex items-center gap-3 rounded-1 border border-garis bg-lembar px-3 py-2">
-          {l.berkas.endsWith('.pdf') ? (
-            <FilePdf aria-hidden size={20} className="shrink-0 text-tinta-2" />
-          ) : (
-            <FileImage aria-hidden size={20} className="shrink-0 text-tinta-2" />
-          )}
-          <span className="min-w-0">
-            <span className="block font-medium">{l.syarat}</span>
-            <span className="block truncate text-teks-kecil text-tinta-2">
-              {l.berkas} · {formatAngka(l.ukuranKb)} KB
-            </span>
-          </span>
-        </li>
-      ))}
-    </ul>
   )
 }
 

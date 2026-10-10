@@ -9,6 +9,7 @@ import { cocokNama, kataAngka, kataCukup } from '@/domain/penduduk/cari'
 import { kelompokkanNik } from '@/domain/penduduk/nik'
 import { boleh } from '@/domain/pengguna/hak-akses'
 import type { Peran } from '@/domain/pengguna/schema'
+import { LABEL_STATUS } from '@/domain/surat/permohonan'
 import { useTunda } from '@/ui/hooks/useTunda'
 import { HALAMAN_CARI } from './halaman'
 
@@ -34,7 +35,7 @@ function ItemHasil({ id, href, judul, keterangan }: { id: string; href: string; 
   )
 }
 
-/** Pencarian cepat Ctrl+K (SPEC §5.4). Kata dikirim lewat POST /cari; halaman disaring di layar. */
+/** Pencarian cepat Ctrl+K (SPEC §5.4): penduduk, keluarga, surat (nomor), permohonan (nama pemohon), dan halaman. */
 export function PencarianCepat({ isOpen, onOpenChange, peran }: Props) {
   const [kata, setKata] = useState('')
   const kataTunda = useTunda(kata.trim(), 250)
@@ -45,6 +46,7 @@ export function PencarianCepat({ isOpen, onOpenChange, peran }: Props) {
   )
   const penduduk = bolehCari ? (hasil.data?.penduduk ?? []) : []
   const keluarga = bolehCari ? (hasil.data?.keluarga ?? []) : []
+  const surat = bolehCari ? (hasil.data?.surat ?? []) : []
   // Nomor KK yang diketik lengkap: yang dicari KK-nya, bukan anggotanya, jadi Keluarga tampil lebih dulu.
   const angka = kataAngka(kataTunda)
   const kkDulu = angka !== null && keluarga.some((k) => k.nomorKk === angka)
@@ -62,7 +64,7 @@ export function PencarianCepat({ isOpen, onOpenChange, peran }: Props) {
   }
   const teksKosong =
     kata.trim() === ''
-      ? 'Ketik nama, NIK (minimal 4 angka), nomor KK, atau nama halaman.'
+      ? 'Ketik nama, NIK (minimal 4 angka), nomor KK, nomor surat, atau nama halaman.'
       : hasil.isFetching
         ? 'Mencari…'
         : 'Tidak ada yang cocok.'
@@ -91,11 +93,11 @@ export function PencarianCepat({ isOpen, onOpenChange, peran }: Props) {
       <Modal className="w-full max-w-xl rounded-2 border border-garis bg-lembar shadow-melayang outline-none">
         <Dialog aria-label="Pencarian cepat" className="outline-none">
           <Autocomplete inputValue={kata} onInputChange={setKata}>
-            <SearchField aria-label="Cari penduduk, nomor KK, atau halaman" autoFocus className="flex items-center gap-2 border-b border-garis px-4">
+            <SearchField aria-label="Cari penduduk, nomor KK, surat, atau halaman" autoFocus className="flex items-center gap-2 border-b border-garis px-4">
               <MagnifyingGlass aria-hidden size={16} className="text-tinta-2" />
               <Input
                 onKeyDown={enterTanpaFokus}
-                placeholder="Cari nama, NIK, nomor KK, atau halaman…"
+                placeholder="Cari nama, NIK, nomor KK, nomor surat, atau halaman…"
                 className="h-12 flex-1 bg-transparent text-teks-isian outline-none [&::-webkit-search-cancel-button]:hidden"
               />
             </SearchField>
@@ -132,6 +134,20 @@ export function PencarianCepat({ isOpen, onOpenChange, peran }: Props) {
                 </MenuSection>
               )}
               {!kkDulu && bagianKeluarga}
+              {surat.length > 0 && (
+                <MenuSection>
+                  <Header className={kelasKepala}>Surat</Header>
+                  {surat.map((s) => (
+                    <ItemHasil
+                      key={s.id}
+                      id={`surat:${s.id}`}
+                      href={`/admin/surat/${s.id}`}
+                      judul={`${s.jenisNama} · ${s.pemohon}`}
+                      keterangan={`${s.nomor ?? 'Belum bernomor'} · ${LABEL_STATUS[s.status]}`}
+                    />
+                  ))}
+                </MenuSection>
+              )}
             </Menu>
           </Autocomplete>
           <p className="border-t border-garis px-5 py-2 text-teks-kecil text-tinta-2">↑↓ memilih · Enter membuka · Esc menutup</p>

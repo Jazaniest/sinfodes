@@ -1,6 +1,6 @@
 import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { daftarPenduduk } from '@/api/penduduk'
 import { LABEL_FIELD } from '@/domain/penduduk/riwayat'
 import { ambilDb } from '@/mocks/db'
@@ -72,5 +72,51 @@ describe('Profil penduduk (SPEC §6.3)', () => {
     renderPanel(<ProfilPenduduk id={almarhum.id} sekarang={SEKARANG_UJI} />, contohSesi())
     expect(await screen.findByRole('heading', { level: 1, name: almarhum.nama })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Catat mutasi' })).not.toBeInTheDocument()
+  })
+  it('Buat surat dengan pemohon terisi untuk Operator; tidak untuk Kepala Desa (SPEC §6.3)', async () => {
+    masukSebagai(AKUN_UJI.operator)
+    const { unmount } = renderPanel(<ProfilPenduduk id="pdk_siti_rahmah" sekarang={SEKARANG_UJI} />, contohSesi('operator'))
+    expect(await screen.findByRole('link', { name: 'Buat surat' })).toHaveAttribute('href', '/admin/surat/baru?pemohon=pdk_siti_rahmah')
+    unmount()
+    masukSebagai(AKUN_UJI.kades)
+    renderPanel(<ProfilPenduduk id="pdk_siti_rahmah" sekarang={SEKARANG_UJI} />, contohSesi('kades'))
+    expect(await screen.findByRole('heading', { level: 1, name: 'Siti Rahmah' })).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Buat surat' })).not.toBeInTheDocument()
+  })
+  it('mantan penduduk tidak bisa menjadi pemohon: tanpa Buat surat', async () => {
+    masukSebagai(AKUN_UJI.operator)
+    const [almarhum] = (await daftarPenduduk({ status: 'Meninggal' })).data
+    renderPanel(<ProfilPenduduk id={almarhum.id} sekarang={SEKARANG_UJI} />, contohSesi())
+    expect(await screen.findByRole('heading', { level: 1, name: almarhum.nama })).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Buat surat' })).not.toBeInTheDocument()
+  })
+  it('tab Surat: semua surat orang ini (SPEC §6.3)', async () => {
+    masukSebagai(AKUN_UJI.kades)
+    renderPanel(<ProfilPenduduk id="pdk_siti_rahmah" sekarang={SEKARANG_UJI} />, contohSesi('kades'))
+    await userEvent.click(await screen.findByRole('tab', { name: 'Surat' }))
+    const daftar = await screen.findByRole('list', { name: 'Surat untuk penduduk ini' })
+    expect(within(daftar).getByRole('link', { name: 'Surat Keterangan Domisili' })).toBeInTheDocument()
+  })
+  it('tawaran surat kematian setelah kematian dicatat; Nanti saja menutupnya (SPEC §6.6)', async () => {
+    masukSebagai(AKUN_UJI.operator)
+    const [almarhum] = (await daftarPenduduk({ status: 'Meninggal' })).data
+    const onTutupTawaran = vi.fn()
+    renderPanel(
+      <ProfilPenduduk id={almarhum.id} sekarang={SEKARANG_UJI} tawaran="SKM" onTutupTawaran={onTutupTawaran} />,
+      contohSesi(),
+    )
+    expect(await screen.findByText('Kematian sudah dicatat')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Buat Surat Keterangan Kematian' })).toHaveAttribute(
+      'href',
+      `/admin/surat/baru?jenis=SKM&subjek=${almarhum.id}&langkah=2`,
+    )
+    await userEvent.click(screen.getByRole('button', { name: 'Nanti saja' }))
+    expect(onTutupTawaran).toHaveBeenCalledOnce()
+  })
+  it('tawaran surat tidak tampil untuk peran yang tidak membuat surat', async () => {
+    masukSebagai(AKUN_UJI.kades)
+    renderPanel(<ProfilPenduduk id="pdk_siti_rahmah" sekarang={SEKARANG_UJI} tawaran="SKL" onTutupTawaran={vi.fn()} />, contohSesi('kades'))
+    expect(await screen.findByRole('heading', { level: 1, name: 'Siti Rahmah' })).toBeInTheDocument()
+    expect(screen.queryByText('Kelahiran sudah dicatat')).not.toBeInTheDocument()
   })
 })

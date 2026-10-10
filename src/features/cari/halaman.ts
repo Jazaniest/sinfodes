@@ -7,6 +7,8 @@ export type HalamanCari = { label: string; keterangan: string; href: string; kem
 export const HALAMAN_CARI: readonly HalamanCari[] = [
   { label: 'Beranda', keterangan: 'Halaman', href: '/admin', kemampuan: null },
   { label: 'Permohonan surat', keterangan: 'Layanan Surat', href: '/admin/surat', kemampuan: 'surat.lihat' },
+  { label: 'Buat surat', keterangan: 'Aksi', href: '/admin/surat/baru', kemampuan: 'surat.proses' },
+  { label: 'Tanda tangan surat', keterangan: 'Layanan Surat', href: '/admin/surat/tanda-tangan', kemampuan: 'surat.tandatangani' },
   { label: 'Penduduk', keterangan: 'Kependudukan', href: '/admin/kependudukan/penduduk', kemampuan: 'penduduk.lihat' },
   { label: 'Keluarga (KK)', keterangan: 'Kependudukan', href: '/admin/kependudukan/keluarga', kemampuan: 'penduduk.lihat' },
   { label: 'Tambah penduduk', keterangan: 'Aksi', href: '/admin/kependudukan/penduduk/tambah', kemampuan: 'penduduk.ubah' },

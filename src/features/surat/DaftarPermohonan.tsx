@@ -1,4 +1,4 @@
-import { Plus } from '@phosphor-icons/react'
+import { PenNib, Plus } from '@phosphor-icons/react'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
 import { pesanGalat } from '@/api/galat'
@@ -135,11 +135,18 @@ export function DaftarPermohonan({ filter, onUbahFilter, onBuka, sekarang }: Pro
         judul="Permohonan"
         meta={meta}
         aksi={
-          boleh(pengguna.peran, 'surat.proses') && (
-            <TautanTombol varian="utama" href="/admin/surat/baru" ikon={<Plus aria-hidden size={16} />}>
-              Buat surat
-            </TautanTombol>
-          )
+          <>
+            {boleh(pengguna.peran, 'surat.tandatangani') && (
+              <TautanTombol href="/admin/surat/tanda-tangan" ikon={<PenNib aria-hidden size={16} />}>
+                Tanda tangani
+              </TautanTombol>
+            )}
+            {boleh(pengguna.peran, 'surat.proses') && (
+              <TautanTombol varian="utama" href="/admin/surat/baru" ikon={<Plus aria-hidden size={16} />}>
+                Buat surat
+              </TautanTombol>
+            )}
+          </>
         }
       />
       <div className="border-b border-garis pt-4">

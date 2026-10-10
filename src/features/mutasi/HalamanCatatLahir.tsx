@@ -19,7 +19,7 @@ export function HalamanCatatLahir() {
     onKotor: setKotor,
     onBatal: () => router.history.back(),
     onTersimpan: (bayi: Penduduk) =>
-      void navigate({ to: '/admin/kependudukan/penduduk/$id', params: { id: bayi.id }, ignoreBlocker: true }),
+      void navigate({ to: '/admin/kependudukan/penduduk/$id', params: { id: bayi.id }, search: { surat: 'SKL' }, ignoreBlocker: true }),
   }
   return (
     <ButuhAkses kemampuan="penduduk.ubah">

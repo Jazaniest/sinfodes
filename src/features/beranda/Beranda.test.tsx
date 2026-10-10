@@ -22,7 +22,9 @@ describe('Beranda (SPEC §5.3)', () => {
     expect(within(buku).getAllByRole('listitem').length).toBeGreaterThanOrEqual(3)
     expect(within(buku).getAllByText(/Kelahiran dicatat/).length).toBeGreaterThanOrEqual(1)
     expect(
-      screen.getByText('2.812 jiwa dalam 806 KK · bulan ini 3 lahir, 1 meninggal, 2 datang, 4 pindah'),
+      screen.getByText(
+        /^2\.812 jiwa dalam 806 KK · bulan ini 3 lahir, 1 meninggal, 2 datang, 4 pindah · \d+ surat terbit dalam 30 hari terakhir, rata-rata selesai /,
+      ),
     ).toBeInTheDocument()
   })
   it('Kepala Dusun II: tanpa tindakan dan buku hari ini; keadaan dusunnya', async () => {
@@ -56,5 +58,32 @@ describe('Beranda (SPEC §5.3)', () => {
     const buku = await screen.findByRole('region', { name: 'Buku hari ini' })
     const tautan = await within(buku).findAllByRole('link', { name: /^Permohonan / })
     expect(tautan[0]).toHaveAttribute('href', expect.stringMatching(/^\/admin\/surat\/srt_/))
+  })
+  it('Kepala Desa: menunggu tanda tangan Anda, dengan Mulai tanda tangani (2B-2)', async () => {
+    masukSebagai(AKUN_UJI.kades)
+    renderPanel(<Beranda sekarang={SEKARANG_UJI} />, contohSesi('kades'))
+    const bagian = await screen.findByRole('region', { name: 'Menunggu tanda tangan Anda (2)' })
+    expect(within(bagian).getByRole('link', { name: 'Mulai tanda tangani' })).toHaveAttribute('href', '/admin/surat/tanda-tangan')
+  })
+  it('Sekretaris Desa: perlu paraf Anda di bagian paling atas (2B-2)', async () => {
+    masukSebagai(AKUN_UJI.sekdes)
+    renderPanel(<Beranda sekarang={SEKARANG_UJI} />, contohSesi('sekdes'))
+    const bagian = await screen.findByRole('region', { name: 'Perlu paraf Anda (1)' })
+    expect(screen.getAllByRole('region')[0]).toBe(bagian)
+    expect(within(bagian).getByRole('link', { name: 'Lihat surat yang perlu diparaf' })).toHaveAttribute(
+      'href',
+      '/admin/surat?status=perlu-ttd',
+    )
+  })
+  it('operator: permohonan menunggu di butir pertama, tanpa bagian tanda tangan (2B-2)', async () => {
+    masukSebagai(AKUN_UJI.operator)
+    renderPanel(<Beranda sekarang={SEKARANG_UJI} />, contohSesi('operator'))
+    const tindakan = await screen.findByRole('region', { name: 'Perlu ditindaklanjuti' })
+    expect(within(tindakan).getAllByRole('link')[0]).toHaveAccessibleName('7 permohonan surat menunggu (tertua 2 hari kerja)')
+    expect(within(tindakan).getByRole('link', { name: '1 surat dikembalikan untuk diperbaiki (SKU · Zulkifli)' })).toHaveAttribute(
+      'href',
+      expect.stringMatching(/^\/admin\/surat\/srt_/),
+    )
+    expect(screen.queryByRole('region', { name: /tanda tangan Anda|paraf Anda/ })).not.toBeInTheDocument()
   })
 })

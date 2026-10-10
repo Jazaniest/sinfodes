@@ -103,4 +103,12 @@ describe('Daftar permohonan (SPEC §7.4 layar 1)', () => {
     await screen.findByRole('grid', TABEL)
     expect(screen.queryByRole('link', { name: 'Buat surat' })).not.toBeInTheDocument()
   })
+  it('Tanda tangani untuk Kepala Desa; tidak untuk Operator', async () => {
+    const { unmount } = pasang({}, 'kades')
+    expect(await screen.findByRole('link', { name: 'Tanda tangani' })).toHaveAttribute('href', '/admin/surat/tanda-tangan')
+    unmount()
+    pasang()
+    await screen.findByRole('grid', TABEL)
+    expect(screen.queryByRole('link', { name: 'Tanda tangani' })).not.toBeInTheDocument()
+  })
 })

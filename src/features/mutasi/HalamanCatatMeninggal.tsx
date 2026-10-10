@@ -25,7 +25,7 @@ export function HalamanCatatMeninggal() {
               pendudukAwal={awal}
               onKotor={setKotor}
               onBatal={() => router.history.back()}
-              onTersimpan={(p) => void navigate({ to: '/admin/kependudukan/penduduk/$id', params: { id: p.id }, ignoreBlocker: true })}
+              onTersimpan={(p) => void navigate({ to: '/admin/kependudukan/penduduk/$id', params: { id: p.id }, search: { surat: 'SKM' }, ignoreBlocker: true })}
             />
           )}
         </DenganPendudukAwal>

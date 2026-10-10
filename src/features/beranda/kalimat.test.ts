@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { isiTindakan } from './kalimat'
+import type { Keadaan } from '@/domain/beranda/schema'
+import { isiSuratSaya, isiTindakan, kalimatKeadaan } from './kalimat'
 
 describe('butir Perlu ditindaklanjuti (SPEC §5.3)', () => {
   it('kelahiran dari warga membuka alur Lahir dengan laporannya', () =>
@@ -24,4 +25,39 @@ describe('butir Perlu ditindaklanjuti (SPEC §5.3)', () => {
       teks: '1 surat dikembalikan untuk diperbaiki (SKU · Zulkifli)',
       href: '/admin/surat/srt_contoh',
     }))
+})
+
+describe('kalimat keadaan desa (SPEC §5.3)', () => {
+  const keadaan: Keadaan = {
+    cakupan: 'desa', dusunId: null, jiwa: 2812, kk: 806, laki: 1410, perempuan: 1402,
+    bulanIni: { lahir: 3, meninggal: 1, datang: 2, pindah: 4 },
+    surat: { terbit30Hari: 64, rataSelesaiHariKerja: 1 },
+  }
+  it('penduduk, mutasi bulan ini, lalu surat 30 hari terakhir', () =>
+    expect(kalimatKeadaan(keadaan)).toBe(
+      '2.812 jiwa dalam 806 KK · bulan ini 3 lahir, 1 meninggal, 2 datang, 4 pindah · 64 surat terbit dalam 30 hari terakhir, rata-rata selesai 1 hari kerja',
+    ))
+  it('selesai di hari yang sama; belum ada surat terbit', () => {
+    expect(kalimatKeadaan({ ...keadaan, surat: { terbit30Hari: 5, rataSelesaiHariKerja: 0 } })).toMatch(
+      / · 5 surat terbit dalam 30 hari terakhir, rata-rata selesai di hari yang sama$/,
+    )
+    expect(kalimatKeadaan({ ...keadaan, surat: { terbit30Hari: 0, rataSelesaiHariKerja: 0 } })).toMatch(
+      / · belum ada surat terbit dalam 30 hari terakhir$/,
+    )
+  })
+})
+
+describe('bagian tanda tangan di Beranda (SPEC §5.3)', () => {
+  it('Kades: Mulai tanda tangani membuka tumpukan tanda tangan', () =>
+    expect(isiSuratSaya({ tahap: 'tanda-tangan', jumlah: 2 })).toEqual({
+      judul: 'Menunggu tanda tangan Anda (2)',
+      tautan: { teks: 'Mulai tanda tangani', href: '/admin/surat/tanda-tangan' },
+    }))
+  it('Sekdes: paraf dikerjakan dari daftar Perlu TTD; tanpa tautan bila kosong', () => {
+    expect(isiSuratSaya({ tahap: 'paraf', jumlah: 1 })).toEqual({
+      judul: 'Perlu paraf Anda (1)',
+      tautan: { teks: 'Lihat surat yang perlu diparaf', href: '/admin/surat?status=perlu-ttd' },
+    })
+    expect(isiSuratSaya({ tahap: 'paraf', jumlah: 0 })).toEqual({ judul: 'Perlu paraf Anda (0)', tautan: null })
+  })
 })

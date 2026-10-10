@@ -1,3 +1,4 @@
+import { FileText } from '@phosphor-icons/react'
 import { useQuery } from '@tanstack/react-query'
 import { pesanGalat } from '@/api/galat'
 import { opsiKeluarga } from '@/api/keluarga'
@@ -5,23 +6,27 @@ import { formatTanggal, formatUmur } from '@/domain/format/tanggal'
 import { kelompokkanNik } from '@/domain/penduduk/nik'
 import { penandaPenduduk } from '@/domain/penduduk/penanda'
 import type { BarisPenduduk } from '@/domain/penduduk/schema'
+import { boleh } from '@/domain/pengguna/hak-akses'
 import { alamatLengkap, kodeWilayahNik } from '@/domain/wilayah/alamat'
 import { DescriptionList } from '@/ui/data/DescriptionList'
 import { Nik } from '@/ui/domain/Nik'
 import { Drawer } from '@/ui/lapisan/Drawer'
 import { Tautan } from '@/ui/navigasi/Tautan'
+import { TautanTombol } from '@/ui/tombol/TautanTombol'
 import { Tombol } from '@/ui/tombol/Tombol'
 import { ErrorState } from '@/ui/umpan-balik/ErrorState'
 import { BarisKerangka } from '@/ui/umpan-balik/Skeleton'
 import { useSesiAdmin } from '../admin/sesi-konteks'
+import { DaftarSuratPenduduk } from '../surat/DaftarSuratPenduduk'
+import { hrefBuatSurat } from '../surat/buat/cari-buat'
 import { jenisKelaminPanjang } from './kolom'
 import { PenandaCap } from './PenandaCap'
 
 type Props = { penduduk: BarisPenduduk | null; hariIni: Date; onTutup: () => void; onBukaProfil: (id: string) => void }
 
-/** Laci ringkasan saat baris diklik (SPEC §6.2). "Buat surat untuk orang ini" ditambahkan di Tahap 2B. */
+/** Laci ringkasan saat baris diklik (SPEC §6.2): identitas ringkas, anggota keluarga, dan tiga surat terakhir. */
 export function LaciPenduduk({ penduduk, hariIni, onTutup, onBukaProfil }: Props) {
-  const { desa, dusun } = useSesiAdmin()
+  const { pengguna, desa, dusun } = useSesiAdmin()
   const keluarga = useQuery({ ...opsiKeluarga(penduduk?.keluargaId ?? ''), enabled: penduduk !== null })
   return (
     <Drawer
@@ -32,9 +37,16 @@ export function LaciPenduduk({ penduduk, hariIni, onTutup, onBukaProfil }: Props
       judul={penduduk?.nama ?? 'Penduduk'}
       aksi={
         penduduk && (
-          <Tombol varian="utama" onPress={() => onBukaProfil(penduduk.id)}>
-            Buka profil
-          </Tombol>
+          <>
+            <Tombol varian="utama" onPress={() => onBukaProfil(penduduk.id)}>
+              Buka profil
+            </Tombol>
+            {penduduk.statusDasar === 'Hidup' && boleh(pengguna.peran, 'surat.proses') && (
+              <TautanTombol href={hrefBuatSurat({ pemohon: penduduk.id })} ikon={<FileText aria-hidden size={16} />}>
+                Buat surat untuk orang ini
+              </TautanTombol>
+            )}
+          </>
         )
       }
     >
@@ -91,6 +103,16 @@ export function LaciPenduduk({ penduduk, hariIni, onTutup, onBukaProfil }: Props
               </ul>
             )}
           </section>
+          {boleh(pengguna.peran, 'surat.lihat') && (
+            <section aria-labelledby="judul-surat-laci">
+              <h3 id="judul-surat-laci" className="text-label font-medium text-tinta-2 uppercase">
+                Surat terakhir
+              </h3>
+              <div className="mt-2">
+                <DaftarSuratPenduduk pendudukId={penduduk.id} batas={3} />
+              </div>
+            </section>
+          )}
         </div>
       )}
     </Drawer>

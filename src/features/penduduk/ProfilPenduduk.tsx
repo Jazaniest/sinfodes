@@ -1,4 +1,4 @@
-import { CaretDown, PencilSimple } from '@phosphor-icons/react'
+import { CaretDown, FileText, PencilSimple } from '@phosphor-icons/react'
 import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import { GalatApi, pesanGalat } from '@/api/galat'
@@ -27,8 +27,11 @@ import { BarisKerangka, Skeleton } from '@/ui/umpan-balik/Skeleton'
 import { useSesiAdmin } from '../admin/sesi-konteks'
 import { BannerLaporan } from '../laporan/BannerLaporan'
 import { menuMutasiPenduduk } from '../mutasi/menu'
+import { DaftarSuratPenduduk } from '../surat/DaftarSuratPenduduk'
+import { hrefBuatSurat } from '../surat/buat/cari-buat'
 import { jenisKelaminPanjang } from './kolom'
 import { PenandaCap } from './PenandaCap'
+import { isiTawaranSurat, type TawaranSurat } from './tawaran-surat'
 
 const JEJAK = [{ label: 'Kependudukan' }, { label: 'Penduduk', href: '/admin/kependudukan/penduduk' }]
 const JUDUL_MUTASI: Readonly<Record<JenisMutasi, string>> = {
@@ -62,8 +65,16 @@ function keTimeline(e: EntriRiwayat): EntriTimeline {
   }
 }
 
-/** Profil penduduk (SPEC §6.3): lembar utama + kolom samping Riwayat. */
-export function ProfilPenduduk({ id, sekarang }: { id: string; sekarang?: Date }) {
+type Props = {
+  id: string
+  sekarang?: Date
+  /** `?surat=` setelah mutasi dicatat (SPEC §6.6). */
+  tawaran?: TawaranSurat
+  onTutupTawaran?: () => void
+}
+
+/** Profil penduduk (SPEC §6.3): lembar utama + kolom samping Riwayat dan Surat. */
+export function ProfilPenduduk({ id, sekarang, tawaran, onTutupTawaran }: Props) {
   const { pengguna, desa, dusun } = useSesiAdmin()
   const hariIni = useMemo(() => sekarang ?? new Date(), [sekarang])
   const kueri = useQuery(opsiPenduduk(id))
@@ -95,6 +106,7 @@ export function ProfilPenduduk({ id, sekarang }: { id: string; sekarang?: Date }
     (e): e is Extract<EntriRiwayat, { jenis: 'mutasi' }> => e.jenis === 'mutasi' && (e.mutasi === 'meninggal' || e.mutasi === 'pindah'),
   )
   const anggotaLain = keluarga.data?.anggota.filter((a) => a.id !== p.id)
+  const isiTawaran = tawaran && boleh(pengguna.peran, 'surat.proses') ? isiTawaranSurat(tawaran, p) : null
 
   const isiRiwayat = riwayat.isPending ? (
     <BarisKerangka jumlah={3} label="Memuat riwayat…" />
@@ -116,22 +128,49 @@ export function ProfilPenduduk({ id, sekarang }: { id: string; sekarang?: Date }
           </span>
         }
         aksi={
-          boleh(pengguna.peran, 'penduduk.ubah') && (
-            <>
-              <TautanTombol href={`/admin/kependudukan/penduduk/${p.id}/ubah`} ikon={<PencilSimple aria-hidden size={16} />}>
-                Ubah
+          <>
+            {hidup && boleh(pengguna.peran, 'surat.proses') && (
+              <TautanTombol varian="utama" href={hrefBuatSurat({ pemohon: p.id })} ikon={<FileText aria-hidden size={16} />}>
+                Buat surat
               </TautanTombol>
-              {hidup && (
-                <MenuAksi
-                  pemicu={<Tombol ikon={<CaretDown aria-hidden size={14} />}>Catat mutasi</Tombol>}
-                  items={menuMutasiPenduduk(p.id)}
-                  placement="bottom end"
-                />
-              )}
-            </>
-          )
+            )}
+            {boleh(pengguna.peran, 'penduduk.ubah') && (
+              <>
+                <TautanTombol href={`/admin/kependudukan/penduduk/${p.id}/ubah`} ikon={<PencilSimple aria-hidden size={16} />}>
+                  Ubah
+                </TautanTombol>
+                {hidup && (
+                  <MenuAksi
+                    pemicu={<Tombol ikon={<CaretDown aria-hidden size={14} />}>Catat mutasi</Tombol>}
+                    items={menuMutasiPenduduk(p.id)}
+                    placement="bottom end"
+                  />
+                )}
+              </>
+            )}
+          </>
         }
       />
+      {isiTawaran && (
+        <Banner
+          nada="berhasil"
+          judul={isiTawaran.judul}
+          aksi={
+            <>
+              <TautanTombol varian="utama" href={isiTawaran.href} ikon={<FileText aria-hidden size={16} />}>
+                {isiTawaran.tombol}
+              </TautanTombol>
+              {onTutupTawaran && (
+                <Tombol varian="teks" onPress={onTutupTawaran}>
+                  Nanti saja
+                </Tombol>
+              )}
+            </>
+          }
+        >
+          Isian surat diambil dari data yang baru dicatat.
+        </Banner>
+      )}
       <BannerLaporan penduduk={p} hariIni={hariIni} />
       {!hidup && (
         <Banner
@@ -247,8 +286,16 @@ export function ProfilPenduduk({ id, sekarang }: { id: string; sekarang?: Date }
             ]}
           />
         </div>
-        <aside aria-label="Riwayat">
-          <Tabs label="Kolom samping profil" items={[{ id: 'riwayat', label: 'Riwayat', isi: isiRiwayat }]} />
+        <aside aria-label="Riwayat dan surat">
+          <Tabs
+            label="Kolom samping profil"
+            items={[
+              { id: 'riwayat', label: 'Riwayat', isi: isiRiwayat },
+              ...(boleh(pengguna.peran, 'surat.lihat')
+                ? [{ id: 'surat', label: 'Surat', isi: <DaftarSuratPenduduk pendudukId={p.id} /> }]
+                : []),
+            ]}
+          />
         </aside>
       </div>
     </div>

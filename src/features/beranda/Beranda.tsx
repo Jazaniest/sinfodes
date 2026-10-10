@@ -1,16 +1,19 @@
+import { PenNib } from '@phosphor-icons/react'
 import { useQuery } from '@tanstack/react-query'
 import { opsiBeranda } from '@/api/beranda'
 import { pesanGalat } from '@/api/galat'
 import type { Aktivitas } from '@/domain/aktivitas/schema'
+import type { Beranda as DataBeranda } from '@/domain/beranda/schema'
 import { sapaanWaktu } from '@/domain/format/sapaan'
 import { formatJam, formatTanggal, tanggalIsoWib } from '@/domain/format/tanggal'
 import { namaDusun } from '@/domain/wilayah/alamat'
 import { Tautan } from '@/ui/navigasi/Tautan'
 import { PageHeader } from '@/ui/tata-letak/PageHeader'
+import { TautanTombol } from '@/ui/tombol/TautanTombol'
 import { ErrorState } from '@/ui/umpan-balik/ErrorState'
 import { BarisKerangka } from '@/ui/umpan-balik/Skeleton'
 import { useSesiAdmin } from '../admin/sesi-konteks'
-import { isiTindakan, kalimatKeadaan } from './kalimat'
+import { isiSuratSaya, isiTindakan, kalimatKeadaan } from './kalimat'
 
 const judulBagian = 'text-label font-medium text-tinta-2 uppercase'
 
@@ -19,6 +22,32 @@ function hrefRujukan(r: Aktivitas['rujukan']): string | null {
   if (r?.jenis === 'penduduk') return `/admin/kependudukan/penduduk/${r.id}`
   if (r?.jenis === 'permohonan') return `/admin/surat/${r.id}`
   return null
+}
+
+/** "Menunggu tanda tangan Anda (3)" dengan tombol Mulai tanda tangani, atau "Perlu paraf Anda (n)" (SPEC §5.3). */
+function SuratSaya({ surat }: { surat: NonNullable<DataBeranda['suratSaya']> }) {
+  const isi = isiSuratSaya(surat)
+  return (
+    <section
+      aria-labelledby="judul-surat-saya"
+      className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-y border-garis bg-lembar px-4 py-4"
+    >
+      <h2 id="judul-surat-saya" className="font-serif text-judul-bagian font-medium">
+        {isi.judul}
+      </h2>
+      {isi.tautan ? (
+        <TautanTombol
+          varian={surat.tahap === 'tanda-tangan' ? 'utama' : 'sekunder'}
+          href={isi.tautan.href}
+          ikon={surat.tahap === 'tanda-tangan' ? <PenNib aria-hidden size={16} /> : undefined}
+        >
+          {isi.tautan.teks}
+        </TautanTombol>
+      ) : (
+        <p className="text-tinta-2">Tidak ada surat yang menunggu Anda saat ini.</p>
+      )}
+    </section>
+  )
 }
 
 /** Beranda per peran (SPEC §5.3): tanpa deretan kartu angka; bagian bernilai null tidak tampil. */
@@ -40,6 +69,7 @@ export function Beranda({ sekarang = new Date() }: { sekarang?: Date }) {
         <ErrorState pesan={pesanGalat(kueri.error)} onCobaLagi={() => void kueri.refetch()} />
       ) : (
         <>
+          {kueri.data.suratSaya && <SuratSaya surat={kueri.data.suratSaya} />}
           {kueri.data.tindakan && (
             <section aria-labelledby="judul-tindakan">
               <h2 id="judul-tindakan" className={judulBagian}>

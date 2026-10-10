@@ -4,12 +4,13 @@ import userEvent from '@testing-library/user-event'
 import { RouterProvider } from 'react-aria-components'
 import { describe, expect, it, vi } from 'vitest'
 import type { Peran } from '@/domain/pengguna/schema'
+import { ambilDb } from '@/mocks/db'
 import { AKUN_UJI, masukSebagai, pakaiApiTiruan } from '@/test/api-tiruan'
 import { PencarianCepat } from './PencarianCepat'
 
 pakaiApiTiruan()
 
-const LABEL_KOTAK = 'Cari penduduk, nomor KK, atau halaman'
+const LABEL_KOTAK = 'Cari penduduk, nomor KK, surat, atau halaman'
 
 function pasang(peran: Peran) {
   const navigate = vi.fn()
@@ -95,5 +96,33 @@ describe('Pencarian cepat (SPEC §5.4)', () => {
     const { user } = pasang('kades')
     await user.type(screen.getByLabelText(LABEL_KOTAK), 'statistik')
     expect(screen.getByRole('menuitem', { name: /^Statistik penduduk/ })).toBeInTheDocument()
+  })
+  it('nomor surat → surat itu; Enter membuka ruang kerjanya (SPEC §5.4)', async () => {
+    masukSebagai(AKUN_UJI.operator)
+    const terbit = ambilDb().permohonan.find((p) => p.terbit && p.desaId === 'desa_sungai_sialang')
+    const nomor = terbit?.terbit?.nomor ?? '-'
+    const pemohon = ambilDb().penduduk.find((p) => p.id === terbit?.pemohonId)?.nama ?? '-'
+    const { navigate, user } = pasang('operator')
+    await user.click(screen.getByLabelText(LABEL_KOTAK))
+    await user.paste(nomor)
+    const item = await screen.findByRole('menuitem', { name: new RegExp(` · ${pemohon}$`) })
+    expect(item).toHaveTextContent(nomor)
+    await user.keyboard('{Enter}')
+    expect(navigate.mock.calls[0]?.[0]).toBe(`/admin/surat/${terbit?.id}`)
+  })
+  it('nama pemohon → permohonannya, di bawah hasil penduduk (SPEC §5.4)', async () => {
+    masukSebagai(AKUN_UJI.operator)
+    const { user } = pasang('operator')
+    await user.type(screen.getByLabelText(LABEL_KOTAK), 'Zulkifli')
+    const daftar = await screen.findAllByRole('menuitem', { name: 'Surat Keterangan Usaha · Zulkifli' })
+    const item = daftar.find((el) => el.textContent?.includes('Diproses'))
+    expect(item).toHaveTextContent('Belum bernomor · Diproses')
+    expect(item).toHaveAttribute('href', expect.stringMatching(/^\/admin\/surat\/srt_/))
+  })
+  it('aksi Buat surat bisa dicari Operator', async () => {
+    masukSebagai(AKUN_UJI.operator)
+    const { user } = pasang('operator')
+    await user.type(screen.getByLabelText(LABEL_KOTAK), 'buat surat')
+    expect(screen.getByRole('menuitem', { name: 'Buat surat' })).toBeInTheDocument()
   })
 })

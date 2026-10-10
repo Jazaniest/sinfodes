@@ -26,7 +26,7 @@ export function HalamanCatatPindah() {
               onKotor={setKotor}
               onBatal={() => router.history.back()}
               onTersimpan={([pertama]) =>
-                void navigate({ to: '/admin/kependudukan/penduduk/$id', params: { id: pertama.id }, ignoreBlocker: true })
+                void navigate({ to: '/admin/kependudukan/penduduk/$id', params: { id: pertama.id }, search: { surat: 'SPP' }, ignoreBlocker: true })
               }
             />
           )}
