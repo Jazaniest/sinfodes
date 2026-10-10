@@ -42,6 +42,24 @@ async function tandaTangani(user: ReturnType<typeof userEvent.setup>, tombol: 'T
 }
 
 describe('tumpukan tanda tangan (SPEC §7.4 layar 4)', () => {
+  it('dua kolom baru mulai 1280px seperti ruang kerja; di 1024 lembar selebar konten supaya terbaca', async () => {
+    pasang()
+    await screen.findByText('1 dari 2')
+    const grid = screen.getByRole('region', { name: 'Pratinjau surat' }).closest('.grid')
+    expect(grid?.className).toMatch(/(^| )xl:grid-cols-/)
+    expect(grid?.className).not.toMatch(/(^| )lg:grid-cols-/)
+    // Baris aksi setinggi isinya; tinggi lembar ditampung baris ringkasan, supaya ringkasan tepat di bawah aksi.
+    expect(grid?.className).toContain('xl:grid-rows-[auto_1fr]')
+    // Selama bilah aksi menempel (di bawah 1280px), tombolnya dinaikkan di atas toolbar demo.
+    const bilah = screen.getByRole('button', { name: 'Tanda tangani' }).parentElement
+    expect(bilah?.className).toContain('max-xl:[html[data-demo-toolbar]_&]:pb-18')
+  })
+  it('di HP, bilah aksi menempel di bawah: letaknya sesudah ringkasan supaya tetap terlihat saat ringkasan dibaca', async () => {
+    pasang()
+    await screen.findByText('1 dari 2')
+    const tombol = screen.getByRole('button', { name: 'Tanda tangani' })
+    expect(ringkasan().compareDocumentPosition(tombol) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
   it('satu per satu, terlama dulu; Lewati berputar kembali ke awal (fokus review 3)', async () => {
     const [pertama, kedua] = antrean()
     const user = pasang()

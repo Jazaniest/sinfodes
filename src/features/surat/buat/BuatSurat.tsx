@@ -53,6 +53,8 @@ export function BuatSurat({ cari, onUbahCari, onSelesai, onKotor, sekarang }: Pr
   const hariIni = useMemo(() => sekarang ?? new Date(), [sekarang])
   const lebar = useMediaQuery('(min-width: 1280px)')
   const panelIsian = useRef<HTMLDivElement>(null)
+  /** Kunci kirim yang langsung berlaku: isPending baru terlihat setelah render berikutnya, jadi klik ganda bisa lolos. */
+  const mengirim = useRef(false)
   const [isian, setIsian] = useState<Record<string, string> | null>(null)
   const [galat, setGalat] = useState<Record<string, string>>({})
 
@@ -103,6 +105,15 @@ export function BuatSurat({ cari, onUbahCari, onSelesai, onKotor, sekarang }: Pr
       tampilkanToast({ pesan: pesanGalat(e), nada: 'galat' })
     },
   })
+  const kirim = (ajukan: boolean) => {
+    if (mengirim.current) return
+    mengirim.current = true
+    buat.mutate(ajukan, {
+      onSettled: () => {
+        mengirim.current = false
+      },
+    })
+  }
 
   if (daftarJenis.isPending) return <BarisKerangka jumlah={6} label="Memuat jenis surat…" />
   if (daftarJenis.isError) return <ErrorState pesan={pesanGalat(daftarJenis.error)} onCobaLagi={() => void daftarJenis.refetch()} />
@@ -225,14 +236,14 @@ export function BuatSurat({ cari, onUbahCari, onSelesai, onKotor, sekarang }: Pr
                   Kembali
                 </Tombol>
                 <span className="flex flex-wrap gap-2">
-                  <Tombol memuat={buat.isPending && buat.variables === false} isDisabled={buat.isPending} onPress={() => buat.mutate(false)}>
+                  <Tombol memuat={buat.isPending && buat.variables === false} isDisabled={buat.isPending} onPress={() => kirim(false)}>
                     Simpan draf
                   </Tombol>
                   <Tombol
                     varian="utama"
                     memuat={buat.isPending && buat.variables === true}
                     isDisabled={buat.isPending}
-                    onPress={() => buat.mutate(true)}
+                    onPress={() => kirim(true)}
                   >
                     Ajukan tanda tangan
                   </Tombol>

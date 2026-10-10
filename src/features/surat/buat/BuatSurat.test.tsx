@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from '@testing-library/react'
+import { fireEvent, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -83,6 +83,19 @@ describe('Buat surat di loket (SPEC §7.4 layar 2)', () => {
     await user.dblClick(await screen.findByRole('button', { name: 'Ajukan tanda tangan' }))
     await waitFor(() => expect(onSelesai).toHaveBeenCalled(), { timeout: 3000 })
     expect(onSelesai).toHaveBeenCalledOnce()
+    expect(ambilDb().permohonan).toHaveLength(sebelum + 1)
+  })
+  it('dua klik sebelum layar sempat diperbarui (klik ganda di koneksi lambat) → tetap satu permohonan (fokus review 4)', async () => {
+    const sebelum = ambilDb().permohonan.length
+    const { user, onSelesai } = pasang({ jenis: 'SKD', pemohon: 'pdk_siti_rahmah', langkah: 3 })
+    await user.click(await screen.findByRole('textbox', { name: 'Keperluan' }))
+    await user.paste('pembukaan rekening bank')
+    await user.click(screen.getByRole('button', { name: 'Lanjut ke pratinjau' }))
+    const ajukan = await screen.findByRole('button', { name: 'Ajukan tanda tangan' })
+    fireEvent.click(ajukan)
+    fireEvent.click(ajukan)
+    await waitFor(() => expect(onSelesai).toHaveBeenCalled())
+    await new Promise((r) => setTimeout(r, 100))
     expect(ambilDb().permohonan).toHaveLength(sebelum + 1)
   })
   it('langkah yang dilompati lewat URL kembali ke langkah yang belum lengkap (fokus review 2)', async () => {

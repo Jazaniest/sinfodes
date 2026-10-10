@@ -156,7 +156,7 @@ export function ProfilPenduduk({ id, sekarang, tawaran, onTutupTawaran }: Props)
           nada="berhasil"
           judul={isiTawaran.judul}
           aksi={
-            <>
+            <div className="flex flex-wrap items-center gap-2">
               <TautanTombol varian="utama" href={isiTawaran.href} ikon={<FileText aria-hidden size={16} />}>
                 {isiTawaran.tombol}
               </TautanTombol>
@@ -165,7 +165,7 @@ export function ProfilPenduduk({ id, sekarang, tawaran, onTutupTawaran }: Props)
                   Nanti saja
                 </Tombol>
               )}
-            </>
+            </div>
           }
         >
           Isian surat diambil dari data yang baru dicatat.

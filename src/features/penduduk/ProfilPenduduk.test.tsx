@@ -110,6 +110,8 @@ describe('Profil penduduk (SPEC §6.3)', () => {
       'href',
       `/admin/surat/baru?jenis=SKM&subjek=${almarhum.id}&langkah=2`,
     )
+    // Dua aksi banner berjajar dengan jarak, seperti banner laporan warga.
+    expect(screen.getByRole('button', { name: 'Nanti saja' }).parentElement).toHaveClass('flex', 'gap-2')
     await userEvent.click(screen.getByRole('button', { name: 'Nanti saja' }))
     expect(onTutupTawaran).toHaveBeenCalledOnce()
   })
