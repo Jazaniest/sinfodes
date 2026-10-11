@@ -111,4 +111,12 @@ describe('Daftar permohonan (SPEC §7.4 layar 1)', () => {
     await screen.findByRole('grid', TABEL)
     expect(screen.queryByRole('link', { name: 'Tanda tangani' })).not.toBeInTheDocument()
   })
+  it('tab modul Permohonan · Arsip · Jenis Surat (SPEC §5.2)', async () => {
+    pasang()
+    const tab = screen.getByRole('navigation', { name: 'Bagian layanan surat' })
+    expect(within(tab).getByRole('link', { name: 'Permohonan' })).toHaveAttribute('aria-current', 'page')
+    expect(within(tab).getByRole('link', { name: 'Arsip' })).toHaveAttribute('href', '/admin/surat/arsip')
+    expect(within(tab).getByRole('link', { name: 'Jenis Surat' })).toHaveAttribute('href', '/admin/surat/jenis')
+    await screen.findByRole('grid', TABEL)
+  })
 })

@@ -27,6 +27,7 @@ import { Skeleton } from '@/ui/umpan-balik/Skeleton'
 import { useSesiAdmin } from '../admin/sesi-konteks'
 import { CapPermohonan } from './CapPermohonan'
 import { hrefPermohonan } from './filter-url'
+import { TabSurat } from './TabSurat'
 
 type Props = {
   filter: FilterPermohonan
@@ -148,6 +149,7 @@ export function DaftarPermohonan({ filter, onUbahFilter, onBuka, sekarang }: Pro
             )}
           </>
         }
+        tab={<TabSurat aktif="permohonan" />}
       />
       <div className="border-b border-garis pt-4">
         <TabNav
