@@ -1,7 +1,9 @@
 import { http, HttpResponse } from 'msw'
 import type { Tindakan } from '@/domain/beranda/schema'
 import { tanggalIsoWib, waktuIsoWib } from '@/domain/format/tanggal'
+import { jadwalBerikut } from '@/domain/kesehatan/schema'
 import { hitungMutasiBulan } from '@/domain/mutasi/buku'
+import { barisPengaduanSchema } from '@/domain/pengaduan/schema'
 import { dataBelumLengkap } from '@/domain/penduduk/filter'
 import { ringkasSuratTerbit } from '@/domain/surat/ringkas'
 import { hariKerjaBerlalu } from '@/domain/surat/waktu'
@@ -23,6 +25,16 @@ export const handlerBeranda = [
       const petugas = pengguna.peran === 'operator' || pengguna.peran === 'sekdes'
       const belumLengkap = hidup.filter((p) => dataBelumLengkap(p, sekarang)).length
       const mutasiBulanIni = hitungMutasiBulan(milik.mutasi, bulanIni)
+      // Pengaduan dalam cakupan pengguna: yang belum dibalas, dan yang terbaru untuk Kades dan Kepala Dusun (SPEC §5.3).
+      const pengaduan = milik.db.pengaduan.filter(
+        (a) => a.desaId === pengguna.desaId && (milik.dusunSaja === null || a.dusunId === milik.dusunSaja),
+      )
+      const belumDibalas = pengaduan.filter((a) => a.status === 'baru').length
+      const pengaduanTerbaru = [...pengaduan]
+        .sort((a, b) => b.masukPada.localeCompare(a.masukPada))
+        .slice(0, 5)
+        .map((a) => barisPengaduanSchema.parse(a))
+      const posyandu = milik.db.posyandu.find((p) => p.desaId === pengguna.desaId && p.dusunId === milik.dusunSaja)
       // Laporan warga terlama dulu: butirnya membuka laporan itu (SPEC §5.3).
       const laporanBaru = milik.laporanData
         .filter((l) => l.status === 'baru')
@@ -41,6 +53,7 @@ export const handlerBeranda = [
         ...(menunggu.length > 0
           ? [{ jenis: 'permohonan-menunggu' as const, jumlah: menunggu.length, tertuaHariKerja: hariKerjaBerlalu(menunggu[0].masukPada, waktuIsoWib(sekarang)) }]
           : []),
+        ...(belumDibalas > 0 ? [{ jenis: 'pengaduan-belum-dibalas' as const, jumlah: belumDibalas }] : []),
         ...(kelahiran.length > 0 ? [{ jenis: 'kelahiran-dilaporkan' as const, jumlah: kelahiran.length, laporanId: kelahiran[0].id }] : []),
         ...(perbaikan.length > 0 ? [{ jenis: 'laporan-perbaikan' as const, jumlah: perbaikan.length, pendudukId: perbaikan[0].pendudukId }] : []),
         ...(dikembalikan.length > 0
@@ -68,6 +81,11 @@ export const handlerBeranda = [
             : pengguna.peran === 'kades'
               ? { tahap: 'tanda-tangan', jumlah: perluTtd('tanda-tangan') }
               : null,
+        pengaduanTerbaru: pengguna.peran === 'kades' || pengguna.peran === 'kadus' ? pengaduanTerbaru : null,
+        posyandu:
+          pengguna.peran === 'kadus' && posyandu
+            ? { nama: posyandu.nama, tempat: posyandu.tempat, jadwal: jadwalBerikut(posyandu.jadwal, hariIni) }
+            : null,
         keadaan: {
           cakupan: milik.dusunSaja === null ? 'desa' : 'dusun',
           dusunId: milik.dusunSaja,

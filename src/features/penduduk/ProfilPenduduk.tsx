@@ -25,6 +25,7 @@ import { EmptyState } from '@/ui/umpan-balik/EmptyState'
 import { ErrorState } from '@/ui/umpan-balik/ErrorState'
 import { BarisKerangka, Skeleton } from '@/ui/umpan-balik/Skeleton'
 import { useSesiAdmin } from '../admin/sesi-konteks'
+import { BantuanKeluarga } from '../bansos/BantuanKeluarga'
 import { BannerLaporan } from '../laporan/BannerLaporan'
 import { menuMutasiPenduduk } from '../mutasi/menu'
 import { DaftarSuratPenduduk } from '../surat/DaftarSuratPenduduk'
@@ -286,13 +287,16 @@ export function ProfilPenduduk({ id, sekarang, tawaran, onTutupTawaran }: Props)
             ]}
           />
         </div>
-        <aside aria-label="Riwayat dan surat">
+        <aside aria-label="Riwayat, surat, dan bantuan">
           <Tabs
             label="Kolom samping profil"
             items={[
               { id: 'riwayat', label: 'Riwayat', isi: isiRiwayat },
               ...(boleh(pengguna.peran, 'surat.lihat')
                 ? [{ id: 'surat', label: 'Surat', isi: <DaftarSuratPenduduk pendudukId={p.id} /> }]
+                : []),
+              ...(boleh(pengguna.peran, 'bansos.lihat')
+                ? [{ id: 'bantuan', label: 'Bantuan', isi: <BantuanKeluarga keluargaId={p.keluargaId} /> }]
                 : []),
             ]}
           />

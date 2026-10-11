@@ -13,12 +13,15 @@ describe('GET /beranda (SPEC §5.3)', () => {
     const b = await ambilBeranda()
     expect(b.tindakan).toEqual([
       { jenis: 'permohonan-menunggu', jumlah: 7, tertuaHariKerja: 2 },
+      { jenis: 'pengaduan-belum-dibalas', jumlah: 2 },
       { jenis: 'kelahiran-dilaporkan', jumlah: 1, laporanId: 'lap_kelahiran_rosnani' },
       { jenis: 'laporan-perbaikan', jumlah: 1, pendudukId: 'pdk_syahrial' },
       { jenis: 'surat-dikembalikan', jumlah: 1, permohonanId: expect.stringMatching(/^srt_/), ringkas: 'SKU · Zulkifli' },
       { jenis: 'data-belum-lengkap', jumlah: 12 },
     ])
     expect(b.suratSaya).toBeNull()
+    expect(b.pengaduanTerbaru).toBeNull()
+    expect(b.posyandu).toBeNull()
     const waktu = b.bukuHariIni?.map((a) => a.waktu) ?? []
     expect(waktu.length).toBeGreaterThanOrEqual(3)
     expect(waktu.every((w) => w.startsWith('2026-09-24'))).toBe(true)
@@ -44,6 +47,10 @@ describe('GET /beranda (SPEC §5.3)', () => {
     expect(b.tindakan).toBeNull()
     expect(b.bukuHariIni).toBeNull()
     expect(b.keadaan.jiwa).toBe(2812)
+    const masuk = b.pengaduanTerbaru?.map((a) => a.masukPada) ?? []
+    expect(masuk).toHaveLength(5)
+    expect(masuk).toEqual([...masuk].sort().reverse())
+    expect(b.posyandu).toBeNull()
   })
   it('Kepala Dusun II: keadaan dusunnya saja', async () => {
     masukSebagai(AKUN_UJI.kadus)
@@ -52,6 +59,9 @@ describe('GET /beranda (SPEC §5.3)', () => {
     expect(b.keadaan).toMatchObject({ cakupan: 'dusun', dusunId: 'dsn_ss_2' })
     expect(b.keadaan.jiwa).toBeGreaterThan(0)
     expect(b.keadaan.jiwa).toBeLessThan(2812)
+    expect(b.pengaduanTerbaru?.length).toBeGreaterThan(0)
+    expect(b.pengaduanTerbaru?.every((a) => a.dusunId === 'dsn_ss_2')).toBe(true)
+    expect(b.posyandu).toEqual({ nama: 'Posyandu Mawar', tempat: 'Gedung Posyandu Mawar, Dusun II Sialang Jaya', jadwal: '2026-10-14' })
   })
   it('tanpa sesi → UNAUTHENTICATED', async () => {
     await expect(ambilBeranda()).rejects.toMatchObject({ kode: 'UNAUTHENTICATED' })

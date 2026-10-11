@@ -5,8 +5,10 @@ import { pesanGalat } from '@/api/galat'
 import type { Aktivitas } from '@/domain/aktivitas/schema'
 import type { Beranda as DataBeranda } from '@/domain/beranda/schema'
 import { sapaanWaktu } from '@/domain/format/sapaan'
-import { formatJam, formatTanggal, tanggalIsoWib } from '@/domain/format/tanggal'
+import { formatJam, formatTanggal, formatWaktuRelatif, tanggalIsoWib } from '@/domain/format/tanggal'
+import type { BarisPengaduan } from '@/domain/pengaduan/schema'
 import { namaDusun } from '@/domain/wilayah/alamat'
+import { Cap } from '@/ui/cap/Cap'
 import { Tautan } from '@/ui/navigasi/Tautan'
 import { PageHeader } from '@/ui/tata-letak/PageHeader'
 import { TautanTombol } from '@/ui/tombol/TautanTombol'
@@ -21,7 +23,38 @@ const judulBagian = 'text-label font-medium text-tinta-2 uppercase'
 function hrefRujukan(r: Aktivitas['rujukan']): string | null {
   if (r?.jenis === 'penduduk') return `/admin/kependudukan/penduduk/${r.id}`
   if (r?.jenis === 'permohonan') return `/admin/surat/${r.id}`
+  if (r?.jenis === 'pengaduan') return `/admin/pengaduan/${r.id}`
   return null
+}
+
+/** Pengaduan terbaru (Kades) atau pengaduan dari dusunnya (Kepala Dusun), SPEC §5.3. */
+function PengaduanTerbaru({ judul, daftar, sekarang }: { judul: string; daftar: readonly BarisPengaduan[]; sekarang: Date }) {
+  return (
+    <section aria-labelledby="judul-pengaduan">
+      <h2 id="judul-pengaduan" className={judulBagian}>
+        {judul}
+      </h2>
+      {daftar.length === 0 ? (
+        <p className="mt-2 text-tinta-2">Belum ada pengaduan.</p>
+      ) : (
+        <ul className="mt-2 divide-y divide-garis border-y border-garis bg-lembar">
+          {daftar.map((a) => (
+            <li key={a.id} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-4 py-3">
+              <span className="flex flex-col">
+                <Tautan href={`/admin/pengaduan/${a.id}`} nada="tinta">
+                  {a.judul}
+                </Tautan>
+                <span className="text-teks-kecil text-tinta-2">
+                  {a.pelapor.nama} · {formatWaktuRelatif(a.masukPada, sekarang)}
+                </span>
+              </span>
+              <Cap varian={a.status} />
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  )
 }
 
 /** "Menunggu tanda tangan Anda (3)" dengan tombol Mulai tanda tangani, atau "Perlu paraf Anda (n)" (SPEC §5.3). */
@@ -56,6 +89,7 @@ export function Beranda({ sekarang = new Date() }: { sekarang?: Date }) {
   const kueri = useQuery(opsiBeranda())
   const idDusun = kueri.data?.keadaan.dusunId ?? null
   const dusunKeadaan = dusun.find((d) => d.id === idDusun)
+  const judulPengaduan = dusunKeadaan ? `Pengaduan dari ${namaDusun(dusunKeadaan, desa.istilahWilayah)}` : 'Pengaduan terbaru'
 
   return (
     <div className="flex max-w-4xl flex-col gap-8">
@@ -124,12 +158,29 @@ export function Beranda({ sekarang = new Date() }: { sekarang?: Date }) {
               )}
             </section>
           )}
+          {kueri.data.pengaduanTerbaru && dusunKeadaan && (
+            <PengaduanTerbaru judul={judulPengaduan} daftar={kueri.data.pengaduanTerbaru} sekarang={sekarang} />
+          )}
           <section aria-labelledby="judul-keadaan">
             <h2 id="judul-keadaan" className={judulBagian}>
               {dusunKeadaan ? `Keadaan ${namaDusun(dusunKeadaan, desa.istilahWilayah)}` : 'Keadaan desa'}
             </h2>
             <p className="mt-2 text-dasar">{kalimatKeadaan(kueri.data.keadaan)}</p>
           </section>
+          {kueri.data.pengaduanTerbaru && !dusunKeadaan && (
+            <PengaduanTerbaru judul={judulPengaduan} daftar={kueri.data.pengaduanTerbaru} sekarang={sekarang} />
+          )}
+          {kueri.data.posyandu && (
+            <section aria-labelledby="judul-posyandu">
+              <h2 id="judul-posyandu" className={judulBagian}>
+                Jadwal posyandu
+              </h2>
+              <p className="mt-2 text-dasar">
+                {kueri.data.posyandu.nama} · {formatTanggal(kueri.data.posyandu.jadwal, 'hari')}
+                <span className="text-tinta-2"> · {kueri.data.posyandu.tempat}</span>
+              </p>
+            </section>
+          )}
         </>
       )}
     </div>

@@ -86,4 +86,27 @@ describe('Beranda (SPEC §5.3)', () => {
     )
     expect(screen.queryByRole('region', { name: /tanda tangan Anda|paraf Anda/ })).not.toBeInTheDocument()
   })
+  it('operator: pengaduan belum dibalas, dan butir pengaduan di Buku hari ini membuka pengaduannya (3A)', async () => {
+    masukSebagai(AKUN_UJI.operator)
+    renderPanel(<Beranda sekarang={SEKARANG_UJI} />, contohSesi('operator'))
+    expect(await screen.findByRole('link', { name: '2 pengaduan belum dibalas' })).toHaveAttribute('href', '/admin/pengaduan')
+    const buku = screen.getByRole('region', { name: 'Buku hari ini' })
+    expect(within(buku).getByRole('link', { name: /^Pengaduan masuk · Lampu jalan mati/ }).getAttribute('href')).toMatch(
+      /^\/admin\/pengaduan\/adu_/,
+    )
+  })
+  it('Kepala Desa: pengaduan terbaru (3A)', async () => {
+    masukSebagai(AKUN_UJI.kades)
+    renderPanel(<Beranda sekarang={SEKARANG_UJI} />, contohSesi('kades'))
+    const bagian = await screen.findByRole('region', { name: 'Pengaduan terbaru' })
+    expect(within(bagian).getAllByRole('listitem')).toHaveLength(5)
+    expect(within(bagian).getAllByRole('link')[0].getAttribute('href')).toMatch(/^\/admin\/pengaduan\/adu_/)
+  })
+  it('Kepala Dusun II: pengaduan dari dusunnya dan jadwal posyandu dusunnya (3A)', async () => {
+    masukSebagai(AKUN_UJI.kadus)
+    renderPanel(<Beranda sekarang={SEKARANG_UJI} />, contohSesi('kadus'))
+    expect(await screen.findByRole('region', { name: 'Pengaduan dari Dusun II Sialang Jaya' })).toBeInTheDocument()
+    const posyandu = screen.getByRole('region', { name: 'Jadwal posyandu' })
+    expect(posyandu).toHaveTextContent('Posyandu Mawar · Rabu, 14 Oktober 2026')
+  })
 })

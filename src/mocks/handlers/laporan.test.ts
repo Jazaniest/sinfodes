@@ -69,6 +69,8 @@ describe('laporan data warga (SPEC §5.3, §6.3)', () => {
     expect(hasil.penduduk[0]).toMatchObject({ nama: 'Nayla Safitri', keluargaId: 'kk_zulkifli' })
     expect((await ambilLaporan('lap_kelahiran_rosnani')).status).toBe('diterapkan')
     expect((await galatDari(catatLahir(LAHIR))).kode).toBe('CONFLICT')
-    expect((await ambilBeranda()).tindakan?.map((t) => t.jenis)).toEqual(['permohonan-menunggu', 'laporan-perbaikan', 'surat-dikembalikan', 'data-belum-lengkap'])
+    expect((await ambilBeranda()).tindakan?.map((t) => t.jenis)).toEqual([
+      'permohonan-menunggu', 'pengaduan-belum-dibalas', 'laporan-perbaikan', 'surat-dikembalikan', 'data-belum-lengkap',
+    ])
   })
 })

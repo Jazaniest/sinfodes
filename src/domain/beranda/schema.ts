@@ -1,10 +1,12 @@
 import { z } from 'zod'
 import { aktivitasSchema } from '../aktivitas/schema'
+import { barisPengaduanSchema } from '../pengaduan/schema'
 import { TAHAP_TTD } from '../surat/permohonan'
 
-/** "Perlu ditindaklanjuti" (SPEC §5.3). Butir laporan dan surat membawa rujukan butir terlamanya; pengaduan menyusul di Tahap 3. */
+/** "Perlu ditindaklanjuti" (SPEC §5.3). Butir laporan dan surat membawa rujukan butir terlamanya. */
 export const tindakanSchema = z.discriminatedUnion('jenis', [
   z.object({ jenis: z.literal('permohonan-menunggu'), jumlah: z.number().int().min(1), tertuaHariKerja: z.number().int().min(0) }),
+  z.object({ jenis: z.literal('pengaduan-belum-dibalas'), jumlah: z.number().int().min(1) }),
   z.object({ jenis: z.literal('surat-dikembalikan'), jumlah: z.number().int().min(1), permohonanId: z.string(), ringkas: z.string() }),
   z.object({ jenis: z.literal('kelahiran-dilaporkan'), jumlah: z.number().int().min(1), laporanId: z.string() }),
   z.object({ jenis: z.literal('laporan-perbaikan'), jumlah: z.number().int().min(1), pendudukId: z.string() }),
@@ -34,6 +36,10 @@ export const berandaSchema = z.object({
   bukuHariIni: z.array(aktivitasSchema).nullable(),
   /** Sekdes: surat yang perlu diparaf; Kades: yang menunggu tanda tangannya. Null untuk peran lain. */
   suratSaya: z.object({ tahap: z.enum(TAHAP_TTD), jumlah }).nullable(),
+  /** Kades: 5 pengaduan terbaru desa; Kepala Dusun: 5 terbaru dari dusunnya. Null untuk peran lain. */
+  pengaduanTerbaru: z.array(barisPengaduanSchema).nullable(),
+  /** Kepala Dusun: jadwal posyandu dusunnya yang terdekat. Null untuk peran lain. */
+  posyandu: z.object({ nama: z.string(), tempat: z.string(), jadwal: z.iso.date() }).nullable(),
   keadaan: keadaanSchema,
 })
 export type Beranda = z.infer<typeof berandaSchema>

@@ -29,6 +29,8 @@ export function isiTindakan(t: Tindakan): { teks: string; href: string } {
         teks: `${formatAngka(t.jumlah)} permohonan surat menunggu (${t.tertuaHariKerja === 0 ? 'masuk hari ini' : `tertua ${formatAngka(t.tertuaHariKerja)} hari kerja`})`,
         href: '/admin/surat',
       }
+    case 'pengaduan-belum-dibalas':
+      return { teks: `${formatAngka(t.jumlah)} pengaduan belum dibalas`, href: '/admin/pengaduan' }
     case 'surat-dikembalikan':
       return {
         teks: `${formatAngka(t.jumlah)} surat dikembalikan untuk diperbaiki (${t.ringkas})`,
