@@ -1,6 +1,7 @@
 import { formatTanggal, waktuIsoWib } from '@/domain/format/tanggal'
 import type { LaporanData } from '@/domain/laporan/schema'
 import type { Notifikasi } from '@/domain/notifikasi/schema'
+import type { Pengaduan } from '@/domain/pengaduan/schema'
 import { LABEL_FIELD } from '@/domain/penduduk/riwayat'
 import type { Penduduk } from '@/domain/penduduk/schema'
 import { boleh } from '@/domain/pengguna/hak-akses'
@@ -17,6 +18,7 @@ type Opsi = {
   jenisSurat: readonly JenisSurat[]
   permohonan: readonly Permohonan[]
   laporanData: readonly LaporanData[]
+  pengaduan: readonly Pengaduan[]
   acuan: Date
 }
 
@@ -79,6 +81,15 @@ export function bangkitkanNotifikasi(acak: Acak, o: Opsi): Notifikasi[] {
             waktu: l.dibuatPada, rujukan: { jenis: 'penduduk', id: l.isi.pendudukId }, untuk: pengubahData, kecuali: null,
           },
     )
+  }
+  // Pengaduan yang belum dibalas: petugas yang menanggapi; Kepala Dusun hanya untuk dusunnya.
+  for (const a of o.pengaduan) {
+    if (a.desaId !== o.desaId || a.status !== 'baru' || !baru(a.masukPada)) continue
+    bahan.push({
+      jenis: 'pengaduan-baru', judul: `Pengaduan baru: ${a.judul}`, isi: `${a.kategori} · dari ${a.pelapor.nama}`,
+      waktu: a.masukPada, rujukan: { jenis: 'pengaduan', id: a.id },
+      untuk: (p) => boleh(p.peran, 'pengaduan.tanggapi') && (p.peran !== 'kadus' || p.dusunId === a.dusunId), kecuali: null,
+    })
   }
   bahan.push({
     jenis: 'pengumuman', judul: 'Baru di Sinfodes: surat dari loket dan tumpukan tanda tangan',

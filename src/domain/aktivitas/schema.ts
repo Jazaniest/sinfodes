@@ -6,6 +6,7 @@ export const JENIS_AKTIVITAS = [
   'mutasi-lahir', 'mutasi-meninggal', 'mutasi-pindah', 'mutasi-datang', 'penduduk-ubah', 'penduduk-tambah',
   'keluarga-pecah', 'keluarga-ganti-kepala', 'penduduk-ekspor', 'penduduk-impor', 'laporan-diterapkan', 'laporan-ditolak',
   'permohonan-masuk', 'surat-terbit', 'surat-ditolak', 'surat-dibatalkan',
+  'pengaduan-masuk', 'pengaduan-dibalas', 'pengaduan-selesai', 'pengaduan-dibuka',
 ] as const
 export type JenisAktivitas = (typeof JENIS_AKTIVITAS)[number]
 
@@ -18,6 +19,6 @@ export const aktivitasSchema = z.object({
   jenis: z.enum(JENIS_AKTIVITAS),
   ringkasan: z.string().min(1),
   oleh: pelakuSchema.nullable(),
-  rujukan: z.object({ jenis: z.enum(['penduduk', 'keluarga', 'permohonan']), id: z.string() }).nullable(),
+  rujukan: z.object({ jenis: z.enum(['penduduk', 'keluarga', 'permohonan', 'pengaduan']), id: z.string() }).nullable(),
 })
 export type Aktivitas = z.infer<typeof aktivitasSchema>

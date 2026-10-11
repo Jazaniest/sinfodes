@@ -12,8 +12,15 @@ describe('notifikasi demo (SPEC §5.2, §5.5)', () => {
     expect(urut.length).toBeGreaterThan(3)
     expect(urut.map((n) => n.dibaca)).toEqual(urut.map((_, i) => i >= 3))
   })
-  it('Kades, Kaur Keuangan, dan Kepala Dusun hanya menerima pengumuman', () => {
-    for (const id of ['pgn_nasir', 'pgn_nurhayati', 'pgn_sukardi']) expect(milik(id).map((n) => n.jenis)).toEqual(['pengumuman'])
+  it('Kades dan Kaur Keuangan hanya menerima pengumuman', () => {
+    for (const id of ['pgn_nasir', 'pgn_nurhayati']) expect(milik(id).map((n) => n.jenis)).toEqual(['pengumuman'])
+  })
+  it('Kepala Dusun II: pengumuman dan pengaduan baru dari dusunnya saja (3A)', () => {
+    const sukardi = milik('pgn_sukardi')
+    expect(sukardi.map((n) => n.jenis).sort()).toEqual(['pengaduan-baru', 'pengumuman'])
+    const rujukan = sukardi.find((n) => n.jenis === 'pengaduan-baru')?.rujukan
+    expect(db.pengaduan.find((a) => a.id === rujukan?.id)?.dusunId).toBe('dsn_ss_2')
+    expect(milik('pgn_rosmiati').filter((n) => n.jenis === 'pengaduan-baru')).toHaveLength(2)
   })
   it('penanda tangan a.n. tidak menerima notifikasi tanda tangannya sendiri (fokus review 4)', () => {
     const olehSekdes = new Set(db.permohonan.filter((p) => p.terbit?.penandatangan.id === 'pgn_hendri').map((p) => p.id))

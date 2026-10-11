@@ -4,9 +4,12 @@ import { buatAcak } from '../prng'
 import { VERSI_DATA, type DbDemo } from '../tipe-db'
 import { pengaturanBawaan } from '@/domain/surat/pengaturan'
 import { bangkitkanSuratMasuk } from './arsip'
+import { bangkitkanBansos } from './bansos'
+import { bangkitkanKesehatan } from './kesehatan'
 import { bangkitkanLaporan } from './laporan'
 import { bangkitkanMutasi } from './mutasi'
 import { bangkitkanNotifikasi } from './notifikasi'
+import { bangkitkanPengaduan } from './pengaduan'
 import { bangkitkanPenduduk } from './penduduk'
 import { bangkitkanSurat } from './surat'
 
@@ -45,6 +48,14 @@ export function bangkitkanDb(sekarang: Date): DbDemo {
     pengguna: PENGGUNA_DEMO,
     acuan: sekarang,
   })
+  // Aliran acak keenam: data tahap sebelumnya tetap identik.
+  const pengaduan = bangkitkanPengaduan(buatAcak(SEED_DEMO + 5), {
+    desaId: ID_SUNGAI_SIALANG,
+    dusun: DUSUN_DEMO,
+    penduduk: hasil.penduduk,
+    pengguna: PENGGUNA_DEMO,
+    acuan: sekarang,
+  })
   const notifikasi = bangkitkanNotifikasi(buatAcak(SEED_DEMO + 4), {
     desaId: ID_SUNGAI_SIALANG,
     pengguna: PENGGUNA_DEMO,
@@ -52,6 +63,21 @@ export function bangkitkanDb(sekarang: Date): DbDemo {
     jenisSurat: surat.jenisSurat,
     permohonan: surat.permohonan,
     laporanData,
+    pengaduan: pengaduan.pengaduan,
+    acuan: sekarang,
+  })
+  // Aliran acak ketujuh dan kedelapan.
+  const bansos = bangkitkanBansos(buatAcak(SEED_DEMO + 6), {
+    desa: desaDemo,
+    penduduk: hasil.penduduk,
+    keluarga: hasil.keluarga,
+    mutasi: hasil.mutasi,
+    acuan: sekarang,
+  })
+  const kesehatan = bangkitkanKesehatan(buatAcak(SEED_DEMO + 7), {
+    desa: desaDemo,
+    dusun: DUSUN_DEMO,
+    penduduk: hasil.penduduk,
     acuan: sekarang,
   })
   return {
@@ -61,7 +87,7 @@ export function bangkitkanDb(sekarang: Date): DbDemo {
     dusun: structuredClone(DUSUN_DEMO),
     pengguna: structuredClone(PENGGUNA_DEMO),
     ...hasil,
-    aktivitas: [...hasil.aktivitas, ...surat.aktivitas],
+    aktivitas: [...hasil.aktivitas, ...surat.aktivitas, ...pengaduan.aktivitas],
     laporanData,
     impor: [],
     jenisSurat: surat.jenisSurat,
@@ -69,5 +95,10 @@ export function bangkitkanDb(sekarang: Date): DbDemo {
     pengaturanSurat: DESA_DEMO.map((d) => pengaturanBawaan(d.id)),
     suratMasuk,
     notifikasi,
+    pengaduan: pengaduan.pengaduan,
+    programBansos: bansos.program,
+    penerimaBansos: bansos.penerima,
+    posyandu: kesehatan.posyandu,
+    pengukuranBalita: kesehatan.pengukuranBalita,
   }
 }

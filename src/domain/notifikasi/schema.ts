@@ -1,8 +1,10 @@
 import { z } from 'zod'
 import { formatTanggal, tanggalIsoWib } from '../format/tanggal'
 
-/** SPEC §5.5. Pengaduan baru ditambahkan bersama modul Pengaduan. */
-export const JENIS_NOTIFIKASI = ['permohonan-baru', 'surat-ditandatangani', 'surat-dikembalikan', 'laporan-data', 'pengumuman'] as const
+/** SPEC §5.5. */
+export const JENIS_NOTIFIKASI = [
+  'permohonan-baru', 'surat-ditandatangani', 'surat-dikembalikan', 'pengaduan-baru', 'laporan-data', 'pengumuman',
+] as const
 export type JenisNotifikasi = (typeof JENIS_NOTIFIKASI)[number]
 
 /** Satu notifikasi untuk satu pengguna; status baca milik penerimanya sendiri. */
@@ -16,7 +18,7 @@ export const notifikasiSchema = z.object({
   waktu: z.iso.datetime({ offset: true }),
   dibaca: z.boolean(),
   /** Laporan kelahiran membuka alur Lahir dengan laporannya; laporan perbaikan merujuk penduduknya. */
-  rujukan: z.object({ jenis: z.enum(['permohonan', 'penduduk', 'laporan-kelahiran']), id: z.string() }).nullable(),
+  rujukan: z.object({ jenis: z.enum(['permohonan', 'penduduk', 'laporan-kelahiran', 'pengaduan']), id: z.string() }).nullable(),
 })
 export type Notifikasi = z.infer<typeof notifikasiSchema>
 
@@ -31,6 +33,7 @@ export function hrefNotifikasi(n: Pick<Notifikasi, 'rujukan'>): string | null {
   if (n.rujukan?.jenis === 'permohonan') return `/admin/surat/${n.rujukan.id}`
   if (n.rujukan?.jenis === 'penduduk') return `/admin/kependudukan/penduduk/${n.rujukan.id}`
   if (n.rujukan?.jenis === 'laporan-kelahiran') return `/admin/kependudukan/mutasi/lahir?laporan=${n.rujukan.id}`
+  if (n.rujukan?.jenis === 'pengaduan') return `/admin/pengaduan/${n.rujukan.id}`
   return null
 }
 

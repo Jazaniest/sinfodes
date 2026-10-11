@@ -3,9 +3,10 @@ import { kunciKeluarga } from './keluarga'
 import { kunciMutasi } from './mutasi'
 import { kunciPenduduk } from './penduduk'
 
-/** Kunci cache yang ikut basi setiap kali data kependudukan berubah. */
+/** Kunci cache yang ikut basi setiap kali data kependudukan berubah. Mutasi menandai penerima bansos dan mengubah daftar balita. */
 const KUNCI_TERDAMPAK = [
-  kunciPenduduk.semua, kunciKeluarga.semua, kunciMutasi.semua, ['beranda'], ['cari'], ['statistik'], ['laporan-data'],
+  kunciPenduduk.semua, kunciKeluarga.semua, kunciMutasi.semua, ['beranda'], ['cari'], ['statistik'], ['laporan-data'], ['bansos'],
+  ['kesehatan'],
 ] as const
 
 /** Setelah data kependudukan berubah: daftar, detail, Beranda, Buku Mutasi, Statistik, laporan warga, dan pencarian dimuat ulang. */
@@ -16,4 +17,9 @@ export async function segarkanKependudukan(queryClient: QueryClient): Promise<vo
 /** Setelah permohonan berubah: daftar, jumlah (angka menu), detail, Beranda, pencarian, dan arsip surat keluar dimuat ulang. */
 export async function segarkanSurat(queryClient: QueryClient): Promise<void> {
   await Promise.all([['permohonan'], ['beranda'], ['cari'], ['arsip'], ['notifikasi']].map((queryKey) => queryClient.invalidateQueries({ queryKey })))
+}
+
+/** Setelah pengaduan dibalas atau statusnya berubah: kotak masuk, jumlah (angka menu), detail, dan Beranda dimuat ulang. */
+export async function segarkanPengaduan(queryClient: QueryClient): Promise<void> {
+  await Promise.all([['pengaduan'], ['beranda']].map((queryKey) => queryClient.invalidateQueries({ queryKey })))
 }

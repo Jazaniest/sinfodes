@@ -12,6 +12,7 @@ describe('notifikasi (SPEC §5.5)', () => {
     expect(hrefNotifikasi(n('l', '2026-09-24T08:00:00+07:00', { jenis: 'laporan-kelahiran', id: 'lap_x' }))).toBe(
       '/admin/kependudukan/mutasi/lahir?laporan=lap_x',
     )
+    expect(hrefNotifikasi(n('p', '2026-09-24T08:00:00+07:00', { jenis: 'pengaduan', id: 'adu_x' }))).toBe('/admin/pengaduan/adu_x')
     expect(hrefNotifikasi(n('c', '2026-09-24T08:00:00+07:00'))).toBeNull()
   })
   it('dikelompokkan per tanggal WIB, urutan masukan dipertahankan', () => {

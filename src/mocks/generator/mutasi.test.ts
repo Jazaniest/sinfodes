@@ -109,8 +109,8 @@ describe('konsistensi data (SPEC §12.4)', () => {
     }
   })
   it('setiap mutasi dan riwayat tercatat di buku aktivitas', () => {
-    // Kejadian surat hari ini (2B-1) juga ada di buku aktivitas; yang dihitung di sini hanya kependudukan.
-    const kependudukan = db.aktivitas.filter((a) => a.rujukan?.jenis !== 'permohonan')
+    // Kejadian surat (2B-1) dan pengaduan (3A) juga ada di buku aktivitas; yang dihitung di sini hanya kependudukan.
+    const kependudukan = db.aktivitas.filter((a) => a.rujukan?.jenis !== 'permohonan' && a.rujukan?.jenis !== 'pengaduan')
     expect(kependudukan).toHaveLength(db.mutasi.length + db.riwayat.length)
     db.aktivitas.forEach((a) => expect(aktivitasSchema.safeParse(a).success, a.id).toBe(true))
   })

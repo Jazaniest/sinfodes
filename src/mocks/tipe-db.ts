@@ -1,9 +1,12 @@
 import type { Aktivitas } from '@/domain/aktivitas/schema'
+import type { PenerimaBansos, ProgramBansos } from '@/domain/bansos/schema'
 import type { LaporanImpor } from '@/domain/impor/schema'
 import type { Keluarga } from '@/domain/keluarga/schema'
+import type { Pengukuran, Posyandu, StatusGizi } from '@/domain/kesehatan/schema'
 import type { LaporanData } from '@/domain/laporan/schema'
 import type { Mutasi } from '@/domain/mutasi/schema'
 import type { Notifikasi } from '@/domain/notifikasi/schema'
+import type { Pengaduan } from '@/domain/pengaduan/schema'
 import type { Riwayat } from '@/domain/penduduk/riwayat'
 import type { Penduduk } from '@/domain/penduduk/schema'
 import type { Pengguna } from '@/domain/pengguna/schema'
@@ -14,10 +17,13 @@ import type { Permohonan } from '@/domain/surat/permohonan'
 import type { Desa, Dusun } from '@/domain/wilayah/schema'
 
 /** Naikkan setiap kali seed atau struktur data berubah; data lama di IndexedDB otomatis diganti (SPEC §12). */
-export const VERSI_DATA = 5
+export const VERSI_DATA = 6
 
 /** Berkas impor yang sudah diperiksa dan menunggu konfirmasi (SPEC §6.8). */
 export type SesiImpor = { id: string; desaId: string; olehId: string; laporan: LaporanImpor; selesai: boolean }
+
+/** Riwayat pengukuran satu balita. Statusnya dihitung pembangkit data (SPEC §8); null bila belum pernah diukur. */
+export type PengukuranBalita = { pendudukId: string; desaId: string; pengukuran: Pengukuran[]; status: StatusGizi | null }
 
 export type DbDemo = {
   versiData: number
@@ -43,4 +49,12 @@ export type DbDemo = {
   suratMasuk: SuratMasuk[]
   /** Notifikasi per pengguna (SPEC §5.5). */
   notifikasi: Notifikasi[]
+  /** Pengaduan warga beserta percakapannya (SPEC §8). */
+  pengaduan: Pengaduan[]
+  /** Bantuan sosial: program dan keluarga penerimanya (SPEC §8, §12.6). */
+  programBansos: ProgramBansos[]
+  penerimaBansos: PenerimaBansos[]
+  /** Kesehatan: posyandu dan pengukuran balita (SPEC §8, §12.6). */
+  posyandu: Posyandu[]
+  pengukuranBalita: PengukuranBalita[]
 }

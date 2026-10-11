@@ -49,9 +49,11 @@ export function idBaru(db: DbDemo, awalan: string): string {
   const terpakai = new Set<string>()
   for (const daftar of [
     db.penduduk, db.keluarga, db.mutasi, db.riwayat, db.aktivitas, db.laporanData, db.impor, db.permohonan, db.suratMasuk, db.notifikasi,
+    db.pengaduan,
   ]) {
     for (const x of daftar) terpakai.add(x.id)
   }
+  for (const a of db.pengaduan) for (const e of a.percakapan) terpakai.add(e.id)
   for (;;) {
     const id = `${awalan}_${Math.floor(Math.random() * 36 ** 6).toString(36).padStart(6, '0')}`
     if (!terpakai.has(id)) return id

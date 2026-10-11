@@ -1,5 +1,5 @@
 import { http, HttpResponse } from 'msw'
-import { tanggalIsoWib, waktuIsoWib } from '@/domain/format/tanggal'
+import { formatTanggal, tanggalIsoWib, waktuIsoWib } from '@/domain/format/tanggal'
 import type { Keluarga } from '@/domain/keluarga/schema'
 import { filterMutasiSchema, hitungMutasiBulan } from '@/domain/mutasi/buku'
 import {
@@ -9,6 +9,7 @@ import type { Mutasi } from '@/domain/mutasi/schema'
 import { periksaNik } from '@/domain/penduduk/nik'
 import type { Penduduk } from '@/domain/penduduk/schema'
 import { kodeWilayahNik } from '@/domain/wilayah/alamat'
+import { tandaiPenerimaDitinjau } from '../bansos'
 import { dataMilik } from '../cakupan'
 import { ubahDb } from '../db'
 import { API, balasDaftar, balasGalat, denganJaringan } from '../http'
@@ -151,6 +152,7 @@ export const handlerMutasi = [
         p.diubahPada = waktu
         if (kk) keluarkanDariKk(d, kk, [p.id], m.penggantiKepalaId, oleh, waktu)
         d.mutasi.push(mutasi)
+        tandaiPenerimaDitinjau(d, [p.id], `Penerima meninggal dunia pada ${formatTanggal(m.tanggal)}`, waktu)
         catatAktivitas(d, {
           desaId: p.desaId, dusunId: p.dusunId, waktu, jenis: 'mutasi-meninggal', ringkasan: `Kematian dicatat · ${p.nama}`,
           oleh, rujukan: { jenis: 'penduduk', id: p.id },
@@ -199,6 +201,7 @@ export const handlerMutasi = [
         }
         if (kk) keluarkanDariKk(d, kk, ids, m.penggantiKepalaId, oleh, waktu)
         d.mutasi.push(mutasi)
+        tandaiPenerimaDitinjau(d, ids, `Penerima pindah keluar desa pada ${formatTanggal(m.tanggal)}`, waktu)
         catatAktivitas(d, {
           desaId: pertama.desaId, dusunId: pertama.dusunId, waktu, jenis: 'mutasi-pindah',
           ringkasan: `Pindah keluar dicatat · ${pertama.nama}${orang.length > 1 ? ` (${orang.length} orang)` : ''} ke ${m.tujuan.kabupaten}`,
