@@ -1,6 +1,7 @@
 export const VARIAN_CAP = [
   'draf', 'menunggu', 'diproses', 'perlu-ttd', 'selesai', 'ditolak', 'dibatalkan', 'hidup', 'meninggal', 'pindah', 'hilang',
   'pendatang', 'belum-ktp-el', 'belum-ada-nik', 'data-belum-lengkap', 'asli',
+  'baru', 'ditanggapi', 'tersalur', 'belum-diambil', 'dijadwalkan', 'ditahan', 'perlu-ditinjau', 'normal', 'perlu-pemantauan', 'pendek',
 ] as const
 export type VarianCap = (typeof VARIAN_CAP)[number]
 
@@ -22,6 +23,16 @@ export const LABEL_CAP: Readonly<Record<VarianCap, string>> = {
   'belum-ada-nik': 'Belum ada NIK',
   'data-belum-lengkap': 'Data belum lengkap',
   asli: 'Asli',
+  baru: 'Baru',
+  ditanggapi: 'Ditanggapi',
+  tersalur: 'Tersalur',
+  'belum-diambil': 'Belum diambil',
+  dijadwalkan: 'Dijadwalkan',
+  ditahan: 'Ditahan',
+  'perlu-ditinjau': 'Perlu ditinjau',
+  normal: 'Normal',
+  'perlu-pemantauan': 'Perlu pemantauan',
+  pendek: 'Pendek (stunting)',
 }
 
 /** SPEC §4.4 */
@@ -42,4 +53,14 @@ export const WARNA_CAP: Readonly<Record<VarianCap, string>> = {
   'belum-ada-nik': 'text-oker',
   'data-belum-lengkap': 'text-oker',
   asli: 'text-hijau',
+  baru: 'text-oker',
+  ditanggapi: 'text-biru',
+  tersalur: 'text-hijau',
+  'belum-diambil': 'text-oker',
+  dijadwalkan: 'text-tinta-2',
+  ditahan: 'text-merah',
+  'perlu-ditinjau': 'text-oker',
+  normal: 'text-hijau',
+  'perlu-pemantauan': 'text-oker',
+  pendek: 'text-merah',
 }

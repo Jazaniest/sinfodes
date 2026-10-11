@@ -15,4 +15,14 @@ describe('halaman di Ctrl+K (SPEC §5.4)', () => {
     expect(HALAMAN_CARI).toContainEqual({ label: 'Jenis surat', keterangan: 'Layanan Surat', href: '/admin/surat/jenis', kemampuan: 'surat.lihat' })
     expect(HALAMAN_CARI).toContainEqual({ label: 'Notifikasi', keterangan: 'Halaman', href: '/admin/notifikasi', kemampuan: null })
   })
+  it('Pengaduan, Bantuan sosial, Kesehatan, dan saringan balita bisa dicari (3A)', () => {
+    expect(HALAMAN_CARI).toContainEqual({ label: 'Pengaduan', keterangan: 'Halaman', href: '/admin/pengaduan', kemampuan: 'pengaduan.lihat' })
+    expect(HALAMAN_CARI).toContainEqual({ label: 'Bantuan sosial', keterangan: 'Halaman', href: '/admin/bansos', kemampuan: 'bansos.lihat' })
+    expect(HALAMAN_CARI).toContainEqual({
+      label: 'Kesehatan dan posyandu', keterangan: 'Halaman', href: '/admin/kesehatan', kemampuan: 'kesehatan.lihat',
+    })
+    expect(HALAMAN_CARI).toContainEqual({
+      label: 'Balita pendek (stunting)', keterangan: 'Kesehatan', href: '/admin/kesehatan?status=pendek', kemampuan: 'kesehatan.lihat',
+    })
+  })
 })

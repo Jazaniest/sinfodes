@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Peran } from '@/domain/pengguna/schema'
-import { MENU_ADMIN, menuAktif, menuUntuk, type ItemMenu } from './navigasi'
+import { angkaPengaduan, MENU_ADMIN, menuAktif, menuUntuk, type ItemMenu } from './navigasi'
 
 const label = (peran: Peran) => menuUntuk(peran).flatMap((k) => k.item.map((i) => i.label))
 const item = (nama: string): ItemMenu => {
@@ -10,8 +10,8 @@ const item = (nama: string): ItemMenu => {
 }
 
 describe('menu admin (SPEC §5.1, §5.2)', () => {
-  it('operator: Beranda, Layanan Surat, dan Kependudukan', () =>
-    expect(label('operator')).toEqual(['Beranda', 'Layanan Surat', 'Kependudukan']))
+  it('operator: Beranda, Layanan Surat, Pengaduan, Kependudukan, Bantuan Sosial, Kesehatan', () =>
+    expect(label('operator')).toEqual(['Beranda', 'Layanan Surat', 'Pengaduan', 'Kependudukan', 'Bantuan Sosial', 'Kesehatan']))
   it('kelompok mengikuti SPEC: Pelayanan sebelum Data desa', () =>
     expect(menuUntuk('kades').map((k) => k.judul)).toEqual([null, 'Pelayanan', 'Data desa']))
   it('Kepala Dusun melihat Layanan Surat (dusunnya)', () => expect(label('kadus')).toContain('Layanan Surat'))
@@ -28,5 +28,16 @@ describe('menu admin (SPEC §5.1, §5.2)', () => {
     expect(menuAktif(item('Kependudukan'), '/admin/kependudukan-lain')).toBe(false)
     expect(menuAktif(item('Layanan Surat'), '/admin/surat/srt_abc123')).toBe(true)
     expect(menuAktif(item('Layanan Surat'), '/admin/suratku')).toBe(false)
+  })
+  it('angka menu Pengaduan: pengaduan Baru, hanya untuk peran yang menanggapi (fokus review 4)', () => {
+    expect(item('Pengaduan')).toMatchObject({ href: '/admin/pengaduan', kemampuan: 'pengaduan.lihat', hitungan: 'pengaduan' })
+    expect(angkaPengaduan('operator', 2)).toBe(2)
+    expect(angkaPengaduan('kadus', 1)).toBe(1)
+    expect(angkaPengaduan('kades', 2)).toBeUndefined()
+    expect(label('kades')).toContain('Pengaduan')
+  })
+  it('Kepala Dusun melihat Pengaduan, Bantuan Sosial, dan Kesehatan; Kaur Keuangan tidak (fokus review 4)', () => {
+    expect(label('kadus')).toEqual(expect.arrayContaining(['Pengaduan', 'Bantuan Sosial', 'Kesehatan']))
+    expect(label('kaur-keuangan')).toEqual(['Beranda'])
   })
 })

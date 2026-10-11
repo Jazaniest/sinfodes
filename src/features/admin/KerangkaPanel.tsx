@@ -2,12 +2,14 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { getRouteApi, Outlet, useRouter, useRouterState } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { opsiNotifikasi } from '@/api/notifikasi'
+import { opsiJumlahPengaduan } from '@/api/pengaduan'
 import { keluar } from '@/api/sesi'
 import { opsiJumlahPermohonan } from '@/api/surat'
 import { hapusSesi } from '@/app/sesi'
 import { boleh } from '@/domain/pengguna/hak-akses'
 import { PencarianCepat } from '../cari/PencarianCepat'
 import { AdminShell } from './AdminShell'
+import { angkaPengaduan } from './navigasi'
 import { SesiAdminKonteks } from './sesi-konteks'
 import { hapusSemuaDraf } from './useDrafFormulir'
 
@@ -22,6 +24,8 @@ export function KerangkaPanel() {
   const [cariTerbuka, setCariTerbuka] = useState(false)
   // Angka menu Layanan Surat; ikut dimuat ulang setiap kali permohonan berubah (segarkanSurat).
   const jumlahSurat = useQuery({ ...opsiJumlahPermohonan(), enabled: boleh(sesi.pengguna.peran, 'surat.lihat') })
+  // Angka menu Pengaduan; ikut dimuat ulang setiap kali pengaduan dibalas atau statusnya berubah (segarkanPengaduan).
+  const jumlahPengaduan = useQuery({ ...opsiJumlahPengaduan(), enabled: boleh(sesi.pengguna.peran, 'pengaduan.lihat') })
   // Angka menu Notifikasi; ikut dimuat ulang saat surat berubah (segarkanSurat) dan saat ditandai dibaca.
   const notifikasi = useQuery(opsiNotifikasi())
 
@@ -56,7 +60,11 @@ export function KerangkaPanel() {
         jalur={jalur}
         onCari={() => setCariTerbuka(true)}
         onKeluar={() => void keluarSesi()}
-        hitungan={{ surat: jumlahSurat.data?.perluTindakan, notifikasi: notifikasi.data?.belumDibaca }}
+        hitungan={{
+          surat: jumlahSurat.data?.perluTindakan,
+          pengaduan: angkaPengaduan(sesi.pengguna.peran, jumlahPengaduan.data?.status.baru),
+          notifikasi: notifikasi.data?.belumDibaca,
+        }}
       >
         <Outlet />
       </AdminShell>
