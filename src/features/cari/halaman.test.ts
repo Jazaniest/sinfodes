@@ -10,4 +10,9 @@ describe('halaman di Ctrl+K (SPEC §5.4)', () => {
       label: 'Tanda tangan surat', keterangan: 'Layanan Surat', href: '/admin/surat/tanda-tangan', kemampuan: 'surat.tandatangani',
     })
   })
+  it('Arsip surat, Jenis surat, dan Notifikasi bisa dicari (SPEC §5.4)', () => {
+    expect(HALAMAN_CARI).toContainEqual({ label: 'Arsip surat', keterangan: 'Layanan Surat', href: '/admin/surat/arsip', kemampuan: 'surat.lihat' })
+    expect(HALAMAN_CARI).toContainEqual({ label: 'Jenis surat', keterangan: 'Layanan Surat', href: '/admin/surat/jenis', kemampuan: 'surat.lihat' })
+    expect(HALAMAN_CARI).toContainEqual({ label: 'Notifikasi', keterangan: 'Halaman', href: '/admin/notifikasi', kemampuan: null })
+  })
 })

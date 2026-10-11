@@ -48,6 +48,14 @@ describe('AdminShell (SPEC §5.2, §5.7)', () => {
     const laci = screen.getByRole('dialog', { name: 'Menu' })
     expect(within(laci).getByRole('link', { name: 'Kependudukan' })).toBeInTheDocument()
   })
+  it('menu Notifikasi berangka untuk semua peran (SPEC §5.2)', () => {
+    render(
+      <AdminShell sesi={contohSesi('kadus')} jalur="/admin" onCari={vi.fn()} onKeluar={vi.fn()} hitungan={{ notifikasi: 3 }}>
+        <p>isi</p>
+      </AdminShell>,
+    )
+    expect(screen.getByRole('link', { name: 'Notifikasi, 3 belum dibaca' })).toHaveAttribute('href', '/admin/notifikasi')
+  })
 })
 
 describe('ButuhAkses (SPEC §3.5)', () => {

@@ -10,7 +10,7 @@ import { useMediaQuery } from '@/ui/hooks/useMediaQuery'
 import { Hitungan } from '@/ui/hitungan/Hitungan'
 import { Drawer } from '@/ui/lapisan/Drawer'
 import { MenuAksi } from '@/ui/lapisan/Menu'
-import { menuAktif, menuUntuk, type KunciHitungan } from './navigasi'
+import { LABEL_HITUNGAN, MENU_BAWAH, menuAktif, menuUntuk, type ItemMenu, type KunciHitungan } from './navigasi'
 
 type Props = {
   sesi: SesiAdmin
@@ -24,6 +24,27 @@ type Props = {
 
 const fokus =
   'outline-none data-[focus-visible]:outline-2 data-[focus-visible]:outline-solid data-[focus-visible]:outline-offset-2 data-[focus-visible]:outline-biru'
+
+function TautanMenu({ item: i, jalur, onPilih, hitungan }: { item: ItemMenu; jalur: string; onPilih?: () => void; hitungan?: Props['hitungan'] }) {
+  const aktif = menuAktif(i, jalur)
+  const angka = i.hitungan ? hitungan?.[i.hitungan] : undefined
+  return (
+    <Link
+      href={i.href}
+      onPress={onPilih}
+      aria-current={aktif ? 'page' : undefined}
+      aria-label={angka && i.hitungan ? `${i.label}, ${formatAngka(angka)} ${LABEL_HITUNGAN[i.hitungan]}` : undefined}
+      className={cn(
+        'flex h-9 items-center rounded-1 border-l-2 px-2 text-teks',
+        aktif ? 'border-biru bg-lembar font-medium text-tinta' : 'border-transparent text-tinta-2 hover:bg-lembar hover:text-tinta',
+        fokus,
+      )}
+    >
+      <span className="min-w-0 flex-1 truncate">{i.label}</span>
+      {angka !== undefined && angka > 0 && <Hitungan nilai={angka} className="ml-2 text-tinta" />}
+    </Link>
+  )
+}
 
 function IsiNavigasi({ sesi, jalur, onCari, onKeluar, onPilih, hitungan }: Omit<Props, 'children'> & { onPilih?: () => void }) {
   const { desa, pengguna } = sesi
@@ -57,31 +78,23 @@ function IsiNavigasi({ sesi, jalur, onCari, onKeluar, onPilih, hitungan }: Omit<
           <div key={k.judul ?? 'utama'} className="mb-4">
             {k.judul && <p className="mb-1 px-2 text-label font-medium text-tinta-2 uppercase">{k.judul}</p>}
             <ul>
-              {k.item.map((i) => {
-                const aktif = menuAktif(i, jalur)
-                const angka = i.hitungan ? hitungan?.[i.hitungan] : undefined
-                return (
-                  <li key={i.href}>
-                    <Link
-                      href={i.href}
-                      onPress={onPilih}
-                      aria-current={aktif ? 'page' : undefined}
-                      aria-label={angka ? `${i.label}, ${formatAngka(angka)} perlu ditindaklanjuti` : undefined}
-                      className={cn(
-                        'flex h-9 items-center rounded-1 border-l-2 px-2 text-teks',
-                        aktif ? 'border-biru bg-lembar font-medium text-tinta' : 'border-transparent text-tinta-2 hover:bg-lembar hover:text-tinta',
-                        fokus,
-                      )}
-                    >
-                      <span className="min-w-0 flex-1 truncate">{i.label}</span>
-                      {angka !== undefined && angka > 0 && <Hitungan nilai={angka} className="ml-2 text-tinta" />}
-                    </Link>
-                  </li>
-                )
-              })}
+              {k.item.map((i) => (
+                <li key={i.href}>
+                  <TautanMenu item={i} jalur={jalur} onPilih={onPilih} hitungan={hitungan} />
+                </li>
+              ))}
             </ul>
           </div>
         ))}
+      </nav>
+      <nav aria-label="Menu lain" className="border-t border-garis pt-3">
+        <ul>
+          {MENU_BAWAH.map((i) => (
+            <li key={i.href}>
+              <TautanMenu item={i} jalur={jalur} onPilih={onPilih} hitungan={hitungan} />
+            </li>
+          ))}
+        </ul>
       </nav>
       <div className="flex items-center justify-between gap-2 border-t border-garis pt-4">
         <MenuAksi

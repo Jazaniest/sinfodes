@@ -2,7 +2,10 @@ import { boleh, type Kemampuan } from '@/domain/pengguna/hak-akses'
 import type { Peran } from '@/domain/pengguna/schema'
 
 /** Kunci angka di samping menu: jumlah yang perlu ditindaklanjuti peran aktif (SPEC §5.2). */
-export type KunciHitungan = 'surat'
+export type KunciHitungan = 'surat' | 'notifikasi'
+
+/** Arti angka di samping menu untuk pembaca layar, mis. "Notifikasi, 3 belum dibaca". */
+export const LABEL_HITUNGAN: Readonly<Record<KunciHitungan, string>> = { surat: 'perlu ditindaklanjuti', notifikasi: 'belum dibaca' }
 export type ItemMenu = { label: string; href: string; kemampuan: Kemampuan | null; awalan: string; hitungan: KunciHitungan | null }
 export type KelompokMenu = { judul: string | null; item: ItemMenu[] }
 
@@ -19,6 +22,11 @@ export const MENU_ADMIN: readonly KelompokMenu[] = [
       { label: 'Kependudukan', href: '/admin/kependudukan/penduduk', kemampuan: 'penduduk.lihat', awalan: '/admin/kependudukan', hitungan: null },
     ],
   },
+]
+
+/** Menu di bawah garis (SPEC §5.2). Pengaturan menyusul di Tahap 3. */
+export const MENU_BAWAH: readonly ItemMenu[] = [
+  { label: 'Notifikasi', href: '/admin/notifikasi', kemampuan: null, awalan: '/admin/notifikasi', hitungan: 'notifikasi' },
 ]
 
 /** Menu yang tidak berhak diakses disembunyikan, bukan dinonaktifkan (SPEC §5.1). */
