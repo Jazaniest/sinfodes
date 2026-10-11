@@ -59,7 +59,8 @@ export function BagianIsian({ id, nomor, judul, children }: { id: string; nomor:
         <span className="mr-2 font-mono text-tinta-2">{nomor}</span>
         {judul}
       </h2>
-      <div className="grid gap-4 sm:grid-cols-2">{children}</div>
+      {/* Kolom tunggal berbatas minmax(0,1fr): isi yang lebar (mis. pratinjau lembar A4) tidak melebarkan halaman di HP. */}
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-4 sm:grid-cols-2">{children}</div>
     </section>
   )
 }

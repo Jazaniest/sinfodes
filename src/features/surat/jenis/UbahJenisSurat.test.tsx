@@ -67,6 +67,14 @@ describe('ubah jenis surat (SPEC §7.4 layar 6)', () => {
     expect(onSelesai).not.toHaveBeenCalled()
     expect(skd()?.klasifikasi).toBe('470')
   })
+  it('setiap bagian memakai lebar penuh formulir: isian dan pratinjau tidak terjepit di setengah kolom', async () => {
+    pasang()
+    await screen.findByRole('heading', { level: 1, name: 'Surat Keterangan Domisili' })
+    for (const id of ['jenis-identitas', 'jenis-ttd', 'jenis-berlaku', 'jenis-syarat', 'jenis-isian', 'jenis-teks']) {
+      const isi = document.getElementById(id)?.querySelector(':scope > div')
+      expect([...(isi?.children ?? [])].every((anak) => anak.classList.contains('sm:col-span-2')), id).toBe(true)
+    }
+  })
   it('jenis surat tidak ada → keterangan dan tautan kembali', async () => {
     pasang('js_tidak_ada')
     expect(await screen.findByText('Jenis surat tidak ditemukan')).toBeInTheDocument()

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { GalatApi } from '@/api/galat'
-import { ambilJenisSurat, ambilPermohonan, buatPermohonan, daftarJenisSurat, jalankanAksi, ubahJenisSurat } from '@/api/surat'
+import { ambilAntrianTtd, ambilJenisSurat, ambilPermohonan, buatPermohonan, daftarJenisSurat, jalankanAksi, ubahJenisSurat } from '@/api/surat'
 import type { UbahJenisSurat } from '@/domain/surat/ubah-jenis'
 import { ambilDb } from '@/mocks/db'
 import { AKUN_UJI, masukSebagai, pakaiApiTiruan } from '@/test/api-tiruan'
@@ -39,6 +39,18 @@ describe('jenis surat: detail dan ubah (SPEC §7.4 layar 6)', () => {
     expect(ambilDb().permohonan.find((p) => p.id === terbit?.id)?.terbit?.lembar).toEqual(lembarLama)
     const draf = ambilDb().permohonan.find((p) => p.jenisId === 'js_ss_skd' && !p.terbit)
     expect((await ambilPermohonan(draf?.id ?? '-')).jenis.teks).toBe(teks)
+  })
+  it('isian wajib baru: surat yang menunggu tanda tangan tidak bisa ditandatangani sebelum dilengkapi (fokus review 1)', async () => {
+    masukSebagai(AKUN_UJI.operator)
+    const d = await ambilJenisSurat('js_ss_skd')
+    const baru = { kunci: 'namaSekolah', label: 'Nama sekolah', jenis: 'teks', wajib: true, pilihan: null, rupiah: false, diTabel: false, keterangan: null } as const
+    await ubahJenisSurat('js_ss_skd', { isian: [...d.jenis.isian, baru], teks: `${d.jenis.teks}\n\nSekolah: [namaSekolah].` })
+    masukSebagai(AKUN_UJI.kades)
+    const skd = (await ambilAntrianTtd()).find((x) => x.jenis.kode === 'SKD')
+    const g = await galatDari(jalankanAksi(skd?.permohonan.id ?? '-', 'tandatangani', { passphrase: 'sialang2026' }))
+    expect(g.kode).toBe('VALIDATION')
+    expect(g.message).toBe('Isian surat belum lengkap (Nama sekolah wajib diisi). Kembalikan ke operator untuk dilengkapi.')
+    expect(ambilDb().permohonan.find((p) => p.id === skd?.permohonan.id)?.terbit).toBeNull()
   })
   it('nonaktif: ditolak saat membuat surat; permohonan lama tetap bisa diproses (fokus review 2)', async () => {
     masukSebagai(AKUN_UJI.operator)

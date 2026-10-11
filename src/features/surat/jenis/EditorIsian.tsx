@@ -55,7 +55,7 @@ export function EditorIsian({ isian, kunciTersimpan, galat, onUbah }: Props) {
     ])
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3 sm:col-span-2">
       <p className={gayaKeterangan}>Diisi petugas saat membuat surat. Setiap isian bisa disisipkan ke teks surat.</p>
       {isian.length === 0 && <p className="text-tinta-2">Belum ada isian tambahan.</p>}
       <ul aria-label="Isian tambahan" className="flex flex-col gap-3">

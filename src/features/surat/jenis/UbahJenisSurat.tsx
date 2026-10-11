@@ -164,7 +164,7 @@ function FormJenis({ detail, onSelesai, onKotor, sekarang }: Omit<Props, 'id'> &
         }
       >
         <BagianIsian id="jenis-identitas" nomor={1} judul="Identitas">
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 sm:col-span-2 sm:grid-cols-2">
             <TextField
               label="Nama surat"
               value={form.nama}
@@ -191,7 +191,7 @@ function FormJenis({ detail, onSelesai, onKotor, sekarang }: Omit<Props, 'id'> &
           </div>
         </BagianIsian>
         <BagianIsian id="jenis-ttd" nomor={2} judul="Penandatanganan">
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 sm:col-span-2">
             <Checkbox isSelected={form.bolehAtasNama} onChange={(v) => ubah('bolehAtasNama', v)}>
               Sekretaris Desa boleh menandatangani atas nama Kepala Desa
             </Checkbox>
@@ -201,7 +201,7 @@ function FormJenis({ detail, onSelesai, onKotor, sekarang }: Omit<Props, 'id'> &
           </div>
         </BagianIsian>
         <BagianIsian id="jenis-berlaku" nomor={3} judul="Masa berlaku">
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 sm:col-span-2">
             <RadioGroup
               label="Masa berlaku"
               pilihan={[
@@ -232,7 +232,7 @@ function FormJenis({ detail, onSelesai, onKotor, sekarang }: Omit<Props, 'id'> &
           </div>
         </BagianIsian>
         <BagianIsian id="jenis-syarat" nomor={4} judul="Syarat">
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 sm:col-span-2">
             <p className={gayaKeterangan}>Berkas yang dibawa atau diunggah pemohon. Tampil di langkah 1 Buat surat dan di layanan warga.</p>
             <ul aria-label="Daftar syarat" className="flex flex-col gap-2">
               {form.syarat.map((s, i) => (
@@ -262,7 +262,7 @@ function FormJenis({ detail, onSelesai, onKotor, sekarang }: Omit<Props, 'id'> &
           />
         </BagianIsian>
         <BagianIsian id="jenis-teks" nomor={6} judul="Teks surat">
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-6 sm:col-span-2">
             <EditorTeks
               teks={form.teks}
               isian={form.isian}

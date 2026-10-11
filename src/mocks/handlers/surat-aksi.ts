@@ -169,6 +169,11 @@ export const handlerSuratAksi = [
         case 'tandatangani': {
           const isian = tandaTanganSchema.safeParse(badan)
           if (!isian.success) return balasIsianTidakValid(isian.error)
+          // Jenis suratnya bisa diubah sesudah diajukan (mis. isian wajib baru): surat tidak boleh terbit dengan isian kosong.
+          const kurang = Object.values(periksaIsian(jenis, p.isian))
+          if (kurang.length > 0) {
+            return balasGalat('VALIDATION', `Isian surat belum lengkap (${kurang.join(', ')}). Kembalikan ke operator untuk dilengkapi.`, 422)
+          }
           if (isian.data.passphrase !== PASSPHRASE_TTE_DEMO) return balasField('passphrase', 'Passphrase salah. Periksa kembali, lalu coba lagi.')
           const tanggal = tanggalIsoWib(sekarang)
           const { tahun, urut, nomor, kode, mode } = nomorBaru(db, p, jenis, tanggal, desa.kodeSurat)

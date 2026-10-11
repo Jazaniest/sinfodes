@@ -48,4 +48,12 @@ describe('FormulirBagian (SPEC §6.4)', () => {
     unmount()
     expect(document.documentElement).not.toHaveAttribute('data-bilah-aksi')
   })
+  it('di layar sempit kolom tunggal tidak melebar mengikuti isi yang lebar, mis. pratinjau lembar A4', () => {
+    render(
+      <BagianIsian id="b" nomor={1} judul="Bagian">
+        <p>isi</p>
+      </BagianIsian>,
+    )
+    expect(screen.getByText('isi').parentElement).toHaveClass('grid-cols-[minmax(0,1fr)]', 'sm:grid-cols-2')
+  })
 })
