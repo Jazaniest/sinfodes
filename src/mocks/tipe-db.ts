@@ -3,16 +3,18 @@ import type { LaporanImpor } from '@/domain/impor/schema'
 import type { Keluarga } from '@/domain/keluarga/schema'
 import type { LaporanData } from '@/domain/laporan/schema'
 import type { Mutasi } from '@/domain/mutasi/schema'
+import type { Notifikasi } from '@/domain/notifikasi/schema'
 import type { Riwayat } from '@/domain/penduduk/riwayat'
 import type { Penduduk } from '@/domain/penduduk/schema'
 import type { Pengguna } from '@/domain/pengguna/schema'
+import type { SuratMasuk } from '@/domain/surat/arsip'
 import type { JenisSurat } from '@/domain/surat/jenis'
 import type { PengaturanSurat } from '@/domain/surat/pengaturan'
 import type { Permohonan } from '@/domain/surat/permohonan'
 import type { Desa, Dusun } from '@/domain/wilayah/schema'
 
 /** Naikkan setiap kali seed atau struktur data berubah; data lama di IndexedDB otomatis diganti (SPEC §12). */
-export const VERSI_DATA = 4
+export const VERSI_DATA = 5
 
 /** Berkas impor yang sudah diperiksa dan menunggu konfirmasi (SPEC §6.8). */
 export type SesiImpor = { id: string; desaId: string; olehId: string; laporan: LaporanImpor; selesai: boolean }
@@ -37,4 +39,8 @@ export type DbDemo = {
   jenisSurat: JenisSurat[]
   permohonan: Permohonan[]
   pengaturanSurat: PengaturanSurat[]
+  /** Register surat masuk (SPEC §7.4 layar 5). */
+  suratMasuk: SuratMasuk[]
+  /** Notifikasi per pengguna (SPEC §5.5). */
+  notifikasi: Notifikasi[]
 }

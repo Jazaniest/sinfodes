@@ -13,7 +13,7 @@ export async function segarkanKependudukan(queryClient: QueryClient): Promise<vo
   await Promise.all(KUNCI_TERDAMPAK.map((queryKey) => queryClient.invalidateQueries({ queryKey })))
 }
 
-/** Setelah permohonan berubah: daftar, jumlah (angka menu), detail, Beranda, dan pencarian dimuat ulang. */
+/** Setelah permohonan berubah: daftar, jumlah (angka menu), detail, Beranda, pencarian, dan arsip surat keluar dimuat ulang. */
 export async function segarkanSurat(queryClient: QueryClient): Promise<void> {
-  await Promise.all([['permohonan'], ['beranda'], ['cari']].map((queryKey) => queryClient.invalidateQueries({ queryKey })))
+  await Promise.all([['permohonan'], ['beranda'], ['cari'], ['arsip'], ['notifikasi']].map((queryKey) => queryClient.invalidateQueries({ queryKey })))
 }

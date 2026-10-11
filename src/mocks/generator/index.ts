@@ -3,8 +3,10 @@ import { DESA_DEMO, DUSUN_DEMO, ID_SUNGAI_SIALANG, PENGGUNA_DEMO } from '../data
 import { buatAcak } from '../prng'
 import { VERSI_DATA, type DbDemo } from '../tipe-db'
 import { pengaturanBawaan } from '@/domain/surat/pengaturan'
+import { bangkitkanSuratMasuk } from './arsip'
 import { bangkitkanLaporan } from './laporan'
 import { bangkitkanMutasi } from './mutasi'
+import { bangkitkanNotifikasi } from './notifikasi'
 import { bangkitkanPenduduk } from './penduduk'
 import { bangkitkanSurat } from './surat'
 
@@ -35,6 +37,23 @@ export function bangkitkanDb(sekarang: Date): DbDemo {
     pengguna: PENGGUNA_DEMO,
     acuan: sekarang,
   })
+  // Aliran acak keempat dan kelima: data tahap sebelumnya tetap identik.
+  const laporanData = bangkitkanLaporan({ desaId: ID_SUNGAI_SIALANG, penduduk: hasil.penduduk, acuan: sekarang })
+  const suratMasuk = bangkitkanSuratMasuk(buatAcak(SEED_DEMO + 3), {
+    desaId: ID_SUNGAI_SIALANG,
+    namaDesa: desaDemo.nama,
+    pengguna: PENGGUNA_DEMO,
+    acuan: sekarang,
+  })
+  const notifikasi = bangkitkanNotifikasi(buatAcak(SEED_DEMO + 4), {
+    desaId: ID_SUNGAI_SIALANG,
+    pengguna: PENGGUNA_DEMO,
+    penduduk: hasil.penduduk,
+    jenisSurat: surat.jenisSurat,
+    permohonan: surat.permohonan,
+    laporanData,
+    acuan: sekarang,
+  })
   return {
     versiData: VERSI_DATA,
     tanggalAcuan: waktuIsoWib(sekarang),
@@ -43,10 +62,12 @@ export function bangkitkanDb(sekarang: Date): DbDemo {
     pengguna: structuredClone(PENGGUNA_DEMO),
     ...hasil,
     aktivitas: [...hasil.aktivitas, ...surat.aktivitas],
-    laporanData: bangkitkanLaporan({ desaId: ID_SUNGAI_SIALANG, penduduk: hasil.penduduk, acuan: sekarang }),
+    laporanData,
     impor: [],
     jenisSurat: surat.jenisSurat,
     permohonan: surat.permohonan,
     pengaturanSurat: DESA_DEMO.map((d) => pengaturanBawaan(d.id)),
+    suratMasuk,
+    notifikasi,
   }
 }

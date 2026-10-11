@@ -81,6 +81,14 @@ export function suratMilik(pengguna: Parameters<typeof dataMilik>[0]) {
 
 /** Tanggal pertama periode (YYYY-MM-DD WIB): 14 hari terakhir berarti hari ini dan 13 hari sebelumnya. */
 const awalPeriode = (hari: number) => tanggalIsoWib(new Date(Date.now() - (hari - 1) * HARI_MS))
+
+/** Jumlah permohonan per jenis surat 12 bulan terakhir: urutan langkah 1 Buat surat dan halaman Jenis Surat. */
+export function hitungPakai(permohonan: readonly Permohonan[]): Map<string, number> {
+  const awal = awalPeriode(365)
+  const pakai = new Map<string, number>()
+  for (const p of permohonan) if (p.masukPada.slice(0, 10) >= awal) pakai.set(p.jenisId, (pakai.get(p.jenisId) ?? 0) + 1)
+  return pakai
+}
 const terbuka = (s: StatusPermohonan) => STATUS_TERBUKA.includes(s)
 const dalamPeriode = (p: Permohonan, awal: string) => terbuka(p.status) || p.masukPada.slice(0, 10) >= awal
 const urutkan = (status: StatusPermohonan) => (a: Permohonan, b: Permohonan) =>
@@ -97,10 +105,7 @@ export const handlerSurat = [
       const pengguna = butuhPembaca(request)
       if (pengguna instanceof Response) return pengguna
       const { jenisSurat, permohonan } = dataMilik(pengguna)
-      // Jumlah pemakaian 12 bulan: urutan langkah 1 Buat surat (SPEC §7.4) dan halaman Jenis Surat.
-      const awal = awalPeriode(365)
-      const pakai = new Map<string, number>()
-      for (const p of permohonan) if (p.masukPada.slice(0, 10) >= awal) pakai.set(p.jenisId, (pakai.get(p.jenisId) ?? 0) + 1)
+      const pakai = hitungPakai(permohonan)
       const daftar = jenisSurat.map((j) => ({ ...j, jumlahPakai: pakai.get(j.id) ?? 0 }))
       return balasDaftar(daftar, 1, Math.max(daftar.length, 1))
     }),

@@ -6,6 +6,7 @@ import {
   barisPermohonanSchema, detailPermohonanSchema, jumlahPermohonanSchema, saranSuratSchema,
   type AksiSurat, type BuatPermohonan, type FilterPermohonan, type PeriodePermohonan,
 } from '@/domain/surat/permohonan'
+import { detailJenisSuratSchema, type UbahJenisSurat } from '@/domain/surat/ubah-jenis'
 import { panggilApi } from './client'
 
 const daftarJenisSchema = daftarSchema(jenisDenganPakaiSchema)
@@ -13,6 +14,7 @@ const daftarPermohonanSchema = daftarSchema(barisPermohonanSchema)
 
 export const kunciSurat = {
   jenis: ['jenis-surat'] as const,
+  detailJenis: (id: string) => ['jenis-surat', id] as const,
   semua: ['permohonan'] as const,
   daftar: (filter: Partial<FilterPermohonan>) => ['permohonan', 'daftar', filter] as const,
   /** Kata cari hanya ada di memori (kunci cache), tidak pernah di URL. */
@@ -30,6 +32,19 @@ export function daftarJenisSurat(signal?: AbortSignal) {
 
 export const opsiJenisSurat = () =>
   queryOptions({ queryKey: kunciSurat.jenis, queryFn: ({ signal }) => daftarJenisSurat(signal), staleTime: 5 * 60_000 })
+
+export function ambilJenisSurat(id: string, signal?: AbortSignal) {
+  return panggilApi('GET', `/jenis-surat/${encodeURIComponent(id)}`, { skema: detailJenisSuratSchema, signal })
+}
+
+/** Jenis surat beserta contoh untuk pratinjau halaman ubah (SPEC §7.4 layar 6). */
+export const opsiDetailJenisSurat = (id: string) =>
+  queryOptions({ queryKey: kunciSurat.detailJenis(id), queryFn: ({ signal }) => ambilJenisSurat(id, signal) })
+
+/** Ubah sebagian jenis surat: saklar di daftar, atau formulir halaman ubah. */
+export function ubahJenisSurat(id: string, ubah: UbahJenisSurat) {
+  return panggilApi('PATCH', `/jenis-surat/${encodeURIComponent(id)}`, { skema: detailJenisSuratSchema, body: ubah })
+}
 
 export function daftarPermohonan(filter: Partial<FilterPermohonan>, signal?: AbortSignal) {
   return panggilApi('GET', '/permohonan', { skema: daftarPermohonanSchema, query: filter, signal })

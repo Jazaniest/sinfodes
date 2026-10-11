@@ -4,6 +4,7 @@ import { samarkanTelepon } from '@/domain/format/telepon'
 import type { Pelaku } from '@/domain/mutasi/schema'
 import { boleh } from '@/domain/pengguna/hak-akses'
 import { peranMengizinkan, statusMengizinkan, tahapAwalTtd } from '@/domain/surat/alur'
+import { labelPenandatangan } from '@/domain/surat/arsip'
 import { periksaIsian, saringIsian, samaIsian, type JenisSurat } from '@/domain/surat/jenis'
 import { susunLembar } from '@/domain/surat/lembar'
 import { formatNomorSurat, urutBerikutnya } from '@/domain/surat/nomor-surat'
@@ -16,6 +17,7 @@ import { berlakuSampai } from '@/domain/surat/waktu'
 import { dataMilik } from '../cakupan'
 import { PASSPHRASE_TTE_DEMO } from '../data/desa-demo'
 import { ubahDb } from '../db'
+import { kirimNotifikasi } from '../notifikasi'
 import { API, balasGalat, denganJaringan } from '../http'
 import { butuhPengguna } from '../sesi-mock'
 import type { DbDemo } from '../tipe-db'
@@ -157,6 +159,10 @@ export const handlerSuratAksi = [
             Object.assign(p, { status: 'diproses', tahap: null })
             p.dikembalikan = { oleh, pada: waktu, catatan: isian.data.catatan }
             catatRiwayatSurat(d, p, 'kembalikan', oleh, waktu, isian.data.catatan)
+            kirimNotifikasi(d, {
+              desaId: p.desaId, untuk: 'surat.proses', kecuali: pengguna.id, jenis: 'surat-dikembalikan',
+              judul: `${jenis.kode} · ${pemohon.nama} dikembalikan untuk diperbaiki`, isi: isian.data.catatan, waktu, rujukan,
+            })
           })
           break
         }
@@ -183,6 +189,12 @@ export const handlerSuratAksi = [
             catatAktivitas(d, {
               desaId: p.desaId, dusunId: p.dusunId, waktu, jenis: 'surat-terbit',
               ringkasan: `Surat terbit · ${jenis.kode} ${nomor} · ${pemohon.nama}`, oleh, rujukan,
+            })
+            kirimNotifikasi(d, {
+              desaId: p.desaId, untuk: 'surat.proses', kecuali: pengguna.id, jenis: 'surat-ditandatangani',
+              judul: `${jenis.kode} · ${pemohon.nama} ditandatangani`,
+              isi: `Nomor ${nomor} · ${labelPenandatangan({ nama: pengguna.nama, peran: pengguna.peran === 'kades' ? 'kades' : 'sekdes' })}`,
+              waktu, rujukan,
             })
           })
           break
