@@ -44,7 +44,9 @@ describe('Website Desa (SPEC §8)', () => {
   })
   it('tampilan: aksen, motif, dan logo tersimpan; sampul yang bukan gambar ditolak tanpa mengubah data (fokus review 4)', async () => {
     masukSebagai(AKUN_UJI.sekdes)
-    expect(await ambilTampilan()).toMatchObject({ aksen: 'biru-tinta', motif: 'pucuk-rebung', sampul: null, logo: null })
+    expect(await ambilTampilan()).toMatchObject({
+      aksen: 'biru-tinta', motif: 'pucuk-rebung', sampul: '/demo/foto/sampul-sungai-kampar.jpg', logo: null,
+    })
     const baru = await simpanTampilan({ aksen: 'teal-sungai', motif: 'garis', sampul: null, logo: PNG_KECIL })
     expect(baru).toMatchObject({ aksen: 'teal-sungai', motif: 'garis', logo: PNG_KECIL })
     expect(baru.diperbarui.startsWith('2026-09-24T09:00')).toBe(true)

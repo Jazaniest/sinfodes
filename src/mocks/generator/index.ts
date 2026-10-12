@@ -136,5 +136,6 @@ export function bangkitkanDb(sekarang: Date): DbDemo {
     akunWarga: AKUN_WARGA_DEMO.map(({ pendudukId, desaId, pin, whatsapp }) => ({ pendudukId, desaId, pin, whatsapp })),
     percobaanMasukWarga: [],
     kirimanWarga: [],
+    percobaanVerifikasi: [],
   }
 }

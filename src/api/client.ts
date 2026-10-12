@@ -21,8 +21,8 @@ type Opsi<T> = {
   query?: Query
   body?: unknown
   signal?: AbortSignal
-  /** Token yang dipakai; bawaannya token panel admin. Endpoint `/warga/…` memakai `'warga'`. */
-  sesi?: BagianSesi
+  /** Token yang dipakai; bawaannya token panel admin. Endpoint `/warga/…` memakai `'warga'`; website publik `null` (tanpa token). */
+  sesi?: BagianSesi | null
 }
 
 function buatUrl(jalur: string, query?: Query): URL {
@@ -40,7 +40,7 @@ export async function panggilApi<T>(metode: Metode, jalur: string, opsi: Opsi<T>
   // FormData (unggah berkas): Content-Type beserta batasnya diisi browser sendiri.
   const formulir = opsi.body instanceof FormData
   if (opsi.body !== undefined && !formulir) headers['Content-Type'] = 'application/json'
-  const token = tokenSesi[opsi.sesi ?? 'admin']
+  const token = opsi.sesi === null ? null : tokenSesi[opsi.sesi ?? 'admin']
   if (token) headers.Authorization = `Bearer ${token}`
 
   let respons: Response

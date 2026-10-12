@@ -2,6 +2,8 @@ import { tanggalIsoWib } from '@/domain/format/tanggal'
 import type { Pengguna, Peran } from '@/domain/pengguna/schema'
 import type { Agenda, Artikel, FotoGaleri, KategoriArtikel, Pengumuman, TampilanWebsite } from '@/domain/website/schema'
 import type { Desa } from '@/domain/wilayah/schema'
+import { NASKAH_ARTIKEL } from '../data/artikel-demo'
+import { FOTO_DEMO, halamanCommons } from '../data/foto-demo'
 
 const HARI_MS = 86_400_000
 
@@ -68,7 +70,7 @@ const AGENDA: readonly { judul: string; hari: number; mulai: string; selesai: st
   { judul: 'Pelatihan Pengolahan Ikan Salai BUMDes', hari: 20, mulai: '09.00', selesai: '15.00', tempat: 'Balai Desa' },
 ]
 
-/** SPEC §9: foto yang akan dikurasi. Berkasnya belum ada, jadi semuanya belum tersedia. */
+/** SPEC §9: 15 foto hasil kurasi (Tugas 1 tahap 5A); berkas dan kreditnya ada di data/foto-demo.ts. */
 const GALERI: readonly [berkas: string, judul: string, album: FotoGaleri['album']][] = [
   ['sampul-sungai-kampar', 'Lanskap Sungai Kampar', 'Sampul'],
   ['kantor-desa', 'Kantor Desa Sungai Sialang', 'Pemerintahan'],
@@ -111,31 +113,52 @@ export function bangkitkanWebsite(o: { desa: Desa; pengguna: readonly Pengguna[]
     return p.nama
   }
   return {
-    artikel: ARTIKEL.map((r, i) => ({
-      id: `art_${kode}_${nomor2(i)}`,
-      desaId: o.desa.id,
-      judul: r.judul,
-      slug: jadiSlug(r.judul),
-      kategori: r.kategori,
-      status: r.dibaca === null ? 'draf' : 'terbit',
-      penulis: nama(r.penulis),
-      tanggal: `${geser(-r.hariLalu)}T${r.jam.replace('.', ':')}:00+07:00`,
-      dibaca: r.dibaca ?? 0,
-    })),
+    artikel: ARTIKEL.map((r, i) => {
+      const naskah = NASKAH_ARTIKEL[r.judul]
+      if (!naskah) throw new Error(`Naskah artikel "${r.judul}" tidak ada`)
+      return {
+        id: `art_${kode}_${nomor2(i)}`,
+        desaId: o.desa.id,
+        judul: r.judul,
+        slug: jadiSlug(r.judul),
+        kategori: r.kategori,
+        status: r.dibaca === null ? 'draf' : 'terbit',
+        penulis: nama(r.penulis),
+        tanggal: `${geser(-r.hariLalu)}T${r.jam.replace('.', ':')}:00+07:00`,
+        dibaca: r.dibaca ?? 0,
+        ringkasan: naskah.ringkasan,
+        isi: [...naskah.isi],
+        foto: naskah.foto ? `/demo/foto/${naskah.foto}.jpg` : null,
+      }
+    }),
     pengumuman: PENGUMUMAN.map((p, i) => ({
       id: `pmn_${kode}_${nomor2(i)}`, desaId: o.desa.id, judul: p.judul, isi: p.isi, mulai: geser(p.mulai), sampai: geser(p.sampai),
     })),
     agenda: AGENDA.map((a, i) => ({
       id: `agd_${kode}_${nomor2(i)}`, desaId: o.desa.id, judul: a.judul, tanggal: geser(a.hari), mulai: a.mulai, selesai: a.selesai, tempat: a.tempat,
     })),
-    galeri: GALERI.map(([berkas, judul, album], i) => ({
-      id: `fto_${kode}_${nomor2(i)}`, desaId: o.desa.id, judul, album, berkas: `/demo/foto/${berkas}.jpg`, tersedia: false, kredit: null,
-    })),
+    galeri: GALERI.map(([berkas, judul, album], i) => {
+      const asal = FOTO_DEMO.find((f) => f.berkas === berkas)
+      return {
+        id: `fto_${kode}_${nomor2(i)}`,
+        desaId: o.desa.id,
+        judul,
+        album,
+        berkas: `/demo/foto/${berkas}.jpg`,
+        tersedia: asal !== undefined,
+        kredit: asal
+          ? {
+              judulAsli: asal.judulCommons, sumber: halamanCommons(asal.judulCommons), pembuat: asal.pembuat,
+              lisensi: asal.lisensi, tautanLisensi: asal.tautanLisensi,
+            }
+          : null,
+      }
+    }),
     tampilan: {
       desaId: o.desa.id,
       aksen: 'biru-tinta',
       motif: 'pucuk-rebung',
-      sampul: null,
+      sampul: '/demo/foto/sampul-sungai-kampar.jpg',
       logo: null,
       diperbarui: `${geser(-30)}T10:00:00+07:00`,
     },

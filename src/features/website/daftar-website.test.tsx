@@ -50,11 +50,11 @@ describe('Website Desa (SPEC §8)', () => {
     expect(baris[0]).toHaveTextContent('07.30–10.00 WIB')
     expect(baris.find((b) => b.textContent?.includes('Rapat Pleno BPD'))).toHaveTextContent('14.00 WIB sampai selesai')
   })
-  it('galeri: 15 bingkai "Belum ada foto" per album, tanpa foto sementara', async () => {
-    const { container } = pasang(<Galeri />)
+  it('galeri: 15 foto kurasi per album, masing-masing dengan judulnya', async () => {
+    pasang(<Galeri />)
     expect(await screen.findByRole('heading', { name: 'Potensi desa' })).toBeInTheDocument()
     expect(screen.getAllByRole('figure')).toHaveLength(15)
-    expect(screen.getAllByText('Belum ada foto')).toHaveLength(15)
-    expect(container.querySelectorAll('img')).toHaveLength(0)
+    expect(screen.queryByText('Belum ada foto')).not.toBeInTheDocument()
+    expect(screen.getByRole('img', { name: 'Ombak Bono di Teluk Meranti' })).toHaveAttribute('src', '/demo/foto/ombak-bono.jpg')
   })
 })

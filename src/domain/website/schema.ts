@@ -4,6 +4,7 @@ import { gambarDataUrlSchema, MAKS_GAMBAR_KB } from '../format/gambar'
 const waktu = z.iso.datetime({ offset: true })
 const tanggal = z.iso.date()
 const jam = z.string().regex(/^([01]\d|2[0-3])\.[0-5]\d$/)
+const POLA_FOTO_KURASI = /^\/demo\/foto\/[a-z0-9-]+\.jpg$/
 
 /** Kategori kabar desa (SPEC §8, §9). */
 export const KATEGORI_ARTIKEL = ['Pemerintahan', 'Pembangunan', 'Kesehatan', 'Kemasyarakatan', 'Ekonomi', 'Budaya', 'Layanan'] as const
@@ -12,7 +13,7 @@ export type KategoriArtikel = (typeof KATEGORI_ARTIKEL)[number]
 export const STATUS_ARTIKEL = ['draf', 'terbit'] as const
 export type StatusArtikel = (typeof STATUS_ARTIKEL)[number]
 
-/** Artikel kabar desa. Isinya ditulis bersama halaman Kabar di website publik (Tahap 5); editor belum ada (SPEC §8). */
+/** Artikel kabar desa (SPEC §8, §9). Editor artikel belum ada (SPEC §2.2); isinya dari data demo. */
 export const artikelSchema = z.object({
   id: z.string(),
   desaId: z.string(),
@@ -24,6 +25,12 @@ export const artikelSchema = z.object({
   /** Waktu terbit; untuk draf, waktu terakhir disunting. */
   tanggal: waktu,
   dibaca: z.number().int().min(0),
+  /** Satu-dua kalimat untuk daftar kabar dan berita utama. */
+  ringkasan: z.string().min(1),
+  /** Isi artikel per paragraf. */
+  isi: z.array(z.string().min(1)).min(1),
+  /** Foto kurasi dari galeri, atau null bila kabar ini tanpa foto. */
+  foto: z.string().regex(POLA_FOTO_KURASI).nullable(),
 })
 export type Artikel = z.infer<typeof artikelSchema>
 
@@ -64,12 +71,25 @@ export const agendaSchema = z.object({
 })
 export type Agenda = z.infer<typeof agendaSchema>
 
+/** "09.00–12.00 WIB", atau "14.00 WIB sampai selesai" bila jam selesai kosong. */
+export const teksJamAgenda = (a: Pick<Agenda, 'mulai' | 'selesai'>): string =>
+  a.selesai ? `${a.mulai}–${a.selesai} WIB` : `${a.mulai} WIB sampai selesai`
+
 export const ALBUM_GALERI = ['Sampul', 'Pemerintahan', 'Kegiatan warga', 'Pembangunan', 'Potensi desa'] as const
-const POLA_FOTO_KURASI = /^\/demo\/foto\/[a-z0-9-]+\.jpg$/
+
+/** Kredit foto kurasi (SPEC §9, K8): judul asli di sumbernya, pembuat, dan lisensi. */
+export const kreditFotoSchema = z.object({
+  judulAsli: z.string().min(1),
+  sumber: z.url(),
+  pembuat: z.string().min(1),
+  lisensi: z.string().min(1),
+  tautanLisensi: z.url(),
+})
+export type KreditFoto = z.infer<typeof kreditFotoSchema>
 
 /**
- * Foto galeri. Berkasnya disiapkan lewat kurasi foto (SPEC §9, K8): sampai saat itu `tersedia` false dan layar
- * menampilkan bingkai "Belum ada foto", bukan foto sementara.
+ * Foto galeri hasil kurasi (SPEC §9, K8). `tersedia` false untuk foto yang berkasnya belum ada (mis. desa baru);
+ * layar lalu menampilkan bingkai "Belum ada foto", bukan foto sementara.
  */
 export const fotoGaleriSchema = z.object({
   id: z.string(),
@@ -78,7 +98,7 @@ export const fotoGaleriSchema = z.object({
   album: z.enum(ALBUM_GALERI),
   berkas: z.string().regex(POLA_FOTO_KURASI),
   tersedia: z.boolean(),
-  kredit: z.string().nullable(),
+  kredit: kreditFotoSchema.nullable(),
 })
 export type FotoGaleri = z.infer<typeof fotoGaleriSchema>
 

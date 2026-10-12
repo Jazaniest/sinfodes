@@ -36,11 +36,11 @@ describe('Website Desa › Tampilan (SPEC §9)', () => {
     expect(await screen.findByText('Tampilan website disimpan.')).toBeInTheDocument()
     expect(ambilDb().tampilanWebsite[0]).toMatchObject({ aksen: 'hijau-sawit', motif: 'siku-keluang' })
   })
-  it('foto sampul belum ada: bingkai kosong, bukan foto sementara', async () => {
+  it('foto sampul bawaan: foto kurasi Sungai Kampar tampil di pratinjau', async () => {
     pasang()
     await screen.findByRole('radio', { name: 'Biru tinta' })
-    expect(pratinjau()).toHaveTextContent('Belum ada foto sampul')
-    expect(pratinjau().querySelector('img')).toBeNull()
+    expect(pratinjau().querySelector('img[alt="Foto sampul"]')).toHaveAttribute('src', '/demo/foto/sampul-sungai-kampar.jpg')
+    expect(pratinjau()).not.toHaveTextContent('Belum ada foto sampul')
   })
   it('logo: berkas terlalu besar ditolak; logo yang sah tampil di pratinjau (fokus review 4)', async () => {
     const user = pasang()

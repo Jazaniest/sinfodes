@@ -56,6 +56,19 @@ describe('panggilApi', () => {
     serverUji.use(http.get('*/api/v1/uji', () => HttpResponse.json({ salah: true })))
     await expect(panggilApi('GET', '/uji', { skema: z.object({ benar: z.boolean() }) })).rejects.toThrow()
   })
+  it('sesi null (website publik): token panel admin dan token warga tidak ikut terkirim', async () => {
+    aturTokenSesi('demo.pgn_rosmiati')
+    aturTokenSesi('warga.pdk_siti_rahmah', 'warga')
+    let otorisasi: string | null = 'belum dipanggil'
+    serverUji.use(
+      http.get('*/api/v1/uji-publik', ({ request }) => {
+        otorisasi = request.headers.get('Authorization')
+        return HttpResponse.json({ ok: true })
+      }),
+    )
+    await panggilApi('GET', '/uji-publik', { skema: z.object({ ok: z.boolean() }), sesi: null })
+    expect(otorisasi).toBeNull()
+  })
 })
 
 describe('unggah berkas (2A-3)', () => {

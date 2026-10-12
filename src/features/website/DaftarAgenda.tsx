@@ -2,16 +2,14 @@ import { useQuery } from '@tanstack/react-query'
 import { pesanGalat } from '@/api/galat'
 import { opsiAgenda } from '@/api/website'
 import { formatTanggal } from '@/domain/format/tanggal'
-import type { Agenda } from '@/domain/website/schema'
+import { teksJamAgenda, type Agenda } from '@/domain/website/schema'
 import { DataTable, type KolomTabel } from '@/ui/data/DataTable'
 import { EmptyState } from '@/ui/umpan-balik/EmptyState'
 import { KepalaWebsite } from './TabWebsite'
 
-const jam = (a: Agenda) => (a.selesai ? `${a.mulai}–${a.selesai} WIB` : `${a.mulai} WIB sampai selesai`)
-
 const KOLOM: readonly KolomTabel<Agenda>[] = [
   { id: 'tanggal', judul: 'Tanggal', isi: (a) => <span className="whitespace-nowrap">{formatTanggal(a.tanggal, 'hari')}</span> },
-  { id: 'jam', judul: 'Waktu', isi: (a) => <span className="whitespace-nowrap tabular-nums">{jam(a)}</span> },
+  { id: 'jam', judul: 'Waktu', isi: (a) => <span className="whitespace-nowrap tabular-nums">{teksJamAgenda(a)}</span> },
   { id: 'kegiatan', judul: 'Kegiatan', wajib: true, isi: (a) => <span className="font-medium">{a.judul}</span> },
   { id: 'tempat', judul: 'Tempat', isi: (a) => a.tempat },
 ]
@@ -35,7 +33,7 @@ export function DaftarAgenda() {
           <span className="flex flex-col gap-1">
             <span className="font-medium">{a.judul}</span>
             <span className="text-teks-kecil text-tinta-2">
-              {formatTanggal(a.tanggal, 'hari')} · {jam(a)} · {a.tempat}
+              {formatTanggal(a.tanggal, 'hari')} · {teksJamAgenda(a)} · {a.tempat}
             </span>
           </span>
         )}
