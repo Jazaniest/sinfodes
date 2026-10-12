@@ -17,6 +17,7 @@ import { bangkitkanPengaduan } from './pengaduan'
 import { bangkitkanPenduduk } from './penduduk'
 import { bangkitkanPeta } from './peta'
 import { bangkitkanSurat } from './surat'
+import { bangkitkanWebsite } from './website'
 
 export const SEED_DEMO = 20260924
 
@@ -98,6 +99,8 @@ export function bangkitkanDb(sekarang: Date): DbDemo {
     pengguna: PENGGUNA_DEMO,
     acuan: sekarang,
   })
+  // Tanpa PRNG: isi website tetap (SPEC §12.6).
+  const website = bangkitkanWebsite({ desa: desaDemo, pengguna: PENGGUNA_DEMO, acuan: sekarang })
   return {
     versiData: VERSI_DATA,
     tanggalAcuan: waktuIsoWib(sekarang),
@@ -123,5 +126,10 @@ export function bangkitkanDb(sekarang: Date): DbDemo {
     apbdes: [apbdes],
     aset,
     pengurusLembaga,
+    artikel: website.artikel,
+    pengumuman: website.pengumuman,
+    agenda: website.agenda,
+    galeri: website.galeri,
+    tampilanWebsite: [website.tampilan],
   }
 }

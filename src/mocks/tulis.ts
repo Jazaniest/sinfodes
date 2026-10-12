@@ -1,5 +1,6 @@
 import type { z } from 'zod'
 import type { Aktivitas } from '@/domain/aktivitas/schema'
+import { galatDariZod } from '@/domain/format/galat-isian'
 import type { Pelaku } from '@/domain/mutasi/schema'
 import type { Perubahan } from '@/domain/penduduk/perubahan'
 import type { Penduduk } from '@/domain/penduduk/schema'
@@ -27,12 +28,7 @@ export const bacaJson = (request: Request): Promise<unknown> => request.json().c
 
 /** Galat Zod → `fields` respons VALIDATION, mis. { "bayi.nama": "Nama bayi wajib diisi" }. Satu pesan per field. */
 export function galatIsian(galat: z.ZodError): Record<string, string> {
-  const fields: Record<string, string> = {}
-  for (const isu of galat.issues) {
-    const kunci = isu.path.map(String).join('.') || '_'
-    fields[kunci] ??= isu.message
-  }
-  return fields
+  return galatDariZod(galat)
 }
 
 export function balasIsianTidakValid(galat: z.ZodError): Response {

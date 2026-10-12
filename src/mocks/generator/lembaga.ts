@@ -42,8 +42,8 @@ const SUSUNAN: readonly { lembaga: JenisLembaga; jabatan: readonly string[]; mas
 ]
 
 /**
- * Pengurus 9 lembaga desa (SPEC §8, §12.6). Pejabat akun demo dan kepala dusun memakai nama yang sudah dikenal; ketua
- * RT/RW disalin dari data wilayah; pengurus lain diambil dari penduduk dewasa yang hidup, tanpa merangkap.
+ * Pengurus 9 lembaga desa (SPEC §8, §12.6). Perangkat desa memakai nama SPEC §12.1 dan nama kepala dusun dari data
+ * wilayah; ketua RT/RW disalin dari data wilayah; pengurus lain diambil dari penduduk dewasa yang hidup, tanpa merangkap.
  */
 export function bangkitkanLembaga(acak: Acak, o: Opsi): Pengurus[] {
   const dusunDesa = o.dusun.filter((d) => d.desaId === o.desa.id)
@@ -82,12 +82,12 @@ export function bangkitkanLembaga(acak: Acak, o: Opsi): Pengurus[] {
   // Perangkat desa: 13 orang ditambah operator (SPEC §12.6).
   tambah('perangkat', 'Kepala Desa', namaPeran('kades'), null, null, { mulai: 2021, selesai: 2029 })
   tambah('perangkat', 'Sekretaris Desa', namaPeran('sekdes'), null, null, { mulai: 2017, selesai: null })
-  dariPenduduk('perangkat', 'Kaur Tata Usaha dan Umum', DEWASA, { mulai: 2019, selesai: null })
+  tambah('perangkat', 'Kaur Tata Usaha dan Umum', 'Syafrizal', null, null, { mulai: 2019, selesai: null })
   tambah('perangkat', 'Kaur Keuangan', namaPeran('kaur-keuangan'), null, null, { mulai: 2018, selesai: null })
-  dariPenduduk('perangkat', 'Kaur Perencanaan', DEWASA, { mulai: 2020, selesai: null })
-  dariPenduduk('perangkat', 'Kasi Pemerintahan', DEWASA, { mulai: 2016, selesai: null })
-  dariPenduduk('perangkat', 'Kasi Kesejahteraan', DEWASA, { mulai: 2019, selesai: null })
-  dariPenduduk('perangkat', 'Kasi Pelayanan', DEWASA, { mulai: 2021, selesai: null })
+  tambah('perangkat', 'Kaur Perencanaan', 'Wahyu Hidayat', null, null, { mulai: 2020, selesai: null })
+  tambah('perangkat', 'Kasi Pemerintahan', 'Zulkarnain', null, null, { mulai: 2016, selesai: null })
+  tambah('perangkat', 'Kasi Kesejahteraan', 'Wan Aisyah', null, null, { mulai: 2019, selesai: null })
+  tambah('perangkat', 'Kasi Pelayanan', 'Dedi Kurniawan', null, null, { mulai: 2021, selesai: null })
   for (const d of dusunDesa) tambah('perangkat', `Kepala Dusun ${angkaRomawi(d.nomor)}`, d.kepalaDusun, null, d.id, { mulai: 2018, selesai: null })
   dariPenduduk('perangkat', 'Staf Seksi Pelayanan', { umurMin: 20, umurMaks: 40 }, { mulai: 2023, selesai: null })
   tambah('perangkat', 'Operator Desa', namaPeran('operator'), null, null, { mulai: 2022, selesai: null })

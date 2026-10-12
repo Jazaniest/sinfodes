@@ -37,6 +37,8 @@ export const desaSchema = z.object({
   batas: z.object({ utara: z.string(), selatan: z.string(), timur: z.string(), barat: z.string() }).nullable(),
   istilahWilayah: istilahWilayahSchema,
   kodeSurat: z.string().min(1),
+  /** Lambang yang diunggah desa (data URL). Kosong berarti kop memakai lambang tiruan netral (SPEC §7.5). */
+  lambang: z.string().nullable().optional(),
   status: z.enum(STATUS_DESA),
 })
 export type Desa = z.infer<typeof desaSchema>

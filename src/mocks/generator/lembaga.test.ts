@@ -22,6 +22,12 @@ describe('lembaga desa demo (SPEC §12.6)', () => {
     expect(jabatan('Kaur Keuangan')).toBe('Nurhayati')
     expect(jabatan('Kepala Dusun II')).toBe('Sukardi')
     expect(jabatan('Operator Desa')).toBe('Rosmiati')
+    // Nama perangkat lain mengikuti SPEC §12.1.
+    expect(jabatan('Kaur Tata Usaha dan Umum')).toBe('Syafrizal')
+    expect(jabatan('Kaur Perencanaan')).toBe('Wahyu Hidayat')
+    expect(jabatan('Kasi Pemerintahan')).toBe('Zulkarnain')
+    expect(jabatan('Kasi Kesejahteraan')).toBe('Wan Aisyah')
+    expect(jabatan('Kasi Pelayanan')).toBe('Dedi Kurniawan')
   })
   it('ketua RT dan RW disalin dari data wilayah', () => {
     const rtRw = dari('rt-rw')

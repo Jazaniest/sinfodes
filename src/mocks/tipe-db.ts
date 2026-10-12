@@ -19,10 +19,11 @@ import type { SuratMasuk } from '@/domain/surat/arsip'
 import type { JenisSurat } from '@/domain/surat/jenis'
 import type { PengaturanSurat } from '@/domain/surat/pengaturan'
 import type { Permohonan } from '@/domain/surat/permohonan'
+import type { Agenda, Artikel, FotoGaleri, Pengumuman, TampilanWebsite } from '@/domain/website/schema'
 import type { Desa, Dusun } from '@/domain/wilayah/schema'
 
 /** Naikkan setiap kali seed atau struktur data berubah; data lama di IndexedDB otomatis diganti (SPEC §12). */
-export const VERSI_DATA = 7
+export const VERSI_DATA = 8
 
 /** Berkas impor yang sudah diperiksa dan menunggu konfirmasi (SPEC §6.8). */
 export type SesiImpor = { id: string; desaId: string; olehId: string; laporan: LaporanImpor; selesai: boolean }
@@ -72,4 +73,10 @@ export type DbDemo = {
   aset: Aset[]
   /** Pengurus lembaga desa, dipakai juga halaman Profil website (SPEC §8). */
   pengurusLembaga: Pengurus[]
+  /** Website Desa (SPEC §8, §12.6). Isinya dikelola Operator dan Sekdes, ditampilkan website publik (Tahap 5). */
+  artikel: Artikel[]
+  pengumuman: Pengumuman[]
+  agenda: Agenda[]
+  galeri: FotoGaleri[]
+  tampilanWebsite: TampilanWebsite[]
 }

@@ -1,0 +1,120 @@
+import { z } from 'zod'
+import { gambarDataUrlSchema, MAKS_GAMBAR_KB } from '../format/gambar'
+
+const waktu = z.iso.datetime({ offset: true })
+const tanggal = z.iso.date()
+const jam = z.string().regex(/^([01]\d|2[0-3])\.[0-5]\d$/)
+
+/** Kategori kabar desa (SPEC §8, §9). */
+export const KATEGORI_ARTIKEL = ['Pemerintahan', 'Pembangunan', 'Kesehatan', 'Kemasyarakatan', 'Ekonomi', 'Budaya', 'Layanan'] as const
+export type KategoriArtikel = (typeof KATEGORI_ARTIKEL)[number]
+
+export const STATUS_ARTIKEL = ['draf', 'terbit'] as const
+export type StatusArtikel = (typeof STATUS_ARTIKEL)[number]
+
+/** Artikel kabar desa. Isinya ditulis bersama halaman Kabar di website publik (Tahap 5); editor belum ada (SPEC §8). */
+export const artikelSchema = z.object({
+  id: z.string(),
+  desaId: z.string(),
+  judul: z.string().min(1),
+  slug: z.string().regex(/^[a-z0-9-]+$/),
+  kategori: z.enum(KATEGORI_ARTIKEL),
+  status: z.enum(STATUS_ARTIKEL),
+  penulis: z.string().min(1),
+  /** Waktu terbit; untuk draf, waktu terakhir disunting. */
+  tanggal: waktu,
+  dibaca: z.number().int().min(0),
+})
+export type Artikel = z.infer<typeof artikelSchema>
+
+export const pengumumanSchema = z.object({
+  id: z.string(),
+  desaId: z.string(),
+  judul: z.string().min(1),
+  isi: z.string().min(1),
+  mulai: tanggal,
+  sampai: tanggal,
+})
+export type Pengumuman = z.infer<typeof pengumumanSchema>
+
+export const STATUS_PENGUMUMAN = ['akan-datang', 'berlaku', 'berakhir'] as const
+export type StatusPengumuman = (typeof STATUS_PENGUMUMAN)[number]
+export const LABEL_STATUS_PENGUMUMAN: Readonly<Record<StatusPengumuman, string>> = {
+  'akan-datang': 'Akan datang',
+  berlaku: 'Berlaku',
+  berakhir: 'Berakhir',
+}
+
+/** Status pengumuman pada tanggal `hariIni` (YYYY-MM-DD, WIB). */
+export function statusPengumuman(p: Pick<Pengumuman, 'mulai' | 'sampai'>, hariIni: string): StatusPengumuman {
+  if (hariIni < p.mulai) return 'akan-datang'
+  if (hariIni > p.sampai) return 'berakhir'
+  return 'berlaku'
+}
+
+/** Agenda kegiatan desa. Jam ditulis "HH.mm"; `selesai` kosong berarti "sampai selesai". */
+export const agendaSchema = z.object({
+  id: z.string(),
+  desaId: z.string(),
+  judul: z.string().min(1),
+  tanggal,
+  mulai: jam,
+  selesai: jam.nullable(),
+  tempat: z.string().min(1),
+})
+export type Agenda = z.infer<typeof agendaSchema>
+
+export const ALBUM_GALERI = ['Sampul', 'Pemerintahan', 'Kegiatan warga', 'Pembangunan', 'Potensi desa'] as const
+const POLA_FOTO_KURASI = /^\/demo\/foto\/[a-z0-9-]+\.jpg$/
+
+/**
+ * Foto galeri. Berkasnya disiapkan lewat kurasi foto (SPEC §9, K8): sampai saat itu `tersedia` false dan layar
+ * menampilkan bingkai "Belum ada foto", bukan foto sementara.
+ */
+export const fotoGaleriSchema = z.object({
+  id: z.string(),
+  desaId: z.string(),
+  judul: z.string().min(1),
+  album: z.enum(ALBUM_GALERI),
+  berkas: z.string().regex(POLA_FOTO_KURASI),
+  tersedia: z.boolean(),
+  kredit: z.string().nullable(),
+})
+export type FotoGaleri = z.infer<typeof fotoGaleriSchema>
+
+/** Aksen website (SPEC §9): semuanya lolos kontras dengan teks putih di atasnya. */
+export const ID_AKSEN = ['biru-tinta', 'hijau-sawit', 'teal-sungai', 'merah-bata', 'coklat-tanah', 'ungu-songket'] as const
+export type AksenWebsite = (typeof ID_AKSEN)[number]
+export const AKSEN_WEBSITE: Readonly<Record<AksenWebsite, { label: string; hex: string }>> = {
+  'biru-tinta': { label: 'Biru tinta', hex: '#1F4E79' },
+  'hijau-sawit': { label: 'Hijau sawit', hex: '#2F5D3A' },
+  'teal-sungai': { label: 'Teal sungai', hex: '#1E5F5A' },
+  'merah-bata': { label: 'Merah bata', hex: '#9A3B2A' },
+  'coklat-tanah': { label: 'Coklat tanah', hex: '#6B4A2E' },
+  'ungu-songket': { label: 'Ungu songket', hex: '#5A3D6E' },
+}
+
+/** Motif pita kepala halaman (SPEC §9). Garis netral untuk daerah mana pun. */
+export const MOTIF_WEBSITE = ['pucuk-rebung', 'siku-keluang', 'garis'] as const
+export type MotifWebsite = (typeof MOTIF_WEBSITE)[number]
+export const LABEL_MOTIF: Readonly<Record<MotifWebsite, string>> = {
+  'pucuk-rebung': 'Pucuk rebung',
+  'siku-keluang': 'Siku keluang',
+  garis: 'Garis',
+}
+
+const PESAN_SAMPUL = `Foto sampul harus gambar PNG, JPG, WebP, atau SVG, paling besar ${MAKS_GAMBAR_KB.sampul} KB.`
+const sampulSah = (s: string) => POLA_FOTO_KURASI.test(s) || gambarDataUrlSchema(MAKS_GAMBAR_KB.sampul).safeParse(s).success
+
+/** PUT /website/tampilan (SPEC §9). Sampul berupa unggahan (data URL) atau foto kurasi; logo kosong berarti lambang desa. */
+export const ubahTampilanSchema = z.object({
+  aksen: z.enum(ID_AKSEN),
+  motif: z.enum(MOTIF_WEBSITE),
+  sampul: z.string().refine(sampulSah, PESAN_SAMPUL).nullable(),
+  logo: gambarDataUrlSchema(MAKS_GAMBAR_KB.logo).nullable(),
+})
+export type UbahTampilan = z.infer<typeof ubahTampilanSchema>
+
+/** GET /website/tampilan. */
+export const tampilanWebsiteSchema = ubahTampilanSchema.extend({ desaId: z.string(), diperbarui: waktu })
+export type TampilanWebsite = z.infer<typeof tampilanWebsiteSchema>
