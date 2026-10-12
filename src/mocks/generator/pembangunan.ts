@@ -29,31 +29,31 @@ type Rencana = {
 const RENCANA: readonly Rencana[] = [
   {
     nama: 'Semenisasi jalan lingkungan Dusun III', volume: '450 m', lokasi: 'Jalan lingkungan RT 011–013', dusun: 3, anggaran: 245_000_000,
-    sumber: 'DD', fisik: 70, keuangan: 0.62, mulai: -100, target: 45, dok50: -40, dok100: null, titik: [102.6905, 0.269],
+    sumber: 'DD', fisik: 70, keuangan: 0.62, mulai: -100, target: 45, dok50: -40, dok100: null, titik: [102.7505, 0.233],
   },
   {
     nama: 'Drainase RT 006–007', volume: '320 m', lokasi: 'RT 006 dan RT 007', dusun: 2, anggaran: 98_000_000,
-    sumber: 'DD', fisik: 100, keuangan: 0.99, mulai: -190, target: -95, dok50: -150, dok100: -100, titik: [102.7062, 0.293],
+    sumber: 'DD', fisik: 100, keuangan: 0.99, mulai: -190, target: -95, dok50: -150, dok100: -100, titik: [102.7662, 0.257],
   },
   {
     nama: 'Rehabilitasi Posyandu Kenanga', volume: '1 unit', lokasi: 'Gedung Posyandu Kenanga', dusun: 3, anggaran: 58_500_000,
-    sumber: 'ADD', fisik: 100, keuangan: 0.98, mulai: -160, target: -70, dok50: -120, dok100: -75, titik: [102.6859, 0.277],
+    sumber: 'ADD', fisik: 100, keuangan: 0.98, mulai: -160, target: -70, dok50: -120, dok100: -75, titik: [102.7459, 0.241],
   },
   {
     nama: 'Sumur bor air bersih Dusun IV', volume: '2 unit', lokasi: 'RT 016 dan RT 018', dusun: 4, anggaran: 64_000_000,
-    sumber: 'DD', fisik: 40, keuangan: 0.35, mulai: -60, target: 60, dok50: null, dok100: null, titik: [102.7158, 0.2668],
+    sumber: 'DD', fisik: 40, keuangan: 0.35, mulai: -60, target: 60, dok50: null, dok100: null, titik: [102.7758, 0.2308],
   },
   {
     nama: 'Titian kayu penghubung Dusun II–IV', volume: '180 m', lokasi: 'Antara Dusun II dan Dusun IV', dusun: 4, anggaran: 96_400_000,
-    sumber: 'Bantuan Provinsi', fisik: 15, keuangan: 0.1, mulai: -25, target: 90, dok50: null, dok100: null, titik: [102.715, 0.2785],
+    sumber: 'Bantuan Provinsi', fisik: 15, keuangan: 0.1, mulai: -25, target: 90, dok50: null, dok100: null, titik: [102.775, 0.2425],
   },
   {
     nama: 'Lampu jalan tenaga surya', volume: '24 titik', lokasi: 'Dusun I dan Dusun II', dusun: 1, anggaran: 72_000_000,
-    sumber: 'DD', fisik: 100, keuangan: 1, mulai: -210, target: -130, dok50: -175, dok100: -135, titik: [102.6952, 0.286],
+    sumber: 'DD', fisik: 100, keuangan: 1, mulai: -210, target: -130, dok50: -175, dok100: -135, titik: [102.7552, 0.25],
   },
   {
     nama: 'Pelantar perahu nelayan', volume: '1 unit', lokasi: 'Tepi Sungai Kampar, Dusun I', dusun: 1, anggaran: 88_000_000,
-    sumber: 'DD', fisik: 0, keuangan: 0, mulai: null, target: 120, dok50: null, dok100: null, titik: [102.689, 0.2965],
+    sumber: 'DD', fisik: 0, keuangan: 0, mulai: null, target: 120, dok50: null, dok100: null, titik: [102.749, 0.2605],
   },
 ]
 

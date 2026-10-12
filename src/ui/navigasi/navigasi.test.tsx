@@ -44,4 +44,12 @@ describe('Tabs', () => {
     await userEvent.click(screen.getByRole('tab', { name: 'Catatan' }))
     expect(screen.getByText('Isi catatan')).toBeInTheDocument()
   })
+  it('daftar tab yang bisa digeser tidak meluber ke bawah, dan cincin fokusnya tidak terpotong bingkai gulir', () => {
+    render(<Tabs label="Lembaga" items={[{ id: 'a', label: 'Perangkat Desa (14)', isi: <p>a</p> }]} />)
+    expect(screen.getByRole('tablist')).toHaveClass('overflow-x-auto')
+    const tab = screen.getByRole('tab')
+    // Margin negatif di dalam wadah overflow menambah 1px gulir tegak; cincin fokus di luar kotak tab terpotong wadahnya.
+    expect(tab.className).not.toMatch(/(^|\s)-mb-px(\s|$)/)
+    expect(tab).toHaveClass('data-[focus-visible]:-outline-offset-2')
+  })
 })

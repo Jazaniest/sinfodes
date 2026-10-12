@@ -99,7 +99,7 @@ export function Peta({ kegiatanAwal }: { kegiatanAwal?: string }) {
         judul="Peta Desa"
         meta={`${formatAngka(l.dusun.length)} dusun · ${formatAngka(l.fasilitas.length)} fasilitas umum · ${formatAngka(l.kegiatan.length)} kegiatan pembangunan`}
       />
-      <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-6 xl:grid-cols-[minmax(0,1fr)_20rem]">
         <div className="h-[60vh] min-h-80 overflow-hidden rounded-2 border border-garis bg-kertas-2">
           {gagal ? (
             <div className="flex h-full items-center p-6">

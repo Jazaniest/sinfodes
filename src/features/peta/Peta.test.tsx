@@ -78,4 +78,11 @@ describe('Peta Desa (SPEC §8)', () => {
     await user.click(within(screen.getByRole('list', { name: 'Kegiatan pembangunan' })).getByRole('button', { name: /Drainase RT 006–007/ }))
     expect(within(panel()).getByRole('heading', { name: 'Drainase RT 006–007' })).toBeInTheDocument()
   })
+  it('peta dan panel baru berdampingan di layar lebar (xl); di 1024 bertumpuk supaya peta tidak sempit', async () => {
+    pasang()
+    const samping = await screen.findByRole('complementary', { name: 'Lapisan dan objek peta' })
+    const tata = samping.parentElement
+    expect(tata).toHaveClass('xl:grid-cols-[minmax(0,1fr)_20rem]')
+    expect(tata?.className).not.toMatch(/(^|\s)lg:grid-cols-/)
+  })
 })

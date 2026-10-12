@@ -22,7 +22,8 @@ export function MiniBar({ label, nilai, maks, keterangan, labelTersembunyi = fal
   const rasio = maks > 0 ? nilai / maks : 0
   const lebar = Math.min(1, Math.max(0, rasio))
   return (
-    <div className={cn('flex min-w-0 flex-col gap-1', className)}>
+    // `relative`: label sr-only (position: absolute) berpatokan di sini, jadi tetap di dalam bingkai gulir tabel.
+    <div className={cn('relative flex min-w-0 flex-col gap-1', className)}>
       <div className="flex items-baseline justify-between gap-3 text-teks-kecil">
         <span className={labelTersembunyi ? 'sr-only' : 'truncate'}>{label}</span>
         <span className="font-mono tabular-nums">{formatPersen(rasio)}</span>

@@ -21,6 +21,13 @@ describe('MiniBar (SPEC §4.4)', () => {
     expect(container.querySelector('[role="meter"] > div')).toHaveStyle({ width: '100%' })
     expect(screen.getByRole('meter')).toHaveAttribute('aria-valuenow', '100')
   })
+  it('label tersembunyi berpatokan pada MiniBar sendiri, supaya tidak meluber keluar bingkai gulir tabel di layar sempit', () => {
+    render(<MiniBar label="Dana Desa" nilai={75} maks={100} labelTersembunyi />)
+    const label = screen.getByText('Dana Desa')
+    expect(label).toHaveClass('sr-only')
+    // sr-only memakai position: absolute; tanpa leluhur `relative` di dalam bingkai gulir, label ini melebarkan halaman.
+    expect(label.closest('.relative')).toBe(screen.getByRole('meter').parentElement)
+  })
 })
 
 describe('LineChart', () => {
