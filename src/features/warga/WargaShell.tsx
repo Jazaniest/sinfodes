@@ -1,4 +1,4 @@
-import { ClockCounterClockwise, House, UserCircle } from '@phosphor-icons/react'
+import { ClockCounterClockwise, FilePlus, House, UserCircle } from '@phosphor-icons/react'
 import type { ReactNode } from 'react'
 import { Link } from 'react-aria-components'
 import type { SesiWarga } from '@/domain/warga/sesi'
@@ -8,6 +8,7 @@ import { MENU_WARGA, menuWargaAktif, type KunciMenuWarga } from './navigasi'
 
 const IKON: Readonly<Record<KunciMenuWarga, ReactNode>> = {
   beranda: <House aria-hidden size={22} />,
+  ajukan: <FilePlus aria-hidden size={22} />,
   riwayat: <ClockCounterClockwise aria-hidden size={22} />,
   akun: <UserCircle aria-hidden size={22} />,
 }

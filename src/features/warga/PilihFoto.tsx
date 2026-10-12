@@ -48,7 +48,12 @@ export function PilihFoto({ label, foto, onUbah, wajib = false, galat, kecilkan 
     <div role="group" aria-labelledby={id} className="flex flex-col gap-2 rounded-1 border border-garis bg-lembar p-3">
       <p id={id} className="font-medium">
         {label}
-        {!wajib && <span className="font-normal text-tinta-2"> (tidak wajib)</span>}
+        {!wajib && (
+          <>
+            {' '}
+            <span className="font-normal text-tinta-2">(tidak wajib)</span>
+          </>
+        )}
       </p>
       {foto ? (
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">

@@ -1,9 +1,10 @@
-export type KunciMenuWarga = 'beranda' | 'riwayat' | 'akun'
+export type KunciMenuWarga = 'beranda' | 'ajukan' | 'riwayat' | 'akun'
 export type ItemMenuWarga = { kunci: KunciMenuWarga; label: string; href: string }
 
-/** Navigasi bawah layanan warga (SPEC §10). *Ajukan* menyusul di Tahap 4B bersama halamannya. */
+/** Navigasi bawah layanan warga (SPEC §10): Beranda · Ajukan · Riwayat · Akun. */
 export const MENU_WARGA: readonly ItemMenuWarga[] = [
   { kunci: 'beranda', label: 'Beranda', href: '/warga' },
+  { kunci: 'ajukan', label: 'Ajukan', href: '/warga/ajukan' },
   { kunci: 'riwayat', label: 'Riwayat', href: '/warga/riwayat' },
   { kunci: 'akun', label: 'Akun', href: '/warga/akun' },
 ]

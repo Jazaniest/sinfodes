@@ -49,6 +49,7 @@ describe('Riwayat warga (SPEC §10)', () => {
     expect(await screen.findByRole('heading', { level: 1, name: 'Surat Keterangan Domisili (SKD)' })).toBeInTheDocument()
     expect(screen.getByText('Sedang diproses petugas desa')).toBeInTheDocument()
     expect(screen.getByText('pendaftaran sekolah anak')).toBeInTheDocument()
+    expect(screen.getByText(/^2026-\d{4}$/)).toBeInTheDocument()
     const perjalanan = screen.getByRole('list', { name: 'Riwayat permohonan' })
     expect(within(perjalanan).getByText('Diajukan lewat layanan warga')).toBeInTheDocument()
     expect(within(perjalanan).getByText('Mulai diproses')).toBeInTheDocument()
@@ -96,6 +97,7 @@ describe('Riwayat warga (SPEC §10)', () => {
     renderWarga(<DetailRiwayat id={id} />)
     expect(await screen.findByText('Permohonan ditolak')).toBeInTheDocument()
     expect(screen.getAllByText(/Pengantar RT belum dilampirkan\./).length).toBeGreaterThan(0)
+    expect(screen.getByRole('link', { name: 'Ajukan ulang' })).toHaveAttribute('href', `/warga/ajukan?ulang=${id}`)
   })
   it('permohonan orang lain → "Permohonan tidak ditemukan" (fokus review 3)', async () => {
     masukSebagaiWarga(AKUN_WARGA_UJI.siti)

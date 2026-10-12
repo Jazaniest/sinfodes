@@ -22,6 +22,7 @@ describe('Beranda warga (SPEC §10)', () => {
     const bantuan = screen.getByRole('region', { name: 'Bantuan yang diterima' })
     expect(within(bantuan).getByText('BLT Dana Desa 2026')).toBeInTheDocument()
     expect(within(bantuan).getByText('Bantuan Pangan Beras 2026')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Ajukan surat' })).toHaveAttribute('href', '/warga/ajukan')
   })
   it('Zulkifli: SKU sedang diperbaiki; keluarganya tanpa balita, jadi tanpa jadwal posyandu', async () => {
     masukSebagaiWarga(AKUN_WARGA_UJI.zulkifli)

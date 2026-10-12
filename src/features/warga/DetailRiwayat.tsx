@@ -13,6 +13,7 @@ import { Cap } from '@/ui/cap/Cap'
 import { DescriptionList } from '@/ui/data/DescriptionList'
 import { Timeline } from '@/ui/data/Timeline'
 import { Tautan } from '@/ui/navigasi/Tautan'
+import { TautanTombol } from '@/ui/tombol/TautanTombol'
 import { Tombol } from '@/ui/tombol/Tombol'
 import { Banner } from '@/ui/umpan-balik/Banner'
 import { EmptyState } from '@/ui/umpan-balik/EmptyState'
@@ -28,6 +29,7 @@ function IsiDetail({ d, sesi }: { d: DetailPermohonanWarga; sesi: SesiWarga }) {
   // Hanya surat TTE yang boleh diunduh; surat bertanda tangan basah diambil di kantor desa.
   const lembar = p.status === 'selesai' && terbit?.mode === 'tte' ? lembarTerbit(terbit, pengaturan, sesi.desa, window.location.origin) : null
   const rincian = [
+    { label: 'Nomor tiket', nilai: <span className="font-mono">{p.tiket}</span> },
     { label: 'Untuk', nilai: p.untuk.nama },
     { label: 'Masuk', nilai: formatWaktuLog(p.masukPada) },
     ...(p.nomor ? [{ label: 'Nomor surat', nilai: p.nomor }] : []),
@@ -63,9 +65,14 @@ function IsiDetail({ d, sesi }: { d: DetailPermohonanWarga; sesi: SesiWarga }) {
         </Banner>
       )}
       {p.status === 'ditolak' && (
-        <Banner nada="peringatan" judul="Permohonan ditolak">
-          {p.alasanDitolak ?? 'Hubungi kantor desa untuk penjelasannya.'}
-        </Banner>
+        <section className="flex flex-col gap-3">
+          <Banner nada="peringatan" judul="Permohonan ditolak">
+            {p.alasanDitolak ?? 'Hubungi kantor desa untuk penjelasannya.'}
+          </Banner>
+          <TautanTombol href={`/warga/ajukan?ulang=${p.id}`} varian="utama">
+            Ajukan ulang
+          </TautanTombol>
+        </section>
       )}
 
       <DescriptionList judul="Rincian" items={rincian} />

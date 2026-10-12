@@ -16,7 +16,7 @@ describe('WargaShell (SPEC §4.4, §10)', () => {
     pasang('/warga/riwayat/srt_contoh')
     expect(screen.getByText('Desa Sungai Sialang')).toBeInTheDocument()
     const nav = screen.getByRole('navigation', { name: 'Menu layanan warga' })
-    expect(within(nav).getAllByRole('link').map((a) => a.textContent)).toEqual(['Beranda', 'Riwayat', 'Akun'])
+    expect(within(nav).getAllByRole('link').map((a) => a.textContent)).toEqual(['Beranda', 'Ajukan', 'Riwayat', 'Akun'])
     expect(within(nav).getByRole('link', { name: 'Riwayat' })).toHaveAttribute('aria-current', 'page')
     expect(within(nav).getByRole('link', { name: 'Beranda' })).not.toHaveAttribute('aria-current')
     expect(screen.getByRole('main')).toHaveTextContent('Isi halaman')

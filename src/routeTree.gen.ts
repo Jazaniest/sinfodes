@@ -23,6 +23,7 @@ import { Route as AdminPanelLembagaRouteImport } from './routes/admin/_panel/lem
 import { Route as AdminPanelNotifikasiRouteImport } from './routes/admin/_panel/notifikasi'
 import { Route as AdminPanelPetaRouteImport } from './routes/admin/_panel/peta'
 import { Route as WargaAppIndexRouteImport } from './routes/warga/_app/index'
+import { Route as WargaAppAjukanRouteImport } from './routes/warga/_app/ajukan'
 import { Route as WargaAppAkunRouteImport } from './routes/warga/_app/akun'
 import { Route as AdminPanelBansosIndexRouteImport } from './routes/admin/_panel/bansos/index'
 import { Route as AdminPanelBansosIdRouteImport } from './routes/admin/_panel/bansos/$id'
@@ -134,6 +135,11 @@ const AdminPanelPetaRoute = AdminPanelPetaRouteImport.update({
 const WargaAppIndexRoute = WargaAppIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => WargaAppRoute,
+} as any)
+const WargaAppAjukanRoute = WargaAppAjukanRouteImport.update({
+  id: '/ajukan',
+  path: '/ajukan',
   getParentRoute: () => WargaAppRoute,
 } as any)
 const WargaAppAkunRoute = WargaAppAkunRouteImport.update({
@@ -386,6 +392,7 @@ export interface FileRoutesByFullPath {
   '/admin/lembaga': typeof AdminPanelLembagaRoute
   '/admin/notifikasi': typeof AdminPanelNotifikasiRoute
   '/admin/peta': typeof AdminPanelPetaRoute
+  '/warga/ajukan': typeof WargaAppAjukanRoute
   '/warga/akun': typeof WargaAppAkunRoute
   '/admin/': typeof AdminPanelIndexRoute
   '/warga/': typeof WargaAppIndexRoute
@@ -442,6 +449,7 @@ export interface FileRoutesByTo {
   '/admin/lembaga': typeof AdminPanelLembagaRoute
   '/admin/notifikasi': typeof AdminPanelNotifikasiRoute
   '/admin/peta': typeof AdminPanelPetaRoute
+  '/warga/ajukan': typeof WargaAppAjukanRoute
   '/warga/akun': typeof WargaAppAkunRoute
   '/admin': typeof AdminPanelIndexRoute
   '/warga': typeof WargaAppIndexRoute
@@ -501,6 +509,7 @@ export interface FileRoutesById {
   '/admin/_panel/lembaga': typeof AdminPanelLembagaRoute
   '/admin/_panel/notifikasi': typeof AdminPanelNotifikasiRoute
   '/admin/_panel/peta': typeof AdminPanelPetaRoute
+  '/warga/_app/ajukan': typeof WargaAppAjukanRoute
   '/warga/_app/akun': typeof WargaAppAkunRoute
   '/admin/_panel/': typeof AdminPanelIndexRoute
   '/warga/_app/': typeof WargaAppIndexRoute
@@ -561,6 +570,7 @@ export interface FileRouteTypes {
     | '/admin/lembaga'
     | '/admin/notifikasi'
     | '/admin/peta'
+    | '/warga/ajukan'
     | '/warga/akun'
     | '/admin/'
     | '/warga/'
@@ -617,6 +627,7 @@ export interface FileRouteTypes {
     | '/admin/lembaga'
     | '/admin/notifikasi'
     | '/admin/peta'
+    | '/warga/ajukan'
     | '/warga/akun'
     | '/admin'
     | '/warga'
@@ -675,6 +686,7 @@ export interface FileRouteTypes {
     | '/admin/_panel/lembaga'
     | '/admin/_panel/notifikasi'
     | '/admin/_panel/peta'
+    | '/warga/_app/ajukan'
     | '/warga/_app/akun'
     | '/admin/_panel/'
     | '/warga/_app/'
@@ -828,6 +840,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/warga/'
       preLoaderRoute: typeof WargaAppIndexRouteImport
+      parentRoute: typeof WargaAppRoute
+    }
+    '/warga/_app/ajukan': {
+      id: '/warga/_app/ajukan'
+      path: '/ajukan'
+      fullPath: '/warga/ajukan'
+      preLoaderRoute: typeof WargaAppAjukanRouteImport
       parentRoute: typeof WargaAppRoute
     }
     '/warga/_app/akun': {
@@ -1240,6 +1259,7 @@ const AdminPanelRouteWithChildren = AdminPanelRoute._addFileChildren(
 )
 
 interface WargaAppRouteChildren {
+  WargaAppAjukanRoute: typeof WargaAppAjukanRoute
   WargaAppAkunRoute: typeof WargaAppAkunRoute
   WargaAppIndexRoute: typeof WargaAppIndexRoute
   WargaAppRiwayatIdRoute: typeof WargaAppRiwayatIdRoute
@@ -1247,6 +1267,7 @@ interface WargaAppRouteChildren {
 }
 
 const WargaAppRouteChildren: WargaAppRouteChildren = {
+  WargaAppAjukanRoute: WargaAppAjukanRoute,
   WargaAppAkunRoute: WargaAppAkunRoute,
   WargaAppIndexRoute: WargaAppIndexRoute,
   WargaAppRiwayatIdRoute: WargaAppRiwayatIdRoute,

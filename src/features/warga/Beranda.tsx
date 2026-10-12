@@ -9,6 +9,7 @@ import { teksUmurBalita, type BerandaWarga } from '@/domain/warga/beranda'
 import { kalimat, namaJenisLengkap } from '@/domain/warga/permohonan'
 import { Cap } from '@/ui/cap/Cap'
 import { cn } from '@/ui/cn'
+import { TautanTombol } from '@/ui/tombol/TautanTombol'
 import { ErrorState } from '@/ui/umpan-balik/ErrorState'
 import { BarisKerangka } from '@/ui/umpan-balik/Skeleton'
 import { useSesiWarga } from './sesi-konteks'
@@ -47,6 +48,12 @@ function IsiBeranda({ b, pendudukId }: { b: BerandaWarga; pendudukId: string }) 
           </ul>
         )}
       </Bagian>
+
+      <div className="flex flex-col gap-3">
+        <TautanTombol href="/warga/ajukan" varian="utama">
+          Ajukan surat
+        </TautanTombol>
+      </div>
 
       <Bagian id="beranda-pengumuman" judul="Pengumuman desa">
         {b.pengumuman.length === 0 ? (
