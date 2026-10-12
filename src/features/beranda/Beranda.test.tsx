@@ -109,4 +109,31 @@ describe('Beranda (SPEC §5.3)', () => {
     const posyandu = screen.getByRole('region', { name: 'Jadwal posyandu' })
     expect(posyandu).toHaveTextContent('Posyandu Mawar · Rabu, 14 Oktober 2026')
   })
+  it('operator: satu MiniBar realisasi belanja APBDes di keadaan desa (3B)', async () => {
+    masukSebagai(AKUN_UJI.operator)
+    renderPanel(<Beranda sekarang={SEKARANG_UJI} />, contohSesi('operator'))
+    const meter = await screen.findByRole('meter', { name: 'Realisasi belanja APBDes 2026' })
+    expect(meter.getAttribute('aria-valuetext')).toMatch(/^6[1-5],\d%$/)
+    expect(screen.getByRole('link', { name: 'Lihat APBDes' })).toHaveAttribute('href', '/admin/keuangan')
+  })
+  it('Kepala Desa: realisasi APBDes per bidang dan pembangunan yang sedang berjalan (3B)', async () => {
+    masukSebagai(AKUN_UJI.kades)
+    renderPanel(<Beranda sekarang={SEKARANG_UJI} />, contohSesi('kades'))
+    const apbdes = await screen.findByRole('region', { name: 'Realisasi APBDes 2026 per bidang' })
+    expect(within(apbdes).getAllByRole('meter')).toHaveLength(5)
+    const berjalan = screen.getByRole('region', { name: 'Pembangunan yang sedang berjalan' })
+    expect(within(berjalan).getAllByRole('link').map((a) => a.textContent)).toEqual([
+      'Semenisasi jalan lingkungan Dusun III', 'Sumur bor air bersih Dusun IV', 'Titian kayu penghubung Dusun II–IV',
+    ])
+    expect(within(berjalan).getAllByRole('meter', { name: 'Progres fisik' })[0]).toHaveAttribute('aria-valuetext', '70,0%')
+  })
+  it('Kaur Keuangan: pendapatan, belanja, per bidang, dan progres keuangan kegiatan (3B)', async () => {
+    masukSebagai(AKUN_UJI.kaurKeuangan)
+    renderPanel(<Beranda sekarang={SEKARANG_UJI} />, contohSesi('kaur-keuangan'))
+    const apbdes = await screen.findByRole('region', { name: 'Realisasi APBDes 2026' })
+    expect(within(apbdes).getByRole('meter', { name: 'Pendapatan' })).toBeInTheDocument()
+    expect(within(apbdes).getAllByRole('meter')).toHaveLength(7)
+    const keuangan = screen.getByRole('region', { name: 'Progres keuangan kegiatan pembangunan' })
+    expect(within(keuangan).getAllByRole('meter', { name: 'Progres keuangan' })[0]).toHaveAttribute('aria-valuetext', '62,0%')
+  })
 })

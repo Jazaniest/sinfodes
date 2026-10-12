@@ -15,6 +15,7 @@ import { TautanTombol } from '@/ui/tombol/TautanTombol'
 import { ErrorState } from '@/ui/umpan-balik/ErrorState'
 import { BarisKerangka } from '@/ui/umpan-balik/Skeleton'
 import { useSesiAdmin } from '../admin/sesi-konteks'
+import { PembangunanBerjalan, RealisasiApbdes } from './BagianTataKelola'
 import { isiSuratSaya, isiTindakan, kalimatKeadaan } from './kalimat'
 
 const judulBagian = 'text-label font-medium text-tinta-2 uppercase'
@@ -166,7 +167,13 @@ export function Beranda({ sekarang = new Date() }: { sekarang?: Date }) {
               {dusunKeadaan ? `Keadaan ${namaDusun(dusunKeadaan, desa.istilahWilayah)}` : 'Keadaan desa'}
             </h2>
             <p className="mt-2 text-dasar">{kalimatKeadaan(kueri.data.keadaan)}</p>
+            {kueri.data.apbdes && (pengguna.peran === 'operator' || pengguna.peran === 'sekdes') && (
+              <RealisasiApbdes apbdes={kueri.data.apbdes} tampilan="ringkas" />
+            )}
           </section>
+          {kueri.data.apbdes && (pengguna.peran === 'kades' || pengguna.peran === 'kaur-keuangan') && (
+            <RealisasiApbdes apbdes={kueri.data.apbdes} tampilan={pengguna.peran === 'kades' ? 'bidang' : 'lengkap'} />
+          )}
           {kueri.data.pengaduanTerbaru && !dusunKeadaan && (
             <PengaduanTerbaru judul={judulPengaduan} daftar={kueri.data.pengaduanTerbaru} sekarang={sekarang} />
           )}
@@ -180,6 +187,13 @@ export function Beranda({ sekarang = new Date() }: { sekarang?: Date }) {
                 <span className="text-tinta-2"> · {kueri.data.posyandu.tempat}</span>
               </p>
             </section>
+          )}
+          {kueri.data.pembangunan && (
+            <PembangunanBerjalan
+              judul={pengguna.peran === 'kades' ? 'Pembangunan yang sedang berjalan' : 'Progres keuangan kegiatan pembangunan'}
+              daftar={kueri.data.pembangunan}
+              ukur={pengguna.peran === 'kades' ? 'fisik' : 'keuangan'}
+            />
           )}
         </>
       )}

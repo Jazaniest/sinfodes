@@ -30,6 +30,8 @@ export const keadaanSchema = z.object({
 })
 export type Keadaan = z.infer<typeof keadaanSchema>
 
+const uang = z.object({ anggaran: z.number().int().min(0), realisasi: z.number().int().min(0) })
+
 /** GET /beranda. Bagian bernilai null tidak ditampilkan untuk peran tersebut. */
 export const berandaSchema = z.object({
   tindakan: z.array(tindakanSchema).nullable(),
@@ -40,6 +42,12 @@ export const berandaSchema = z.object({
   pengaduanTerbaru: z.array(barisPengaduanSchema).nullable(),
   /** Kepala Dusun: jadwal posyandu dusunnya yang terdekat. Null untuk peran lain. */
   posyandu: z.object({ nama: z.string(), tempat: z.string(), jadwal: z.iso.date() }).nullable(),
+  /** Realisasi APBDes tahun berjalan untuk pemegang `keuangan.lihat` (SPEC §5.3). */
+  apbdes: z
+    .object({ tahun: z.number().int(), pendapatan: uang, belanja: uang, bidang: z.array(uang.extend({ kode: z.string(), nama: z.string() })) })
+    .nullable(),
+  /** Kades dan Kaur Keuangan: kegiatan pembangunan yang sedang berjalan. */
+  pembangunan: z.array(uang.extend({ id: z.string(), nama: z.string(), progresFisik: z.number().int().min(0).max(100) })).nullable(),
   keadaan: keadaanSchema,
 })
 export type Beranda = z.infer<typeof berandaSchema>

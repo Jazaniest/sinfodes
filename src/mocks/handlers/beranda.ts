@@ -2,14 +2,18 @@ import { http, HttpResponse } from 'msw'
 import type { Tindakan } from '@/domain/beranda/schema'
 import { tanggalIsoWib, waktuIsoWib } from '@/domain/format/tanggal'
 import { jadwalBerikut } from '@/domain/kesehatan/schema'
+import { jumlahKelompok, posUtama } from '@/domain/keuangan/schema'
 import { hitungMutasiBulan } from '@/domain/mutasi/buku'
 import { barisPengaduanSchema } from '@/domain/pengaduan/schema'
 import { dataBelumLengkap } from '@/domain/penduduk/filter'
+import { boleh } from '@/domain/pengguna/hak-akses'
 import { ringkasSuratTerbit } from '@/domain/surat/ringkas'
 import { hariKerjaBerlalu } from '@/domain/surat/waktu'
 import { dataMilik } from '../cakupan'
 import { API, denganJaringan } from '../http'
 import { butuhPengguna } from '../sesi-mock'
+import { apbdesTerbaru } from './keuangan'
+import { barisKegiatan } from './pembangunan'
 
 export const handlerBeranda = [
   http.get(
@@ -35,6 +39,13 @@ export const handlerBeranda = [
         .slice(0, 5)
         .map((a) => barisPengaduanSchema.parse(a))
       const posyandu = milik.db.posyandu.find((p) => p.desaId === pengguna.desaId && p.dusunId === milik.dusunSaja)
+      // Tata kelola (SPEC §5.3): realisasi APBDes untuk yang boleh melihat keuangan; pembangunan berjalan untuk Kades dan Kaur Keuangan.
+      const apbdes = boleh(pengguna.peran, 'keuangan.lihat') ? apbdesTerbaru(pengguna.desaId) : undefined
+      const lihatPembangunan = pengguna.peran === 'kades' || pengguna.peran === 'kaur-keuangan'
+      const pembangunan = milik.db.kegiatan
+        .filter((k) => k.desaId === pengguna.desaId && k.status === 'berjalan')
+        .map((k) => barisKegiatan(k, apbdes))
+        .map((k) => ({ id: k.id, nama: k.nama, progresFisik: k.progresFisik, anggaran: k.anggaran, realisasi: k.realisasi }))
       // Laporan warga terlama dulu: butirnya membuka laporan itu (SPEC §5.3).
       const laporanBaru = milik.laporanData
         .filter((l) => l.status === 'baru')
@@ -86,6 +97,15 @@ export const handlerBeranda = [
           pengguna.peran === 'kadus' && posyandu
             ? { nama: posyandu.nama, tempat: posyandu.tempat, jadwal: jadwalBerikut(posyandu.jadwal, hariIni) }
             : null,
+        apbdes: apbdes
+          ? {
+              tahun: apbdes.tahun,
+              pendapatan: jumlahKelompok(apbdes, 'pendapatan'),
+              belanja: jumlahKelompok(apbdes, 'belanja'),
+              bidang: posUtama(apbdes, 'belanja').map((p) => ({ kode: p.kode, nama: p.nama, anggaran: p.anggaran, realisasi: p.realisasi })),
+            }
+          : null,
+        pembangunan: lihatPembangunan ? pembangunan : null,
         keadaan: {
           cakupan: milik.dusunSaja === null ? 'desa' : 'dusun',
           dusunId: milik.dusunSaja,

@@ -34,6 +34,9 @@ describe('GET /beranda (SPEC §5.3)', () => {
       perempuan: 1381,
       bulanIni: { lahir: 3, meninggal: 1, datang: 2, pindah: 4 },
     })
+    expect(b.apbdes?.tahun).toBe(2026)
+    expect(b.apbdes?.belanja.anggaran).toBe(1_866_650_000)
+    expect(b.pembangunan).toBeNull()
   })
   it('Sekretaris Desa melihat bagian yang sama dengan operator', async () => {
     masukSebagai(AKUN_UJI.sekdes)
@@ -51,6 +54,10 @@ describe('GET /beranda (SPEC §5.3)', () => {
     expect(masuk).toHaveLength(5)
     expect(masuk).toEqual([...masuk].sort().reverse())
     expect(b.posyandu).toBeNull()
+    expect(b.apbdes?.bidang.map((x) => x.kode)).toEqual(['5.1', '5.2', '5.3', '5.4', '5.5'])
+    expect(b.pembangunan?.map((k) => k.nama)).toEqual([
+      'Semenisasi jalan lingkungan Dusun III', 'Sumur bor air bersih Dusun IV', 'Titian kayu penghubung Dusun II–IV',
+    ])
   })
   it('Kepala Dusun II: keadaan dusunnya saja', async () => {
     masukSebagai(AKUN_UJI.kadus)
@@ -62,9 +69,19 @@ describe('GET /beranda (SPEC §5.3)', () => {
     expect(b.pengaduanTerbaru?.length).toBeGreaterThan(0)
     expect(b.pengaduanTerbaru?.every((a) => a.dusunId === 'dsn_ss_2')).toBe(true)
     expect(b.posyandu).toEqual({ nama: 'Posyandu Mawar', tempat: 'Gedung Posyandu Mawar, Dusun II Sialang Jaya', jadwal: '2026-10-14' })
+    expect(b.apbdes).toBeNull()
+    expect(b.pembangunan).toBeNull()
   })
   it('tanpa sesi → UNAUTHENTICATED', async () => {
     await expect(ambilBeranda()).rejects.toMatchObject({ kode: 'UNAUTHENTICATED' })
+  })
+  it('Kaur Keuangan: realisasi APBDes dan progres keuangan kegiatan pembangunan (3B)', async () => {
+    masukSebagai(AKUN_UJI.kaurKeuangan)
+    const b = await ambilBeranda()
+    expect(b.apbdes?.pendapatan.anggaran).toBe(1_826_650_000)
+    expect(b.pembangunan?.find((k) => k.nama === 'Semenisasi jalan lingkungan Dusun III')).toMatchObject({
+      anggaran: 245_000_000, realisasi: 151_900_000, progresFisik: 70,
+    })
   })
 })
 
