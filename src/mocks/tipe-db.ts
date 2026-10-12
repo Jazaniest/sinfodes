@@ -1,15 +1,20 @@
 import type { Aktivitas } from '@/domain/aktivitas/schema'
+import type { Aset } from '@/domain/aset/schema'
 import type { PenerimaBansos, ProgramBansos } from '@/domain/bansos/schema'
 import type { LaporanImpor } from '@/domain/impor/schema'
 import type { Keluarga } from '@/domain/keluarga/schema'
+import type { Apbdes } from '@/domain/keuangan/schema'
 import type { Pengukuran, Posyandu, StatusGizi } from '@/domain/kesehatan/schema'
 import type { LaporanData } from '@/domain/laporan/schema'
+import type { Pengurus } from '@/domain/lembaga/schema'
 import type { Mutasi } from '@/domain/mutasi/schema'
 import type { Notifikasi } from '@/domain/notifikasi/schema'
 import type { Pengaduan } from '@/domain/pengaduan/schema'
+import type { Kegiatan } from '@/domain/pembangunan/schema'
 import type { Riwayat } from '@/domain/penduduk/riwayat'
 import type { Penduduk } from '@/domain/penduduk/schema'
 import type { Pengguna } from '@/domain/pengguna/schema'
+import type { PetaDesa } from '@/domain/peta/schema'
 import type { SuratMasuk } from '@/domain/surat/arsip'
 import type { JenisSurat } from '@/domain/surat/jenis'
 import type { PengaturanSurat } from '@/domain/surat/pengaturan'
@@ -17,7 +22,7 @@ import type { Permohonan } from '@/domain/surat/permohonan'
 import type { Desa, Dusun } from '@/domain/wilayah/schema'
 
 /** Naikkan setiap kali seed atau struktur data berubah; data lama di IndexedDB otomatis diganti (SPEC §12). */
-export const VERSI_DATA = 6
+export const VERSI_DATA = 7
 
 /** Berkas impor yang sudah diperiksa dan menunggu konfirmasi (SPEC §6.8). */
 export type SesiImpor = { id: string; desaId: string; olehId: string; laporan: LaporanImpor; selesai: boolean }
@@ -57,4 +62,14 @@ export type DbDemo = {
   /** Kesehatan: posyandu dan pengukuran balita (SPEC §8, §12.6). */
   posyandu: Posyandu[]
   pengukuranBalita: PengukuranBalita[]
+  /** Geometri desa untuk Peta Desa (SPEC §8). */
+  peta: PetaDesa[]
+  /** Kegiatan pembangunan; anggarannya dibaca dari rincian APBDes (SPEC §8). */
+  kegiatan: Kegiatan[]
+  /** APBDes per tahun, disinkronkan dari Siskeudes (SPEC §8). */
+  apbdes: Apbdes[]
+  /** Inventaris aset desa (SPEC §8). */
+  aset: Aset[]
+  /** Pengurus lembaga desa, dipakai juga halaman Profil website (SPEC §8). */
+  pengurusLembaga: Pengurus[]
 }

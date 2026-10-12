@@ -4,13 +4,18 @@ import { buatAcak } from '../prng'
 import { VERSI_DATA, type DbDemo } from '../tipe-db'
 import { pengaturanBawaan } from '@/domain/surat/pengaturan'
 import { bangkitkanSuratMasuk } from './arsip'
+import { bangkitkanAset } from './aset'
 import { bangkitkanBansos } from './bansos'
 import { bangkitkanKesehatan } from './kesehatan'
+import { bangkitkanKeuangan } from './keuangan'
 import { bangkitkanLaporan } from './laporan'
+import { bangkitkanLembaga } from './lembaga'
 import { bangkitkanMutasi } from './mutasi'
 import { bangkitkanNotifikasi } from './notifikasi'
+import { bangkitkanPembangunan } from './pembangunan'
 import { bangkitkanPengaduan } from './pengaduan'
 import { bangkitkanPenduduk } from './penduduk'
+import { bangkitkanPeta } from './peta'
 import { bangkitkanSurat } from './surat'
 
 export const SEED_DEMO = 20260924
@@ -80,6 +85,19 @@ export function bangkitkanDb(sekarang: Date): DbDemo {
     penduduk: hasil.penduduk,
     acuan: sekarang,
   })
+  // Tanpa PRNG: geometri dan kegiatan pembangunan tetap.
+  const peta = bangkitkanPeta({ desa: desaDemo, dusun: DUSUN_DEMO })
+  const pembangunan = bangkitkanPembangunan({ desa: desaDemo, dusun: DUSUN_DEMO, acuan: sekarang })
+  const apbdes = bangkitkanKeuangan({ desa: desaDemo, rincianPembangunan: pembangunan.rincian, acuan: sekarang })
+  const aset = bangkitkanAset({ desa: desaDemo })
+  // Aliran acak kesembilan.
+  const pengurusLembaga = bangkitkanLembaga(buatAcak(SEED_DEMO + 8), {
+    desa: desaDemo,
+    dusun: DUSUN_DEMO,
+    penduduk: hasil.penduduk,
+    pengguna: PENGGUNA_DEMO,
+    acuan: sekarang,
+  })
   return {
     versiData: VERSI_DATA,
     tanggalAcuan: waktuIsoWib(sekarang),
@@ -100,5 +118,10 @@ export function bangkitkanDb(sekarang: Date): DbDemo {
     penerimaBansos: bansos.penerima,
     posyandu: kesehatan.posyandu,
     pengukuranBalita: kesehatan.pengukuranBalita,
+    peta: [peta],
+    kegiatan: pembangunan.kegiatan,
+    apbdes: [apbdes],
+    aset,
+    pengurusLembaga,
   }
 }
