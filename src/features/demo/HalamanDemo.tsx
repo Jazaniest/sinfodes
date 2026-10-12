@@ -2,10 +2,12 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 import { pesanGalat } from '@/api/galat'
+import { masukWarga } from '@/api/warga'
 import logoMark from '@/assets/brand/sinfodes-mark.svg'
 import { formatAngka } from '@/domain/format/angka'
 import { formatTanggal } from '@/domain/format/tanggal'
 import { LABEL_PERAN } from '@/domain/pengguna/schema'
+import { pasangSesiWarga } from '@/features/warga/masuk-warga'
 import { tampilkanToast } from '@/ui/toast/antrean'
 import { Tombol } from '@/ui/tombol/Tombol'
 import { Skeleton } from '@/ui/umpan-balik/Skeleton'
@@ -29,6 +31,18 @@ export function HalamanDemo() {
     try {
       await masukDemo(akun.email, kendali.KATA_SANDI_DEMO, queryClient)
       await router.navigate({ to: '/admin' })
+    } catch (e) {
+      tampilkanToast({ pesan: pesanGalat(e), nada: 'galat' })
+    } finally {
+      setSedangMasuk(null)
+    }
+  }
+  const masukLayananWarga = async (akun: { pendudukId: string; nik: string; pin: string }) => {
+    setSedangMasuk(akun.pendudukId)
+    try {
+      const { token, sesi } = await masukWarga(akun.nik, akun.pin)
+      pasangSesiWarga(token, sesi, queryClient)
+      await router.navigate({ to: '/warga' })
     } catch (e) {
       tampilkanToast({ pesan: pesanGalat(e), nada: 'galat' })
     } finally {
@@ -97,6 +111,29 @@ export function HalamanDemo() {
                 </Tombol>
               ))}
             </div>
+          </li>
+          <li className="flex flex-col gap-3 py-4">
+            <div>
+              <p className="font-medium">Layanan mandiri warga</p>
+              <p className="text-tinta-2">Untuk HP: urus surat dan pantau perkembangannya. Masuk dengan NIK dan PIN 6 angka.</p>
+            </div>
+            <ul className="flex flex-col gap-3">
+              {kendali?.AKUN_DEMO_WARGA.map((a) => (
+                <li key={a.pendudukId} className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                  <Tombol
+                    ukuran="kecil"
+                    varian="sekunder"
+                    memuat={sedangMasuk === a.pendudukId}
+                    onPress={() => void masukLayananWarga(a)}
+                  >
+                    {a.nama}
+                  </Tombol>
+                  <span className="text-teks-kecil text-tinta-2">
+                    NIK <span className="font-mono">{a.nik}</span> · PIN <span className="font-mono">{a.pin}</span> · {a.keterangan}
+                  </span>
+                </li>
+              ))}
+            </ul>
           </li>
           <li className="flex flex-wrap items-center justify-between gap-4 py-4">
             <div>

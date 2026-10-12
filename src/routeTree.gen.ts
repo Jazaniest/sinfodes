@@ -13,6 +13,8 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as KatalogRouteImport } from './routes/katalog'
 import { Route as AdminPanelRouteImport } from './routes/admin/_panel'
 import { Route as AdminMasukRouteImport } from './routes/admin/masuk'
+import { Route as WargaAppRouteImport } from './routes/warga/_app'
+import { Route as WargaMasukRouteImport } from './routes/warga/masuk'
 import { Route as AdminPanelIndexRouteImport } from './routes/admin/_panel/index'
 import { Route as AdminPanelAsetRouteImport } from './routes/admin/_panel/aset'
 import { Route as AdminPanelKesehatanRouteImport } from './routes/admin/_panel/kesehatan'
@@ -20,6 +22,7 @@ import { Route as AdminPanelKeuanganRouteImport } from './routes/admin/_panel/ke
 import { Route as AdminPanelLembagaRouteImport } from './routes/admin/_panel/lembaga'
 import { Route as AdminPanelNotifikasiRouteImport } from './routes/admin/_panel/notifikasi'
 import { Route as AdminPanelPetaRouteImport } from './routes/admin/_panel/peta'
+import { Route as WargaAppIndexRouteImport } from './routes/warga/_app/index'
 import { Route as AdminPanelBansosIndexRouteImport } from './routes/admin/_panel/bansos/index'
 import { Route as AdminPanelBansosIdRouteImport } from './routes/admin/_panel/bansos/$id'
 import { Route as AdminPanelBukuIndexRouteImport } from './routes/admin/_panel/buku/index'
@@ -80,6 +83,16 @@ const AdminMasukRoute = AdminMasukRouteImport.update({
   path: '/admin/masuk',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WargaAppRoute = WargaAppRouteImport.update({
+  id: '/warga/_app',
+  path: '/warga',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WargaMasukRoute = WargaMasukRouteImport.update({
+  id: '/warga/masuk',
+  path: '/warga/masuk',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminPanelIndexRoute = AdminPanelIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -114,6 +127,11 @@ const AdminPanelPetaRoute = AdminPanelPetaRouteImport.update({
   id: '/peta',
   path: '/peta',
   getParentRoute: () => AdminPanelRoute,
+} as any)
+const WargaAppIndexRoute = WargaAppIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => WargaAppRoute,
 } as any)
 const AdminPanelBansosIndexRoute = AdminPanelBansosIndexRouteImport.update({
   id: '/bansos/',
@@ -342,6 +360,8 @@ export interface FileRoutesByFullPath {
   '/katalog': typeof KatalogRoute
   '/admin': typeof AdminPanelRouteWithChildren
   '/admin/masuk': typeof AdminMasukRoute
+  '/warga': typeof WargaAppRouteWithChildren
+  '/warga/masuk': typeof WargaMasukRoute
   '/admin/aset': typeof AdminPanelAsetRoute
   '/admin/kesehatan': typeof AdminPanelKesehatanRoute
   '/admin/keuangan': typeof AdminPanelKeuanganRoute
@@ -349,6 +369,7 @@ export interface FileRoutesByFullPath {
   '/admin/notifikasi': typeof AdminPanelNotifikasiRoute
   '/admin/peta': typeof AdminPanelPetaRoute
   '/admin/': typeof AdminPanelIndexRoute
+  '/warga/': typeof WargaAppIndexRoute
   '/admin/bansos/$id': typeof AdminPanelBansosIdRoute
   '/admin/buku/$kode': typeof AdminPanelBukuKodeRoute
   '/admin/kependudukan/statistik': typeof AdminPanelKependudukanStatistikRoute
@@ -393,6 +414,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/katalog': typeof KatalogRoute
   '/admin/masuk': typeof AdminMasukRoute
+  '/warga/masuk': typeof WargaMasukRoute
   '/admin/aset': typeof AdminPanelAsetRoute
   '/admin/kesehatan': typeof AdminPanelKesehatanRoute
   '/admin/keuangan': typeof AdminPanelKeuanganRoute
@@ -400,6 +422,7 @@ export interface FileRoutesByTo {
   '/admin/notifikasi': typeof AdminPanelNotifikasiRoute
   '/admin/peta': typeof AdminPanelPetaRoute
   '/admin': typeof AdminPanelIndexRoute
+  '/warga': typeof WargaAppIndexRoute
   '/admin/bansos/$id': typeof AdminPanelBansosIdRoute
   '/admin/buku/$kode': typeof AdminPanelBukuKodeRoute
   '/admin/kependudukan/statistik': typeof AdminPanelKependudukanStatistikRoute
@@ -446,6 +469,8 @@ export interface FileRoutesById {
   '/katalog': typeof KatalogRoute
   '/admin/_panel': typeof AdminPanelRouteWithChildren
   '/admin/masuk': typeof AdminMasukRoute
+  '/warga/_app': typeof WargaAppRouteWithChildren
+  '/warga/masuk': typeof WargaMasukRoute
   '/admin/_panel/aset': typeof AdminPanelAsetRoute
   '/admin/_panel/kesehatan': typeof AdminPanelKesehatanRoute
   '/admin/_panel/keuangan': typeof AdminPanelKeuanganRoute
@@ -453,6 +478,7 @@ export interface FileRoutesById {
   '/admin/_panel/notifikasi': typeof AdminPanelNotifikasiRoute
   '/admin/_panel/peta': typeof AdminPanelPetaRoute
   '/admin/_panel/': typeof AdminPanelIndexRoute
+  '/warga/_app/': typeof WargaAppIndexRoute
   '/admin/_panel/bansos/$id': typeof AdminPanelBansosIdRoute
   '/admin/_panel/buku/$kode': typeof AdminPanelBukuKodeRoute
   '/admin/_panel/kependudukan/statistik': typeof AdminPanelKependudukanStatistikRoute
@@ -500,6 +526,8 @@ export interface FileRouteTypes {
     | '/katalog'
     | '/admin'
     | '/admin/masuk'
+    | '/warga'
+    | '/warga/masuk'
     | '/admin/aset'
     | '/admin/kesehatan'
     | '/admin/keuangan'
@@ -507,6 +535,7 @@ export interface FileRouteTypes {
     | '/admin/notifikasi'
     | '/admin/peta'
     | '/admin/'
+    | '/warga/'
     | '/admin/bansos/$id'
     | '/admin/buku/$kode'
     | '/admin/kependudukan/statistik'
@@ -551,6 +580,7 @@ export interface FileRouteTypes {
     | '/'
     | '/katalog'
     | '/admin/masuk'
+    | '/warga/masuk'
     | '/admin/aset'
     | '/admin/kesehatan'
     | '/admin/keuangan'
@@ -558,6 +588,7 @@ export interface FileRouteTypes {
     | '/admin/notifikasi'
     | '/admin/peta'
     | '/admin'
+    | '/warga'
     | '/admin/bansos/$id'
     | '/admin/buku/$kode'
     | '/admin/kependudukan/statistik'
@@ -603,6 +634,8 @@ export interface FileRouteTypes {
     | '/katalog'
     | '/admin/_panel'
     | '/admin/masuk'
+    | '/warga/_app'
+    | '/warga/masuk'
     | '/admin/_panel/aset'
     | '/admin/_panel/kesehatan'
     | '/admin/_panel/keuangan'
@@ -610,6 +643,7 @@ export interface FileRouteTypes {
     | '/admin/_panel/notifikasi'
     | '/admin/_panel/peta'
     | '/admin/_panel/'
+    | '/warga/_app/'
     | '/admin/_panel/bansos/$id'
     | '/admin/_panel/buku/$kode'
     | '/admin/_panel/kependudukan/statistik'
@@ -656,6 +690,8 @@ export interface RootRouteChildren {
   KatalogRoute: typeof KatalogRoute
   AdminPanelRoute: typeof AdminPanelRouteWithChildren
   AdminMasukRoute: typeof AdminMasukRoute
+  WargaAppRoute: typeof WargaAppRouteWithChildren
+  WargaMasukRoute: typeof WargaMasukRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -686,6 +722,20 @@ declare module '@tanstack/react-router' {
       path: '/admin/masuk'
       fullPath: '/admin/masuk'
       preLoaderRoute: typeof AdminMasukRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/warga/_app': {
+      id: '/warga/_app'
+      path: '/warga'
+      fullPath: '/warga'
+      preLoaderRoute: typeof WargaAppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/warga/masuk': {
+      id: '/warga/masuk'
+      path: '/warga/masuk'
+      fullPath: '/warga/masuk'
+      preLoaderRoute: typeof WargaMasukRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/_panel/': {
@@ -736,6 +786,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/peta'
       preLoaderRoute: typeof AdminPanelPetaRouteImport
       parentRoute: typeof AdminPanelRoute
+    }
+    '/warga/_app/': {
+      id: '/warga/_app/'
+      path: '/'
+      fullPath: '/warga/'
+      preLoaderRoute: typeof WargaAppIndexRouteImport
+      parentRoute: typeof WargaAppRoute
     }
     '/admin/_panel/bansos/': {
       id: '/admin/_panel/bansos/'
@@ -1125,11 +1182,25 @@ const AdminPanelRouteWithChildren = AdminPanelRoute._addFileChildren(
   AdminPanelRouteChildren,
 )
 
+interface WargaAppRouteChildren {
+  WargaAppIndexRoute: typeof WargaAppIndexRoute
+}
+
+const WargaAppRouteChildren: WargaAppRouteChildren = {
+  WargaAppIndexRoute: WargaAppIndexRoute,
+}
+
+const WargaAppRouteWithChildren = WargaAppRoute._addFileChildren(
+  WargaAppRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   KatalogRoute: KatalogRoute,
   AdminPanelRoute: AdminPanelRouteWithChildren,
   AdminMasukRoute: AdminMasukRoute,
+  WargaAppRoute: WargaAppRouteWithChildren,
+  WargaMasukRoute: WargaMasukRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

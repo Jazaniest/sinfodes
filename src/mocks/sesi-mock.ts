@@ -26,7 +26,7 @@ export type WargaMasuk = { akun: AkunWarga; penduduk: Penduduk }
 
 /** Warga dari token layanan warga. Token panel admin tidak berlaku di sini, dan sebaliknya (fokus review 1). */
 export function wargaDariPermintaan(request: Request): WargaMasuk | null {
-  const cocok = /^Bearer warga.(.+)$/.exec(request.headers.get('Authorization') ?? '')
+  const cocok = /^Bearer warga\.(.+)$/.exec(request.headers.get('Authorization') ?? '')
   if (!cocok) return null
   const db = ambilDb()
   const akun = db.akunWarga.find((a) => a.pendudukId === cocok[1])

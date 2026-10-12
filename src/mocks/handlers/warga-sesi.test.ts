@@ -77,6 +77,8 @@ describe('masuk layanan warga (SPEC §10)', () => {
     await expect(ambilSesi()).rejects.toMatchObject({ kode: 'UNAUTHENTICATED' })
     aturTokenSesi('demo.pgn_rosmiati', 'warga')
     await expect(ambilSesiWarga()).rejects.toMatchObject({ kode: 'UNAUTHENTICATED' })
+    aturTokenSesi('warga_pdk_siti_rahmah', 'warga')
+    await expect(ambilSesiWarga()).rejects.toMatchObject({ kode: 'UNAUTHENTICATED' })
   })
 })
 

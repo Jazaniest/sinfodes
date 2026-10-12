@@ -31,7 +31,7 @@ export function RadioGroup({
       className={cn('flex flex-col gap-1.5', className)}
     >
       <Label className={gayaLabel}>{label}</Label>
-      <div className={cn('flex gap-x-5 gap-y-2', arah === 'mendatar' ? 'min-h-10 flex-wrap items-center' : 'flex-col')}>
+      <div className={cn('flex gap-x-5 gap-y-2', arah === 'mendatar' ? 'min-h-kontrol flex-wrap items-center' : 'flex-col')}>
         {pilihan.map((o) => (
           <Radio
             key={o.id}

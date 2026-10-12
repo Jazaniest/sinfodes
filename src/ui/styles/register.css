@@ -64,6 +64,10 @@
   --radius-2: 4px;
   --radius-penuh: 9999px;
 
+  /* Tinggi kontrol: isian 40px, tombol biasa 36px di panel admin; .skala-warga menaikkannya. */
+  --spacing-kontrol: 2.5rem;
+  --spacing-tombol: 2.25rem;
+
   --shadow-*: initial;
   --shadow-melayang: 0 8px 24px rgb(27 38 49 / 0.14);
 
@@ -101,6 +105,17 @@
   ::selection {
     background-color: var(--color-biru-muda);
   }
+}
+
+/* Layanan warga (SPEC §4.7, §10): token sama dengan skala lebih besar untuk HP — teks dasar 16px, kontrol 48px. */
+.skala-warga {
+  --text-teks: 1rem;
+  --text-teks--line-height: 1.5;
+  --text-teks-isian: 1rem;
+  --text-teks-kecil: 0.875rem;
+  --text-label: 0.75rem;
+  --spacing-kontrol: 3rem;
+  --spacing-tombol: 3rem;
 }
 
 @media (prefers-reduced-motion: reduce) {

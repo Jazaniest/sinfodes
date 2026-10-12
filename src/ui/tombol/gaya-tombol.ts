@@ -9,7 +9,7 @@ const VARIAN: Record<VarianTombol, string> = {
   teks: 'bg-transparent px-0.5 text-biru underline-offset-4 hover:underline',
   bahaya: 'bg-merah text-putih hover:brightness-95',
 }
-const UKURAN: Record<UkuranTombol, string> = { kecil: 'h-8 px-3 text-teks-kecil', biasa: 'h-9 px-4 text-teks' }
+const UKURAN: Record<UkuranTombol, string> = { kecil: 'h-8 px-3 text-teks-kecil', biasa: 'h-tombol px-4 text-teks' }
 
 /** Kelas tombol, dipakai Tombol dan TautanTombol supaya tampilannya sama persis. */
 export function kelasTombol(varian: VarianTombol, ukuran: UkuranTombol): string {
