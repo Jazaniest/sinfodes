@@ -48,6 +48,11 @@ import { Route as AdminPanelWebsiteAgendaRouteImport } from './routes/admin/_pan
 import { Route as AdminPanelWebsiteGaleriRouteImport } from './routes/admin/_panel/website/galeri'
 import { Route as AdminPanelWebsitePengumumanRouteImport } from './routes/admin/_panel/website/pengumuman'
 import { Route as AdminPanelWebsiteTampilanRouteImport } from './routes/admin/_panel/website/tampilan'
+import { Route as WargaAppKeluargaIndexRouteImport } from './routes/warga/_app/keluarga/index'
+import { Route as WargaAppKeluargaLaporRouteImport } from './routes/warga/_app/keluarga/lapor'
+import { Route as WargaAppPengaduanIndexRouteImport } from './routes/warga/_app/pengaduan/index'
+import { Route as WargaAppPengaduanIdRouteImport } from './routes/warga/_app/pengaduan/$id'
+import { Route as WargaAppPengaduanBaruRouteImport } from './routes/warga/_app/pengaduan/baru'
 import { Route as WargaAppRiwayatIndexRouteImport } from './routes/warga/_app/riwayat/index'
 import { Route as WargaAppRiwayatIdRouteImport } from './routes/warga/_app/riwayat/$id'
 import { Route as AdminPanelKependudukanKeluargaIndexRouteImport } from './routes/admin/_panel/kependudukan/keluarga/index'
@@ -273,6 +278,31 @@ const AdminPanelWebsiteTampilanRoute =
     path: '/website/tampilan',
     getParentRoute: () => AdminPanelRoute,
   } as any)
+const WargaAppKeluargaIndexRoute = WargaAppKeluargaIndexRouteImport.update({
+  id: '/keluarga/',
+  path: '/keluarga/',
+  getParentRoute: () => WargaAppRoute,
+} as any)
+const WargaAppKeluargaLaporRoute = WargaAppKeluargaLaporRouteImport.update({
+  id: '/keluarga/lapor',
+  path: '/keluarga/lapor',
+  getParentRoute: () => WargaAppRoute,
+} as any)
+const WargaAppPengaduanIndexRoute = WargaAppPengaduanIndexRouteImport.update({
+  id: '/pengaduan/',
+  path: '/pengaduan/',
+  getParentRoute: () => WargaAppRoute,
+} as any)
+const WargaAppPengaduanIdRoute = WargaAppPengaduanIdRouteImport.update({
+  id: '/pengaduan/$id',
+  path: '/pengaduan/$id',
+  getParentRoute: () => WargaAppRoute,
+} as any)
+const WargaAppPengaduanBaruRoute = WargaAppPengaduanBaruRouteImport.update({
+  id: '/pengaduan/baru',
+  path: '/pengaduan/baru',
+  getParentRoute: () => WargaAppRoute,
+} as any)
 const WargaAppRiwayatIndexRoute = WargaAppRiwayatIndexRouteImport.update({
   id: '/riwayat/',
   path: '/riwayat/',
@@ -411,6 +441,9 @@ export interface FileRoutesByFullPath {
   '/admin/website/galeri': typeof AdminPanelWebsiteGaleriRoute
   '/admin/website/pengumuman': typeof AdminPanelWebsitePengumumanRoute
   '/admin/website/tampilan': typeof AdminPanelWebsiteTampilanRoute
+  '/warga/keluarga/lapor': typeof WargaAppKeluargaLaporRoute
+  '/warga/pengaduan/$id': typeof WargaAppPengaduanIdRoute
+  '/warga/pengaduan/baru': typeof WargaAppPengaduanBaruRoute
   '/warga/riwayat/$id': typeof WargaAppRiwayatIdRoute
   '/admin/bansos/': typeof AdminPanelBansosIndexRoute
   '/admin/buku/': typeof AdminPanelBukuIndexRoute
@@ -420,6 +453,8 @@ export interface FileRoutesByFullPath {
   '/admin/pengaturan/': typeof AdminPanelPengaturanIndexRoute
   '/admin/surat/': typeof AdminPanelSuratIndexRoute
   '/admin/website/': typeof AdminPanelWebsiteIndexRoute
+  '/warga/keluarga/': typeof WargaAppKeluargaIndexRoute
+  '/warga/pengaduan/': typeof WargaAppPengaduanIndexRoute
   '/warga/riwayat/': typeof WargaAppRiwayatIndexRoute
   '/admin/kependudukan/keluarga/$id': typeof AdminPanelKependudukanKeluargaIdRoute
   '/admin/kependudukan/mutasi/datang': typeof AdminPanelKependudukanMutasiDatangRoute
@@ -468,6 +503,9 @@ export interface FileRoutesByTo {
   '/admin/website/galeri': typeof AdminPanelWebsiteGaleriRoute
   '/admin/website/pengumuman': typeof AdminPanelWebsitePengumumanRoute
   '/admin/website/tampilan': typeof AdminPanelWebsiteTampilanRoute
+  '/warga/keluarga/lapor': typeof WargaAppKeluargaLaporRoute
+  '/warga/pengaduan/$id': typeof WargaAppPengaduanIdRoute
+  '/warga/pengaduan/baru': typeof WargaAppPengaduanBaruRoute
   '/warga/riwayat/$id': typeof WargaAppRiwayatIdRoute
   '/admin/bansos': typeof AdminPanelBansosIndexRoute
   '/admin/buku': typeof AdminPanelBukuIndexRoute
@@ -477,6 +515,8 @@ export interface FileRoutesByTo {
   '/admin/pengaturan': typeof AdminPanelPengaturanIndexRoute
   '/admin/surat': typeof AdminPanelSuratIndexRoute
   '/admin/website': typeof AdminPanelWebsiteIndexRoute
+  '/warga/keluarga': typeof WargaAppKeluargaIndexRoute
+  '/warga/pengaduan': typeof WargaAppPengaduanIndexRoute
   '/warga/riwayat': typeof WargaAppRiwayatIndexRoute
   '/admin/kependudukan/keluarga/$id': typeof AdminPanelKependudukanKeluargaIdRoute
   '/admin/kependudukan/mutasi/datang': typeof AdminPanelKependudukanMutasiDatangRoute
@@ -528,6 +568,9 @@ export interface FileRoutesById {
   '/admin/_panel/website/galeri': typeof AdminPanelWebsiteGaleriRoute
   '/admin/_panel/website/pengumuman': typeof AdminPanelWebsitePengumumanRoute
   '/admin/_panel/website/tampilan': typeof AdminPanelWebsiteTampilanRoute
+  '/warga/_app/keluarga/lapor': typeof WargaAppKeluargaLaporRoute
+  '/warga/_app/pengaduan/$id': typeof WargaAppPengaduanIdRoute
+  '/warga/_app/pengaduan/baru': typeof WargaAppPengaduanBaruRoute
   '/warga/_app/riwayat/$id': typeof WargaAppRiwayatIdRoute
   '/admin/_panel/bansos/': typeof AdminPanelBansosIndexRoute
   '/admin/_panel/buku/': typeof AdminPanelBukuIndexRoute
@@ -537,6 +580,8 @@ export interface FileRoutesById {
   '/admin/_panel/pengaturan/': typeof AdminPanelPengaturanIndexRoute
   '/admin/_panel/surat/': typeof AdminPanelSuratIndexRoute
   '/admin/_panel/website/': typeof AdminPanelWebsiteIndexRoute
+  '/warga/_app/keluarga/': typeof WargaAppKeluargaIndexRoute
+  '/warga/_app/pengaduan/': typeof WargaAppPengaduanIndexRoute
   '/warga/_app/riwayat/': typeof WargaAppRiwayatIndexRoute
   '/admin/_panel/kependudukan/keluarga/$id': typeof AdminPanelKependudukanKeluargaIdRoute
   '/admin/_panel/kependudukan/mutasi/datang': typeof AdminPanelKependudukanMutasiDatangRoute
@@ -589,6 +634,9 @@ export interface FileRouteTypes {
     | '/admin/website/galeri'
     | '/admin/website/pengumuman'
     | '/admin/website/tampilan'
+    | '/warga/keluarga/lapor'
+    | '/warga/pengaduan/$id'
+    | '/warga/pengaduan/baru'
     | '/warga/riwayat/$id'
     | '/admin/bansos/'
     | '/admin/buku/'
@@ -598,6 +646,8 @@ export interface FileRouteTypes {
     | '/admin/pengaturan/'
     | '/admin/surat/'
     | '/admin/website/'
+    | '/warga/keluarga/'
+    | '/warga/pengaduan/'
     | '/warga/riwayat/'
     | '/admin/kependudukan/keluarga/$id'
     | '/admin/kependudukan/mutasi/datang'
@@ -646,6 +696,9 @@ export interface FileRouteTypes {
     | '/admin/website/galeri'
     | '/admin/website/pengumuman'
     | '/admin/website/tampilan'
+    | '/warga/keluarga/lapor'
+    | '/warga/pengaduan/$id'
+    | '/warga/pengaduan/baru'
     | '/warga/riwayat/$id'
     | '/admin/bansos'
     | '/admin/buku'
@@ -655,6 +708,8 @@ export interface FileRouteTypes {
     | '/admin/pengaturan'
     | '/admin/surat'
     | '/admin/website'
+    | '/warga/keluarga'
+    | '/warga/pengaduan'
     | '/warga/riwayat'
     | '/admin/kependudukan/keluarga/$id'
     | '/admin/kependudukan/mutasi/datang'
@@ -705,6 +760,9 @@ export interface FileRouteTypes {
     | '/admin/_panel/website/galeri'
     | '/admin/_panel/website/pengumuman'
     | '/admin/_panel/website/tampilan'
+    | '/warga/_app/keluarga/lapor'
+    | '/warga/_app/pengaduan/$id'
+    | '/warga/_app/pengaduan/baru'
     | '/warga/_app/riwayat/$id'
     | '/admin/_panel/bansos/'
     | '/admin/_panel/buku/'
@@ -714,6 +772,8 @@ export interface FileRouteTypes {
     | '/admin/_panel/pengaturan/'
     | '/admin/_panel/surat/'
     | '/admin/_panel/website/'
+    | '/warga/_app/keluarga/'
+    | '/warga/_app/pengaduan/'
     | '/warga/_app/riwayat/'
     | '/admin/_panel/kependudukan/keluarga/$id'
     | '/admin/_panel/kependudukan/mutasi/datang'
@@ -1017,6 +1077,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPanelWebsiteTampilanRouteImport
       parentRoute: typeof AdminPanelRoute
     }
+    '/warga/_app/keluarga/': {
+      id: '/warga/_app/keluarga/'
+      path: '/keluarga'
+      fullPath: '/warga/keluarga/'
+      preLoaderRoute: typeof WargaAppKeluargaIndexRouteImport
+      parentRoute: typeof WargaAppRoute
+    }
+    '/warga/_app/keluarga/lapor': {
+      id: '/warga/_app/keluarga/lapor'
+      path: '/keluarga/lapor'
+      fullPath: '/warga/keluarga/lapor'
+      preLoaderRoute: typeof WargaAppKeluargaLaporRouteImport
+      parentRoute: typeof WargaAppRoute
+    }
+    '/warga/_app/pengaduan/': {
+      id: '/warga/_app/pengaduan/'
+      path: '/pengaduan'
+      fullPath: '/warga/pengaduan/'
+      preLoaderRoute: typeof WargaAppPengaduanIndexRouteImport
+      parentRoute: typeof WargaAppRoute
+    }
+    '/warga/_app/pengaduan/$id': {
+      id: '/warga/_app/pengaduan/$id'
+      path: '/pengaduan/$id'
+      fullPath: '/warga/pengaduan/$id'
+      preLoaderRoute: typeof WargaAppPengaduanIdRouteImport
+      parentRoute: typeof WargaAppRoute
+    }
+    '/warga/_app/pengaduan/baru': {
+      id: '/warga/_app/pengaduan/baru'
+      path: '/pengaduan/baru'
+      fullPath: '/warga/pengaduan/baru'
+      preLoaderRoute: typeof WargaAppPengaduanBaruRouteImport
+      parentRoute: typeof WargaAppRoute
+    }
     '/warga/_app/riwayat/': {
       id: '/warga/_app/riwayat/'
       path: '/riwayat'
@@ -1262,7 +1357,12 @@ interface WargaAppRouteChildren {
   WargaAppAjukanRoute: typeof WargaAppAjukanRoute
   WargaAppAkunRoute: typeof WargaAppAkunRoute
   WargaAppIndexRoute: typeof WargaAppIndexRoute
+  WargaAppKeluargaLaporRoute: typeof WargaAppKeluargaLaporRoute
+  WargaAppPengaduanIdRoute: typeof WargaAppPengaduanIdRoute
+  WargaAppPengaduanBaruRoute: typeof WargaAppPengaduanBaruRoute
   WargaAppRiwayatIdRoute: typeof WargaAppRiwayatIdRoute
+  WargaAppKeluargaIndexRoute: typeof WargaAppKeluargaIndexRoute
+  WargaAppPengaduanIndexRoute: typeof WargaAppPengaduanIndexRoute
   WargaAppRiwayatIndexRoute: typeof WargaAppRiwayatIndexRoute
 }
 
@@ -1270,7 +1370,12 @@ const WargaAppRouteChildren: WargaAppRouteChildren = {
   WargaAppAjukanRoute: WargaAppAjukanRoute,
   WargaAppAkunRoute: WargaAppAkunRoute,
   WargaAppIndexRoute: WargaAppIndexRoute,
+  WargaAppKeluargaLaporRoute: WargaAppKeluargaLaporRoute,
+  WargaAppPengaduanIdRoute: WargaAppPengaduanIdRoute,
+  WargaAppPengaduanBaruRoute: WargaAppPengaduanBaruRoute,
   WargaAppRiwayatIdRoute: WargaAppRiwayatIdRoute,
+  WargaAppKeluargaIndexRoute: WargaAppKeluargaIndexRoute,
+  WargaAppPengaduanIndexRoute: WargaAppPengaduanIndexRoute,
   WargaAppRiwayatIndexRoute: WargaAppRiwayatIndexRoute,
 }
 

@@ -23,6 +23,9 @@ describe('Beranda warga (SPEC §10)', () => {
     expect(within(bantuan).getByText('BLT Dana Desa 2026')).toBeInTheDocument()
     expect(within(bantuan).getByText('Bantuan Pangan Beras 2026')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Ajukan surat' })).toHaveAttribute('href', '/warga/ajukan')
+    expect(screen.getByRole('link', { name: 'Keluarga saya' })).toHaveAttribute('href', '/warga/keluarga')
+    expect(screen.getByRole('link', { name: 'Sampaikan pengaduan' })).toHaveAttribute('href', '/warga/pengaduan/baru')
+    expect(screen.getByRole('link', { name: 'Pengaduan saya' })).toHaveAttribute('href', '/warga/pengaduan')
   })
   it('Zulkifli: SKU sedang diperbaiki; keluarganya tanpa balita, jadi tanpa jadwal posyandu', async () => {
     masukSebagaiWarga(AKUN_WARGA_UJI.zulkifli)
