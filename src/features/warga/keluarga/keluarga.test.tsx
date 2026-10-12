@@ -28,6 +28,8 @@ describe('Keluarga saya (SPEC §10)', () => {
     renderWarga(<KeluargaSaya />)
     const lapor = await screen.findByRole('link', { name: 'Ada data yang salah? Laporkan (Nur Aini)' })
     expect(lapor).toHaveAttribute('href', '/warga/keluarga/lapor?anggota=pdk_nur_aini')
+    // Aksi per anggota: setinggi kontrol warga (48px) supaya mudah diketuk (fokus review 4 tahap 4A).
+    expect(lapor).toHaveClass('min-h-tombol')
     const laporan = screen.getByRole('region', { name: 'Laporan saya' })
     expect(laporan).toHaveTextContent('Pekerjaan Syahrial: Wiraswasta')
     expect(laporan).toHaveTextContent('Sedang ditinjau kantor desa')

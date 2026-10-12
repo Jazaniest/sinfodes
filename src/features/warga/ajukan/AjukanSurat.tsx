@@ -108,6 +108,8 @@ export function AjukanSurat({ awal, kecilkan }: Props) {
   const ke = (tujuan: LangkahAjukan) => {
     setGalat({})
     setGagal(null)
+    // Pesan draf (mis. "pilih lagi fotonya") hanya untuk langkah tempat isian dilanjutkan.
+    setDariDraf(false)
     ubah({ langkah: tujuan })
   }
   const mulaiDariAwal = () => {

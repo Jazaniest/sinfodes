@@ -76,8 +76,8 @@ export const handlerWargaPengaduan = [
           oleh: null, rujukan,
         })
         kirimNotifikasi(d, {
-          desaId: a.desaId, untuk: 'pengaduan.tanggapi', kecuali: null, jenis: 'pengaduan-baru', judul: `${a.nomor} · ${judul}`,
-          isi: `${a.kategori} · ${a.pelapor.nama}`, waktu, rujukan,
+          desaId: a.desaId, untuk: 'pengaduan.tanggapi', kecuali: null, jenis: 'pengaduan-baru', judul: `Pengaduan baru: ${judul}`,
+          isi: `${a.kategori} · dari ${a.pelapor.nama}`, waktu, rujukan,
         })
       })
       return HttpResponse.json({ id: a.id, nomor: a.nomor }, { status: 201 })

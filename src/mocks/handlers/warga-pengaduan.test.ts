@@ -50,7 +50,10 @@ describe('Pengaduan dari layanan warga (SPEC §10)', () => {
       pelapor: { pendudukId: 'pdk_siti_rahmah', nama: 'Siti Rahmah' }, dusunId: 'dsn_ss_1',
     })
     expect(a?.percakapan).toEqual([expect.objectContaining({ jenis: 'warga', foto: { berkas: 'lampu.jpg', ukuranKb: 300 } })])
-    expect(ambilDb().notifikasi.some((n) => n.penggunaId === 'pgn_rosmiati' && n.jenis === 'pengaduan-baru' && n.rujukan?.id === hasil.id)).toBe(true)
+    // Kalimatnya sama dengan notifikasi pengaduan bawaan.
+    expect(ambilDb().notifikasi.find((n) => n.penggunaId === 'pgn_rosmiati' && n.jenis === 'pengaduan-baru' && n.rujukan?.id === hasil.id)).toMatchObject({
+      judul: 'Pengaduan baru: Lampu jalan di depan surau mati sejak Senin', isi: 'Infrastruktur · dari Siti Rahmah',
+    })
   })
   it('Kirim ulang dengan kunci sama tidak membuat pengaduan ganda (fokus review 1)', async () => {
     masukSebagaiWarga(AKUN_WARGA_UJI.siti)

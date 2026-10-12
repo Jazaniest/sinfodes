@@ -51,7 +51,7 @@ export function Select({
               key={o.id}
               id={o.id}
               textValue={o.label}
-              className="cursor-default px-3 py-2 text-teks outline-none data-[focused]:bg-biru-muda data-[selected]:font-medium"
+              className="flex min-h-pilihan cursor-default items-center px-3 py-2 text-teks outline-none data-[focused]:bg-biru-muda data-[selected]:font-medium"
             >
               {o.label}
             </ListBoxItem>

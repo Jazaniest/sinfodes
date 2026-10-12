@@ -116,8 +116,8 @@ export const handlerWargaAjukan = [
           oleh, rujukan,
         })
         kirimNotifikasi(d, {
-          desaId, untuk: 'surat.proses', kecuali: null, jenis: 'permohonan-baru', judul: `${jenis.kode} · ${pemohon.nama}`,
-          isi: 'Diajukan lewat layanan warga', waktu, rujukan,
+          desaId, untuk: 'surat.proses', kecuali: null, jenis: 'permohonan-baru', judul: `Permohonan baru: ${jenis.kode} · ${pemohon.nama}`,
+          isi: 'Diajukan lewat layanan warga. Periksa kelengkapan berkasnya.', waktu, rujukan,
         })
       })
       return HttpResponse.json({ id: p.id, tiket: nomorTiket(p) }, { status: 201 })

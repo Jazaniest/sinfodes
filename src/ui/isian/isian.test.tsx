@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 import { Checkbox } from './Checkbox'
+import { RadioGroup } from './RadioGroup'
 import { SearchField } from './SearchField'
 import { Select, type OpsiPilihan } from './Select'
 import { TextField } from './TextField'
@@ -56,6 +57,11 @@ describe('Select', () => {
     expect(onUbah).toHaveBeenCalledWith('dsn_ss_2')
     expect(screen.getByRole('button', { name: /Dusun II Sialang Jaya/ })).toBeInTheDocument()
   })
+  it('baris pilihan di daftar memakai token tinggi pilihan, jadi 48px di layanan warga', async () => {
+    render(<Select label="Dusun" pilihan={DUSUN} nilai={null} onUbah={() => {}} />)
+    await userEvent.click(screen.getByRole('button', { name: /Dusun/ }))
+    expect(screen.getByRole('option', { name: 'Dusun I Kampung Tengah' })).toHaveClass('min-h-pilihan')
+  })
 })
 
 describe('Checkbox', () => {
@@ -64,5 +70,12 @@ describe('Checkbox', () => {
     render(<Checkbox onChange={onChange}>Tampilkan penduduk meninggal</Checkbox>)
     await userEvent.click(screen.getByRole('checkbox', { name: 'Tampilkan penduduk meninggal' }))
     expect(onChange).toHaveBeenCalledWith(true)
+  })
+})
+
+describe('RadioGroup', () => {
+  it('baris pilihan memakai token tinggi pilihan, jadi 48px di layanan warga (fokus review 4 tahap 4A)', () => {
+    render(<RadioGroup label="Surat ini untuk" pilihan={[{ id: 'a', label: 'Saya sendiri' }]} nilai={null} onUbah={() => {}} arah="menurun" />)
+    expect(screen.getByRole('radio', { name: 'Saya sendiri' }).closest('label')).toHaveClass('min-h-pilihan')
   })
 })

@@ -64,9 +64,11 @@
   --radius-2: 4px;
   --radius-penuh: 9999px;
 
-  /* Tinggi kontrol: isian 40px, tombol biasa 36px di panel admin; .skala-warga menaikkannya. */
+  /* Tinggi kontrol: isian 40px, tombol biasa 36px di panel admin; .skala-warga menaikkannya.
+     Baris pilihan (radio) tanpa tinggi minimum di panel admin, 48px di layanan warga supaya mudah diketuk. */
   --spacing-kontrol: 2.5rem;
   --spacing-tombol: 2.25rem;
+  --spacing-pilihan: 0px;
 
   --shadow-*: initial;
   --shadow-melayang: 0 8px 24px rgb(27 38 49 / 0.14);
@@ -116,6 +118,7 @@
   --text-label: 0.75rem;
   --spacing-kontrol: 3rem;
   --spacing-tombol: 3rem;
+  --spacing-pilihan: 3rem;
 }
 
 @media (prefers-reduced-motion: reduce) {

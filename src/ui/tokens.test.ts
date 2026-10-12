@@ -32,6 +32,10 @@ describe('skala layanan warga (SPEC §4.7, §10)', () => {
     expect(css).toMatch(/--spacing-kontrol:\s*2\.5rem;/)
     expect(css).toMatch(/--spacing-tombol:\s*2\.25rem;/)
   })
+  it('baris pilihan (radio) setinggi 48px di layanan warga, tanpa tinggi minimum di panel admin', () => {
+    expect(blok).toMatch(/--spacing-pilihan:\s*3rem;/)
+    expect(css).toMatch(/--spacing-pilihan:\s*0px;/)
+  })
   it('isian dan tombol biasa memakai token tinggi, bukan tinggi tetap', () => {
     expect(gayaInput).toContain('h-kontrol')
     expect(gayaGrup).toContain('h-kontrol')

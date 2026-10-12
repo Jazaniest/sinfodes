@@ -69,7 +69,11 @@ function KartuAnggota({ a }: { a: AnggotaKeluargaWarga }) {
           { label: 'Nama ibu', nilai: a.namaIbu || null },
         ]}
       />
-      <Tautan href={`/warga/keluarga/lapor?anggota=${a.id}`} aria-label={`Ada data yang salah? Laporkan (${a.nama})`} className="self-start">
+      <Tautan
+        href={`/warga/keluarga/lapor?anggota=${a.id}`}
+        aria-label={`Ada data yang salah? Laporkan (${a.nama})`}
+        className="inline-flex min-h-tombol items-center self-start"
+      >
         Ada data yang salah? Laporkan
       </Tautan>
     </li>

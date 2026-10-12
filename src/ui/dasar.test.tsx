@@ -79,4 +79,15 @@ describe('tampilan keadaan', () => {
     expect(screen.getByRole('alert')).toHaveTextContent('NIK sudah terdaftar')
     expect(screen.getByRole('status')).toHaveTextContent('Draf dipulihkan')
   })
+  it('Banner dengan aksi: di wadah sempit (HP warga) aksi turun ke bawah teks, di wadah lebar di sampingnya', () => {
+    render(
+      <Banner judul="Melanjutkan isian yang tersimpan di HP ini" aksi={<Tombol varian="teks">Mulai dari awal</Tombol>}>
+        Isian Anda masih ada.
+      </Banner>,
+    )
+    expect(screen.getByRole('status')).toHaveClass('@container')
+    const kolom = screen.getByRole('button', { name: 'Mulai dari awal' }).parentElement?.parentElement
+    expect(kolom).toHaveClass('flex-col', '@md:flex-row')
+    expect(kolom).toHaveTextContent('Isian Anda masih ada.')
+  })
 })

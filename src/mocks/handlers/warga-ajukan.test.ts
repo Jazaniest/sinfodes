@@ -57,9 +57,10 @@ describe('Ajukan surat dari layanan warga (SPEC §10)', () => {
       ['KTP', 'ktp.jpg', 300], ['KK', 'kk.jpg', 300], ['Pengantar RT', 'pengantar-rt.jpg', 300],
     ])
     expect(p?.riwayat).toEqual([expect.objectContaining({ kejadian: 'diajukan', oleh: { id: 'pdk_siti_rahmah', nama: 'Siti Rahmah' } })])
+    // Kalimatnya sama dengan notifikasi permohonan online bawaan, supaya daftar notifikasi operator seragam.
     expect(
-      ambilDb().notifikasi.some((n) => n.penggunaId === 'pgn_rosmiati' && n.jenis === 'permohonan-baru' && n.rujukan?.id === hasil.id),
-    ).toBe(true)
+      ambilDb().notifikasi.find((n) => n.penggunaId === 'pgn_rosmiati' && n.jenis === 'permohonan-baru' && n.rujukan?.id === hasil.id),
+    ).toMatchObject({ judul: 'Permohonan baru: SKD · Siti Rahmah', isi: 'Diajukan lewat layanan warga. Periksa kelengkapan berkasnya.' })
     const riwayat = await daftarRiwayatWarga()
     expect(riwayat.data.find((r) => r.id === hasil.id)?.tiket).toBe(hasil.tiket)
   })

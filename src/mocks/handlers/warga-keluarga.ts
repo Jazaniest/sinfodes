@@ -1,6 +1,8 @@
 import { http, HttpResponse } from 'msw'
 import { hitungUmur, tanggalIsoWib, waktuIsoWib } from '@/domain/format/tanggal'
-import { kalimatPerbaikan, type IsiPerbaikan, type LaporanData } from '@/domain/laporan/schema'
+import type { IsiPerbaikan, LaporanData } from '@/domain/laporan/schema'
+import { teksNilaiRiwayat } from '@/domain/penduduk/perubahan'
+import { LABEL_FIELD } from '@/domain/penduduk/riwayat'
 import { HUBUNGAN_KELUARGA } from '@/domain/penduduk/enum'
 import { periksaFotoKirim, ukuranKb } from '@/domain/warga/foto'
 import { kirimLaporanWargaSchema, periksaNilaiLaporan, type KeluargaWarga, type LaporanWarga } from '@/domain/warga/keluarga'
@@ -110,8 +112,8 @@ export const handlerWargaKeluarga = [
         d.laporanData.push(laporan)
         catatKiriman(d, { kunci: m.kunci, pendudukId: w.penduduk.id, jenis: 'laporan', rujukanId: laporan.id })
         kirimNotifikasi(d, {
-          desaId: p.desaId, untuk: 'penduduk.ubah', kecuali: null, jenis: 'laporan-data', judul: `Laporan data · ${p.nama}`,
-          isi: kalimatPerbaikan(isi), waktu, rujukan: { jenis: 'penduduk', id: p.id },
+          desaId: p.desaId, untuk: 'penduduk.ubah', kecuali: null, jenis: 'laporan-data', judul: `Laporan perbaikan data dari ${w.penduduk.nama}`,
+          isi: `${LABEL_FIELD[isi.field]} ${p.nama} seharusnya ${teksNilaiRiwayat(isi.field, isi.nilaiBaru)}.`, waktu, rujukan: { jenis: 'penduduk', id: p.id },
         })
       })
       return HttpResponse.json(keLaporanWarga(ambilDb(), laporan), { status: 201 })

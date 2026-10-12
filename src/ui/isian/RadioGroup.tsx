@@ -36,7 +36,7 @@ export function RadioGroup({
           <Radio
             key={o.id}
             value={o.id}
-            className="group inline-flex cursor-default items-center gap-2 text-teks outline-none data-[disabled]:opacity-50"
+            className="group inline-flex min-h-pilihan cursor-default items-center gap-2 text-teks outline-none data-[disabled]:opacity-50"
           >
             <span
               aria-hidden

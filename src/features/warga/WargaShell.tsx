@@ -1,5 +1,5 @@
 import { ClockCounterClockwise, FilePlus, House, UserCircle } from '@phosphor-icons/react'
-import type { ReactNode } from 'react'
+import { useEffect, type ReactNode } from 'react'
 import { Link } from 'react-aria-components'
 import type { SesiWarga } from '@/domain/warga/sesi'
 import { cn } from '@/ui/cn'
@@ -20,6 +20,12 @@ type Props = { sesi: SesiWarga; jalur: string; children: ReactNode }
  * teks. Saat toolbar demo tampil, navigasi dan isi diberi ruang di bawah supaya tidak tertutup (fokus review 4).
  */
 export function WargaShell({ sesi, jalur, children }: Props) {
+  // Popover pilihan, dialog, dan toast dirender ke body (portal), di luar kerangka ini: skalanya ikut lewat body.
+  useEffect(() => {
+    document.body.classList.add('skala-warga')
+    return () => document.body.classList.remove('skala-warga')
+  }, [])
+
   return (
     <div className="skala-warga min-h-dvh bg-kertas text-teks text-tinta">
       <header className="border-b-[1.5px] border-tinta">

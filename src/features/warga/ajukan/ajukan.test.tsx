@@ -98,6 +98,8 @@ describe('Ajukan surat (SPEC §10)', () => {
     expect(screen.getByText('Foto lampiran tidak ikut tersimpan; pilih lagi fotonya.')).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Kembali' }))
     expect(screen.getByRole('textbox', { name: 'Keperluan' })).toHaveValue('pembukaan rekening bank')
+    // Sesudah warga berpindah langkah, pesan "pilih lagi fotonya" tidak lagi relevan.
+    expect(screen.queryByText('Melanjutkan isian yang tersimpan di HP ini')).not.toBeInTheDocument()
     kedua.unmount()
 
     masukSebagaiWarga(AKUN_WARGA_UJI.zulkifli)

@@ -49,7 +49,12 @@ describe('laporan data dari warga (SPEC §10, §5.3)', () => {
     expect(hasil).toMatchObject({ namaPenduduk: 'Nur Aini', field: 'golonganDarah', nilaiBaru: 'A', status: 'baru' })
     const l = ambilDb().laporanData.find((x) => x.id === hasil.id)
     expect(l).toMatchObject({ pelapor: { pendudukId: 'pdk_siti_rahmah' }, lampiran: { berkas: 'kartu-goldar.jpg', ukuranKb: 300 } })
-    expect(ambilDb().notifikasi.some((n) => n.penggunaId === 'pgn_rosmiati' && n.jenis === 'laporan-data')).toBe(true)
+    // Kalimatnya mengikuti notifikasi laporan perbaikan bawaan, ditambah nama penduduk yang datanya dilaporkan.
+    expect(
+      ambilDb().notifikasi.find((n) => n.penggunaId === 'pgn_rosmiati' && n.jenis === 'laporan-data' && n.rujukan?.id === 'pdk_nur_aini'),
+    ).toMatchObject({
+      judul: 'Laporan perbaikan data dari Siti Rahmah', isi: 'Golongan darah Nur Aini seharusnya A.',
+    })
   })
   it('foto boleh tidak dilampirkan; Kirim ulang dengan kunci sama tidak membuat laporan ganda (fokus review 1)', async () => {
     masukSebagaiWarga(AKUN_WARGA_UJI.siti)

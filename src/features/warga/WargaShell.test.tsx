@@ -27,6 +27,12 @@ describe('WargaShell (SPEC §4.4, §10)', () => {
     expect(within(nav).getByRole('link', { name: 'Beranda' })).toHaveAttribute('aria-current', 'page')
     expect(within(nav).getByRole('link', { name: 'Akun' })).not.toHaveAttribute('aria-current')
   })
+  it('popover pilihan dan dialog (dirender ke body) ikut skala warga; dilepas saat meninggalkan layanan warga', () => {
+    const { unmount } = pasang('/warga')
+    expect(document.body).toHaveClass('skala-warga')
+    unmount()
+    expect(document.body).not.toHaveClass('skala-warga')
+  })
   it('seluruh kerangka memakai skala warga; navigasi memberi ruang untuk toolbar demo (fokus review 4)', () => {
     const { container } = pasang('/warga')
     expect(container.firstElementChild).toHaveClass('skala-warga')
