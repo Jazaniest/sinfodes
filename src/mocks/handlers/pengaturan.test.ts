@@ -95,4 +95,14 @@ describe('Pengaturan desa (SPEC §8)', () => {
       fields: { formatNomor: 'Format wajib memuat tahun, karena nomor urut dimulai lagi setiap tahun.' },
     })
   })
+  it('penomoran per jenis surat wajib memuat kode jenis: SKTM dan SKP sama-sama berklasifikasi 400 (fokus review 3)', async () => {
+    masukSebagai(AKUN_UJI.sekdes)
+    expect(await galatDari(simpanPenomoran({ formatNomor: '{klasifikasi}/{urut}/{kodeDesa}/{bulanRomawi}/{tahun}', urutan: 'per-jenis', kodeSurat: 'SS' }))).toMatchObject({
+      kode: 'VALIDATION',
+      fields: { formatNomor: 'Urutan per jenis surat wajib memuat kode jenis surat, supaya nomor antar-jenis tidak kembar.' },
+    })
+    const baru = await simpanPenomoran({ formatNomor: '{klasifikasi}/{kodeJenis}/{urut}/{tahun}', urutan: 'per-jenis', kodeSurat: 'SS' })
+    expect(baru).toMatchObject({ formatNomor: '{klasifikasi}/{kodeJenis}/{urut}/{tahun}', urutan: 'per-jenis' })
+    expect(baru.contoh.kode).toMatch(/^[A-Z]+$/)
+  })
 })

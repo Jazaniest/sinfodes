@@ -483,7 +483,7 @@ export function bangkitkanSurat(acak: Acak, o: Opsi): HasilSurat {
     let kode = buatKodeVerifikasi(o.desa.kodeSurat, acak.angka)
     while (kodeTerpakai.has(kode)) kode = buatKodeVerifikasi(o.desa.kodeSurat, acak.angka)
     kodeTerpakai.add(kode)
-    const nomor = formatNomorSurat(FORMAT_NOMOR_BAWAAN, { klasifikasi: j.klasifikasi, urut, kodeDesa: o.desa.kodeSurat, tanggal })
+    const nomor = formatNomorSurat(FORMAT_NOMOR_BAWAAN, { klasifikasi: j.klasifikasi, kodeJenis: j.kode, urut, kodeDesa: o.desa.kodeSurat, tanggal })
     p.terbit = {
       nomor, tahun, urut, kodeVerifikasi: kode, pada: iso(ttd.ms),
       penandatangan: { id: ttd.oleh.id, nama: ttd.oleh.nama, peran: ttd.oleh.peran === 'sekdes' ? 'sekdes' : 'kades' },

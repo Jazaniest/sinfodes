@@ -53,7 +53,7 @@ function nomorBaru(db: DbDemo, p: Permohonan, jenis: JenisSurat, tanggal: string
   const kodeLama = new Set(db.permohonan.flatMap((x) => (x.terbit ? [x.terbit.kodeVerifikasi] : [])))
   let kode = buatKodeVerifikasi(kodeDesa, Math.random)
   while (kodeLama.has(kode)) kode = buatKodeVerifikasi(kodeDesa, Math.random)
-  const nomor = formatNomorSurat(pengaturan.formatNomor, { klasifikasi: jenis.klasifikasi, urut, kodeDesa, tanggal })
+  const nomor = formatNomorSurat(pengaturan.formatNomor, { klasifikasi: jenis.klasifikasi, kodeJenis: jenis.kode, urut, kodeDesa, tanggal })
   return { tahun, urut, nomor, kode, mode: pengaturan.modeTandaTangan }
 }
 

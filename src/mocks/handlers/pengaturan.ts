@@ -74,6 +74,7 @@ function penomoranDari(db: DbDemo, desa: Desa): Penomoran {
     kodeSurat: desa.kodeSurat,
     contoh: {
       jenis: contoh?.nama ?? 'Surat keterangan',
+      kode: contoh?.kode ?? 'SKD',
       klasifikasi: contoh?.klasifikasi ?? '470',
       urutPerTahun: urutBerikutnya(terpakai, { tahun, jenisKode, mode: 'per-tahun' }),
       urutPerJenis: urutBerikutnya(terpakai, { tahun, jenisKode, mode: 'per-jenis' }),

@@ -1,9 +1,10 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { getRouteApi, Outlet, useRouter, useRouterState } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
+import { ambilTokenSesi } from '@/api/client'
 import { opsiNotifikasi } from '@/api/notifikasi'
 import { opsiJumlahPengaduan } from '@/api/pengaduan'
-import { keluar } from '@/api/sesi'
+import { keluar, opsiSesi } from '@/api/sesi'
 import { opsiJumlahPermohonan } from '@/api/surat'
 import { hapusSesi } from '@/app/sesi'
 import { boleh } from '@/domain/pengguna/hak-akses'
@@ -17,7 +18,10 @@ const rute = getRouteApi('/admin/_panel')
 
 /** Layout semua halaman panel: sesi, kerangka, dan Ctrl/Cmd+K. */
 export function KerangkaPanel() {
-  const { sesi } = rute.useRouteContext()
+  const { sesi: sesiRute } = rute.useRouteContext()
+  // Ikuti cache sesi: menyimpan Identitas, Wilayah, atau Penomoran memuat ulang sesi, dan sidebar ikut berubah tanpa pindah halaman.
+  const sesiTerkini = useQuery({ ...opsiSesi(), enabled: ambilTokenSesi() !== null })
+  const sesi = sesiTerkini.data ?? sesiRute
   const jalur = useRouterState({ select: (s) => s.location.pathname })
   const router = useRouter()
   const queryClient = useQueryClient()

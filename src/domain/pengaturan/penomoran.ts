@@ -2,10 +2,11 @@ import { z } from 'zod'
 import { formatNomorSurat, type ModeUrutan } from '../surat/nomor-surat'
 
 /** Potongan nomor surat (SPEC §7.2). */
-export const KEPING_NOMOR = ['klasifikasi', 'urut', 'kodeDesa', 'bulanRomawi', 'tahun'] as const
+export const KEPING_NOMOR = ['klasifikasi', 'kodeJenis', 'urut', 'kodeDesa', 'bulanRomawi', 'tahun'] as const
 export type KepingNomor = (typeof KEPING_NOMOR)[number]
 export const LABEL_KEPING: Readonly<Record<KepingNomor, string>> = {
   klasifikasi: 'Kode klasifikasi',
+  kodeJenis: 'Kode jenis surat',
   urut: 'Nomor urut',
   kodeDesa: 'Kode desa',
   bulanRomawi: 'Bulan (Romawi)',
@@ -37,8 +38,9 @@ export function periksaFormat(keping: readonly KepingNomor[], urutan: ModeUrutan
   if (new Set(keping).size !== keping.length) return 'Setiap potongan hanya boleh dipakai sekali.'
   if (!keping.includes('urut')) return 'Format wajib memuat nomor urut.'
   if (!keping.includes('tahun')) return 'Format wajib memuat tahun, karena nomor urut dimulai lagi setiap tahun.'
-  if (urutan === 'per-jenis' && !keping.includes('klasifikasi')) {
-    return 'Urutan per jenis surat wajib memuat kode klasifikasi, supaya nomor antar-jenis tidak kembar.'
+  // Kode klasifikasi tidak cukup: beberapa jenis surat berbagi klasifikasi (SKTM dan SKP sama-sama 400).
+  if (urutan === 'per-jenis' && !keping.includes('kodeJenis')) {
+    return 'Urutan per jenis surat wajib memuat kode jenis surat, supaya nomor antar-jenis tidak kembar.'
   }
   return null
 }
@@ -66,6 +68,7 @@ export const penomoranSchema = z.object({
   kodeSurat: z.string(),
   contoh: z.object({
     jenis: z.string(),
+    kode: z.string(),
     klasifikasi: z.string(),
     urutPerTahun: z.number().int().min(1),
     urutPerJenis: z.number().int().min(1),
@@ -81,6 +84,7 @@ export function contohNomor(
 ): string {
   return formatNomorSurat(susunan.formatNomor, {
     klasifikasi: contoh.klasifikasi,
+    kodeJenis: contoh.kode,
     urut: susunan.urutan === 'per-tahun' ? contoh.urutPerTahun : contoh.urutPerJenis,
     kodeDesa: susunan.kodeSurat,
     tanggal,

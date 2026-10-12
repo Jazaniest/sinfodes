@@ -10,18 +10,16 @@ describe('bulanRomawi', () => {
 })
 
 describe('formatNomorSurat', () => {
-  it('format bawaan SPEC §7.2', () =>
-    expect(
-      formatNomorSurat(FORMAT_NOMOR_BAWAAN, { klasifikasi: '400', urut: 87, kodeDesa: 'SS', tanggal: '2026-09-24' }),
-    ).toBe('400/087/SS/IX/2026'))
+  const nilai = { klasifikasi: '400', kodeJenis: 'SKTM', urut: 87, kodeDesa: 'SS', tanggal: '2026-09-24' }
+  it('format bawaan SPEC §7.2', () => expect(formatNomorSurat(FORMAT_NOMOR_BAWAAN, nilai)).toBe('400/087/SS/IX/2026'))
   it('nomor urut di atas 999 tidak dipotong', () =>
-    expect(
-      formatNomorSurat(FORMAT_NOMOR_BAWAAN, { klasifikasi: '470', urut: 1004, kodeDesa: 'SS', tanggal: '2026-12-01' }),
-    ).toBe('470/1004/SS/XII/2026'))
-  it('potongan yang tidak dikenal dibiarkan', () =>
-    expect(formatNomorSurat('{x}/{urut}', { klasifikasi: '400', urut: 5, kodeDesa: 'SS', tanggal: '2026-01-02' })).toBe(
-      '{x}/005',
+    expect(formatNomorSurat(FORMAT_NOMOR_BAWAAN, { ...nilai, klasifikasi: '470', urut: 1004, tanggal: '2026-12-01' })).toBe(
+      '470/1004/SS/XII/2026',
     ))
+  it('kode jenis surat, untuk urutan per jenis', () =>
+    expect(formatNomorSurat('{kodeJenis}/{urut}/{tahun}', { ...nilai, urut: 5, tanggal: '2026-01-02' })).toBe('SKTM/005/2026'))
+  it('potongan yang tidak dikenal dibiarkan', () =>
+    expect(formatNomorSurat('{x}/{urut}', { ...nilai, urut: 5, tanggal: '2026-01-02' })).toBe('{x}/005'))
 })
 
 describe('urutBerikutnya', () => {

@@ -10,7 +10,7 @@ import {
   contohNomor, KEPING_NOMOR, LABEL_KEPING, pecahFormat, PEMISAH_NOMOR, periksaFormat, susunFormat, ubahPenomoranSchema,
   type KepingNomor, type PemisahNomor, type Penomoran as DataPenomoran,
 } from '@/domain/pengaturan/penomoran'
-import type { ModeUrutan } from '@/domain/surat/nomor-surat'
+import { FORMAT_NOMOR_BAWAAN, type ModeUrutan } from '@/domain/surat/nomor-surat'
 import { RadioGroup } from '@/ui/isian/RadioGroup'
 import { Select } from '@/ui/isian/Select'
 import { TextField } from '@/ui/isian/TextField'
@@ -34,8 +34,9 @@ type Props = { onKotor?: (kotor: boolean) => void; sekarang?: Date }
 /** Formulir dari data tersimpan. Format yang tidak tersusun dari potongan dimulai lagi dari format bawaan. */
 function formDari(p: DataPenomoran): { form: FormNomor; dikenali: boolean } {
   const susunan = pecahFormat(p.formatNomor)
+  const bawaan = pecahFormat(FORMAT_NOMOR_BAWAAN)
   return {
-    form: { keping: susunan?.keping ?? [...KEPING_NOMOR], pemisah: susunan?.pemisah ?? '/', urutan: p.urutan, kodeSurat: p.kodeSurat },
+    form: { keping: susunan?.keping ?? bawaan?.keping ?? [], pemisah: susunan?.pemisah ?? '/', urutan: p.urutan, kodeSurat: p.kodeSurat },
     dikenali: susunan !== null,
   }
 }

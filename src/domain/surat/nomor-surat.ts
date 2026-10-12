@@ -13,11 +13,12 @@ export function bulanRomawi(bulan: number): string {
 
 export function formatNomorSurat(
   format: string,
-  nilai: { klasifikasi: string; urut: number; kodeDesa: string; tanggal: string },
+  nilai: { klasifikasi: string; kodeJenis: string; urut: number; kodeDesa: string; tanggal: string },
 ): string {
   const [tahun, bulan] = nilai.tanggal.split('-').map(Number)
   const pengganti: Record<string, string> = {
     klasifikasi: nilai.klasifikasi,
+    kodeJenis: nilai.kodeJenis,
     urut: String(nilai.urut).padStart(3, '0'),
     kodeDesa: nilai.kodeDesa,
     bulanRomawi: bulanRomawi(bulan),
