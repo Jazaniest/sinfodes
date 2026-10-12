@@ -4,18 +4,29 @@ export type BagianFormulir = { id: string; judul: string }
 
 type Props = { label: string; bagian: readonly BagianFormulir[]; aksi: ReactNode; children: ReactNode }
 
-/**
- * Formulir panjang (SPEC §6.4): indeks bagian menempel di kiri (layar ≥ 1024px), bilah aksi menempel di bawah.
- * Indeks memakai tautan ke bagian, tetapi pindahnya lewat scrollIntoView supaya URL halaman tidak berubah.
- */
-export function FormulirBagian({ label, bagian, aksi, children }: Props) {
+/** Bilah aksi yang menempel di bawah formulir. Menandai <html> supaya toast naik di atasnya (lihat PenampungToast). */
+export function BilahAksi({ children }: { children: ReactNode }) {
   useEffect(() => {
-    // Penanda di <html> supaya toast naik di atas bilah aksi (lihat PenampungToast).
     document.documentElement.dataset.bilahAksi = ''
     return () => {
       delete document.documentElement.dataset.bilahAksi
     }
   }, [])
+  return (
+    <div
+      // Di layar sempit, toolbar demo melebar di bawah; tombol dinaikkan di atasnya supaya tidak tertutup.
+      className="sticky bottom-0 z-10 mt-6 flex flex-wrap items-center justify-end gap-2 border-t border-garis bg-kertas py-3 max-sm:[html[data-demo-toolbar]_&]:pb-18"
+    >
+      {children}
+    </div>
+  )
+}
+
+/**
+ * Formulir panjang (SPEC §6.4): indeks bagian menempel di kiri (layar ≥ 1024px), bilah aksi menempel di bawah.
+ * Indeks memakai tautan ke bagian, tetapi pindahnya lewat scrollIntoView supaya URL halaman tidak berubah.
+ */
+export function FormulirBagian({ label, bagian, aksi, children }: Props) {
   return (
     <div className="grid gap-8 lg:grid-cols-[12rem_minmax(0,1fr)]">
       <nav aria-label={`Bagian ${label.toLowerCase()}`} className="hidden lg:block">
@@ -40,12 +51,7 @@ export function FormulirBagian({ label, bagian, aksi, children }: Props) {
       </nav>
       <div className="min-w-0">
         {children}
-        <div
-          // Di layar sempit, toolbar demo melebar di bawah; tombol dinaikkan di atasnya supaya tidak tertutup.
-          className="sticky bottom-0 z-10 mt-6 flex flex-wrap items-center justify-end gap-2 border-t border-garis bg-kertas py-3 max-sm:[html[data-demo-toolbar]_&]:pb-18"
-        >
-          {aksi}
-        </div>
+        <BilahAksi>{aksi}</BilahAksi>
       </div>
     </div>
   )
