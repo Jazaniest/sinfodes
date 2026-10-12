@@ -40,8 +40,8 @@ export function PinField({ label = 'PIN', nilai, onUbah, galat, keterangan, auto
               key={i}
               className={cn(
                 'flex size-kontrol items-center justify-center rounded-1 border bg-lembar text-judul-bagian text-tinta',
-                galat ? 'border-merah' : 'border-garis-input',
-                fokus && i === posisi && 'border-biru ring-2 ring-biru/25',
+                // cn tidak menyelesaikan bentrokan kelas: hanya satu warna tepi yang boleh dipasang.
+                fokus && i === posisi ? 'border-biru ring-2 ring-biru/25' : galat ? 'border-merah' : 'border-garis-input',
               )}
             >
               {i < nilai.length ? '•' : ''}

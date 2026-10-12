@@ -28,6 +28,16 @@ describe('PinField (SPEC §4.4, §10)', () => {
     await user.paste('246 810')
     expect(input).toHaveValue('246810')
   })
+  it('saat difokus, kotak berikutnya bertepi biru saja (kelas tepi tidak bentrok)', async () => {
+    render(<PinTerkendali />)
+    const input = screen.getByLabelText('PIN')
+    const user = userEvent.setup()
+    await user.click(input)
+    await user.keyboard('12')
+    const kotak = input.parentElement?.firstElementChild?.children[2]
+    expect(kotak).toHaveClass('border-biru')
+    expect(kotak).not.toHaveClass('border-garis-input')
+  })
   it('galat dibacakan dan kolom ditandai tidak valid', () => {
     render(<PinTerkendali galat="NIK atau PIN salah." />)
     expect(screen.getByLabelText('PIN')).toHaveAttribute('aria-invalid', 'true')
