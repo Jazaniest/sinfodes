@@ -25,4 +25,11 @@ describe('halaman di Ctrl+K (SPEC §5.4)', () => {
       label: 'Balita pendek (stunting)', keterangan: 'Kesehatan', href: '/admin/kesehatan?status=pendek', kemampuan: 'kesehatan.lihat',
     })
   })
+  it('halaman Tata kelola dan Peta desa bisa dicari (3B)', () => {
+    expect(HALAMAN_CARI).toContainEqual({ label: 'APBDes dan keuangan', keterangan: 'Halaman', href: '/admin/keuangan', kemampuan: 'keuangan.lihat' })
+    expect(HALAMAN_CARI).toContainEqual({ label: 'Aset desa', keterangan: 'Halaman', href: '/admin/aset', kemampuan: 'aset.lihat' })
+    expect(HALAMAN_CARI).toContainEqual({ label: 'Peta desa', keterangan: 'Halaman', href: '/admin/peta', kemampuan: null })
+    expect(HALAMAN_CARI).toContainEqual({ label: 'Lembaga desa', keterangan: 'Halaman', href: '/admin/lembaga', kemampuan: null })
+    expect(HALAMAN_CARI).toContainEqual({ label: 'Pembangunan', keterangan: 'Halaman', href: '/admin/pembangunan', kemampuan: null })
+  })
 })

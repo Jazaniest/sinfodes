@@ -29,6 +29,16 @@ export const MENU_ADMIN: readonly KelompokMenu[] = [
       { label: 'Kependudukan', href: '/admin/kependudukan/penduduk', kemampuan: 'penduduk.lihat', awalan: '/admin/kependudukan', hitungan: null },
       { label: 'Bantuan Sosial', href: '/admin/bansos', kemampuan: 'bansos.lihat', awalan: '/admin/bansos', hitungan: null },
       { label: 'Kesehatan', href: '/admin/kesehatan', kemampuan: 'kesehatan.lihat', awalan: '/admin/kesehatan', hitungan: null },
+      { label: 'Peta Desa', href: '/admin/peta', kemampuan: null, awalan: '/admin/peta', hitungan: null },
+    ],
+  },
+  {
+    judul: 'Tata kelola',
+    item: [
+      { label: 'Keuangan', href: '/admin/keuangan', kemampuan: 'keuangan.lihat', awalan: '/admin/keuangan', hitungan: null },
+      { label: 'Pembangunan', href: '/admin/pembangunan', kemampuan: null, awalan: '/admin/pembangunan', hitungan: null },
+      { label: 'Aset Desa', href: '/admin/aset', kemampuan: 'aset.lihat', awalan: '/admin/aset', hitungan: null },
+      { label: 'Lembaga Desa', href: '/admin/lembaga', kemampuan: null, awalan: '/admin/lembaga', hitungan: null },
     ],
   },
 ]

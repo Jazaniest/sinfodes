@@ -10,12 +10,18 @@ const item = (nama: string): ItemMenu => {
 }
 
 describe('menu admin (SPEC §5.1, §5.2)', () => {
-  it('operator: Beranda, Layanan Surat, Pengaduan, Kependudukan, Bantuan Sosial, Kesehatan', () =>
-    expect(label('operator')).toEqual(['Beranda', 'Layanan Surat', 'Pengaduan', 'Kependudukan', 'Bantuan Sosial', 'Kesehatan']))
-  it('kelompok mengikuti SPEC: Pelayanan sebelum Data desa', () =>
-    expect(menuUntuk('kades').map((k) => k.judul)).toEqual([null, 'Pelayanan', 'Data desa']))
+  it('operator: semua menu yang sudah dibangun, menurut kelompok SPEC §5.2', () =>
+    expect(label('operator')).toEqual([
+      'Beranda', 'Layanan Surat', 'Pengaduan', 'Kependudukan', 'Bantuan Sosial', 'Kesehatan', 'Peta Desa', 'Keuangan', 'Pembangunan',
+      'Aset Desa', 'Lembaga Desa',
+    ]))
+  it('kelompok mengikuti SPEC: Pelayanan, Data desa, lalu Tata kelola', () =>
+    expect(menuUntuk('kades').map((k) => k.judul)).toEqual([null, 'Pelayanan', 'Data desa', 'Tata kelola']))
   it('Kepala Dusun melihat Layanan Surat (dusunnya)', () => expect(label('kadus')).toContain('Layanan Surat'))
-  it('Kaur Keuangan: Beranda saja; kelompok kosong disembunyikan', () => expect(menuUntuk('kaur-keuangan')).toEqual([MENU_ADMIN[0]]))
+  it('Kaur Keuangan: Peta Desa dan Tata kelola; kelompok Pelayanan disembunyikan', () => {
+    expect(label('kaur-keuangan')).toEqual(['Beranda', 'Peta Desa', 'Keuangan', 'Pembangunan', 'Aset Desa', 'Lembaga Desa'])
+    expect(menuUntuk('kaur-keuangan').map((k) => k.judul)).toEqual([null, 'Data desa', 'Tata kelola'])
+  })
   it('angka menu Layanan Surat memakai kunci "surat"; menu lain tanpa angka', () => {
     expect(item('Layanan Surat').hitungan).toBe('surat')
     expect(item('Kependudukan').hitungan).toBeNull()
@@ -38,6 +44,13 @@ describe('menu admin (SPEC §5.1, §5.2)', () => {
   })
   it('Kepala Dusun melihat Pengaduan, Bantuan Sosial, dan Kesehatan; Kaur Keuangan tidak (fokus review 4)', () => {
     expect(label('kadus')).toEqual(expect.arrayContaining(['Pengaduan', 'Bantuan Sosial', 'Kesehatan']))
-    expect(label('kaur-keuangan')).toEqual(['Beranda'])
+    for (const m of ['Pengaduan', 'Bantuan Sosial', 'Kesehatan']) expect(label('kaur-keuangan')).not.toContain(m)
+  })
+  it('Kepala Dusun tanpa Keuangan dan Aset; Peta, Pembangunan, dan Lembaga untuk semua peran (fokus review 2)', () => {
+    expect(label('kadus')).not.toContain('Keuangan')
+    expect(label('kadus')).not.toContain('Aset Desa')
+    for (const peran of ['operator', 'sekdes', 'kades', 'kaur-keuangan', 'kadus'] as const) {
+      expect(label(peran)).toEqual(expect.arrayContaining(['Peta Desa', 'Pembangunan', 'Lembaga Desa']))
+    }
   })
 })
