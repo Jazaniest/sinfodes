@@ -10,7 +10,7 @@ import { useMediaQuery } from '@/ui/hooks/useMediaQuery'
 import { Hitungan } from '@/ui/hitungan/Hitungan'
 import { Drawer } from '@/ui/lapisan/Drawer'
 import { MenuAksi } from '@/ui/lapisan/Menu'
-import { LABEL_HITUNGAN, MENU_BAWAH, menuAktif, menuUntuk, type ItemMenu, type KunciHitungan } from './navigasi'
+import { LABEL_HITUNGAN, menuAktif, menuBawahUntuk, menuUntuk, type ItemMenu, type KunciHitungan } from './navigasi'
 
 type Props = {
   sesi: SesiAdmin
@@ -51,7 +51,7 @@ function IsiNavigasi({ sesi, jalur, onCari, onKeluar, onPilih, hitungan }: Omit<
   return (
     <div className="flex h-full flex-col gap-5 px-4 py-5">
       <div className="flex items-center gap-3">
-        <LambangDesa nama={desa.nama} />
+        <LambangDesa nama={desa.nama} gambar={desa.lambang} />
         <div className="min-w-0">
           <p className="truncate font-serif font-medium">Desa {desa.nama}</p>
           <p className="truncate text-teks-kecil text-tinta-2">
@@ -89,7 +89,7 @@ function IsiNavigasi({ sesi, jalur, onCari, onKeluar, onPilih, hitungan }: Omit<
       </nav>
       <nav aria-label="Menu lain" className="border-t border-garis pt-3">
         <ul>
-          {MENU_BAWAH.map((i) => (
+          {menuBawahUntuk(pengguna.peran).map((i) => (
             <li key={i.href}>
               <TautanMenu item={i} jalur={jalur} onPilih={onPilih} hitungan={hitungan} />
             </li>
@@ -131,7 +131,7 @@ export function AdminShell({ children, ...nav }: Props) {
         </aside>
       ) : (
         <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-garis bg-kertas-2 px-4 print:hidden">
-          <LambangDesa nama={nav.sesi.desa.nama} />
+          <LambangDesa nama={nav.sesi.desa.nama} gambar={nav.sesi.desa.lambang} />
           <p className="min-w-0 flex-1 truncate font-serif font-medium">Desa {nav.sesi.desa.nama}</p>
           <Button aria-label="Cari" onPress={nav.onCari} className={cn('rounded-1 p-2', fokus)}>
             <MagnifyingGlass aria-hidden size={18} />

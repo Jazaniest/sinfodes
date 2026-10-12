@@ -32,6 +32,7 @@ export function dataLembar(d: BahanLembar, k: KonteksLembarLayar): Omit<PropsLem
     alamat: k.desa.alamatKantor,
     kodePos: k.desa.kodePos,
     surel: k.desa.surel,
+    lambang: k.desa.lambang ?? null,
   }
   const jabatan = `Kepala Desa ${k.desa.nama}`
   const umum = { kop, kertas: d.pengaturan.kertas, huruf: d.pengaturan.huruf, simulasi: MODE_DEMO }

@@ -32,7 +32,7 @@ describe('dataLembar (SPEC §7.4, §7.5)', () => {
     expect(l.verifikasi).toBeNull()
     expect(l.kop).toEqual({
       kabupaten: 'Pelalawan', kecamatan: 'Teluk Meranti', desa: 'Sungai Sialang',
-      alamat: 'Jalan Lintas Teluk Meranti Km 4, Sungai Sialang', kodePos: '28353', surel: 'pemdes@sungaisialang.desa.id',
+      alamat: 'Jalan Lintas Teluk Meranti Km 4, Sungai Sialang', kodePos: '28353', surel: 'pemdes@sungaisialang.desa.id', lambang: null,
     })
     expect(l.tandaTangan).toEqual({
       tempatTanggal: 'Sungai Sialang, 24 September 2026', jabatan: 'Kepala Desa Sungai Sialang', atasNama: null,
@@ -52,5 +52,9 @@ describe('dataLembar (SPEC §7.4, §7.5)', () => {
       nama: 'Hendri Saputra', mode: 'tte', qr: { isi: isiQr, kode: 'SS-7K3M-Q9TD' },
     })
     expect(l.verifikasi).toEqual({ kode: 'SS-7K3M-Q9TD', domain: 'sungaisialang.desa.id', isiQr })
+  })
+  it('lambang yang diunggah desa ikut ke kop surat (3C)', () => {
+    const lambang = `data:image/png;base64,${'A'.repeat(64)}`
+    expect(dataLembar(detail(), { ...KONTEKS, desa: { ...desa, lambang } }).kop.lambang).toBe(lambang)
   })
 })

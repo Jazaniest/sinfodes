@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Peran } from '@/domain/pengguna/schema'
-import { angkaPengaduan, MENU_ADMIN, menuAktif, menuUntuk, type ItemMenu } from './navigasi'
+import { angkaPengaduan, MENU_ADMIN, menuAktif, menuBawahUntuk, menuUntuk, type ItemMenu } from './navigasi'
 
 const label = (peran: Peran) => menuUntuk(peran).flatMap((k) => k.item.map((i) => i.label))
 const item = (nama: string): ItemMenu => {
@@ -13,13 +13,13 @@ describe('menu admin (SPEC §5.1, §5.2)', () => {
   it('operator: semua menu yang sudah dibangun, menurut kelompok SPEC §5.2', () =>
     expect(label('operator')).toEqual([
       'Beranda', 'Layanan Surat', 'Pengaduan', 'Kependudukan', 'Bantuan Sosial', 'Kesehatan', 'Peta Desa', 'Keuangan', 'Pembangunan',
-      'Aset Desa', 'Lembaga Desa',
+      'Aset Desa', 'Lembaga Desa', 'Buku Administrasi', 'Website Desa',
     ]))
   it('kelompok mengikuti SPEC: Pelayanan, Data desa, lalu Tata kelola', () =>
     expect(menuUntuk('kades').map((k) => k.judul)).toEqual([null, 'Pelayanan', 'Data desa', 'Tata kelola']))
   it('Kepala Dusun melihat Layanan Surat (dusunnya)', () => expect(label('kadus')).toContain('Layanan Surat'))
   it('Kaur Keuangan: Peta Desa dan Tata kelola; kelompok Pelayanan disembunyikan', () => {
-    expect(label('kaur-keuangan')).toEqual(['Beranda', 'Peta Desa', 'Keuangan', 'Pembangunan', 'Aset Desa', 'Lembaga Desa'])
+    expect(label('kaur-keuangan')).toEqual(['Beranda', 'Peta Desa', 'Keuangan', 'Pembangunan', 'Aset Desa', 'Lembaga Desa', 'Buku Administrasi'])
     expect(menuUntuk('kaur-keuangan').map((k) => k.judul)).toEqual([null, 'Data desa', 'Tata kelola'])
   })
   it('angka menu Layanan Surat memakai kunci "surat"; menu lain tanpa angka', () => {
@@ -52,5 +52,15 @@ describe('menu admin (SPEC §5.1, §5.2)', () => {
     for (const peran of ['operator', 'sekdes', 'kades', 'kaur-keuangan', 'kadus'] as const) {
       expect(label(peran)).toEqual(expect.arrayContaining(['Peta Desa', 'Pembangunan', 'Lembaga Desa']))
     }
+  })
+  it('kelompok Publikasi dan menu Pengaturan hanya untuk Operator dan Sekdes; Kepala Dusun tanpa Buku Administrasi (3C, fokus review 1)', () => {
+    expect(menuUntuk('operator').map((k) => k.judul)).toEqual([null, 'Pelayanan', 'Data desa', 'Tata kelola', 'Publikasi'])
+    expect(label('sekdes')).toEqual(expect.arrayContaining(['Buku Administrasi', 'Website Desa']))
+    for (const peran of ['kades', 'kaur-keuangan', 'kadus'] as const) expect(label(peran)).not.toContain('Website Desa')
+    expect(label('kadus')).not.toContain('Buku Administrasi')
+    const bawah = (peran: Peran) => menuBawahUntuk(peran).map((i) => i.label)
+    expect(bawah('operator')).toEqual(['Pengaturan', 'Notifikasi'])
+    expect(bawah('sekdes')).toEqual(['Pengaturan', 'Notifikasi'])
+    for (const peran of ['kades', 'kaur-keuangan', 'kadus'] as const) expect(bawah(peran)).toEqual(['Notifikasi'])
   })
 })

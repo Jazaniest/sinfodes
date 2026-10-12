@@ -1,6 +1,15 @@
 import { LambangTiruan } from './LambangTiruan'
 
-export type DataKop = { kabupaten: string; kecamatan: string; desa: string; alamat: string; kodePos: string; surel: string }
+export type DataKop = {
+  kabupaten: string
+  kecamatan: string
+  desa: string
+  alamat: string
+  kodePos: string
+  surel: string
+  /** Lambang yang diunggah desa (data URL); kosong berarti lambang tiruan netral (SPEC §7.5). */
+  lambang?: string | null
+}
 
 const kapital = (teks: string) => teks.toLocaleUpperCase('id-ID')
 
@@ -10,7 +19,12 @@ export function KopSurat({ kop }: { kop: DataKop }) {
   return (
     <header>
       <div className="grid grid-cols-[2.2cm_1fr_2.2cm] items-center">
-        <LambangTiruan className="size-[2.2cm]" />
+        {kop.lambang ? (
+          // Dekoratif: nama desa tertulis di kop.
+          <img src={kop.lambang} alt="" className="size-[2.2cm] object-contain" />
+        ) : (
+          <LambangTiruan className="size-[2.2cm]" />
+        )}
         <div className="text-center leading-tight font-bold">
           <p className="text-[14pt]">PEMERINTAH KABUPATEN {kapital(kop.kabupaten)}</p>
           <p className="text-[14pt]">KECAMATAN {kapital(kop.kecamatan)}</p>

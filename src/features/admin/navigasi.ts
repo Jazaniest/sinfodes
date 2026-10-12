@@ -39,7 +39,12 @@ export const MENU_ADMIN: readonly KelompokMenu[] = [
       { label: 'Pembangunan', href: '/admin/pembangunan', kemampuan: null, awalan: '/admin/pembangunan', hitungan: null },
       { label: 'Aset Desa', href: '/admin/aset', kemampuan: 'aset.lihat', awalan: '/admin/aset', hitungan: null },
       { label: 'Lembaga Desa', href: '/admin/lembaga', kemampuan: null, awalan: '/admin/lembaga', hitungan: null },
+      { label: 'Buku Administrasi', href: '/admin/buku', kemampuan: 'buku.lihat', awalan: '/admin/buku', hitungan: null },
     ],
+  },
+  {
+    judul: 'Publikasi',
+    item: [{ label: 'Website Desa', href: '/admin/website', kemampuan: 'website.kelola', awalan: '/admin/website', hitungan: null }],
   },
 ]
 
@@ -47,10 +52,16 @@ export const MENU_ADMIN: readonly KelompokMenu[] = [
 export const angkaPengaduan = (peran: Peran, baru: number | undefined): number | undefined =>
   boleh(peran, 'pengaduan.tanggapi') ? baru : undefined
 
-/** Menu di bawah garis (SPEC §5.2). Pengaturan menyusul di Tahap 3. */
+/** Menu di bawah garis (SPEC §5.2). */
 export const MENU_BAWAH: readonly ItemMenu[] = [
+  { label: 'Pengaturan', href: '/admin/pengaturan', kemampuan: 'pengaturan.kelola', awalan: '/admin/pengaturan', hitungan: null },
   { label: 'Notifikasi', href: '/admin/notifikasi', kemampuan: null, awalan: '/admin/notifikasi', hitungan: 'notifikasi' },
 ]
+
+/** Menu di bawah garis yang boleh dibuka peran ini; yang tidak berhak disembunyikan (SPEC §5.1). */
+export function menuBawahUntuk(peran: Peran): ItemMenu[] {
+  return MENU_BAWAH.filter((i) => i.kemampuan === null || boleh(peran, i.kemampuan))
+}
 
 /** Menu yang tidak berhak diakses disembunyikan, bukan dinonaktifkan (SPEC §5.1). */
 export function menuUntuk(peran: Peran): KelompokMenu[] {

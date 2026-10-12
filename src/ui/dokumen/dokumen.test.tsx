@@ -87,6 +87,15 @@ describe('LembarSurat (SPEC §7.5)', () => {
     lembar({ kertas: 'F4', huruf: 'Arimo' })
     expect(screen.getByRole('article')).toHaveClass('min-h-[33cm]', 'w-[21.5cm]', 'font-surat-arimo')
   })
+  it('kop memakai lambang yang diunggah desa; tanpa unggahan memakai lambang tiruan netral (3C)', () => {
+    const lambang = `data:image/png;base64,${'A'.repeat(64)}`
+    const dengan = lembar({ kop: { ...KOP, lambang } })
+    expect(dengan.container.querySelector('header img')).toHaveAttribute('src', lambang)
+    dengan.unmount()
+    const tanpa = lembar()
+    expect(tanpa.container.querySelector('header img')).toBeNull()
+    expect(tanpa.container.querySelector('header svg')).not.toBeNull()
+  })
 })
 
 describe('QrVerifikasi', () => {

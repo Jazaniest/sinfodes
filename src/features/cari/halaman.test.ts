@@ -32,4 +32,15 @@ describe('halaman di Ctrl+K (SPEC §5.4)', () => {
     expect(HALAMAN_CARI).toContainEqual({ label: 'Lembaga desa', keterangan: 'Halaman', href: '/admin/lembaga', kemampuan: null })
     expect(HALAMAN_CARI).toContainEqual({ label: 'Pembangunan', keterangan: 'Halaman', href: '/admin/pembangunan', kemampuan: null })
   })
+  it('halaman Buku Administrasi, Website Desa, dan Pengaturan bisa dicari (3C)', () => {
+    expect(HALAMAN_CARI).toContainEqual({ label: 'Buku administrasi', keterangan: 'Halaman', href: '/admin/buku', kemampuan: 'buku.lihat' })
+    expect(HALAMAN_CARI).toContainEqual({ label: 'Tampilan website', keterangan: 'Website Desa', href: '/admin/website/tampilan', kemampuan: 'website.kelola' })
+    expect(HALAMAN_CARI).toContainEqual({
+      label: 'Pengguna dan peran', keterangan: 'Pengaturan', href: '/admin/pengaturan/pengguna', kemampuan: 'pengguna.kelola',
+    })
+    expect(HALAMAN_CARI).toContainEqual({
+      label: 'Penomoran surat', keterangan: 'Pengaturan', href: '/admin/pengaturan/penomoran', kemampuan: 'pengaturan.kelola',
+    })
+    expect(new Set(HALAMAN_CARI.map((h) => h.href)).size).toBe(HALAMAN_CARI.length)
+  })
 })

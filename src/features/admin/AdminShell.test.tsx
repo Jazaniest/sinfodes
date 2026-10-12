@@ -56,6 +56,22 @@ describe('AdminShell (SPEC §5.2, §5.7)', () => {
     )
     expect(screen.getByRole('link', { name: 'Notifikasi, 3 belum dibaca' })).toHaveAttribute('href', '/admin/notifikasi')
   })
+  it('menu Pengaturan di bawah garis untuk Operator; lambang unggahan tampil di kepala sidebar (3C)', () => {
+    const lambang = `data:image/png;base64,${'A'.repeat(64)}`
+    const sesi = contohSesi('operator')
+    const { container } = render(
+      <AdminShell sesi={{ ...sesi, desa: { ...sesi.desa, lambang } }} jalur="/admin/pengaturan" onCari={vi.fn()} onKeluar={vi.fn()}>
+        <p>isi</p>
+      </AdminShell>,
+    )
+    const lain = screen.getByRole('navigation', { name: 'Menu lain' })
+    expect(within(lain).getByRole('link', { name: 'Pengaturan' })).toHaveAttribute('aria-current', 'page')
+    expect(container.querySelector(`img[src="${lambang}"]`)).not.toBeNull()
+  })
+  it('Kepala Dusun tidak melihat menu Pengaturan', () => {
+    pasang('kadus')
+    expect(screen.queryByRole('link', { name: 'Pengaturan' })).not.toBeInTheDocument()
+  })
 })
 
 describe('ButuhAkses (SPEC §3.5)', () => {
