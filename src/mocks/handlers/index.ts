@@ -25,6 +25,9 @@ import { handlerSuratAksi } from './surat-aksi'
 import { handlerSuratLoket } from './surat-loket'
 import { handlerTataKelola } from './tata-kelola'
 import { handlerWarga } from './warga'
+import { handlerWargaAjukan } from './warga-ajukan'
+import { handlerWargaKeluarga } from './warga-keluarga'
+import { handlerWargaPengaduan } from './warga-pengaduan'
 import { handlerWargaSesi } from './warga-sesi'
 import { handlerWebsite } from './website'
 
@@ -36,5 +39,5 @@ export const handlers = [
   ...handlerNotifikasi, ...handlerPengaduan, ...handlerBansos, ...handlerKesehatan,
   ...handlerKeuangan, ...handlerPembangunan, ...handlerTataKelola,
   ...handlerPengaturan, ...handlerPenggunaDesa, ...handlerWebsite, ...handlerBuku,
-  ...handlerWargaSesi, ...handlerWarga,
+  ...handlerWargaSesi, ...handlerWarga, ...handlerWargaAjukan, ...handlerWargaKeluarga, ...handlerWargaPengaduan,
 ]

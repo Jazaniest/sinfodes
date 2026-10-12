@@ -6,7 +6,7 @@ const isiPerbaikan: IsiPerbaikan = {
 }
 const laporan: LaporanData = {
   id: 'lap_1', desaId: 'desa_sungai_sialang', dusunId: 'dsn_ss_1', dibuatPada: '2026-09-23T07:00:00+07:00',
-  pelapor: { pendudukId: 'pdk_siti_rahmah', nama: 'Siti Rahmah' }, status: 'baru', ditangani: null, isi: isiPerbaikan,
+  pelapor: { pendudukId: 'pdk_siti_rahmah', nama: 'Siti Rahmah' }, status: 'baru', ditangani: null, lampiran: null, isi: isiPerbaikan,
 }
 
 describe('laporan data dari warga (SPEC §6.3, §10)', () => {

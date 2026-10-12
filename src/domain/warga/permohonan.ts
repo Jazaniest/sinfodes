@@ -21,6 +21,8 @@ export const ringkasPermohonanWargaSchema = z.object({
   untuk: z.object({ id: z.string(), nama: z.string() }),
   posisi: z.string(),
   nomor: z.string().nullable(),
+  /** Nomor tiket untuk ditanyakan ke kantor desa, mis. "2026-0581". */
+  tiket: z.string(),
 })
 export type RingkasPermohonanWarga = z.infer<typeof ringkasPermohonanWargaSchema>
 

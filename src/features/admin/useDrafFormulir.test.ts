@@ -58,4 +58,11 @@ describe('draf formulir (SPEC §6.4)', () => {
     expect(localStorage.getItem('sinfodes.draf.penduduk.tambah.umum.pgn_rosmiati')).toBeNull()
     expect(localStorage.getItem('sinfodes.demo.toolbar')).toBe('terbuka')
   })
+  it('hapusSemuaDraf dengan awalan hanya menghapus draf berawalan itu (fokus review 4)', () => {
+    localStorage.setItem('sinfodes.draf.warga.ajukan.pdk_siti_rahmah', 'x')
+    localStorage.setItem('sinfodes.draf.penduduk.tambah.umum.pgn_rosmiati', 'y')
+    hapusSemuaDraf('warga.')
+    expect(localStorage.getItem('sinfodes.draf.warga.ajukan.pdk_siti_rahmah')).toBeNull()
+    expect(localStorage.getItem('sinfodes.draf.penduduk.tambah.umum.pgn_rosmiati')).toBe('y')
+  })
 })

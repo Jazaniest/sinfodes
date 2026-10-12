@@ -37,4 +37,13 @@ describe('sesi warga di perangkat (fokus review 1)', () => {
     expect(ambilTokenSesi()).toBe('demo.pgn_rosmiati')
     expect(qc.getQueryData(['surat', 'jumlah'])).toBe(7)
   })
+  it('keluar menghapus draf warga; draf panel admin tetap (fokus review 4)', () => {
+    const qc = new QueryClient()
+    pasangSesiWarga('warga.pdk_siti_rahmah', contohSesiWarga(), qc)
+    localStorage.setItem('sinfodes.draf.warga.ajukan.pdk_siti_rahmah', 'x')
+    localStorage.setItem('sinfodes.draf.penduduk.tambah.umum.pgn_rosmiati', 'y')
+    keluarWarga(qc)
+    expect(localStorage.getItem('sinfodes.draf.warga.ajukan.pdk_siti_rahmah')).toBeNull()
+    expect(localStorage.getItem('sinfodes.draf.penduduk.tambah.umum.pgn_rosmiati')).toBe('y')
+  })
 })

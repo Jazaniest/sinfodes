@@ -23,7 +23,7 @@ import type { Agenda, Artikel, FotoGaleri, Pengumuman, TampilanWebsite } from '@
 import type { Desa, Dusun } from '@/domain/wilayah/schema'
 
 /** Naikkan setiap kali seed atau struktur data berubah; data lama di IndexedDB otomatis diganti (SPEC §12). */
-export const VERSI_DATA = 9
+export const VERSI_DATA = 11
 
 /** Berkas impor yang sudah diperiksa dan menunggu konfirmasi (SPEC §6.8). */
 export type SesiImpor = { id: string; desaId: string; olehId: string; laporan: LaporanImpor; selesai: boolean }
@@ -36,6 +36,9 @@ export type AkunWarga = { pendudukId: string; desaId: string; pin: string; whats
 
 /** Pengaman percobaan masuk warga, per NIK yang diketik, termasuk NIK yang tidak terdaftar (SPEC §10). */
 export type PercobaanMasukWarga = { nik: string; gagal: number; terkunciSampai: string | null }
+
+/** Kunci kiriman dari HP warga: Kirim ulang dengan kunci yang sama mengembalikan hasil pertama (SPEC §10). */
+export type KirimanWarga = { kunci: string; pendudukId: string; jenis: 'permohonan' | 'laporan' | 'pengaduan'; rujukanId: string }
 
 export type DbDemo = {
   versiData: number
@@ -88,4 +91,5 @@ export type DbDemo = {
   /** Layanan mandiri warga (SPEC §10). */
   akunWarga: AkunWarga[]
   percobaanMasukWarga: PercobaanMasukWarga[]
+  kirimanWarga: KirimanWarga[]
 }

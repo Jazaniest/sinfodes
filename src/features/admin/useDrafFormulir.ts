@@ -20,11 +20,14 @@ export function bacaDraf<T>(kunci: string, cocok: (isi: unknown) => isi is T): D
   }
 }
 
-/** Hapus semua draf formulir di perangkat ini. Dipanggil saat keluar, karena draf bisa berisi NIK. */
-export function hapusSemuaDraf(): void {
+/**
+ * Hapus draf formulir di perangkat ini. Dipanggil saat keluar, karena draf bisa berisi NIK.
+ * `awalan` membatasi ke draf satu bagian, mis. 'warga.' untuk layanan warga.
+ */
+export function hapusSemuaDraf(awalan = ''): void {
   try {
     const kunci = Array.from({ length: localStorage.length }, (_, i) => localStorage.key(i)).filter(
-      (k): k is string => k !== null && k.startsWith(AWALAN),
+      (k): k is string => k !== null && k.startsWith(AWALAN + awalan),
     )
     for (const k of kunci) localStorage.removeItem(k)
   } catch {

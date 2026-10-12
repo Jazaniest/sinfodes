@@ -23,7 +23,7 @@ export function bangkitkanLaporan(opsi: { desaId: string; penduduk: readonly Pen
     {
       id: 'lap_pekerjaan_syahrial', desaId: opsi.desaId, dusunId: syahrial.dusunId,
       dibuatPada: waktuIsoWib(new Date(t - 26 * JAM_MS)),
-      pelapor: { pendudukId: siti.id, nama: siti.nama }, status: 'baru', ditangani: null,
+      pelapor: { pendudukId: siti.id, nama: siti.nama }, status: 'baru', ditangani: null, lampiran: null,
       isi: {
         jenis: 'perbaikan', pendudukId: syahrial.id, field: 'pekerjaan', nilaiBaru: 'Wiraswasta',
         catatan: 'Sudah dua tahun berjualan ikan asap di rumah, tidak melaut lagi.',
@@ -32,7 +32,7 @@ export function bangkitkanLaporan(opsi: { desaId: string; penduduk: readonly Pen
     {
       id: 'lap_kelahiran_rosnani', desaId: opsi.desaId, dusunId: rosnani.dusunId,
       dibuatPada: waktuIsoWib(new Date(t - JAM_MS)),
-      pelapor: { pendudukId: zulkifli.id, nama: zulkifli.nama }, status: 'baru', ditangani: null,
+      pelapor: { pendudukId: zulkifli.id, nama: zulkifli.nama }, status: 'baru', ditangani: null, lampiran: null,
       isi: {
         jenis: 'kelahiran', ibuId: rosnani.id, nama: 'Nayla Safitri', jenisKelamin: 'P',
         tanggalLahir: tanggalIsoWib(new Date(t - 72 * JAM_MS)), jam: '05:20', tempatDilahirkan: 'Puskesmas',

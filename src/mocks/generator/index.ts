@@ -135,5 +135,6 @@ export function bangkitkanDb(sekarang: Date): DbDemo {
     // Tanpa PRNG: data tahap sebelumnya tetap identik.
     akunWarga: AKUN_WARGA_DEMO.map(({ pendudukId, desaId, pin, whatsapp }) => ({ pendudukId, desaId, pin, whatsapp })),
     percobaanMasukWarga: [],
+    kirimanWarga: [],
   }
 }

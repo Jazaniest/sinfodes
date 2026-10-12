@@ -2,6 +2,7 @@ import { http, HttpResponse } from 'msw'
 import { hitungUmur, tanggalIsoWib } from '@/domain/format/tanggal'
 import { jadwalBerikut } from '@/domain/kesehatan/schema'
 import type { Permohonan } from '@/domain/surat/permohonan'
+import { nomorTiket } from '@/domain/warga/ajukan'
 import type { BerandaWarga } from '@/domain/warga/beranda'
 import {
   milikWarga, posisiPermohonan, riwayatUntukWarga, tampilDiBeranda,
@@ -34,6 +35,7 @@ function ringkasUntukWarga(db: DbDemo, p: Permohonan): RingkasPermohonanWarga {
       status: p.status, tahap: p.tahap, dikembalikan: p.dikembalikan !== null, diambil: p.diambil !== null, mode: p.terbit?.mode ?? null,
     }),
     nomor: p.terbit?.nomor ?? null,
+    tiket: nomorTiket(p),
   }
 }
 

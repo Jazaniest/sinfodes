@@ -51,6 +51,8 @@ export const laporanDataSchema = z.object({
   pelapor: z.object({ pendudukId: z.string(), nama: z.string() }),
   status: z.enum(STATUS_LAPORAN),
   ditangani: z.object({ oleh: pelakuSchema, pada: waktu, alasan: z.string().nullable() }).nullable(),
+  /** Foto dokumen dari warga (opsional): nama dan ukurannya saja, seperti lampiran permohonan. */
+  lampiran: z.object({ berkas: z.string().min(1), ukuranKb: z.number().int().min(1) }).nullable(),
   isi: isiLaporanSchema,
 })
 export type LaporanData = z.infer<typeof laporanDataSchema>
