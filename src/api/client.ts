@@ -3,18 +3,27 @@ import { galatSchema } from '@/domain/api'
 import { GalatApi } from './galat'
 
 const BASE = import.meta.env.VITE_API_BASE || '/api/v1'
-let tokenSesi: string | null = null
+/** Panel admin dan layanan warga punya sesi sendiri; keduanya bisa aktif bersamaan di satu peramban. */
+export type BagianSesi = 'admin' | 'warga'
+const tokenSesi: Record<BagianSesi, string | null> = { admin: null, warga: null }
 
-export function aturTokenSesi(token: string | null): void {
-  tokenSesi = token
+export function aturTokenSesi(token: string | null, bagian: BagianSesi = 'admin'): void {
+  tokenSesi[bagian] = token
 }
-export function ambilTokenSesi(): string | null {
-  return tokenSesi
+export function ambilTokenSesi(bagian: BagianSesi = 'admin'): string | null {
+  return tokenSesi[bagian]
 }
 
 type Metode = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE'
 type Query = Record<string, string | number | undefined | null>
-type Opsi<T> = { skema: z.ZodType<T>; query?: Query; body?: unknown; signal?: AbortSignal }
+type Opsi<T> = {
+  skema: z.ZodType<T>
+  query?: Query
+  body?: unknown
+  signal?: AbortSignal
+  /** Token yang dipakai; bawaannya token panel admin. Endpoint `/warga/…` memakai `'warga'`. */
+  sesi?: BagianSesi
+}
 
 function buatUrl(jalur: string, query?: Query): URL {
   const asal = typeof window === 'undefined' ? 'http://localhost' : window.location.origin
@@ -31,7 +40,8 @@ export async function panggilApi<T>(metode: Metode, jalur: string, opsi: Opsi<T>
   // FormData (unggah berkas): Content-Type beserta batasnya diisi browser sendiri.
   const formulir = opsi.body instanceof FormData
   if (opsi.body !== undefined && !formulir) headers['Content-Type'] = 'application/json'
-  if (tokenSesi) headers.Authorization = `Bearer ${tokenSesi}`
+  const token = tokenSesi[opsi.sesi ?? 'admin']
+  if (token) headers.Authorization = `Bearer ${token}`
 
   let respons: Response
   try {

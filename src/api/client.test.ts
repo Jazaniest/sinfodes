@@ -19,6 +19,7 @@ beforeAll(async () => {
 afterEach(() => {
   serverUji.resetHandlers()
   aturTokenSesi(null)
+  aturTokenSesi(null, 'warga')
 })
 afterAll(() => serverUji.close())
 
@@ -74,5 +75,26 @@ describe('unggah berkas (2A-3)', () => {
     await panggilApi('POST', '/uji-unggah', { skema: z.object({ ok: z.boolean() }), body: isi })
     expect(jenis).toMatch(/^multipart\/form-data; boundary=/)
     expect(nama).toBe('data.csv')
+  })
+})
+
+describe('token per bagian (4A)', () => {
+  it('permintaan warga memakai token warga; permintaan lain memakai token admin (fokus review 1)', async () => {
+    const terlihat: (string | null)[] = []
+    serverUji.use(
+      http.get('*/api/v1/uji-token', ({ request }) => {
+        terlihat.push(request.headers.get('Authorization'))
+        return HttpResponse.json({ ok: true })
+      }),
+    )
+    const skema = z.object({ ok: z.boolean() })
+    aturTokenSesi('demo.pgn_rosmiati')
+    aturTokenSesi('warga.pdk_siti_rahmah', 'warga')
+    await panggilApi('GET', '/uji-token', { skema })
+    await panggilApi('GET', '/uji-token', { skema, sesi: 'warga' })
+    aturTokenSesi(null)
+    await panggilApi('GET', '/uji-token', { skema, sesi: 'warga' })
+    await panggilApi('GET', '/uji-token', { skema })
+    expect(terlihat).toEqual(['Bearer demo.pgn_rosmiati', 'Bearer warga.pdk_siti_rahmah', 'Bearer warga.pdk_siti_rahmah', null])
   })
 })

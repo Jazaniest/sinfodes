@@ -16,6 +16,9 @@ export const AKUN_UJI = {
   kadus: 'pgn_sukardi',
 } as const
 
+/** Akun layanan warga demo (SPEC §12.9): ID penduduknya. */
+export const AKUN_WARGA_UJI = { siti: 'pdk_siti_rahmah', zulkifli: 'pdk_zulkifli' } as const
+
 type OpsiApiTiruan = {
   /** Muat ulang data seed sebelum setiap uji. Wajib untuk uji yang menulis data, supaya uji tidak saling memengaruhi. */
   dbSegarTiapUji?: boolean
@@ -39,6 +42,7 @@ export function pakaiApiTiruan({ dbSegarTiapUji = false }: OpsiApiTiruan = {}): 
     serverUji.events.removeAllListeners()
     aturModeJaringan('instan')
     aturTokenSesi(null)
+    aturTokenSesi(null, 'warga')
   })
   afterAll(() => {
     serverUji.close()
@@ -48,4 +52,8 @@ export function pakaiApiTiruan({ dbSegarTiapUji = false }: OpsiApiTiruan = {}): 
 
 export function masukSebagai(penggunaId: string): void {
   aturTokenSesi(`demo.${penggunaId}`)
+}
+
+export function masukSebagaiWarga(pendudukId: string): void {
+  aturTokenSesi(`warga.${pendudukId}`, 'warga')
 }

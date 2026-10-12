@@ -31,3 +31,6 @@ export const AKUN_DEMO_ADMIN = PENGGUNA_DEMO.filter((p) => p.desaId === ID_SUNGA
   peran,
   email,
 }))
+
+/** Akun layanan warga untuk tombol masuk di halaman demo (SPEC §12.9). */
+export { AKUN_WARGA_DEMO as AKUN_DEMO_WARGA } from './data/warga-demo'

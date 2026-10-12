@@ -1,5 +1,6 @@
 import { waktuIsoWib } from '@/domain/format/tanggal'
 import { DESA_DEMO, DUSUN_DEMO, ID_SUNGAI_SIALANG, PENGGUNA_DEMO } from '../data/desa-demo'
+import { AKUN_WARGA_DEMO } from '../data/warga-demo'
 import { buatAcak } from '../prng'
 import { VERSI_DATA, type DbDemo } from '../tipe-db'
 import { pengaturanBawaan } from '@/domain/surat/pengaturan'
@@ -131,5 +132,8 @@ export function bangkitkanDb(sekarang: Date): DbDemo {
     agenda: website.agenda,
     galeri: website.galeri,
     tampilanWebsite: [website.tampilan],
+    // Tanpa PRNG: data tahap sebelumnya tetap identik.
+    akunWarga: AKUN_WARGA_DEMO.map(({ pendudukId, desaId, pin, whatsapp }) => ({ pendudukId, desaId, pin, whatsapp })),
+    percobaanMasukWarga: [],
   }
 }
