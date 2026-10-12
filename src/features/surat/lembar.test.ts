@@ -4,7 +4,7 @@ import type { DetailPermohonan, Permohonan, Terbit } from '@/domain/surat/permoh
 import { contohPenduduk } from '@/test/contoh'
 import { contohJenis, contohPermohonan } from '@/test/contoh-surat'
 import { contohSesi } from '@/test/sesi'
-import { dataLembar, MODE_DEMO } from './lembar'
+import { dataLembar, lembarTerbit, MODE_DEMO } from './lembar'
 
 const { desa, dusun } = contohSesi()
 const detail = (ubah: Partial<Permohonan> = {}): DetailPermohonan => ({
@@ -56,5 +56,12 @@ describe('dataLembar (SPEC §7.4, §7.5)', () => {
   it('lambang yang diunggah desa ikut ke kop surat (3C)', () => {
     const lambang = `data:image/png;base64,${'A'.repeat(64)}`
     expect(dataLembar(detail(), { ...KONTEKS, desa: { ...desa, lambang } }).kop.lambang).toBe(lambang)
+  })
+})
+
+describe('lembarTerbit (layanan warga, 4A)', () => {
+  it('sama dengan lembar surat terbit di ruang kerja, tanpa butuh data pemohon', () => {
+    const d = detail({ status: 'selesai', terbit: TERBIT })
+    expect(lembarTerbit(TERBIT, d.pengaturan, desa, KONTEKS.asal)).toEqual(dataLembar(d, KONTEKS))
   })
 })
