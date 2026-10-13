@@ -99,7 +99,13 @@ export type RingkasanKonsol = z.infer<typeof ringkasanKonsolSchema>
 
 /** POST /konsol/desa (SPEC §11: Tambah desa). Kode desa 4 angka berawalan 2: desa, bukan kelurahan. */
 export const tambahDesaSchema = z.object({
-  nama: z.string().trim().min(3, 'Nama desa minimal 3 huruf.').max(60, 'Nama desa paling panjang 60 huruf.'),
+  nama: z
+    .string()
+    .trim()
+    .min(3, 'Nama desa minimal 3 huruf.')
+    .max(60, 'Nama desa paling panjang 60 huruf.')
+    // Slug (alamat website dan ID) dibentuk dari huruf dan angka ini; tanpa keduanya slug kosong dan desa tidak sah.
+    .regex(/[a-z0-9]/i, 'Nama desa harus memuat huruf atau angka.'),
   kecamatan: z.string().regex(/^\d{2}\.\d{2}\.\d{2}$/, 'Pilih kecamatan.'),
   kodeDesa: z.string().trim().regex(/^2\d{3}$/, 'Kode desa 4 angka berawalan 2, mis. 2015.'),
   paket: z.enum(PAKET),

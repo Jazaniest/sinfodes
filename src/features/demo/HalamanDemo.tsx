@@ -12,7 +12,8 @@ import { pasangSesiWarga } from '@/features/warga/masuk-warga'
 import { tampilkanToast } from '@/ui/toast/antrean'
 import { Tombol } from '@/ui/tombol/Tombol'
 import { Skeleton } from '@/ui/umpan-balik/Skeleton'
-import { masukDemo, masukKonsolDemo } from './masuk-demo'
+import { masukDemo } from './masuk-demo'
+import { masukKonsolDemo } from './masuk-konsol-demo'
 import { useKendaliDemo } from './useKendaliDemo'
 
 /** Halaman `/`: pintu masuk demo. Hanya menampilkan bagian yang sudah dibangun (tidak ada tombol mati). */

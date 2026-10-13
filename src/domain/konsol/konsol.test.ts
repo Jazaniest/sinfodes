@@ -77,4 +77,10 @@ describe('aturan Konsol Sinfodes (SPEC §11)', () => {
       tambahDesaSchema.parse({ nama: ' Koto Damar ', kecamatan: '14.01.17', kodeDesa: '2061', paket: 'Lengkap', email: ' Admin@KotoDamar.desa.id ' }),
     ).toEqual({ nama: 'Koto Damar', kecamatan: '14.01.17', kodeDesa: '2061', paket: 'Lengkap', email: 'admin@kotodamar.desa.id' })
   })
+  it('nama desa tanpa huruf atau angka ditolak, karena slug dan alamat websitenya akan kosong', () => {
+    const hasil = tambahDesaSchema.safeParse({ nama: '!!! ', kecamatan: '14.01.17', kodeDesa: '2061', paket: 'Dasar', email: 'a@b.id' })
+    expect(hasil.success).toBe(false)
+    if (hasil.success) return
+    expect(galatDariZod(hasil.error)).toEqual({ nama: 'Nama desa harus memuat huruf atau angka.' })
+  })
 })
