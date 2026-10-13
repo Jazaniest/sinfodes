@@ -1,8 +1,9 @@
 import { http, HttpResponse } from 'msw'
 import { z } from 'zod'
+import { waktuIsoWib } from '@/domain/format/tanggal'
 import type { Pengguna } from '@/domain/pengguna/schema'
 import { KATA_SANDI_DEMO } from '../data/desa-demo'
-import { ambilDb } from '../db'
+import { ambilDb, ubahDb } from '../db'
 import { API, balasGalat, denganJaringan } from '../http'
 import { butuhPengguna, tokenUntuk } from '../sesi-mock'
 
@@ -45,6 +46,10 @@ export const handlerSesi = [
       }
       const sesi = sesiUntuk(pengguna)
       if (!sesi) return balasGalat('SERVER', 'Data desa tidak ditemukan.', 500)
+      // Dasar "login per minggu" dan "pengguna aktif" di Konsol (SPEC §11).
+      ubahDb((d) => {
+        d.riwayatMasuk.push({ penggunaId: pengguna.id, desaId: pengguna.desaId, waktu: waktuIsoWib(new Date()) })
+      })
       return HttpResponse.json({ token: tokenUntuk(pengguna.id), sesi })
     }),
   ),

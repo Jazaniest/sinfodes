@@ -18,6 +18,7 @@ export const dusunSchema = z.object({
 export type Dusun = z.infer<typeof dusunSchema>
 
 export const STATUS_DESA = ['Uji coba', 'Persiapan', 'Aktif', 'Ditangguhkan'] as const
+export type StatusDesa = (typeof STATUS_DESA)[number]
 const kodeNama = z.object({ kode: z.string(), nama: z.string() })
 
 export const desaSchema = z.object({

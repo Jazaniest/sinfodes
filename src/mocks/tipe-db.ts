@@ -4,6 +4,7 @@ import type { PenerimaBansos, ProgramBansos } from '@/domain/bansos/schema'
 import type { LaporanImpor } from '@/domain/impor/schema'
 import type { Keluarga } from '@/domain/keluarga/schema'
 import type { Apbdes } from '@/domain/keuangan/schema'
+import type { Langganan, PenggunaKonsol } from '@/domain/konsol/schema'
 import type { Pengukuran, Posyandu, StatusGizi } from '@/domain/kesehatan/schema'
 import type { LaporanData } from '@/domain/laporan/schema'
 import type { Pengurus } from '@/domain/lembaga/schema'
@@ -23,7 +24,7 @@ import type { Agenda, Artikel, FotoGaleri, Pengumuman, Potensi, ProfilDesa, Tamp
 import type { Desa, Dusun } from '@/domain/wilayah/schema'
 
 /** Naikkan setiap kali seed atau struktur data berubah; data lama di IndexedDB otomatis diganti (SPEC §12). */
-export const VERSI_DATA = 13
+export const VERSI_DATA = 14
 
 /** Berkas impor yang sudah diperiksa dan menunggu konfirmasi (SPEC §6.8). */
 export type SesiImpor = { id: string; desaId: string; olehId: string; laporan: LaporanImpor; selesai: boolean }
@@ -42,6 +43,23 @@ export type KirimanWarga = { kunci: string; pendudukId: string; jenis: 'permohon
 
 /** Pengaman verifikasi surat di website desa: waktu kode-kode salah dalam jendela 10 menit, per desa (SPEC §7.6, §3.4). */
 export type PercobaanVerifikasi = { desaId: string; gagal: string[]; terkunciSampai: string | null }
+
+/** Angka pemakaian desa tanpa data panel di demo (38 desa fiktif Konsol, SPEC §12.8). */
+export type RekamDesa = {
+  desaId: string
+  jiwa: number
+  kelengkapan: number | null
+  penggunaAktif: number
+  aktivitasTerakhir: string | null
+  langkahSelesai: number
+  suratPerBulan: { bulan: string; jumlah: number }[]
+  masukPerMinggu: { mulai: string; jumlah: number }[]
+  suratMingguIni: number
+  kontak: { kades: string | null; operator: { nama: string; email: string } | null }
+}
+
+/** Satu kali masuk panel admin: dasar "login per minggu" dan "pengguna aktif" di Konsol (SPEC §11). */
+export type MasukPanel = { penggunaId: string; desaId: string; waktu: string }
 
 export type DbDemo = {
   versiData: number
@@ -100,4 +118,9 @@ export type DbDemo = {
   percobaanMasukWarga: PercobaanMasukWarga[]
   kirimanWarga: KirimanWarga[]
   percobaanVerifikasi: PercobaanVerifikasi[]
+  /** Konsol Sinfodes (SPEC §11): akun konsol, langganan desa, angka desa tanpa data panel, dan riwayat masuk panel. */
+  penggunaKonsol: PenggunaKonsol[]
+  langganan: Langganan[]
+  rekamDesa: RekamDesa[]
+  riwayatMasuk: MasukPanel[]
 }

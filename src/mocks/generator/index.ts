@@ -8,6 +8,7 @@ import { bangkitkanSuratMasuk } from './arsip'
 import { bangkitkanAset } from './aset'
 import { bangkitkanBansos } from './bansos'
 import { bangkitkanKesehatan } from './kesehatan'
+import { bangkitkanKonsol, bangkitkanRiwayatMasuk } from './konsol'
 import { bangkitkanKeuangan } from './keuangan'
 import { bangkitkanLaporan } from './laporan'
 import { bangkitkanLembaga } from './lembaga'
@@ -102,10 +103,16 @@ export function bangkitkanDb(sekarang: Date): DbDemo {
   })
   // Tanpa PRNG: isi website tetap (SPEC §12.6).
   const website = bangkitkanWebsite({ desa: desaDemo, dusun: DUSUN_DEMO, pengguna: PENGGUNA_DEMO, acuan: sekarang })
+  // Aliran acak kesepuluh dan kesebelas: data Konsol dan riwayat masuk panel (SPEC §11).
+  const konsol = bangkitkanKonsol(buatAcak(SEED_DEMO + 9), { acuan: sekarang, desaPanel: DESA_DEMO })
+  const riwayatMasuk = bangkitkanRiwayatMasuk(buatAcak(SEED_DEMO + 10), {
+    pengguna: PENGGUNA_DEMO.filter((p) => p.desaId === ID_SUNGAI_SIALANG),
+    acuan: sekarang,
+  })
   return {
     versiData: VERSI_DATA,
     tanggalAcuan: waktuIsoWib(sekarang),
-    desa: structuredClone(DESA_DEMO),
+    desa: [...structuredClone(DESA_DEMO), ...konsol.desa],
     dusun: structuredClone(DUSUN_DEMO),
     pengguna: structuredClone(PENGGUNA_DEMO),
     ...hasil,
@@ -140,5 +147,9 @@ export function bangkitkanDb(sekarang: Date): DbDemo {
     percobaanMasukWarga: [],
     kirimanWarga: [],
     percobaanVerifikasi: [],
+    penggunaKonsol: konsol.penggunaKonsol,
+    langganan: konsol.langganan,
+    rekamDesa: konsol.rekam,
+    riwayatMasuk,
   }
 }
