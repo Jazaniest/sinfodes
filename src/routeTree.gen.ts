@@ -62,6 +62,9 @@ import { Route as AdminPanelWebsitePengumumanRouteImport } from './routes/admin/
 import { Route as AdminPanelWebsiteTampilanRouteImport } from './routes/admin/_panel/website/tampilan'
 import { Route as DesaSlugKabarIndexRouteImport } from './routes/desa/$slug/kabar/index'
 import { Route as DesaSlugKabarArtikelRouteImport } from './routes/desa/$slug/kabar/$artikel'
+import { Route as KonsolKonsolDesaIndexRouteImport } from './routes/konsol/_konsol/desa/index'
+import { Route as KonsolKonsolDesaIdRouteImport } from './routes/konsol/_konsol/desa/$id'
+import { Route as KonsolKonsolDesaBaruRouteImport } from './routes/konsol/_konsol/desa/baru'
 import { Route as WargaAppKeluargaIndexRouteImport } from './routes/warga/_app/keluarga/index'
 import { Route as WargaAppKeluargaLaporRouteImport } from './routes/warga/_app/keluarga/lapor'
 import { Route as WargaAppPengaduanIndexRouteImport } from './routes/warga/_app/pengaduan/index'
@@ -362,6 +365,21 @@ const DesaSlugKabarArtikelRoute = DesaSlugKabarArtikelRouteImport.update({
   path: '/kabar/$artikel',
   getParentRoute: () => DesaSlugRoute,
 } as any)
+const KonsolKonsolDesaIndexRoute = KonsolKonsolDesaIndexRouteImport.update({
+  id: '/desa/',
+  path: '/desa/',
+  getParentRoute: () => KonsolKonsolRoute,
+} as any)
+const KonsolKonsolDesaIdRoute = KonsolKonsolDesaIdRouteImport.update({
+  id: '/desa/$id',
+  path: '/desa/$id',
+  getParentRoute: () => KonsolKonsolRoute,
+} as any)
+const KonsolKonsolDesaBaruRoute = KonsolKonsolDesaBaruRouteImport.update({
+  id: '/desa/baru',
+  path: '/desa/baru',
+  getParentRoute: () => KonsolKonsolRoute,
+} as any)
 const WargaAppKeluargaIndexRoute = WargaAppKeluargaIndexRouteImport.update({
   id: '/keluarga/',
   path: '/keluarga/',
@@ -538,6 +556,8 @@ export interface FileRoutesByFullPath {
   '/admin/website/pengumuman': typeof AdminPanelWebsitePengumumanRoute
   '/admin/website/tampilan': typeof AdminPanelWebsiteTampilanRoute
   '/desa/$slug/kabar/$artikel': typeof DesaSlugKabarArtikelRoute
+  '/konsol/desa/$id': typeof KonsolKonsolDesaIdRoute
+  '/konsol/desa/baru': typeof KonsolKonsolDesaBaruRoute
   '/warga/keluarga/lapor': typeof WargaAppKeluargaLaporRoute
   '/warga/pengaduan/$id': typeof WargaAppPengaduanIdRoute
   '/warga/pengaduan/baru': typeof WargaAppPengaduanBaruRoute
@@ -551,6 +571,7 @@ export interface FileRoutesByFullPath {
   '/admin/surat/': typeof AdminPanelSuratIndexRoute
   '/admin/website/': typeof AdminPanelWebsiteIndexRoute
   '/desa/$slug/kabar/': typeof DesaSlugKabarIndexRoute
+  '/konsol/desa/': typeof KonsolKonsolDesaIndexRoute
   '/warga/keluarga/': typeof WargaAppKeluargaIndexRoute
   '/warga/pengaduan/': typeof WargaAppPengaduanIndexRoute
   '/warga/riwayat/': typeof WargaAppRiwayatIndexRoute
@@ -612,6 +633,8 @@ export interface FileRoutesByTo {
   '/admin/website/pengumuman': typeof AdminPanelWebsitePengumumanRoute
   '/admin/website/tampilan': typeof AdminPanelWebsiteTampilanRoute
   '/desa/$slug/kabar/$artikel': typeof DesaSlugKabarArtikelRoute
+  '/konsol/desa/$id': typeof KonsolKonsolDesaIdRoute
+  '/konsol/desa/baru': typeof KonsolKonsolDesaBaruRoute
   '/warga/keluarga/lapor': typeof WargaAppKeluargaLaporRoute
   '/warga/pengaduan/$id': typeof WargaAppPengaduanIdRoute
   '/warga/pengaduan/baru': typeof WargaAppPengaduanBaruRoute
@@ -625,6 +648,7 @@ export interface FileRoutesByTo {
   '/admin/surat': typeof AdminPanelSuratIndexRoute
   '/admin/website': typeof AdminPanelWebsiteIndexRoute
   '/desa/$slug/kabar': typeof DesaSlugKabarIndexRoute
+  '/konsol/desa': typeof KonsolKonsolDesaIndexRoute
   '/warga/keluarga': typeof WargaAppKeluargaIndexRoute
   '/warga/pengaduan': typeof WargaAppPengaduanIndexRoute
   '/warga/riwayat': typeof WargaAppRiwayatIndexRoute
@@ -691,6 +715,8 @@ export interface FileRoutesById {
   '/admin/_panel/website/pengumuman': typeof AdminPanelWebsitePengumumanRoute
   '/admin/_panel/website/tampilan': typeof AdminPanelWebsiteTampilanRoute
   '/desa/$slug/kabar/$artikel': typeof DesaSlugKabarArtikelRoute
+  '/konsol/_konsol/desa/$id': typeof KonsolKonsolDesaIdRoute
+  '/konsol/_konsol/desa/baru': typeof KonsolKonsolDesaBaruRoute
   '/warga/_app/keluarga/lapor': typeof WargaAppKeluargaLaporRoute
   '/warga/_app/pengaduan/$id': typeof WargaAppPengaduanIdRoute
   '/warga/_app/pengaduan/baru': typeof WargaAppPengaduanBaruRoute
@@ -704,6 +730,7 @@ export interface FileRoutesById {
   '/admin/_panel/surat/': typeof AdminPanelSuratIndexRoute
   '/admin/_panel/website/': typeof AdminPanelWebsiteIndexRoute
   '/desa/$slug/kabar/': typeof DesaSlugKabarIndexRoute
+  '/konsol/_konsol/desa/': typeof KonsolKonsolDesaIndexRoute
   '/warga/_app/keluarga/': typeof WargaAppKeluargaIndexRoute
   '/warga/_app/pengaduan/': typeof WargaAppPengaduanIndexRoute
   '/warga/_app/riwayat/': typeof WargaAppRiwayatIndexRoute
@@ -771,6 +798,8 @@ export interface FileRouteTypes {
     | '/admin/website/pengumuman'
     | '/admin/website/tampilan'
     | '/desa/$slug/kabar/$artikel'
+    | '/konsol/desa/$id'
+    | '/konsol/desa/baru'
     | '/warga/keluarga/lapor'
     | '/warga/pengaduan/$id'
     | '/warga/pengaduan/baru'
@@ -784,6 +813,7 @@ export interface FileRouteTypes {
     | '/admin/surat/'
     | '/admin/website/'
     | '/desa/$slug/kabar/'
+    | '/konsol/desa/'
     | '/warga/keluarga/'
     | '/warga/pengaduan/'
     | '/warga/riwayat/'
@@ -845,6 +875,8 @@ export interface FileRouteTypes {
     | '/admin/website/pengumuman'
     | '/admin/website/tampilan'
     | '/desa/$slug/kabar/$artikel'
+    | '/konsol/desa/$id'
+    | '/konsol/desa/baru'
     | '/warga/keluarga/lapor'
     | '/warga/pengaduan/$id'
     | '/warga/pengaduan/baru'
@@ -858,6 +890,7 @@ export interface FileRouteTypes {
     | '/admin/surat'
     | '/admin/website'
     | '/desa/$slug/kabar'
+    | '/konsol/desa'
     | '/warga/keluarga'
     | '/warga/pengaduan'
     | '/warga/riwayat'
@@ -923,6 +956,8 @@ export interface FileRouteTypes {
     | '/admin/_panel/website/pengumuman'
     | '/admin/_panel/website/tampilan'
     | '/desa/$slug/kabar/$artikel'
+    | '/konsol/_konsol/desa/$id'
+    | '/konsol/_konsol/desa/baru'
     | '/warga/_app/keluarga/lapor'
     | '/warga/_app/pengaduan/$id'
     | '/warga/_app/pengaduan/baru'
@@ -936,6 +971,7 @@ export interface FileRouteTypes {
     | '/admin/_panel/surat/'
     | '/admin/_panel/website/'
     | '/desa/$slug/kabar/'
+    | '/konsol/_konsol/desa/'
     | '/warga/_app/keluarga/'
     | '/warga/_app/pengaduan/'
     | '/warga/_app/riwayat/'
@@ -1342,6 +1378,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DesaSlugKabarArtikelRouteImport
       parentRoute: typeof DesaSlugRoute
     }
+    '/konsol/_konsol/desa/': {
+      id: '/konsol/_konsol/desa/'
+      path: '/desa'
+      fullPath: '/konsol/desa/'
+      preLoaderRoute: typeof KonsolKonsolDesaIndexRouteImport
+      parentRoute: typeof KonsolKonsolRoute
+    }
+    '/konsol/_konsol/desa/$id': {
+      id: '/konsol/_konsol/desa/$id'
+      path: '/desa/$id'
+      fullPath: '/konsol/desa/$id'
+      preLoaderRoute: typeof KonsolKonsolDesaIdRouteImport
+      parentRoute: typeof KonsolKonsolRoute
+    }
+    '/konsol/_konsol/desa/baru': {
+      id: '/konsol/_konsol/desa/baru'
+      path: '/desa/baru'
+      fullPath: '/konsol/desa/baru'
+      preLoaderRoute: typeof KonsolKonsolDesaBaruRouteImport
+      parentRoute: typeof KonsolKonsolRoute
+    }
     '/warga/_app/keluarga/': {
       id: '/warga/_app/keluarga/'
       path: '/keluarga'
@@ -1650,10 +1707,16 @@ const DesaSlugRouteWithChildren = DesaSlugRoute._addFileChildren(
 
 interface KonsolKonsolRouteChildren {
   KonsolKonsolIndexRoute: typeof KonsolKonsolIndexRoute
+  KonsolKonsolDesaIdRoute: typeof KonsolKonsolDesaIdRoute
+  KonsolKonsolDesaBaruRoute: typeof KonsolKonsolDesaBaruRoute
+  KonsolKonsolDesaIndexRoute: typeof KonsolKonsolDesaIndexRoute
 }
 
 const KonsolKonsolRouteChildren: KonsolKonsolRouteChildren = {
   KonsolKonsolIndexRoute: KonsolKonsolIndexRoute,
+  KonsolKonsolDesaIdRoute: KonsolKonsolDesaIdRoute,
+  KonsolKonsolDesaBaruRoute: KonsolKonsolDesaBaruRoute,
+  KonsolKonsolDesaIndexRoute: KonsolKonsolDesaIndexRoute,
 }
 
 const KonsolKonsolRouteWithChildren = KonsolKonsolRoute._addFileChildren(
