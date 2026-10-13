@@ -1,6 +1,8 @@
 import type { QueryClient } from '@tanstack/react-query'
+import { kunciKonsol, masukKonsol } from '@/api/konsol'
 import { kunciSesi, masuk } from '@/api/sesi'
 import { simpanSesi } from '@/app/sesi'
+import type { SesiKonsol } from '@/domain/konsol/schema'
 import type { SesiAdmin } from '@/domain/pengguna/schema'
 
 /**
@@ -14,5 +16,14 @@ export async function masukDemo(email: string, kataSandi: string, queryClient: Q
   simpanSesi(token)
   void queryClient.resetQueries({ predicate: (q) => q.queryKey[0] !== kunciSesi[0] })
   queryClient.setQueryData(kunciSesi, sesi)
+  return sesi
+}
+
+/** Masuk Konsol sebagai akun demo; sesi panel admin dan warga di peramban yang sama tidak disentuh. */
+export async function masukKonsolDemo(email: string, kataSandi: string, queryClient: QueryClient): Promise<SesiKonsol> {
+  const { token, sesi } = await masukKonsol(email, kataSandi)
+  simpanSesi(token, 'konsol')
+  queryClient.removeQueries({ queryKey: kunciKonsol.semua })
+  queryClient.setQueryData(kunciKonsol.sesi, sesi)
   return sesi
 }

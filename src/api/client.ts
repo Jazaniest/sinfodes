@@ -4,8 +4,8 @@ import { GalatApi } from './galat'
 
 const BASE = import.meta.env.VITE_API_BASE || '/api/v1'
 /** Panel admin dan layanan warga punya sesi sendiri; keduanya bisa aktif bersamaan di satu peramban. */
-export type BagianSesi = 'admin' | 'warga'
-const tokenSesi: Record<BagianSesi, string | null> = { admin: null, warga: null }
+export type BagianSesi = 'admin' | 'warga' | 'konsol'
+const tokenSesi: Record<BagianSesi, string | null> = { admin: null, warga: null, konsol: null }
 
 export function aturTokenSesi(token: string | null, bagian: BagianSesi = 'admin'): void {
   tokenSesi[bagian] = token

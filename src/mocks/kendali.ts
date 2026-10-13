@@ -1,4 +1,5 @@
-import { ID_SUNGAI_SIALANG, PENGGUNA_DEMO } from './data/desa-demo'
+import { ID_SUNGAI_SIALANG, ID_TANJUNG_LAMO, PENGGUNA_DEMO } from './data/desa-demo'
+import { PENGGUNA_KONSOL_DEMO } from './data/desa-konsol'
 import { ambilDb, resetDb } from './db'
 
 export { aturModeJaringan, bacaModeJaringan, MODE_JARINGAN } from './jaringan'
@@ -34,3 +35,14 @@ export const AKUN_DEMO_ADMIN = PENGGUNA_DEMO.filter((p) => p.desaId === ID_SUNGA
 
 /** Akun layanan warga untuk tombol masuk di halaman demo (SPEC §12.9). */
 export { AKUN_WARGA_DEMO as AKUN_DEMO_WARGA } from './data/warga-demo'
+
+/** Operator desa baru berstatus Persiapan (Tanjung Lamo, SPEC §12.9): Beranda-nya berupa daftar persiapan. */
+export const AKUN_DEMO_DESA_BARU = PENGGUNA_DEMO.filter((p) => p.desaId === ID_TANJUNG_LAMO).map(({ id, nama, peran, email }) => ({
+  id,
+  nama,
+  peran,
+  email,
+}))
+
+/** Akun Konsol (SPEC §12.9): Tim Sinfodes dan pemantau Kabupaten Pelalawan. */
+export const AKUN_DEMO_KONSOL = PENGGUNA_KONSOL_DEMO.map(({ id, nama, peran, email, wilayah }) => ({ id, nama, peran, email, wilayah }))

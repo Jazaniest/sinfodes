@@ -1,6 +1,10 @@
 import { aturTokenSesi, type BagianSesi } from '@/api/client'
 
-const KUNCI: Readonly<Record<BagianSesi, string>> = { admin: 'sinfodes.sesi.admin', warga: 'sinfodes.sesi.warga' }
+const KUNCI: Readonly<Record<BagianSesi, string>> = {
+  admin: 'sinfodes.sesi.admin',
+  warga: 'sinfodes.sesi.warga',
+  konsol: 'sinfodes.sesi.konsol',
+}
 
 export function simpanSesi(token: string, bagian: BagianSesi = 'admin'): void {
   try {
@@ -19,9 +23,10 @@ function bacaToken(bagian: BagianSesi): string | null {
   }
 }
 
-/** Pulihkan sesi admin dan sesi warga dari perangkat. Mengembalikan token admin. */
+/** Pulihkan sesi admin, warga, dan konsol dari perangkat. Mengembalikan token admin. */
 export function pulihkanSesi(): string | null {
   aturTokenSesi(bacaToken('warga'), 'warga')
+  aturTokenSesi(bacaToken('konsol'), 'konsol')
   const token = bacaToken('admin')
   aturTokenSesi(token)
   return token

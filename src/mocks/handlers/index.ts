@@ -8,6 +8,7 @@ import { handlerJenisSurat } from './jenis-surat'
 import { handlerKeluarga } from './keluarga'
 import { handlerKesehatan } from './kesehatan'
 import { handlerKeluargaTulis } from './keluarga-tulis'
+import { handlerKonsol } from './konsol'
 import { handlerKeuangan } from './keuangan'
 import { handlerLaporan } from './laporan'
 import { handlerMutasi } from './mutasi'
@@ -42,5 +43,5 @@ export const handlers = [
   ...handlerKeuangan, ...handlerPembangunan, ...handlerTataKelola,
   ...handlerPengaturan, ...handlerPenggunaDesa, ...handlerWebsite, ...handlerBuku,
   ...handlerWargaSesi, ...handlerWarga, ...handlerWargaAjukan, ...handlerWargaKeluarga, ...handlerWargaPengaduan,
-  ...handlerPublik, ...handlerPublikHalaman,
+  ...handlerPublik, ...handlerPublikHalaman, ...handlerKonsol,
 ]

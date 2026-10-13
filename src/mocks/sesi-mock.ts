@@ -1,3 +1,4 @@
+import type { PenggunaKonsol } from '@/domain/konsol/schema'
 import type { Penduduk } from '@/domain/penduduk/schema'
 import type { Pengguna } from '@/domain/pengguna/schema'
 import { ambilDb } from './db'
@@ -37,4 +38,18 @@ export function wargaDariPermintaan(request: Request): WargaMasuk | null {
 /** Warga dari sesi, atau Response 401 yang langsung dikembalikan handler. */
 export function butuhWarga(request: Request): WargaMasuk | Response {
   return wargaDariPermintaan(request) ?? balasGalat('UNAUTHENTICATED', 'Sesi Anda sudah berakhir. Silakan masuk lagi.', 401)
+}
+
+export const tokenKonsolUntuk = (penggunaId: string): string => `konsol.${penggunaId}`
+
+/** Akun konsol dari token. Token panel admin dan warga tidak berlaku di sini, dan sebaliknya (fokus review 2 tahap 6A). */
+export function penggunaKonsolDariPermintaan(request: Request): PenggunaKonsol | null {
+  const cocok = /^Bearer konsol\.(.+)$/.exec(request.headers.get('Authorization') ?? '')
+  if (!cocok) return null
+  return ambilDb().penggunaKonsol.find((p) => p.id === cocok[1]) ?? null
+}
+
+/** Akun konsol dari sesi, atau Response 401 yang langsung dikembalikan handler. */
+export function butuhPenggunaKonsol(request: Request): PenggunaKonsol | Response {
+  return penggunaKonsolDariPermintaan(request) ?? balasGalat('UNAUTHENTICATED', 'Sesi konsol Anda sudah berakhir. Silakan masuk lagi.', 401)
 }

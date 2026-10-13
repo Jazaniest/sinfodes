@@ -6,12 +6,13 @@ import { masukWarga } from '@/api/warga'
 import logoMark from '@/assets/brand/sinfodes-mark.svg'
 import { formatAngka } from '@/domain/format/angka'
 import { formatTanggal } from '@/domain/format/tanggal'
+import { LABEL_PERAN_KONSOL } from '@/domain/konsol/schema'
 import { LABEL_PERAN } from '@/domain/pengguna/schema'
 import { pasangSesiWarga } from '@/features/warga/masuk-warga'
 import { tampilkanToast } from '@/ui/toast/antrean'
 import { Tombol } from '@/ui/tombol/Tombol'
 import { Skeleton } from '@/ui/umpan-balik/Skeleton'
-import { masukDemo } from './masuk-demo'
+import { masukDemo, masukKonsolDemo } from './masuk-demo'
 import { useKendaliDemo } from './useKendaliDemo'
 
 /** Halaman `/`: pintu masuk demo. Hanya menampilkan bagian yang sudah dibangun (tidak ada tombol mati). */
@@ -43,6 +44,18 @@ export function HalamanDemo() {
       const { token, sesi } = await masukWarga(akun.nik, akun.pin)
       pasangSesiWarga(token, sesi, queryClient)
       await router.navigate({ to: '/warga' })
+    } catch (e) {
+      tampilkanToast({ pesan: pesanGalat(e), nada: 'galat' })
+    } finally {
+      setSedangMasuk(null)
+    }
+  }
+  const masukKonsolSebagai = async (akun: { id: string; email: string }) => {
+    if (!kendali) return
+    setSedangMasuk(akun.id)
+    try {
+      await masukKonsolDemo(akun.email, kendali.KATA_SANDI_DEMO, queryClient)
+      await router.navigate({ to: '/konsol' })
     } catch (e) {
       tampilkanToast({ pesan: pesanGalat(e), nada: 'galat' })
     } finally {
@@ -111,6 +124,16 @@ export function HalamanDemo() {
                 </Tombol>
               ))}
             </div>
+            {kendali && kendali.AKUN_DEMO_DESA_BARU.length > 0 && (
+              <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-teks-kecil text-tinta-2">
+                Desa baru berstatus Persiapan:
+                {kendali.AKUN_DEMO_DESA_BARU.map((a) => (
+                  <Tombol key={a.id} ukuran="kecil" varian="sekunder" memuat={sedangMasuk === a.id} onPress={() => void masukPanel(a)}>
+                    {a.nama} · Operator Desa Tanjung Lamo
+                  </Tombol>
+                ))}
+              </p>
+            )}
           </li>
           <li className="flex flex-col gap-3 py-4">
             <div>
@@ -150,6 +173,28 @@ export function HalamanDemo() {
             >
               Buka website
             </Link>
+          </li>
+          <li className="flex flex-col gap-3 py-4">
+            <div>
+              <p className="font-medium">Konsol Sinfodes</p>
+              <p className="text-tinta-2">
+                Untuk tim Sinfodes dan pemantau wilayah: keadaan semua desa pelanggan. Pemantau hanya melihat angka gabungan desa di
+                wilayahnya.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {kendali?.AKUN_DEMO_KONSOL.map((a) => (
+                <Tombol
+                  key={a.id}
+                  ukuran="kecil"
+                  varian={a.peran === 'tim' ? 'utama' : 'sekunder'}
+                  memuat={sedangMasuk === a.id}
+                  onPress={() => void masukKonsolSebagai(a)}
+                >
+                  {a.nama} · {a.wilayah ? 'Pemantau wilayah' : LABEL_PERAN_KONSOL[a.peran]}
+                </Tombol>
+              ))}
+            </div>
           </li>
           <li className="flex flex-wrap items-center justify-between gap-4 py-4">
             <div>

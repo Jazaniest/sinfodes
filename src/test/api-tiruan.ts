@@ -19,6 +19,9 @@ export const AKUN_UJI = {
 /** Akun layanan warga demo (SPEC §12.9): ID penduduknya. */
 export const AKUN_WARGA_UJI = { siti: 'pdk_siti_rahmah', zulkifli: 'pdk_zulkifli' } as const
 
+/** Akun Konsol demo (SPEC §12.9). */
+export const AKUN_KONSOL_UJI = { tim: 'kns_dina', pemantau: 'kns_pmd_pelalawan' } as const
+
 type OpsiApiTiruan = {
   /** Muat ulang data seed sebelum setiap uji. Wajib untuk uji yang menulis data, supaya uji tidak saling memengaruhi. */
   dbSegarTiapUji?: boolean
@@ -43,6 +46,7 @@ export function pakaiApiTiruan({ dbSegarTiapUji = false }: OpsiApiTiruan = {}): 
     aturModeJaringan('instan')
     aturTokenSesi(null)
     aturTokenSesi(null, 'warga')
+    aturTokenSesi(null, 'konsol')
   })
   afterAll(() => {
     serverUji.close()
@@ -56,4 +60,8 @@ export function masukSebagai(penggunaId: string): void {
 
 export function masukSebagaiWarga(pendudukId: string): void {
   aturTokenSesi(`warga.${pendudukId}`, 'warga')
+}
+
+export function masukKonsolSebagai(penggunaId: string): void {
+  aturTokenSesi(`konsol.${penggunaId}`, 'konsol')
 }

@@ -14,6 +14,8 @@ import { Route as KatalogRouteImport } from './routes/katalog'
 import { Route as AdminPanelRouteImport } from './routes/admin/_panel'
 import { Route as AdminMasukRouteImport } from './routes/admin/masuk'
 import { Route as DesaSlugRouteImport } from './routes/desa/$slug'
+import { Route as KonsolKonsolRouteImport } from './routes/konsol/_konsol'
+import { Route as KonsolMasukRouteImport } from './routes/konsol/masuk'
 import { Route as WargaAppRouteImport } from './routes/warga/_app'
 import { Route as WargaMasukRouteImport } from './routes/warga/masuk'
 import { Route as AdminPanelIndexRouteImport } from './routes/admin/_panel/index'
@@ -31,6 +33,7 @@ import { Route as DesaSlugProfilRouteImport } from './routes/desa/$slug/profil'
 import { Route as DesaSlugStatistikRouteImport } from './routes/desa/$slug/statistik'
 import { Route as DesaSlugTransparansiRouteImport } from './routes/desa/$slug/transparansi'
 import { Route as DesaSlugVerifikasiRouteImport } from './routes/desa/$slug/verifikasi'
+import { Route as KonsolKonsolIndexRouteImport } from './routes/konsol/_konsol/index'
 import { Route as WargaAppIndexRouteImport } from './routes/warga/_app/index'
 import { Route as WargaAppAjukanRouteImport } from './routes/warga/_app/ajukan'
 import { Route as WargaAppAkunRouteImport } from './routes/warga/_app/akun'
@@ -106,6 +109,16 @@ const AdminMasukRoute = AdminMasukRouteImport.update({
 const DesaSlugRoute = DesaSlugRouteImport.update({
   id: '/desa/$slug',
   path: '/desa/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const KonsolKonsolRoute = KonsolKonsolRouteImport.update({
+  id: '/konsol/_konsol',
+  path: '/konsol',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const KonsolMasukRoute = KonsolMasukRouteImport.update({
+  id: '/konsol/masuk',
+  path: '/konsol/masuk',
   getParentRoute: () => rootRouteImport,
 } as any)
 const WargaAppRoute = WargaAppRouteImport.update({
@@ -192,6 +205,11 @@ const DesaSlugVerifikasiRoute = DesaSlugVerifikasiRouteImport.update({
   id: '/verifikasi',
   path: '/verifikasi',
   getParentRoute: () => DesaSlugRoute,
+} as any)
+const KonsolKonsolIndexRoute = KonsolKonsolIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => KonsolKonsolRoute,
 } as any)
 const WargaAppIndexRoute = WargaAppIndexRouteImport.update({
   id: '/',
@@ -481,6 +499,8 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminPanelRouteWithChildren
   '/admin/masuk': typeof AdminMasukRoute
   '/desa/$slug': typeof DesaSlugRouteWithChildren
+  '/konsol': typeof KonsolKonsolRouteWithChildren
+  '/konsol/masuk': typeof KonsolMasukRoute
   '/warga': typeof WargaAppRouteWithChildren
   '/warga/masuk': typeof WargaMasukRoute
   '/admin/aset': typeof AdminPanelAsetRoute
@@ -500,6 +520,7 @@ export interface FileRoutesByFullPath {
   '/warga/akun': typeof WargaAppAkunRoute
   '/admin/': typeof AdminPanelIndexRoute
   '/desa/$slug/': typeof DesaSlugIndexRoute
+  '/konsol/': typeof KonsolKonsolIndexRoute
   '/warga/': typeof WargaAppIndexRoute
   '/admin/bansos/$id': typeof AdminPanelBansosIdRoute
   '/admin/buku/$kode': typeof AdminPanelBukuKodeRoute
@@ -554,6 +575,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/katalog': typeof KatalogRoute
   '/admin/masuk': typeof AdminMasukRoute
+  '/konsol/masuk': typeof KonsolMasukRoute
   '/warga/masuk': typeof WargaMasukRoute
   '/admin/aset': typeof AdminPanelAsetRoute
   '/admin/kesehatan': typeof AdminPanelKesehatanRoute
@@ -572,6 +594,7 @@ export interface FileRoutesByTo {
   '/warga/akun': typeof WargaAppAkunRoute
   '/admin': typeof AdminPanelIndexRoute
   '/desa/$slug': typeof DesaSlugIndexRoute
+  '/konsol': typeof KonsolKonsolIndexRoute
   '/warga': typeof WargaAppIndexRoute
   '/admin/bansos/$id': typeof AdminPanelBansosIdRoute
   '/admin/buku/$kode': typeof AdminPanelBukuKodeRoute
@@ -629,6 +652,8 @@ export interface FileRoutesById {
   '/admin/_panel': typeof AdminPanelRouteWithChildren
   '/admin/masuk': typeof AdminMasukRoute
   '/desa/$slug': typeof DesaSlugRouteWithChildren
+  '/konsol/_konsol': typeof KonsolKonsolRouteWithChildren
+  '/konsol/masuk': typeof KonsolMasukRoute
   '/warga/_app': typeof WargaAppRouteWithChildren
   '/warga/masuk': typeof WargaMasukRoute
   '/admin/_panel/aset': typeof AdminPanelAsetRoute
@@ -648,6 +673,7 @@ export interface FileRoutesById {
   '/warga/_app/akun': typeof WargaAppAkunRoute
   '/admin/_panel/': typeof AdminPanelIndexRoute
   '/desa/$slug/': typeof DesaSlugIndexRoute
+  '/konsol/_konsol/': typeof KonsolKonsolIndexRoute
   '/warga/_app/': typeof WargaAppIndexRoute
   '/admin/_panel/bansos/$id': typeof AdminPanelBansosIdRoute
   '/admin/_panel/buku/$kode': typeof AdminPanelBukuKodeRoute
@@ -706,6 +732,8 @@ export interface FileRouteTypes {
     | '/admin'
     | '/admin/masuk'
     | '/desa/$slug'
+    | '/konsol'
+    | '/konsol/masuk'
     | '/warga'
     | '/warga/masuk'
     | '/admin/aset'
@@ -725,6 +753,7 @@ export interface FileRouteTypes {
     | '/warga/akun'
     | '/admin/'
     | '/desa/$slug/'
+    | '/konsol/'
     | '/warga/'
     | '/admin/bansos/$id'
     | '/admin/buku/$kode'
@@ -779,6 +808,7 @@ export interface FileRouteTypes {
     | '/'
     | '/katalog'
     | '/admin/masuk'
+    | '/konsol/masuk'
     | '/warga/masuk'
     | '/admin/aset'
     | '/admin/kesehatan'
@@ -797,6 +827,7 @@ export interface FileRouteTypes {
     | '/warga/akun'
     | '/admin'
     | '/desa/$slug'
+    | '/konsol'
     | '/warga'
     | '/admin/bansos/$id'
     | '/admin/buku/$kode'
@@ -853,6 +884,8 @@ export interface FileRouteTypes {
     | '/admin/_panel'
     | '/admin/masuk'
     | '/desa/$slug'
+    | '/konsol/_konsol'
+    | '/konsol/masuk'
     | '/warga/_app'
     | '/warga/masuk'
     | '/admin/_panel/aset'
@@ -872,6 +905,7 @@ export interface FileRouteTypes {
     | '/warga/_app/akun'
     | '/admin/_panel/'
     | '/desa/$slug/'
+    | '/konsol/_konsol/'
     | '/warga/_app/'
     | '/admin/_panel/bansos/$id'
     | '/admin/_panel/buku/$kode'
@@ -929,6 +963,8 @@ export interface RootRouteChildren {
   AdminPanelRoute: typeof AdminPanelRouteWithChildren
   AdminMasukRoute: typeof AdminMasukRoute
   DesaSlugRoute: typeof DesaSlugRouteWithChildren
+  KonsolKonsolRoute: typeof KonsolKonsolRouteWithChildren
+  KonsolMasukRoute: typeof KonsolMasukRoute
   WargaAppRoute: typeof WargaAppRouteWithChildren
   WargaMasukRoute: typeof WargaMasukRoute
 }
@@ -968,6 +1004,20 @@ declare module '@tanstack/react-router' {
       path: '/desa/$slug'
       fullPath: '/desa/$slug'
       preLoaderRoute: typeof DesaSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/konsol/_konsol': {
+      id: '/konsol/_konsol'
+      path: '/konsol'
+      fullPath: '/konsol'
+      preLoaderRoute: typeof KonsolKonsolRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/konsol/masuk': {
+      id: '/konsol/masuk'
+      path: '/konsol/masuk'
+      fullPath: '/konsol/masuk'
+      preLoaderRoute: typeof KonsolMasukRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/warga/_app': {
@@ -1088,6 +1138,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/desa/$slug/verifikasi'
       preLoaderRoute: typeof DesaSlugVerifikasiRouteImport
       parentRoute: typeof DesaSlugRoute
+    }
+    '/konsol/_konsol/': {
+      id: '/konsol/_konsol/'
+      path: '/'
+      fullPath: '/konsol/'
+      preLoaderRoute: typeof KonsolKonsolIndexRouteImport
+      parentRoute: typeof KonsolKonsolRoute
     }
     '/warga/_app/': {
       id: '/warga/_app/'
@@ -1591,6 +1648,18 @@ const DesaSlugRouteWithChildren = DesaSlugRoute._addFileChildren(
   DesaSlugRouteChildren,
 )
 
+interface KonsolKonsolRouteChildren {
+  KonsolKonsolIndexRoute: typeof KonsolKonsolIndexRoute
+}
+
+const KonsolKonsolRouteChildren: KonsolKonsolRouteChildren = {
+  KonsolKonsolIndexRoute: KonsolKonsolIndexRoute,
+}
+
+const KonsolKonsolRouteWithChildren = KonsolKonsolRoute._addFileChildren(
+  KonsolKonsolRouteChildren,
+)
+
 interface WargaAppRouteChildren {
   WargaAppAjukanRoute: typeof WargaAppAjukanRoute
   WargaAppAkunRoute: typeof WargaAppAkunRoute
@@ -1627,6 +1696,8 @@ const rootRouteChildren: RootRouteChildren = {
   AdminPanelRoute: AdminPanelRouteWithChildren,
   AdminMasukRoute: AdminMasukRoute,
   DesaSlugRoute: DesaSlugRouteWithChildren,
+  KonsolKonsolRoute: KonsolKonsolRouteWithChildren,
+  KonsolMasukRoute: KonsolMasukRoute,
   WargaAppRoute: WargaAppRouteWithChildren,
   WargaMasukRoute: WargaMasukRoute,
 }
