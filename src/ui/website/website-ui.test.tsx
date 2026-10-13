@@ -29,6 +29,12 @@ describe('komponen website desa (SPEC §9)', () => {
     expect(img).not.toHaveAttribute('srcset')
     expect(container.querySelector('figure')).toBeNull()
   })
+  it('FotoWarta kecil tanpa keterangan: lebar dari pemanggil saja, tanpa w-full yang bentrok (fokus review 5)', () => {
+    const { container } = render(<FotoWarta berkas="/demo/foto/posyandu.jpg" alt="" rasio="foto" className="w-24 shrink-0" />)
+    const img = container.querySelector('img')
+    expect(img).toHaveClass('w-24', 'shrink-0')
+    expect(img).not.toHaveClass('w-full')
+  })
   it('Rubrik: wilayah bernama judulnya, dengan id sebagai jangkar', () => {
     render(
       <Rubrik id="posyandu" judul="Jadwal posyandu">

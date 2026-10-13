@@ -34,7 +34,8 @@ describe('Kabar desa (SPEC §9)', () => {
       'srcset', '/demo/foto/madu-sialang-960.jpg 960w, /demo/foto/madu-sialang.jpg 1280w',
     )
     expect(screen.getByRole('figure')).toHaveTextContent('Foto: Zhilal Darma · CC BY-SA 4.0')
-    expect(screen.getByText(/^Tradisi menumbai kembali digelar/).parentElement).toHaveClass('text-baca', 'max-w-[68ch]')
+    // 1ch = lebar angka "0"; huruf rata-rata IBM Plex Sans lebih sempit, jadi ±68 karakter teks ≈ 56ch (diukur di browser).
+    expect(screen.getByText(/^Tradisi menumbai kembali digelar/).parentElement).toHaveClass('text-baca', 'max-w-[56ch]')
     expect(screen.getByRole('link', { name: '← Semua kabar' })).toHaveAttribute('href', '/desa/sungai-sialang/kabar')
   })
   it('kabar yang masih draf atau alamat yang salah → "Kabar tidak ditemukan" dengan jalan kembali (fokus review 4)', async () => {

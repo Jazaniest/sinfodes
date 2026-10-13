@@ -15,6 +15,7 @@ type Props = {
   sizes?: string
   /** Foto utama di atas layar: dimuat langsung, tidak menunggu digulir. */
   utama?: boolean
+  /** Dipasang di figure; tanpa keterangan dipasang di gambar dan harus memuat lebarnya (mis. "w-24"). */
   className?: string
 }
 
@@ -30,7 +31,8 @@ export function FotoWarta({ berkas, alt, keterangan, kredit, rasio = 'lebar', si
       loading={utama ? 'eager' : 'lazy'}
       fetchPriority={utama ? 'high' : undefined}
       decoding="async"
-      className={cn('w-full bg-kertas-2 object-cover', RASIO[rasio], !keterangan && className)}
+      // `cn` tidak menyelesaikan bentrokan kelas: foto tanpa keterangan memakai lebar dari pemanggil, bukan w-full juga.
+      className={cn('bg-kertas-2 object-cover', RASIO[rasio], keterangan ? 'w-full' : (className ?? 'w-full'))}
     />
   )
   if (!keterangan) return gambar

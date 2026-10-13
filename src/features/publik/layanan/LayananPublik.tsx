@@ -9,17 +9,19 @@ import { TautanTombol } from '@/ui/tombol/TautanTombol'
 import { ErrorState } from '@/ui/umpan-balik/ErrorState'
 import { BarisKerangka } from '@/ui/umpan-balik/Skeleton'
 import { Rubrik } from '@/ui/website/Rubrik'
+import { useGulirKeJangkar } from '../jangkar'
 import { usePublik } from '../publik-konteks'
 
 /** Layanan (SPEC §9): surat yang bisa diajukan online, jam layanan kantor, jadwal posyandu, dan jalan ke layanan mandiri. */
 export function LayananPublik() {
   const identitas = usePublik()
   const kueri = useQuery(opsiLayananPublik(identitas.slug))
+  useGulirKeJangkar(kueri.isSuccess)
   return (
     <div className="flex flex-col gap-10">
       <div className="flex flex-col gap-2">
         <h1 className="font-serif text-judul-halaman font-medium">Layanan</h1>
-        <p className="max-w-[68ch] text-tinta-2">
+        <p className="max-w-[56ch] text-tinta-2">
           Surat keterangan bisa diajukan dari HP lewat layanan mandiri warga, atau langsung di kantor desa pada jam layanan.
         </p>
       </div>

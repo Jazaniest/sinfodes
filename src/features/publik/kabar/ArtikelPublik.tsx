@@ -9,7 +9,10 @@ import { BarisKerangka } from '@/ui/umpan-balik/Skeleton'
 import { FotoWarta } from '@/ui/website/FotoWarta'
 import { usePublik } from '../publik-konteks'
 
-/** Halaman artikel (SPEC §9): teks 17px dengan sekitar 68 karakter per baris supaya nyaman dibaca di HP. */
+/**
+ * Halaman artikel (SPEC §9): teks 17px dengan sekitar 68 karakter per baris supaya nyaman dibaca. 1ch = lebar angka "0",
+ * sedangkan huruf rata-rata lebih sempit, jadi ±68 karakter teks ≈ 56ch.
+ */
 export function ArtikelPublik({ artikel }: { artikel: string }) {
   const { slug } = usePublik()
   const kueri = useQuery(opsiArtikelPublik(slug, artikel))
@@ -48,7 +51,7 @@ export function ArtikelPublik({ artikel }: { artikel: string }) {
           utama
         />
       )}
-      <div className="flex max-w-[68ch] flex-col gap-4 text-baca">
+      <div className="flex max-w-[56ch] flex-col gap-4 text-baca">
         {a.isi.map((paragraf) => (
           <p key={paragraf.slice(0, 40)}>{paragraf}</p>
         ))}

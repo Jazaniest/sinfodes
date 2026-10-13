@@ -97,6 +97,10 @@ export function VerifikasiSurat({ kode, onPeriksa }: Props) {
     }
     setGalat(null)
     setIsian(k)
+    // Kode yang sama tidak mengubah alamat halaman: periksa ulang sesudah terkunci atau gagal jaringan,
+    // tetapi kode yang tidak ditemukan tidak dikirim lagi supaya tidak menambah percobaan.
+    const tidakDitemukan = hasil.error instanceof GalatApi && hasil.error.kode === 'NOT_FOUND'
+    if (k === kodeRapi && hasil.isError && !tidakDitemukan) void hasil.refetch()
     onPeriksa(k)
   }
   // Kode dari tautan yang formatnya salah ditandai sama, tanpa bertanya ke server.
@@ -123,9 +127,10 @@ export function VerifikasiSurat({ kode, onPeriksa }: Props) {
           Periksa
         </Tombol>
       </form>
-      {hasil.isFetching && !hasil.data && <BarisKerangka jumlah={3} label="Memeriksa kode…" />}
-      {hasil.isError && <HasilGalat galat={hasil.error} onCobaLagi={() => void hasil.refetch()} />}
-      {hasil.isSuccess && <HasilAsli h={hasil.data} desa={identitas.nama} />}
+      {/* Hasil kode sebelumnya disembunyikan selama isian bergalat, supaya cap ASLI tidak dikira berlaku untuk kode baru. */}
+      {!galatTampil && hasil.isFetching && !hasil.data && <BarisKerangka jumlah={3} label="Memeriksa kode…" />}
+      {!galatTampil && hasil.isError && <HasilGalat galat={hasil.error} onCobaLagi={() => void hasil.refetch()} />}
+      {!galatTampil && hasil.isSuccess && <HasilAsli h={hasil.data} desa={identitas.nama} />}
     </div>
   )
 }

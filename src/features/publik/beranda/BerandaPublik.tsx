@@ -38,7 +38,7 @@ function BeritaUtama({ a, dasar }: { a: RingkasArtikel; dasar: string }) {
           {a.judul}
         </Tautan>
       </h2>
-      <p className="max-w-[68ch] text-baca text-tinta-2">{a.ringkasan}</p>
+      <p className="max-w-[56ch] text-baca text-tinta-2">{a.ringkasan}</p>
     </article>
   )
 }

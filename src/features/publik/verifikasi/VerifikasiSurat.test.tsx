@@ -47,6 +47,18 @@ describe('Cek keaslian surat (SPEC §7.6)', () => {
     expect(screen.getByText('Kode verifikasi berbentuk seperti SS-7K3M-Q9TD.')).toBeInTheDocument()
     expect(onPeriksa).not.toHaveBeenCalled()
   })
+  it('kode baru yang formatnya salah menyembunyikan hasil ASLI kode sebelumnya, supaya tidak dikira berlaku untuknya', async () => {
+    const t = suratBerlaku()
+    renderPublik(<VerifikasiSurat kode={t.kodeVerifikasi} onPeriksa={() => {}} />)
+    await screen.findByRole('region', { name: /^Surat ini asli/ })
+    const user = userEvent.setup()
+    const isian = screen.getByRole('textbox', { name: 'Kode verifikasi' })
+    await user.clear(isian)
+    await user.type(isian, 'halo')
+    await user.click(screen.getByRole('button', { name: 'Periksa' }))
+    expect(screen.getByText('Kode verifikasi berbentuk seperti SS-7K3M-Q9TD.')).toBeInTheDocument()
+    expect(screen.queryByRole('region', { name: /^Surat ini asli/ })).not.toBeInTheDocument()
+  })
   it('kode tidak ditemukan → pesan SPEC', async () => {
     renderPublik(<VerifikasiSurat kode="SS-AAAA-BBBB" onPeriksa={() => {}} />)
     expect(await screen.findByText('Kode tidak ditemukan')).toBeInTheDocument()
@@ -75,5 +87,33 @@ describe('Cek keaslian surat (SPEC §7.6)', () => {
     renderPublik(<VerifikasiSurat kode="SS-AAAA-BBBB" onPeriksa={() => {}} />)
     expect(await screen.findByText('Terlalu banyak percobaan')).toBeInTheDocument()
     expect(screen.getByText('Terlalu banyak percobaan. Coba lagi dalam 10 menit.')).toBeInTheDocument()
+  })
+  it('sesudah kuncinya habis, menekan Periksa lagi dengan kode yang sama memeriksa ulang (alamat halaman tidak berubah)', async () => {
+    const t = suratBerlaku()
+    serverUji.use(
+      http.post(
+        '*/api/v1/publik/:slug/verifikasi',
+        () => HttpResponse.json({ error: { code: 'RATE_LIMITED', message: 'Terlalu banyak percobaan. Coba lagi dalam 10 menit.' } }, { status: 429 }),
+        { once: true },
+      ),
+    )
+    renderPublik(<VerifikasiSurat kode={t.kodeVerifikasi} onPeriksa={() => {}} />)
+    expect(await screen.findByText('Terlalu banyak percobaan')).toBeInTheDocument()
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Periksa' }))
+    expect(await screen.findByRole('region', { name: /^Surat ini asli/ })).toBeInTheDocument()
+  })
+  it('kode tidak ditemukan yang diperiksa lagi tidak dikirim ulang, supaya tidak menambah percobaan (fokus review 3)', async () => {
+    let panggilan = 0
+    serverUji.use(
+      http.post('*/api/v1/publik/:slug/verifikasi', () => {
+        panggilan++
+        return HttpResponse.json({ error: { code: 'NOT_FOUND', message: 'Kode tidak ditemukan.' } }, { status: 404 })
+      }),
+    )
+    renderPublik(<VerifikasiSurat kode="SS-AAAA-BBBB" onPeriksa={() => {}} />)
+    expect(await screen.findByText('Kode tidak ditemukan')).toBeInTheDocument()
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Periksa' }))
+    expect(screen.getByText('Kode tidak ditemukan')).toBeInTheDocument()
+    expect(panggilan).toBe(1)
   })
 })
