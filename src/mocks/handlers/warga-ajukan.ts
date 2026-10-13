@@ -3,7 +3,6 @@ import { hitungUmur, waktuIsoWib } from '@/domain/format/tanggal'
 import { periksaIsian, saringIsian } from '@/domain/surat/jenis'
 import { periksaPemohon } from '@/domain/surat/pemohon'
 import type { Permohonan } from '@/domain/surat/permohonan'
-import { hariKerjaBerlalu } from '@/domain/surat/waktu'
 import {
   calonUntuk, kirimPermohonanWargaSchema, namaSyarat, nomorTiket, syaratWajib, type JenisSuratWarga,
 } from '@/domain/warga/ajukan'
@@ -13,20 +12,9 @@ import { API, balasGalat, denganJaringan } from '../http'
 import { bacaMultipart, catatKiriman, kirimanSebelumnya } from '../kiriman-warga'
 import { kirimNotifikasi } from '../notifikasi'
 import { butuhWarga } from '../sesi-mock'
-import type { DbDemo } from '../tipe-db'
+import { perkiraanHariKerja } from '../surat-perkiraan'
 import { balasField, balasIsianTidakValid, catatAktivitas, idBaru } from '../tulis'
 import { catatRiwayatSurat } from './surat-aksi'
-
-const HARI_MS = 86_400_000
-
-/** Rata-rata hari kerja sampai selesai untuk satu jenis surat dalam 90 hari terakhir; null bila belum ada contoh. */
-function perkiraanHariKerja(db: DbDemo, jenisId: string, sekarang: Date): number | null {
-  const batas = waktuIsoWib(new Date(sekarang.getTime() - 90 * HARI_MS))
-  const lama = db.permohonan.flatMap((p) =>
-    p.jenisId === jenisId && p.status === 'selesai' && p.terbit && p.terbit.pada >= batas ? [hariKerjaBerlalu(p.masukPada, p.terbit.pada)] : [],
-  )
-  return lama.length === 0 ? null : Math.round(lama.reduce((a, b) => a + b, 0) / lama.length)
-}
 
 /** Ajukan surat dari layanan warga (SPEC §10). */
 export const handlerWargaAjukan = [

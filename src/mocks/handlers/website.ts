@@ -12,7 +12,7 @@ const butuhPengelola = (request: Request) => butuhKemampuan(request, 'website.ke
 const balasSemua = <T,>(daftar: readonly T[]) => balasDaftar(daftar, 1, Math.max(daftar.length, 1))
 
 /** Tampilan tersimpan, atau bawaan netral (motif Garis) untuk desa yang belum mengaturnya (SPEC §9). */
-function tampilanDesa(db: DbDemo, desaId: string): TampilanWebsite {
+export function tampilanDesa(db: DbDemo, desaId: string): TampilanWebsite {
   return (
     db.tampilanWebsite.find((t) => t.desaId === desaId) ?? {
       desaId, aksen: 'biru-tinta', motif: 'garis', sampul: null, logo: null, diperbarui: db.tanggalAcuan,

@@ -109,8 +109,9 @@
   }
 }
 
-/* Layanan warga (SPEC §4.7, §10): token sama dengan skala lebih besar untuk HP — teks dasar 16px, kontrol 48px. */
-.skala-warga {
+/* Skala HP (SPEC §4.7, §9, §10): layanan warga dan website publik desa memakai token yang sama dengan skala lebih besar — teks dasar 16px, kontrol 48px. */
+.skala-warga,
+.skala-publik {
   --text-teks: 1rem;
   --text-teks--line-height: 1.5;
   --text-teks-isian: 1rem;

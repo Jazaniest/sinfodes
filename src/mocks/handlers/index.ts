@@ -17,6 +17,7 @@ import { handlerPengaduan } from './pengaduan'
 import { handlerPengaturan } from './pengaturan'
 import { handlerPenggunaDesa } from './pengaturan-pengguna'
 import { handlerPenduduk } from './penduduk'
+import { handlerPublik } from './publik'
 import { handlerPendudukTulis } from './penduduk-tulis'
 import { handlerSesi } from './sesi'
 import { handlerStatistik } from './statistik'
@@ -40,4 +41,5 @@ export const handlers = [
   ...handlerKeuangan, ...handlerPembangunan, ...handlerTataKelola,
   ...handlerPengaturan, ...handlerPenggunaDesa, ...handlerWebsite, ...handlerBuku,
   ...handlerWargaSesi, ...handlerWarga, ...handlerWargaAjukan, ...handlerWargaKeluarga, ...handlerWargaPengaduan,
+  ...handlerPublik,
 ]

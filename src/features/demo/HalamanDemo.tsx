@@ -137,6 +137,19 @@ export function HalamanDemo() {
           </li>
           <li className="flex flex-wrap items-center justify-between gap-4 py-4">
             <div>
+              <p className="font-medium">Website desa</p>
+              <p className="text-tinta-2">Untuk warga dan publik: kabar desa, layanan, dan cek keaslian surat lewat kode atau QR.</p>
+            </div>
+            <Link
+              to="/desa/$slug"
+              params={{ slug: 'sungai-sialang' }}
+              className="inline-flex h-9 items-center rounded-1 bg-biru px-4 font-medium text-putih hover:bg-biru-tua"
+            >
+              Buka website
+            </Link>
+          </li>
+          <li className="flex flex-wrap items-center justify-between gap-4 py-4">
+            <div>
               <p className="font-medium">Katalog Register</p>
               <p className="text-tinta-2">Token warna, huruf, dan komponen dasar yang dipakai semua bagian aplikasi.</p>
             </div>

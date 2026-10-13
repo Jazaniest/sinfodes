@@ -21,7 +21,7 @@ describe('token warna Register', () => {
 })
 
 describe('skala layanan warga (SPEC §4.7, §10)', () => {
-  const blok = /\.skala-warga\s*\{([^}]*)\}/.exec(css)?.[1] ?? ''
+  const blok = /\.skala-warga,\s*\.skala-publik\s*\{([^}]*)\}/.exec(css)?.[1] ?? ''
   it('di dalam .skala-warga: teks dasar 16px, kontrol dan tombol 48px (fokus review 4)', () => {
     expect(blok).toMatch(/--text-teks:\s*1rem;/)
     expect(blok).toMatch(/--text-teks-isian:\s*1rem;/)
