@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { aktivitasSchema } from '../aktivitas/schema'
 import { barisPengaduanSchema } from '../pengaduan/schema'
 import { TAHAP_TTD } from '../surat/permohonan'
+import { persiapanSchema } from '../wilayah/persiapan'
 
 /** "Perlu ditindaklanjuti" (SPEC §5.3). Butir laporan dan surat membawa rujukan butir terlamanya. */
 export const tindakanSchema = z.discriminatedUnion('jenis', [
@@ -48,6 +49,8 @@ export const berandaSchema = z.object({
     .nullable(),
   /** Kades dan Kaur Keuangan: kegiatan pembangunan yang sedang berjalan. */
   pembangunan: z.array(uang.extend({ id: z.string(), nama: z.string(), progresFisik: z.number().int().min(0).max(100) })).nullable(),
+  /** Desa berstatus Persiapan (SPEC §5.3): Beranda berganti menjadi lima langkah persiapan. Null untuk desa lain. */
+  persiapan: persiapanSchema.nullable(),
   keadaan: keadaanSchema,
 })
 export type Beranda = z.infer<typeof berandaSchema>

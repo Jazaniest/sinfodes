@@ -1,9 +1,9 @@
 import { screen, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { aturModeJaringan } from '@/mocks/jaringan'
-import { AKUN_UJI, masukSebagai, pakaiApiTiruan, SEKARANG_UJI } from '@/test/api-tiruan'
+import { AKUN_DESA_BARU_UJI, AKUN_UJI, masukSebagai, pakaiApiTiruan, SEKARANG_UJI } from '@/test/api-tiruan'
 import { renderPanel } from '@/test/render'
-import { contohSesi } from '@/test/sesi'
+import { contohSesi, contohSesiDesaBaru } from '@/test/sesi'
 import { Beranda } from './Beranda'
 
 pakaiApiTiruan()
@@ -135,5 +135,40 @@ describe('Beranda (SPEC §5.3)', () => {
     expect(within(apbdes).getAllByRole('meter')).toHaveLength(7)
     const keuangan = screen.getByRole('region', { name: 'Progres keuangan kegiatan pembangunan' })
     expect(within(keuangan).getAllByRole('meter', { name: 'Progres keuangan' })[0]).toHaveAttribute('aria-valuetext', '62,0%')
+  })
+})
+
+describe('Beranda desa berstatus Persiapan (SPEC §5.3)', () => {
+  it('Operator Tanjung Lamo: daftar persiapan 0 dari 5 menggantikan isi Beranda biasa', async () => {
+    masukSebagai(AKUN_DESA_BARU_UJI)
+    renderPanel(<Beranda sekarang={SEKARANG_UJI} />, contohSesiDesaBaru())
+    expect(screen.getByRole('heading', { level: 1, name: 'Selamat pagi, Yusri' })).toBeInTheDocument()
+    expect(await screen.findByText('0 dari 5 langkah selesai')).toBeInTheDocument()
+    const langkah = within(screen.getByRole('list', { name: 'Langkah persiapan' })).getAllByRole('listitem')
+    expect(langkah.map((l) => within(l).queryByRole('link')?.getAttribute('href') ?? null)).toEqual([
+      '/admin/pengaturan',
+      '/admin/pengaturan/wilayah',
+      '/admin/kependudukan/penduduk/impor',
+      null,
+      '/admin/surat/jenis',
+    ])
+    expect(screen.getByRole('link', { name: 'Lanjutkan: Isi identitas dan kop surat' })).toHaveAttribute('href', '/admin/pengaturan')
+    expect(screen.queryByRole('heading', { name: 'Keadaan desa' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Buku hari ini' })).not.toBeInTheDocument()
+  })
+  it('langkah yang tidak boleh dibuka Operator bukan tautan mati: "Dikerjakan Sekretaris Desa" (fokus review 5)', async () => {
+    masukSebagai(AKUN_DESA_BARU_UJI)
+    renderPanel(<Beranda sekarang={SEKARANG_UJI} />, contohSesiDesaBaru())
+    const langkah = within(await screen.findByRole('list', { name: 'Langkah persiapan' })).getAllByRole('listitem')
+    expect(langkah[3]).toHaveTextContent('Tambah pengguna')
+    expect(langkah[3]).toHaveTextContent('Dikerjakan Sekretaris Desa')
+    expect(within(langkah[3]).queryByRole('link')).not.toBeInTheDocument()
+    expect(within(langkah[3]).queryByRole('button')).not.toBeInTheDocument()
+  })
+  it('desa Aktif tetap memakai Beranda biasa, tanpa daftar persiapan', async () => {
+    masukSebagai(AKUN_UJI.operator)
+    renderPanel(<Beranda sekarang={SEKARANG_UJI} />, contohSesi('operator'))
+    expect(await screen.findByRole('heading', { name: 'Keadaan desa' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Persiapan desa' })).not.toBeInTheDocument()
   })
 })

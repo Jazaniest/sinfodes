@@ -16,6 +16,7 @@ import { ErrorState } from '@/ui/umpan-balik/ErrorState'
 import { BarisKerangka } from '@/ui/umpan-balik/Skeleton'
 import { useSesiAdmin } from '../admin/sesi-konteks'
 import { PembangunanBerjalan, RealisasiApbdes } from './BagianTataKelola'
+import { DaftarPersiapan } from './DaftarPersiapan'
 import { isiSuratSaya, isiTindakan, kalimatKeadaan } from './kalimat'
 
 const judulBagian = 'text-label font-medium text-tinta-2 uppercase'
@@ -84,7 +85,10 @@ function SuratSaya({ surat }: { surat: NonNullable<DataBeranda['suratSaya']> }) 
   )
 }
 
-/** Beranda per peran (SPEC §5.3): tanpa deretan kartu angka; bagian bernilai null tidak tampil. */
+/**
+ * Beranda per peran (SPEC §5.3): tanpa deretan kartu angka; bagian bernilai null tidak tampil. Desa berstatus Persiapan
+ * mendapat daftar persiapan sebagai ganti seluruh isinya.
+ */
 export function Beranda({ sekarang = new Date() }: { sekarang?: Date }) {
   const { pengguna, desa, dusun } = useSesiAdmin()
   const kueri = useQuery(opsiBeranda())
@@ -102,6 +106,8 @@ export function Beranda({ sekarang = new Date() }: { sekarang?: Date }) {
         <BarisKerangka jumlah={4} label="Memuat beranda…" />
       ) : kueri.isError ? (
         <ErrorState pesan={pesanGalat(kueri.error)} onCobaLagi={() => void kueri.refetch()} />
+      ) : kueri.data.persiapan ? (
+        <DaftarPersiapan persiapan={kueri.data.persiapan} peran={pengguna.peran} />
       ) : (
         <>
           {kueri.data.suratSaya && <SuratSaya surat={kueri.data.suratSaya} />}

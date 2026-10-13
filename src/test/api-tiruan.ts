@@ -16,6 +16,9 @@ export const AKUN_UJI = {
   kadus: 'pgn_sukardi',
 } as const
 
+/** Operator Desa Tanjung Lamo, desa berstatus Persiapan (SPEC §12.2). */
+export const AKUN_DESA_BARU_UJI = 'pgn_yusri'
+
 /** Akun layanan warga demo (SPEC §12.9): ID penduduknya. */
 export const AKUN_WARGA_UJI = { siti: 'pdk_siti_rahmah', zulkifli: 'pdk_zulkifli' } as const
 

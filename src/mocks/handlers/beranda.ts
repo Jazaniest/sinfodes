@@ -11,6 +11,7 @@ import { ringkasSuratTerbit } from '@/domain/surat/ringkas'
 import { hariKerjaBerlalu } from '@/domain/surat/waktu'
 import { dataMilik } from '../cakupan'
 import { API, denganJaringan } from '../http'
+import { persiapanDesa } from '../persiapan'
 import { butuhPengguna } from '../sesi-mock'
 import { apbdesTerbaru } from './keuangan'
 import { barisKegiatan } from './pembangunan'
@@ -22,6 +23,7 @@ export const handlerBeranda = [
       const pengguna = butuhPengguna(request)
       if (pengguna instanceof Response) return pengguna
       const milik = dataMilik(pengguna)
+      const desa = milik.db.desa.find((d) => d.id === pengguna.desaId)
       const sekarang = new Date()
       const hariIni = tanggalIsoWib(sekarang)
       const bulanIni = hariIni.slice(0, 7)
@@ -106,6 +108,8 @@ export const handlerBeranda = [
             }
           : null,
         pembangunan: lihatPembangunan ? pembangunan : null,
+        // Langkahnya dihitung dari data panel, sama dengan tab Persiapan di Konsol (fokus review 5).
+        persiapan: desa?.status === 'Persiapan' ? persiapanDesa(milik.db, desa) : null,
         keadaan: {
           cakupan: milik.dusunSaja === null ? 'desa' : 'dusun',
           dusunId: milik.dusunSaja,
