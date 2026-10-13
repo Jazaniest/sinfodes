@@ -31,7 +31,7 @@ export function WebsiteShell({ identitas: d, jalur, tanggal, children }: Props) 
       >
         Langsung ke isi
       </a>
-      <div className="mx-auto max-w-5xl bg-lembar">
+      <div className="mx-auto max-w-5xl bg-lembar print:hidden">
         <Nameplate
           nama={d.nama}
           kecamatan={d.kecamatan.nama}
@@ -57,7 +57,7 @@ export function WebsiteShell({ identitas: d, jalur, tanggal, children }: Props) 
           </ul>
         </nav>
       </div>
-      <main id="isi" tabIndex={-1} className="mx-auto max-w-5xl px-4 py-6 outline-none sm:px-5">
+      <main id="isi" tabIndex={-1} className="mx-auto max-w-5xl px-4 py-6 outline-none sm:px-5 print:p-0">
         {children}
       </main>
       <KakiWebsite d={d} />
@@ -68,7 +68,7 @@ export function WebsiteShell({ identitas: d, jalur, tanggal, children }: Props) 
 /** Kaki halaman (SPEC §9): identitas dan alamat kantor, jam layanan, kontak WhatsApp kantor, pengelola, dan Kredit foto. */
 function KakiWebsite({ d }: { d: IdentitasPublik }) {
   return (
-    <footer className="mt-12 border-t-[3px] border-tinta bg-lembar">
+    <footer className="mt-12 border-t-[3px] border-tinta bg-lembar print:hidden">
       <div className="mx-auto grid max-w-5xl gap-6 px-4 py-8 sm:grid-cols-3 sm:px-5">
         <div className="flex flex-col gap-1">
           <p className="font-serif text-judul-bagian font-medium">Desa {d.nama}</p>

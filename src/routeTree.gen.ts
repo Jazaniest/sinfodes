@@ -26,6 +26,9 @@ import { Route as AdminPanelPetaRouteImport } from './routes/admin/_panel/peta'
 import { Route as DesaSlugIndexRouteImport } from './routes/desa/$slug/index'
 import { Route as DesaSlugKreditFotoRouteImport } from './routes/desa/$slug/kredit-foto'
 import { Route as DesaSlugLayananRouteImport } from './routes/desa/$slug/layanan'
+import { Route as DesaSlugProfilRouteImport } from './routes/desa/$slug/profil'
+import { Route as DesaSlugStatistikRouteImport } from './routes/desa/$slug/statistik'
+import { Route as DesaSlugTransparansiRouteImport } from './routes/desa/$slug/transparansi'
 import { Route as DesaSlugVerifikasiRouteImport } from './routes/desa/$slug/verifikasi'
 import { Route as WargaAppIndexRouteImport } from './routes/warga/_app/index'
 import { Route as WargaAppAjukanRouteImport } from './routes/warga/_app/ajukan'
@@ -162,6 +165,21 @@ const DesaSlugKreditFotoRoute = DesaSlugKreditFotoRouteImport.update({
 const DesaSlugLayananRoute = DesaSlugLayananRouteImport.update({
   id: '/layanan',
   path: '/layanan',
+  getParentRoute: () => DesaSlugRoute,
+} as any)
+const DesaSlugProfilRoute = DesaSlugProfilRouteImport.update({
+  id: '/profil',
+  path: '/profil',
+  getParentRoute: () => DesaSlugRoute,
+} as any)
+const DesaSlugStatistikRoute = DesaSlugStatistikRouteImport.update({
+  id: '/statistik',
+  path: '/statistik',
+  getParentRoute: () => DesaSlugRoute,
+} as any)
+const DesaSlugTransparansiRoute = DesaSlugTransparansiRouteImport.update({
+  id: '/transparansi',
+  path: '/transparansi',
   getParentRoute: () => DesaSlugRoute,
 } as any)
 const DesaSlugVerifikasiRoute = DesaSlugVerifikasiRouteImport.update({
@@ -467,6 +485,9 @@ export interface FileRoutesByFullPath {
   '/admin/peta': typeof AdminPanelPetaRoute
   '/desa/$slug/kredit-foto': typeof DesaSlugKreditFotoRoute
   '/desa/$slug/layanan': typeof DesaSlugLayananRoute
+  '/desa/$slug/profil': typeof DesaSlugProfilRoute
+  '/desa/$slug/statistik': typeof DesaSlugStatistikRoute
+  '/desa/$slug/transparansi': typeof DesaSlugTransparansiRoute
   '/desa/$slug/verifikasi': typeof DesaSlugVerifikasiRoute
   '/warga/ajukan': typeof WargaAppAjukanRoute
   '/warga/akun': typeof WargaAppAkunRoute
@@ -535,6 +556,9 @@ export interface FileRoutesByTo {
   '/admin/peta': typeof AdminPanelPetaRoute
   '/desa/$slug/kredit-foto': typeof DesaSlugKreditFotoRoute
   '/desa/$slug/layanan': typeof DesaSlugLayananRoute
+  '/desa/$slug/profil': typeof DesaSlugProfilRoute
+  '/desa/$slug/statistik': typeof DesaSlugStatistikRoute
+  '/desa/$slug/transparansi': typeof DesaSlugTransparansiRoute
   '/desa/$slug/verifikasi': typeof DesaSlugVerifikasiRoute
   '/warga/ajukan': typeof WargaAppAjukanRoute
   '/warga/akun': typeof WargaAppAkunRoute
@@ -607,6 +631,9 @@ export interface FileRoutesById {
   '/admin/_panel/peta': typeof AdminPanelPetaRoute
   '/desa/$slug/kredit-foto': typeof DesaSlugKreditFotoRoute
   '/desa/$slug/layanan': typeof DesaSlugLayananRoute
+  '/desa/$slug/profil': typeof DesaSlugProfilRoute
+  '/desa/$slug/statistik': typeof DesaSlugStatistikRoute
+  '/desa/$slug/transparansi': typeof DesaSlugTransparansiRoute
   '/desa/$slug/verifikasi': typeof DesaSlugVerifikasiRoute
   '/warga/_app/ajukan': typeof WargaAppAjukanRoute
   '/warga/_app/akun': typeof WargaAppAkunRoute
@@ -680,6 +707,9 @@ export interface FileRouteTypes {
     | '/admin/peta'
     | '/desa/$slug/kredit-foto'
     | '/desa/$slug/layanan'
+    | '/desa/$slug/profil'
+    | '/desa/$slug/statistik'
+    | '/desa/$slug/transparansi'
     | '/desa/$slug/verifikasi'
     | '/warga/ajukan'
     | '/warga/akun'
@@ -748,6 +778,9 @@ export interface FileRouteTypes {
     | '/admin/peta'
     | '/desa/$slug/kredit-foto'
     | '/desa/$slug/layanan'
+    | '/desa/$slug/profil'
+    | '/desa/$slug/statistik'
+    | '/desa/$slug/transparansi'
     | '/desa/$slug/verifikasi'
     | '/warga/ajukan'
     | '/warga/akun'
@@ -819,6 +852,9 @@ export interface FileRouteTypes {
     | '/admin/_panel/peta'
     | '/desa/$slug/kredit-foto'
     | '/desa/$slug/layanan'
+    | '/desa/$slug/profil'
+    | '/desa/$slug/statistik'
+    | '/desa/$slug/transparansi'
     | '/desa/$slug/verifikasi'
     | '/warga/_app/ajukan'
     | '/warga/_app/akun'
@@ -1004,6 +1040,27 @@ declare module '@tanstack/react-router' {
       path: '/layanan'
       fullPath: '/desa/$slug/layanan'
       preLoaderRoute: typeof DesaSlugLayananRouteImport
+      parentRoute: typeof DesaSlugRoute
+    }
+    '/desa/$slug/profil': {
+      id: '/desa/$slug/profil'
+      path: '/profil'
+      fullPath: '/desa/$slug/profil'
+      preLoaderRoute: typeof DesaSlugProfilRouteImport
+      parentRoute: typeof DesaSlugRoute
+    }
+    '/desa/$slug/statistik': {
+      id: '/desa/$slug/statistik'
+      path: '/statistik'
+      fullPath: '/desa/$slug/statistik'
+      preLoaderRoute: typeof DesaSlugStatistikRouteImport
+      parentRoute: typeof DesaSlugRoute
+    }
+    '/desa/$slug/transparansi': {
+      id: '/desa/$slug/transparansi'
+      path: '/transparansi'
+      fullPath: '/desa/$slug/transparansi'
+      preLoaderRoute: typeof DesaSlugTransparansiRouteImport
       parentRoute: typeof DesaSlugRoute
     }
     '/desa/$slug/verifikasi': {
@@ -1488,6 +1545,9 @@ const AdminPanelRouteWithChildren = AdminPanelRoute._addFileChildren(
 interface DesaSlugRouteChildren {
   DesaSlugKreditFotoRoute: typeof DesaSlugKreditFotoRoute
   DesaSlugLayananRoute: typeof DesaSlugLayananRoute
+  DesaSlugProfilRoute: typeof DesaSlugProfilRoute
+  DesaSlugStatistikRoute: typeof DesaSlugStatistikRoute
+  DesaSlugTransparansiRoute: typeof DesaSlugTransparansiRoute
   DesaSlugVerifikasiRoute: typeof DesaSlugVerifikasiRoute
   DesaSlugIndexRoute: typeof DesaSlugIndexRoute
   DesaSlugKabarArtikelRoute: typeof DesaSlugKabarArtikelRoute
@@ -1497,6 +1557,9 @@ interface DesaSlugRouteChildren {
 const DesaSlugRouteChildren: DesaSlugRouteChildren = {
   DesaSlugKreditFotoRoute: DesaSlugKreditFotoRoute,
   DesaSlugLayananRoute: DesaSlugLayananRoute,
+  DesaSlugProfilRoute: DesaSlugProfilRoute,
+  DesaSlugStatistikRoute: DesaSlugStatistikRoute,
+  DesaSlugTransparansiRoute: DesaSlugTransparansiRoute,
   DesaSlugVerifikasiRoute: DesaSlugVerifikasiRoute,
   DesaSlugIndexRoute: DesaSlugIndexRoute,
   DesaSlugKabarArtikelRoute: DesaSlugKabarArtikelRoute,

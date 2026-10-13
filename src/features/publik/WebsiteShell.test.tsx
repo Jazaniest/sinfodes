@@ -47,4 +47,10 @@ describe('kerangka website desa (SPEC §9)', () => {
     expect(akar).toHaveClass('skala-publik')
     expect(container.querySelector('svg[data-motif="pucuk-rebung"] path')).toHaveAttribute('fill', '#2F5D3A')
   })
+  it('nameplate, menu, dan kaki halaman tidak ikut tercetak; hanya isi halaman (fokus review 5)', () => {
+    pasang('/desa/sungai-sialang/transparansi')
+    expect(screen.getByRole('navigation', { name: 'Menu website desa' }).parentElement).toHaveClass('print:hidden')
+    expect(screen.getByRole('contentinfo')).toHaveClass('print:hidden')
+    expect(screen.getByRole('main')).toHaveClass('print:p-0')
+  })
 })
