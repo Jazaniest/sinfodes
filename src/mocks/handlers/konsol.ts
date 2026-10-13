@@ -2,12 +2,13 @@ import { http, HttpResponse } from 'msw'
 import { z } from 'zod'
 import { tanggalIsoWib } from '@/domain/format/tanggal'
 import { hitungPerhatian, slugDesa, statusTagihan } from '@/domain/konsol/aturan'
+import { ringkasWilayah, type BarisPemantauanDesa, type Pemantauan } from '@/domain/konsol/pemantauan'
 import {
   filterDesaKonsolSchema, tambahDesaSchema, type BarisDesaKonsol, type DetailDesaKonsol, type PenggunaKonsol, type RingkasanKonsol,
   type SesiKonsol,
 } from '@/domain/konsol/schema'
 import type { Pengguna } from '@/domain/pengguna/schema'
-import { wilayahKecamatan } from '@/domain/wilayah/kode-wilayah'
+import { KABUPATEN, wilayahKecamatan } from '@/domain/wilayah/kode-wilayah'
 import { langkahBerikut } from '@/domain/wilayah/persiapan'
 import type { Desa } from '@/domain/wilayah/schema'
 import { KATA_SANDI_DEMO } from '../data/desa-demo'
@@ -46,6 +47,14 @@ function detailDesa(db: DbDemo, desa: Desa, sekarang: Date): DetailDesaKonsol {
     langganan: l ? { paket: l.paket, mulai: l.mulai, sampai: l.sampai, tagihan: l.tagihan } : { paket: 'Dasar', mulai: null, sampai: null, tagihan: [] },
   }
 }
+
+/** Satu desa di Pemantauan wilayah: hanya angka agregat (SPEC §11). */
+const barisPemantauan = (desa: Desa, a: AngkaKonsol): BarisPemantauanDesa => ({
+  id: desa.id, nama: desa.nama, status: desa.status, suratBulanIni: a.suratBulanIni, waktuLayananJam: a.waktuLayananJam, jiwa: a.jiwa,
+  kelengkapan: a.kelengkapan, waktuTanggapanJam: a.waktuTanggapanJam, apbdes: a.apbdes,
+})
+
+const urutNama = (a: { nama: string }, b: { nama: string }) => a.nama.localeCompare(b.nama, 'id')
 
 /** Slug yang belum dipakai: "sungai-sialang", lalu "sungai-sialang-2", dan seterusnya. */
 function slugBaru(db: DbDemo, nama: string): string {
@@ -186,6 +195,38 @@ export const handlerKonsol = [
         d.langganan.push({ desaId: id, paket, mulai: null, sampai: null, tagihan: [] })
       })
       return HttpResponse.json({ id, nama, email }, { status: 201 })
+    }),
+  ),
+  http.get(
+    `${API}/konsol/pemantauan`,
+    denganJaringan(({ request }) => {
+      const pengguna = butuhPenggunaKonsol(request)
+      if (pengguna instanceof Response) return pengguna
+      const diminta = new URL(request.url).searchParams.get('wilayah')
+      // Pemantau selalu dibatasi ke wilayahnya; meminta wilayah lain berarti mencoba melihat yang bukan haknya (fokus review 1).
+      if (pengguna.wilayah && diminta !== null && diminta !== pengguna.wilayah.kode) {
+        return balasGalat('FORBIDDEN', 'Pemantau hanya membuka wilayahnya sendiri.', 403)
+      }
+      const kode = pengguna.wilayah?.kode ?? diminta
+      if (!kode) return balasField('wilayah', 'Pilih kabupaten.')
+      const nama = /^\d{2}\.\d{2}$/.test(kode) ? (KABUPATEN[kode.replace('.', '')] as string | undefined) : undefined
+      if (!nama) return balasField('wilayah', 'Kabupaten tidak dikenal.')
+      const db = ambilDb()
+      const sekarang = new Date()
+      const perKecamatan = new Map<string, { kecamatan: Desa['kecamatan']; desa: BarisPemantauanDesa[] }>()
+      for (const d of db.desa.filter((x) => x.kabupaten.kode === kode)) {
+        const k = perKecamatan.get(d.kecamatan.kode) ?? { kecamatan: d.kecamatan, desa: [] }
+        k.desa.push(barisPemantauan(d, angkaKonsolDesa(db, d, sekarang)))
+        perKecamatan.set(d.kecamatan.kode, k)
+      }
+      const kecamatan = [...perKecamatan.values()].sort((a, b) => urutNama(a.kecamatan, b.kecamatan))
+      const hasil: Pemantauan = {
+        wilayah: { kode, nama },
+        bulan: tanggalIsoWib(sekarang).slice(0, 7),
+        total: ringkasWilayah(kecamatan.flatMap((k) => k.desa)),
+        kecamatan: kecamatan.map((k) => ({ kecamatan: k.kecamatan, ...ringkasWilayah(k.desa), desa: [...k.desa].sort(urutNama) })),
+      }
+      return HttpResponse.json(hasil)
     }),
   ),
 ]

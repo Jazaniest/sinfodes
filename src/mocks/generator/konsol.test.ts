@@ -90,4 +90,21 @@ describe('data Konsol (SPEC §12.8, §11)', () => {
       expect.objectContaining({ nama: 'Dinas PMD Kabupaten Pelalawan', peran: 'pemantau', wilayah: { kode: '14.05', nama: 'Pelalawan' } }),
     ])
   })
+  it('angka Pemantauan desa fiktif: Persiapan dan Ditangguhkan kosong; yang lain dalam rentang wajar', () => {
+    for (const r of db.rekamDesa) {
+      const status = db.desa.find((d) => d.id === r.desaId)?.status
+      if (status === 'Persiapan' || status === 'Ditangguhkan') {
+        expect(r).toMatchObject({ waktuLayananJam: null, waktuTanggapanJam: null, apbdes: null })
+        continue
+      }
+      expect(r.apbdes).not.toBeNull()
+      const rasio = (r.apbdes?.realisasi ?? 0) / (r.apbdes?.anggaran ?? 1)
+      expect(rasio).toBeGreaterThanOrEqual(0.45)
+      expect(rasio).toBeLessThanOrEqual(0.85)
+      if (r.waktuLayananJam !== null) expect(r.waktuLayananJam).toBeGreaterThanOrEqual(18)
+      if (r.waktuTanggapanJam !== null) expect(r.waktuTanggapanJam).toBeGreaterThanOrEqual(4)
+    }
+    // Uji coba Bukit Pelangi diam 30 hari: tidak ada surat 30 hari terakhir, jadi median layanannya kosong.
+    expect(db.rekamDesa.find((r) => r.desaId === 'desa_bukit_pelangi')?.waktuLayananJam).toBeNull()
+  })
 })

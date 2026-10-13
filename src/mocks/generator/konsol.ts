@@ -82,7 +82,9 @@ function rentangPakai(acak: Acak, r: RencanaDesaKonsol, acuan: Date): { mulai: n
   return { mulai: acuan.getTime() - acak.bulat(400, 900) * HARI_MS, akhir }
 }
 
-function rekamDesa(acak: Acak, r: RencanaDesaKonsol, desa: Desa, acuan: Date): RekamDesa {
+type AngkaPemantauanRekam = Pick<RekamDesa, 'waktuLayananJam' | 'waktuTanggapanJam' | 'apbdes'>
+
+function rekamDesa(acak: Acak, r: RencanaDesaKonsol, desa: Desa, acuan: Date): Omit<RekamDesa, keyof AngkaPemantauanRekam> {
   const hariIni = tanggalIsoWib(acuan)
   const pakai = rentangPakai(acak, r, acuan)
   const langkahSelesai = r.status === 'Persiapan' ? (r.langkah ?? 0) : 5
@@ -157,13 +159,30 @@ function langgananDesa(acak: Acak, o: { desa: Desa; paket: Paket; rencana: Renca
   }
 }
 
+const satuDesimal = (n: number) => Math.round(n * 10) / 10
+
+/**
+ * Angka Pemantauan wilayah desa fiktif (SPEC §11). Desa Persiapan belum memakai layanan, dan desa Ditangguhkan berhenti
+ * memakainya, jadi keduanya kosong. Desa yang diam 30 hari atau lebih tidak punya surat 30 hari terakhir.
+ */
+export function angkaPemantauanFiktif(acak: Acak, r: RencanaDesaKonsol): AngkaPemantauanRekam {
+  if (r.status === 'Persiapan' || r.status === 'Ditangguhkan') return { waktuLayananJam: null, waktuTanggapanJam: null, apbdes: null }
+  const ujiCoba = r.status === 'Uji coba'
+  const anggaran = acak.bulat(900, 2600) * 1_000_000
+  return {
+    waktuLayananJam: r.diam < 30 ? satuDesimal(ujiCoba ? 30 + acak.angka() * 90 : 18 + acak.angka() * 54) : null,
+    waktuTanggapanJam: acak.peluang(0.15) ? null : satuDesimal(ujiCoba ? 12 + acak.angka() * 108 : 4 + acak.angka() * 68),
+    apbdes: { anggaran, realisasi: Math.round(anggaran * (ujiCoba ? 0.45 + acak.angka() * 0.3 : 0.55 + acak.angka() * 0.3)) },
+  }
+}
+
 /**
  * Data Konsol (SPEC §11, §12.8): 38 desa fiktif dengan angka pemakaiannya, langganan dan tagihan semua desa, dan akun konsol.
  * `desaPanel` adalah desa yang punya data panel (Sungai Sialang, Tanjung Lamo); angkanya dihitung langsung, bukan dari sini.
  */
 export function bangkitkanKonsol(
   acak: Acak,
-  o: { acuan: Date; desaPanel: readonly Desa[] },
+  o: { acuan: Date; desaPanel: readonly Desa[]; acakPemantauan: Acak },
 ): { desa: Desa[]; rekam: RekamDesa[]; langganan: Langganan[]; penggunaKonsol: PenggunaKonsol[] } {
   const desa = DESA_KONSOL.map((r, i) => desaFiktif(r, i))
   const nomor = (i: number) => String(i + 1).padStart(3, '0')
@@ -175,7 +194,8 @@ export function bangkitkanKonsol(
   ]
   return {
     desa,
-    rekam: DESA_KONSOL.map((r, i) => rekamDesa(acak, r, desa[i], o.acuan)),
+    // Aliran acak terpisah: angka Pemantauan tidak menggeser angka rekaman lain (tahap 6A).
+    rekam: DESA_KONSOL.map((r, i) => ({ ...rekamDesa(acak, r, desa[i], o.acuan), ...angkaPemantauanFiktif(o.acakPemantauan, r) })),
     langganan,
     penggunaKonsol: PENGGUNA_KONSOL_DEMO.map((p) => structuredClone(p)),
   }

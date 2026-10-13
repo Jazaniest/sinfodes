@@ -103,8 +103,12 @@ export function bangkitkanDb(sekarang: Date): DbDemo {
   })
   // Tanpa PRNG: isi website tetap (SPEC §12.6).
   const website = bangkitkanWebsite({ desa: desaDemo, dusun: DUSUN_DEMO, pengguna: PENGGUNA_DEMO, acuan: sekarang })
-  // Aliran acak kesepuluh dan kesebelas: data Konsol dan riwayat masuk panel (SPEC §11).
-  const konsol = bangkitkanKonsol(buatAcak(SEED_DEMO + 9), { acuan: sekarang, desaPanel: DESA_DEMO })
+  // Aliran acak kesepuluh sampai kedua belas: data Konsol, riwayat masuk panel, dan angka Pemantauan desa fiktif (SPEC §11).
+  const konsol = bangkitkanKonsol(buatAcak(SEED_DEMO + 9), {
+    acuan: sekarang,
+    desaPanel: DESA_DEMO,
+    acakPemantauan: buatAcak(SEED_DEMO + 11),
+  })
   const riwayatMasuk = bangkitkanRiwayatMasuk(buatAcak(SEED_DEMO + 10), {
     pengguna: PENGGUNA_DEMO.filter((p) => p.desaId === ID_SUNGAI_SIALANG),
     acuan: sekarang,

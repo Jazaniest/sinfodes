@@ -1,6 +1,7 @@
 import { queryOptions } from '@tanstack/react-query'
 import { z } from 'zod'
 import { daftarSchema } from '@/domain/api'
+import { pemantauanSchema } from '@/domain/konsol/pemantauan'
 import {
   barisDesaKonsolSchema, detailDesaKonsolSchema, hasilTambahDesaSchema, ringkasanKonsolSchema, sesiKonsolSchema, type FilterDesaKonsol,
   type TambahDesa,
@@ -13,6 +14,7 @@ export const kunciKonsol = {
   ringkasan: ['konsol', 'ringkasan'] as const,
   desa: (filter: FilterDesaKonsol) => ['konsol', 'desa', filter] as const,
   detail: (id: string) => ['konsol', 'desa-detail', id] as const,
+  pemantauan: (wilayah: string | null) => ['konsol', 'pemantauan', wilayah] as const,
 }
 
 export const hasilMasukKonsolSchema = z.object({ token: z.string(), sesi: sesiKonsolSchema })
@@ -45,3 +47,9 @@ export const opsiDetailDesaKonsol = (id: string) =>
 
 export const tambahDesa = (isian: TambahDesa) =>
   panggilApi('POST', '/konsol/desa', { skema: hasilTambahDesaSchema, body: isian, sesi: 'konsol' })
+
+/** `wilayah` null: pemantau memakai wilayahnya sendiri; Tim Sinfodes wajib memilih kabupaten. */
+export const ambilPemantauan = (wilayah: string | null, signal?: AbortSignal) =>
+  panggilApi('GET', '/konsol/pemantauan', { skema: pemantauanSchema, query: wilayah ? { wilayah } : {}, signal, sesi: 'konsol' })
+export const opsiPemantauan = (wilayah: string | null) =>
+  queryOptions({ queryKey: kunciKonsol.pemantauan(wilayah), queryFn: ({ signal }) => ambilPemantauan(wilayah, signal) })

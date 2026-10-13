@@ -1,5 +1,7 @@
 import { daftarBulanTerakhir, tanggalIsoWib } from '@/domain/format/tanggal'
+import { jumlahKelompok } from '@/domain/keuangan/schema'
 import { daftarMingguTerakhir } from '@/domain/konsol/aturan'
+import { bulatJam, median } from '@/domain/konsol/pemantauan'
 import { dataBelumLengkap } from '@/domain/penduduk/filter'
 import { persiapanBerurutan, type Persiapan } from '@/domain/wilayah/persiapan'
 import type { Desa } from '@/domain/wilayah/schema'
@@ -8,7 +10,10 @@ import type { DbDemo, RekamDesa } from './tipe-db'
 
 const HARI_MS = 86_400_000
 
-export type AngkaKonsol = Omit<RekamDesa, 'desaId' | 'langkahSelesai'> & { persiapan: Persiapan }
+/** `suratBulanIni`: surat Selesai yang terbit pada bulan berjalan, untuk Pemantauan wilayah. */
+export type AngkaKonsol = Omit<RekamDesa, 'desaId' | 'langkahSelesai'> & { persiapan: Persiapan; suratBulanIni: number }
+
+const jamAntara = (dari: string, sampai: string) => (Date.parse(sampai) - Date.parse(dari)) / 3_600_000
 
 const tambahTujuhHari = (senin: string) => new Date(Date.parse(`${senin}T00:00:00Z`) + 7 * HARI_MS).toISOString().slice(0, 10)
 
@@ -20,9 +25,12 @@ export function angkaKonsolDesa(db: DbDemo, desa: Desa, sekarang: Date): AngkaKo
   const rekam = db.rekamDesa.find((r) => r.desaId === desa.id)
   if (rekam) {
     const { jiwa, kelengkapan, penggunaAktif, aktivitasTerakhir, suratPerBulan, masukPerMinggu, suratMingguIni, kontak } = rekam
+    const { waktuLayananJam, waktuTanggapanJam, apbdes } = rekam
     return {
       jiwa, kelengkapan, penggunaAktif, aktivitasTerakhir, suratPerBulan, masukPerMinggu, suratMingguIni, kontak,
+      waktuLayananJam, waktuTanggapanJam, apbdes,
       persiapan: persiapanBerurutan(rekam.langkahSelesai),
+      suratBulanIni: suratPerBulan.at(-1)?.jumlah ?? 0,
     }
   }
   const hidup = db.penduduk.filter((p) => p.desaId === desa.id && p.statusDasar === 'Hidup')
@@ -33,6 +41,15 @@ export function angkaKonsolDesa(db: DbDemo, desa: Desa, sekarang: Date): AngkaKo
   const terbit = db.permohonan.filter((p) => p.desaId === desa.id).flatMap((p) => (p.terbit ? [p.terbit.pada] : []))
   const penggunaDesa = db.pengguna.filter((p) => p.desaId === desa.id)
   const operator = penggunaDesa.find((p) => p.peran === 'operator')
+  // Pemantauan wilayah (SPEC §11): hanya surat Selesai (sah), sama dengan daftar Selesai di panel desa.
+  const selesai = db.permohonan.flatMap((p) => (p.desaId === desa.id && p.status === 'selesai' && p.terbit ? [{ masuk: p.masukPada, terbit: p.terbit.pada }] : []))
+  const bulanIni = tanggalIsoWib(sekarang).slice(0, 7)
+  const tanggapan = db.pengaduan.flatMap((a) =>
+    a.desaId === desa.id && a.tanggapanPertamaPada && Date.parse(a.masukPada) >= sekarang.getTime() - 90 * HARI_MS
+      ? [jamAntara(a.masukPada, a.tanggapanPertamaPada)]
+      : [],
+  )
+  const apbdes = db.apbdes.find((a) => a.desaId === desa.id && a.tahun === Number(bulanIni.slice(0, 4)))
   return {
     jiwa: hidup.length,
     kelengkapan: hidup.length > 0 ? lengkap / hidup.length : null,
@@ -51,5 +68,11 @@ export function angkaKonsolDesa(db: DbDemo, desa: Desa, sekarang: Date): AngkaKo
       kades: penggunaDesa.find((p) => p.peran === 'kades' && p.aktif)?.nama ?? null,
       operator: operator ? { nama: operator.nama, email: operator.email } : null,
     },
+    suratBulanIni: selesai.filter((s) => tanggalIsoWib(new Date(s.terbit)).startsWith(bulanIni)).length,
+    waktuLayananJam: bulatJam(
+      median(selesai.filter((s) => Date.parse(s.terbit) >= sekarang.getTime() - 30 * HARI_MS).map((s) => jamAntara(s.masuk, s.terbit))),
+    ),
+    waktuTanggapanJam: bulatJam(median(tanggapan)),
+    apbdes: apbdes ? jumlahKelompok(apbdes, 'belanja') : null,
   }
 }

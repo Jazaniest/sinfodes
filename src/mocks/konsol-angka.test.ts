@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { tanggalIsoWib } from '@/domain/format/tanggal'
+import { jumlahKelompok } from '@/domain/keuangan/schema'
 import { jumlahSelesai, langkahBerikut } from '@/domain/wilayah/persiapan'
 import { ID_SUNGAI_SIALANG, ID_TANJUNG_LAMO } from './data/desa-demo'
 import { bangkitkanDb } from './generator'
@@ -61,5 +62,29 @@ describe('angka Konsol per desa (SPEC §11)', () => {
     const a = angkaKonsolDesa(db, desa(db, 'desa_serapung_laut'), SEKARANG)
     expect(langkahBerikut(a.persiapan)).toBe('impor')
     expect(a).toMatchObject({ jiwa: 0, kelengkapan: null })
+  })
+  it('angka Pemantauan Sungai Sialang dari data panel: surat Selesai bulan ini, median jam layanan dan tanggapan, belanja APBDes', () => {
+    const db = bangkitkanDb(SEKARANG)
+    const a = angkaKonsolDesa(db, desa(db, ID_SUNGAI_SIALANG), SEKARANG)
+    const selesaiSeptember = db.permohonan.filter(
+      (p) => p.desaId === ID_SUNGAI_SIALANG && p.status === 'selesai' && p.terbit && tanggalIsoWib(new Date(p.terbit.pada)).startsWith('2026-09'),
+    )
+    expect(a.suratBulanIni).toBe(selesaiSeptember.length)
+    expect(a.suratBulanIni).toBeGreaterThan(0)
+    expect(a.waktuLayananJam).toBeGreaterThan(0)
+    expect(a.waktuLayananJam).toBeLessThan(24 * 30)
+    expect(a.waktuTanggapanJam).toBeGreaterThan(0)
+    const apbdes = db.apbdes.find((x) => x.desaId === ID_SUNGAI_SIALANG && x.tahun === 2026)
+    if (!apbdes) throw new Error('APBDes 2026 Sungai Sialang tidak ada')
+    expect(a.apbdes).toEqual(jumlahKelompok(apbdes, 'belanja'))
+  })
+  it('angka Pemantauan desa tanpa data: Tanjung Lamo dan desa fiktif Persiapan kosong, bukan nol palsu (fokus review 3)', () => {
+    const db = bangkitkanDb(SEKARANG)
+    const kosong = { suratBulanIni: 0, waktuLayananJam: null, waktuTanggapanJam: null, apbdes: null }
+    expect(angkaKonsolDesa(db, desa(db, ID_TANJUNG_LAMO), SEKARANG)).toMatchObject(kosong)
+    expect(angkaKonsolDesa(db, desa(db, 'desa_serapung_laut'), SEKARANG)).toMatchObject(kosong)
+    const gelugur = angkaKonsolDesa(db, desa(db, 'desa_sungai_gelugur'), SEKARANG)
+    expect(gelugur.suratBulanIni).toBe(gelugur.suratPerBulan.at(-1)?.jumlah)
+    expect(gelugur.apbdes).not.toBeNull()
   })
 })
