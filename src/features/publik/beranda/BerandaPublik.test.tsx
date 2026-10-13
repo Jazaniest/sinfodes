@@ -1,10 +1,11 @@
 import { screen, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
+import { ubahDb } from '@/mocks/db'
 import { pakaiApiTiruan } from '@/test/api-tiruan'
 import { renderPublik } from '@/test/render'
 import { BerandaPublik } from './BerandaPublik'
 
-pakaiApiTiruan()
+pakaiApiTiruan({ dbSegarTiapUji: true })
 
 describe('Beranda website desa (SPEC §9)', () => {
   it('berita utama dengan foto besar, keterangan, dan kredit; bukan banner sambutan', async () => {
@@ -42,5 +43,28 @@ describe('Beranda website desa (SPEC §9)', () => {
     const angka = screen.getByRole('region', { name: 'Desa dalam angka' })
     expect(angka).toHaveTextContent(/Desa Sungai Sialang dihuni [\d.]+ jiwa dalam [\d.]+ keluarga, tersebar di 4 dusun/)
     expect(within(angka).getByRole('img', { name: 'Lanskap Sungai Kampar' })).toHaveAttribute('loading', 'lazy')
+  })
+  it('cuplikan APBDes (MiniBar pendapatan dan belanja) dan potensi desa, menuju Transparansi dan Potensi (SPEC §9)', async () => {
+    renderPublik(<BerandaPublik />)
+    const apbdes = await screen.findByRole('region', { name: 'APBDes 2026' })
+    expect(within(apbdes).getByRole('meter', { name: 'Pendapatan' })).toHaveAttribute('aria-valuetext', expect.stringMatching(/^\d+,\d%$/))
+    expect(within(apbdes).getByRole('meter', { name: 'Belanja' })).toBeInTheDocument()
+    expect(apbdes).toHaveTextContent('dari Rp1,83 M')
+    expect(within(apbdes).getByRole('link', { name: 'Rincian APBDes' })).toHaveAttribute('href', '/desa/sungai-sialang/transparansi')
+    const potensi = screen.getByRole('region', { name: 'Potensi desa' })
+    expect(within(potensi).getAllByRole('listitem')).toHaveLength(6)
+    expect(within(potensi).getByRole('link', { name: /Madu sialang$/ })).toHaveAttribute('href', '/desa/sungai-sialang/potensi#ptn_ss_01')
+    expect(within(potensi).getByRole('link', { name: 'Potensi dan UMKM' })).toHaveAttribute('href', '/desa/sungai-sialang/potensi')
+    expect(potensi.querySelector('img')).toHaveAttribute('loading', 'lazy')
+  })
+  it('desa yang belum mengumumkan APBDes dan potensi: kedua rubrik dilewati (fokus review 1)', async () => {
+    ubahDb((d) => {
+      d.apbdes = []
+      d.potensi = []
+    })
+    renderPublik(<BerandaPublik />)
+    expect(await screen.findByRole('region', { name: 'Desa dalam angka' })).toBeInTheDocument()
+    expect(screen.queryByRole('region', { name: /^APBDes/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('region', { name: 'Potensi desa' })).not.toBeInTheDocument()
   })
 })

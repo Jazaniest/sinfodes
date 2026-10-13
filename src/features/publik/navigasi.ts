@@ -1,11 +1,15 @@
 export type ItemMenuPublik = { label: string; href: string }
 
-/** Menu website desa (SPEC §9). Profil, Transparansi, Statistik, dan Potensi menyusul di Tahap 5B bersama halamannya. */
+/** Menu website desa (SPEC §9), urut seperti kepala warta desa. Di HP menu bergulir ke samping. */
 export function menuPublik(slug: string): ItemMenuPublik[] {
   const dasar = `/desa/${slug}`
   return [
     { label: 'Beranda', href: dasar },
+    { label: 'Profil', href: `${dasar}/profil` },
     { label: 'Kabar', href: `${dasar}/kabar` },
+    { label: 'Transparansi', href: `${dasar}/transparansi` },
+    { label: 'Statistik', href: `${dasar}/statistik` },
+    { label: 'Potensi', href: `${dasar}/potensi` },
     { label: 'Layanan', href: `${dasar}/layanan` },
     { label: 'Cek surat', href: `${dasar}/verifikasi` },
   ]

@@ -138,7 +138,10 @@ export function HalamanDemo() {
           <li className="flex flex-wrap items-center justify-between gap-4 py-4">
             <div>
               <p className="font-medium">Website desa</p>
-              <p className="text-tinta-2">Untuk warga dan publik: kabar desa, layanan, dan cek keaslian surat lewat kode atau QR.</p>
+              <p className="text-tinta-2">
+                Untuk warga dan publik: kabar, profil, transparansi APBDes, statistik, potensi desa, layanan, dan cek keaslian surat lewat
+                kode atau QR.
+              </p>
             </div>
             <Link
               to="/desa/$slug"

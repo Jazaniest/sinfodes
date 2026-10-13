@@ -13,12 +13,15 @@ function pasang(jalur: string, ubah: Partial<IdentitasPublik> = {}) {
 }
 
 describe('kerangka website desa (SPEC §9)', () => {
-  it('kepala warta desa dan menu: hanya halaman yang sudah ada, menu aktif juga di halaman di bawahnya', () => {
+  it('kepala warta desa dan menu lengkap SPEC §9; menu aktif juga di halaman di bawahnya', () => {
     pasang('/desa/sungai-sialang/kabar/semenisasi-jalan-dusun-iii-capai-70-persen')
     expect(screen.getByRole('banner')).toHaveTextContent('Sungai Sialang')
     expect(screen.getByRole('banner')).toHaveTextContent('Kamis, 24 September 2026')
     const nav = screen.getByRole('navigation', { name: 'Menu website desa' })
-    expect(within(nav).getAllByRole('link').map((a) => a.textContent)).toEqual(['Beranda', 'Kabar', 'Layanan', 'Cek surat'])
+    expect(within(nav).getAllByRole('link').map((a) => a.textContent)).toEqual([
+      'Beranda', 'Profil', 'Kabar', 'Transparansi', 'Statistik', 'Potensi', 'Layanan', 'Cek surat',
+    ])
+    expect(within(nav).getByRole('link', { name: 'Transparansi' })).toHaveAttribute('href', '/desa/sungai-sialang/transparansi')
     expect(within(nav).getByRole('link', { name: 'Kabar' })).toHaveAttribute('aria-current', 'page')
     expect(within(nav).getByRole('link', { name: 'Beranda' })).not.toHaveAttribute('aria-current')
     expect(screen.getByRole('main')).toHaveTextContent('Isi halaman')

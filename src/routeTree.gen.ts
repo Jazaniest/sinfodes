@@ -26,6 +26,7 @@ import { Route as AdminPanelPetaRouteImport } from './routes/admin/_panel/peta'
 import { Route as DesaSlugIndexRouteImport } from './routes/desa/$slug/index'
 import { Route as DesaSlugKreditFotoRouteImport } from './routes/desa/$slug/kredit-foto'
 import { Route as DesaSlugLayananRouteImport } from './routes/desa/$slug/layanan'
+import { Route as DesaSlugPotensiRouteImport } from './routes/desa/$slug/potensi'
 import { Route as DesaSlugProfilRouteImport } from './routes/desa/$slug/profil'
 import { Route as DesaSlugStatistikRouteImport } from './routes/desa/$slug/statistik'
 import { Route as DesaSlugTransparansiRouteImport } from './routes/desa/$slug/transparansi'
@@ -165,6 +166,11 @@ const DesaSlugKreditFotoRoute = DesaSlugKreditFotoRouteImport.update({
 const DesaSlugLayananRoute = DesaSlugLayananRouteImport.update({
   id: '/layanan',
   path: '/layanan',
+  getParentRoute: () => DesaSlugRoute,
+} as any)
+const DesaSlugPotensiRoute = DesaSlugPotensiRouteImport.update({
+  id: '/potensi',
+  path: '/potensi',
   getParentRoute: () => DesaSlugRoute,
 } as any)
 const DesaSlugProfilRoute = DesaSlugProfilRouteImport.update({
@@ -485,6 +491,7 @@ export interface FileRoutesByFullPath {
   '/admin/peta': typeof AdminPanelPetaRoute
   '/desa/$slug/kredit-foto': typeof DesaSlugKreditFotoRoute
   '/desa/$slug/layanan': typeof DesaSlugLayananRoute
+  '/desa/$slug/potensi': typeof DesaSlugPotensiRoute
   '/desa/$slug/profil': typeof DesaSlugProfilRoute
   '/desa/$slug/statistik': typeof DesaSlugStatistikRoute
   '/desa/$slug/transparansi': typeof DesaSlugTransparansiRoute
@@ -556,6 +563,7 @@ export interface FileRoutesByTo {
   '/admin/peta': typeof AdminPanelPetaRoute
   '/desa/$slug/kredit-foto': typeof DesaSlugKreditFotoRoute
   '/desa/$slug/layanan': typeof DesaSlugLayananRoute
+  '/desa/$slug/potensi': typeof DesaSlugPotensiRoute
   '/desa/$slug/profil': typeof DesaSlugProfilRoute
   '/desa/$slug/statistik': typeof DesaSlugStatistikRoute
   '/desa/$slug/transparansi': typeof DesaSlugTransparansiRoute
@@ -631,6 +639,7 @@ export interface FileRoutesById {
   '/admin/_panel/peta': typeof AdminPanelPetaRoute
   '/desa/$slug/kredit-foto': typeof DesaSlugKreditFotoRoute
   '/desa/$slug/layanan': typeof DesaSlugLayananRoute
+  '/desa/$slug/potensi': typeof DesaSlugPotensiRoute
   '/desa/$slug/profil': typeof DesaSlugProfilRoute
   '/desa/$slug/statistik': typeof DesaSlugStatistikRoute
   '/desa/$slug/transparansi': typeof DesaSlugTransparansiRoute
@@ -707,6 +716,7 @@ export interface FileRouteTypes {
     | '/admin/peta'
     | '/desa/$slug/kredit-foto'
     | '/desa/$slug/layanan'
+    | '/desa/$slug/potensi'
     | '/desa/$slug/profil'
     | '/desa/$slug/statistik'
     | '/desa/$slug/transparansi'
@@ -778,6 +788,7 @@ export interface FileRouteTypes {
     | '/admin/peta'
     | '/desa/$slug/kredit-foto'
     | '/desa/$slug/layanan'
+    | '/desa/$slug/potensi'
     | '/desa/$slug/profil'
     | '/desa/$slug/statistik'
     | '/desa/$slug/transparansi'
@@ -852,6 +863,7 @@ export interface FileRouteTypes {
     | '/admin/_panel/peta'
     | '/desa/$slug/kredit-foto'
     | '/desa/$slug/layanan'
+    | '/desa/$slug/potensi'
     | '/desa/$slug/profil'
     | '/desa/$slug/statistik'
     | '/desa/$slug/transparansi'
@@ -1040,6 +1052,13 @@ declare module '@tanstack/react-router' {
       path: '/layanan'
       fullPath: '/desa/$slug/layanan'
       preLoaderRoute: typeof DesaSlugLayananRouteImport
+      parentRoute: typeof DesaSlugRoute
+    }
+    '/desa/$slug/potensi': {
+      id: '/desa/$slug/potensi'
+      path: '/potensi'
+      fullPath: '/desa/$slug/potensi'
+      preLoaderRoute: typeof DesaSlugPotensiRouteImport
       parentRoute: typeof DesaSlugRoute
     }
     '/desa/$slug/profil': {
@@ -1545,6 +1564,7 @@ const AdminPanelRouteWithChildren = AdminPanelRoute._addFileChildren(
 interface DesaSlugRouteChildren {
   DesaSlugKreditFotoRoute: typeof DesaSlugKreditFotoRoute
   DesaSlugLayananRoute: typeof DesaSlugLayananRoute
+  DesaSlugPotensiRoute: typeof DesaSlugPotensiRoute
   DesaSlugProfilRoute: typeof DesaSlugProfilRoute
   DesaSlugStatistikRoute: typeof DesaSlugStatistikRoute
   DesaSlugTransparansiRoute: typeof DesaSlugTransparansiRoute
@@ -1557,6 +1577,7 @@ interface DesaSlugRouteChildren {
 const DesaSlugRouteChildren: DesaSlugRouteChildren = {
   DesaSlugKreditFotoRoute: DesaSlugKreditFotoRoute,
   DesaSlugLayananRoute: DesaSlugLayananRoute,
+  DesaSlugPotensiRoute: DesaSlugPotensiRoute,
   DesaSlugProfilRoute: DesaSlugProfilRoute,
   DesaSlugStatistikRoute: DesaSlugStatistikRoute,
   DesaSlugTransparansiRoute: DesaSlugTransparansiRoute,
