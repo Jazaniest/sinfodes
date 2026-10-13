@@ -19,11 +19,11 @@ import type { SuratMasuk } from '@/domain/surat/arsip'
 import type { JenisSurat } from '@/domain/surat/jenis'
 import type { PengaturanSurat } from '@/domain/surat/pengaturan'
 import type { Permohonan } from '@/domain/surat/permohonan'
-import type { Agenda, Artikel, FotoGaleri, Pengumuman, TampilanWebsite } from '@/domain/website/schema'
+import type { Agenda, Artikel, FotoGaleri, Pengumuman, Potensi, ProfilDesa, TampilanWebsite, Umkm } from '@/domain/website/schema'
 import type { Desa, Dusun } from '@/domain/wilayah/schema'
 
 /** Naikkan setiap kali seed atau struktur data berubah; data lama di IndexedDB otomatis diganti (SPEC §12). */
-export const VERSI_DATA = 12
+export const VERSI_DATA = 13
 
 /** Berkas impor yang sudah diperiksa dan menunggu konfirmasi (SPEC §6.8). */
 export type SesiImpor = { id: string; desaId: string; olehId: string; laporan: LaporanImpor; selesai: boolean }
@@ -91,6 +91,10 @@ export type DbDemo = {
   agenda: Agenda[]
   galeri: FotoGaleri[]
   tampilanWebsite: TampilanWebsite[]
+  /** Isi halaman Profil dan Potensi website (SPEC §9, §12.6): satu profil per desa, potensi, dan UMKM warga. */
+  profilDesa: ProfilDesa[]
+  potensi: Potensi[]
+  umkm: Umkm[]
   /** Layanan mandiri warga (SPEC §10). */
   akunWarga: AkunWarga[]
   percobaanMasukWarga: PercobaanMasukWarga[]

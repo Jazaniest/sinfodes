@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { agendaSchema, artikelSchema, fotoGaleriSchema, pengumumanSchema, statusPengumuman, tampilanWebsiteSchema } from '@/domain/website/schema'
+import {
+  agendaSchema, artikelSchema, fotoGaleriSchema, pengumumanSchema, potensiSchema, profilDesaSchema, statusPengumuman, tampilanWebsiteSchema,
+  umkmSchema,
+} from '@/domain/website/schema'
 import { FOTO_DEMO } from '../data/foto-demo'
 import { bangkitkanDb } from './index'
 
@@ -51,6 +54,31 @@ describe('isi website demo (SPEC §12.6, §9)', () => {
     expect(db.galeri.filter((f) => f.album === 'Pembangunan').map((f) => f.judul)).toEqual([
       'Semenisasi jalan Dusun III, progres 0%', 'Semenisasi jalan Dusun III, progres 50%', 'Semenisasi jalan Dusun III, progres 100%',
     ])
+  })
+  it('profil, 6 potensi berfoto, dan 5 UMKM dengan WhatsApp penjual (SPEC §9, §12.6)', () => {
+    expect(db.profilDesa).toHaveLength(1)
+    const [profil] = db.profilDesa
+    expect(profilDesaSchema.parse(profil)).toEqual(profil)
+    expect(profil).toMatchObject({ desaId: 'desa_sungai_sialang', foto: '/demo/foto/kantor-desa.jpg' })
+    expect(profil.sejarah).toHaveLength(3)
+    expect(profil.misi).toHaveLength(5)
+    expect(profil.jarak.map((j) => j.ke)).toEqual(['ibu kota kecamatan', 'ibu kota kabupaten'])
+    expect(db.potensi.map((p) => p.judul)).toEqual([
+      'Madu sialang', 'Kebun sawit rakyat', 'Karet rakyat', 'Ikan salai selais', 'Ombak Bono', 'Susur Sungai Kampar',
+    ])
+    const berkasGaleri = new Set(db.galeri.filter((f) => f.tersedia).map((f) => f.berkas))
+    for (const p of db.potensi) {
+      expect(potensiSchema.parse(p)).toEqual(p)
+      expect(p.foto !== null && berkasGaleri.has(p.foto), p.judul).toBe(true)
+    }
+    expect(db.potensi.map((p) => p.urutan)).toEqual([0, 1, 2, 3, 4, 5])
+    expect(db.umkm).toHaveLength(5)
+    for (const u of db.umkm) {
+      expect(umkmSchema.parse(u)).toEqual(u)
+      expect(db.dusun.some((d) => d.id === u.dusunId), u.nama).toBe(true)
+    }
+    // Zulkifli (akun warga demo, pemilik usaha): nomornya sama dengan WhatsApp akun warganya.
+    expect(db.umkm.find((u) => u.pemilik === 'Zulkifli')).toMatchObject({ nama: 'Toko Bangunan Rengas Jaya', whatsapp: '081371185570' })
   })
   it('tampilan bawaan: Biru tinta, Pucuk rebung, sampul foto Sungai Kampar, tanpa logo; belum ada percobaan verifikasi', () => {
     expect(db.tampilanWebsite).toHaveLength(1)

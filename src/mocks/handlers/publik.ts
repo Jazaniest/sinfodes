@@ -1,13 +1,14 @@
 import { http, HttpResponse } from 'msw'
 import { tanggalIsoWib, waktuIsoWib } from '@/domain/format/tanggal'
 import { jadwalBerikut, teksJadwal } from '@/domain/kesehatan/schema'
+import { jumlahKelompok } from '@/domain/keuangan/schema'
 import { LABEL_PERAN } from '@/domain/pengguna/schema'
 import {
   agendaPublikSchema, pengumumanPublikSchema, verifikasiMasukanSchema, type AngkaDesa, type ArtikelPublik, type BerandaPublik,
   type FotoPublik, type HasilVerifikasi, type IdentitasPublik, type KreditFotoPublik, type LayananPublik, type RingkasArtikel,
 } from '@/domain/publik/schema'
 import { hitungBerlaku, kodeSah, rapikanKode, samarkanNama } from '@/domain/publik/verifikasi'
-import { statusPengumuman, type Artikel } from '@/domain/website/schema'
+import { statusPengumuman, type Artikel, type Potensi } from '@/domain/website/schema'
 import { namaDusun } from '@/domain/wilayah/alamat'
 import type { Desa } from '@/domain/wilayah/schema'
 import { ambilDb, ubahDb } from '../db'
@@ -15,6 +16,7 @@ import { API, balasDaftar, balasGalat, denganJaringan } from '../http'
 import { perkiraanHariKerja } from '../surat-perkiraan'
 import type { DbDemo } from '../tipe-db'
 import { bacaJson } from '../tulis'
+import { apbdesTerbaru } from './keuangan'
 import { tampilanDesa } from './website'
 
 /** Website hanya untuk desa yang sedang berjalan; desa yang baru disiapkan atau ditangguhkan belum punya website (fokus review 4). */
@@ -38,7 +40,7 @@ function identitas(db: DbDemo, d: Desa): IdentitasPublik {
 }
 
 /** Foto kurasi dari galeri beserta keterangan dan kreditnya; null bila berkasnya belum tersedia. */
-function fotoDari(db: DbDemo, desaId: string, berkas: string | null): FotoPublik | null {
+export function fotoDari(db: DbDemo, desaId: string, berkas: string | null): FotoPublik | null {
   const f = berkas ? db.galeri.find((x) => x.desaId === desaId && x.berkas === berkas && x.tersedia) : undefined
   if (!f) return null
   return { berkas: f.berkas, keterangan: f.judul, kredit: f.kredit ? `${f.kredit.pembuat} · ${f.kredit.lisensi}` : null }
@@ -59,11 +61,19 @@ const ringkas = (db: DbDemo, a: Artikel): RingkasArtikel => ({
 const terbit = (db: DbDemo, desaId: string): Artikel[] =>
   db.artikel.filter((a) => a.desaId === desaId && a.status === 'terbit').sort((a, b) => b.tanggal.localeCompare(a.tanggal))
 
+/** Potensi desa urut tampil (SPEC §9). */
+export const potensiDesa = (db: DbDemo, desaId: string): Potensi[] =>
+  db.potensi.filter((p) => p.desaId === desaId).sort((a, b) => a.urutan - b.urutan)
+
+/** KK yang masih punya anggota, sama dengan hitungan panel admin (cakupan.ts), supaya angka website dan panel sama. */
+export const jumlahKkAktif = (db: DbDemo, desaId: string): number =>
+  db.keluarga.filter((k) => k.desaId === desaId && k.anggotaIds.length > 0).length
+
 function angkaDesa(db: DbDemo, d: Desa): AngkaDesa {
   const dusun = db.dusun.filter((x) => x.desaId === d.id)
   return {
     jiwa: db.penduduk.filter((p) => p.desaId === d.id && p.statusDasar === 'Hidup').length,
-    kk: db.keluarga.filter((k) => k.desaId === d.id).length,
+    kk: jumlahKkAktif(db, d.id),
     dusun: dusun.length,
     rt: dusun.reduce((n, x) => n + x.rw.reduce((m, rw) => m + rw.rt.length, 0), 0),
     luasKm2: d.luasKm2,
@@ -119,6 +129,7 @@ export const handlerPublik = [
       const { db, desa } = c
       const hariIni = tanggalIsoWib(new Date())
       const daftar = terbit(db, desa.id)
+      const apbdes = apbdesTerbaru(desa.id)
       // Berita utama: kabar terbaru yang berfoto (SPEC §9: foto besar dengan keterangan).
       const utama = daftar.find((a) => a.foto !== null) ?? daftar.at(0) ?? null
       const hasil: BerandaPublik = {
@@ -138,6 +149,10 @@ export const handlerPublik = [
           .map((a) => agendaPublikSchema.parse(a)),
         angka: angkaDesa(db, desa),
         sampul: sampulDari(db, desa),
+        apbdes: apbdes
+          ? { tahun: apbdes.tahun, pendapatan: jumlahKelompok(apbdes, 'pendapatan'), belanja: jumlahKelompok(apbdes, 'belanja') }
+          : null,
+        potensi: potensiDesa(db, desa.id).map((p) => ({ id: p.id, judul: p.judul, kategori: p.kategori, foto: fotoDari(db, desa.id, p.foto) })),
       }
       return HttpResponse.json(hasil)
     }),

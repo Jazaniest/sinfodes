@@ -1,8 +1,11 @@
 import { tanggalIsoWib } from '@/domain/format/tanggal'
 import type { Pengguna, Peran } from '@/domain/pengguna/schema'
-import type { Agenda, Artikel, FotoGaleri, KategoriArtikel, Pengumuman, TampilanWebsite } from '@/domain/website/schema'
-import type { Desa } from '@/domain/wilayah/schema'
+import type {
+  Agenda, Artikel, FotoGaleri, KategoriArtikel, Pengumuman, Potensi, ProfilDesa, TampilanWebsite, Umkm,
+} from '@/domain/website/schema'
+import type { Desa, Dusun } from '@/domain/wilayah/schema'
 import { NASKAH_ARTIKEL } from '../data/artikel-demo'
+import { POTENSI_DEMO, PROFIL_DEMO, UMKM_DEMO } from '../data/profil-demo'
 import { FOTO_DEMO, halamanCommons } from '../data/foto-demo'
 
 const HARI_MS = 86_400_000
@@ -98,12 +101,15 @@ const jadiSlug = (teks: string) =>
 const nomor2 = (i: number) => String(i + 1).padStart(2, '0')
 
 /** Isi Website Desa demo (SPEC §12.6). Tetap, tanpa PRNG; tanggal relatif terhadap tanggal acuan. */
-export function bangkitkanWebsite(o: { desa: Desa; pengguna: readonly Pengguna[]; acuan: Date }): {
+export function bangkitkanWebsite(o: { desa: Desa; dusun: readonly Dusun[]; pengguna: readonly Pengguna[]; acuan: Date }): {
   artikel: Artikel[]
   pengumuman: Pengumuman[]
   agenda: Agenda[]
   galeri: FotoGaleri[]
   tampilan: TampilanWebsite
+  profil: ProfilDesa
+  potensi: Potensi[]
+  umkm: Umkm[]
 } {
   const kode = o.desa.kodeSurat.toLowerCase()
   const geser = (hari: number) => tanggalIsoWib(new Date(o.acuan.getTime() + hari * HARI_MS))
@@ -111,6 +117,11 @@ export function bangkitkanWebsite(o: { desa: Desa; pengguna: readonly Pengguna[]
     const p = o.pengguna.find((x) => x.desaId === o.desa.id && x.peran === peran)
     if (!p) throw new Error(`Akun demo ${peran} tidak ada`)
     return p.nama
+  }
+  const dusunId = (nomor: number) => {
+    const d = o.dusun.find((x) => x.desaId === o.desa.id && x.nomor === nomor)
+    if (!d) throw new Error(`Dusun ${nomor} tidak ada`)
+    return d.id
   }
   return {
     artikel: ARTIKEL.map((r, i) => {
@@ -162,5 +173,14 @@ export function bangkitkanWebsite(o: { desa: Desa; pengguna: readonly Pengguna[]
       logo: null,
       diperbarui: `${geser(-30)}T10:00:00+07:00`,
     },
+    profil: { desaId: o.desa.id, ...structuredClone(PROFIL_DEMO) },
+    potensi: POTENSI_DEMO.map((p, i) => ({
+      id: `ptn_${kode}_${nomor2(i)}`, desaId: o.desa.id, judul: p.judul, kategori: p.kategori, ringkasan: p.ringkasan, isi: [...p.isi],
+      foto: `/demo/foto/${p.foto}.jpg`, urutan: i,
+    })),
+    umkm: UMKM_DEMO.map((u, i) => ({
+      id: `umk_${kode}_${nomor2(i)}`, desaId: o.desa.id, nama: u.nama, pemilik: u.pemilik, produk: u.produk, dusunId: dusunId(u.dusun),
+      whatsapp: u.whatsapp,
+    })),
   }
 }

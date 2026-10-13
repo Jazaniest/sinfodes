@@ -36,9 +36,13 @@ describe('Pembangunan (SPEC §8)', () => {
     expect(screen.getByRole('meter', { name: 'Progres fisik' })).toHaveAttribute('aria-valuetext', '70,0%')
     const dok = within(screen.getByRole('list', { name: 'Dokumentasi progres' })).getAllByRole('listitem')
     expect(dok).toHaveLength(3)
-    expect(dok[0]).toHaveTextContent('Belum ada foto')
+    expect(within(dok[0]).getByRole('img', { name: 'Semenisasi jalan lingkungan Dusun III, progres 0%' })).toHaveAttribute(
+      'src', '/demo/foto/semenisasi-0.jpg',
+    )
     expect(dok[0]).toHaveTextContent('Kondisi lokasi sebelum dikerjakan')
-    expect(dok[1]).toHaveTextContent('Belum ada foto')
+    expect(within(dok[1]).getByRole('img', { name: 'Semenisasi jalan lingkungan Dusun III, progres 50%' })).toHaveAttribute(
+      'src', '/demo/foto/semenisasi-50.jpg',
+    )
     expect(dok[2]).toHaveTextContent('Belum mencapai 100%')
     expect(within(screen.getByRole('complementary', { name: 'Rincian kegiatan' })).getByText('5.2.01')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Lihat di peta' })).toHaveAttribute('href', '/admin/peta?kegiatan=kgt_ss_01')

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
-  AKSEN_WEBSITE, artikelSchema, fotoGaleriSchema, statusPengumuman, tampilanWebsiteSchema, teksJamAgenda, ubahTampilanSchema,
-  type Artikel,
+  AKSEN_WEBSITE, artikelSchema, fotoGaleriSchema, profilDesaSchema, statusPengumuman, tampilanWebsiteSchema, teksJamAgenda,
+  ubahTampilanSchema, umkmSchema, type Artikel,
 } from './schema'
 
 const PNG_KECIL = `data:image/png;base64,${'A'.repeat(1364)}`
@@ -57,5 +57,16 @@ describe('Website Desa (SPEC §8, §9)', () => {
   it('jam agenda: rentang, atau "sampai selesai" bila jam selesai kosong', () => {
     expect(teksJamAgenda({ mulai: '09.00', selesai: '12.00' })).toBe('09.00–12.00 WIB')
     expect(teksJamAgenda({ mulai: '14.00', selesai: null })).toBe('14.00 WIB sampai selesai')
+  })
+  it('profil dan potensi hanya memakai foto kurasi; WhatsApp UMKM berupa nomor HP berawalan 08 (SPEC §9)', () => {
+    const profil = {
+      desaId: 'd', foto: '/demo/foto/kantor-desa.jpg', sejarah: ['Sejarah.'], visi: 'Visi.', misi: ['Misi.'],
+      jarak: [{ ke: 'ibu kota kecamatan', tempat: 'Teluk Meranti', km: 14 }],
+    }
+    expect(profilDesaSchema.safeParse(profil).success).toBe(true)
+    expect(profilDesaSchema.safeParse({ ...profil, foto: 'https://contoh.id/kantor.jpg' }).success).toBe(false)
+    const umkm = { id: 'u', desaId: 'd', nama: 'Usaha', pemilik: 'Pemilik', produk: 'Produk', dusunId: 'dsn', whatsapp: '081234567890' }
+    expect(umkmSchema.safeParse(umkm).success).toBe(true)
+    expect(umkmSchema.safeParse({ ...umkm, whatsapp: '+62 812-3456-7890' }).success).toBe(false)
   })
 })

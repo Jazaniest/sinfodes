@@ -101,7 +101,7 @@ export function bangkitkanDb(sekarang: Date): DbDemo {
     acuan: sekarang,
   })
   // Tanpa PRNG: isi website tetap (SPEC §12.6).
-  const website = bangkitkanWebsite({ desa: desaDemo, pengguna: PENGGUNA_DEMO, acuan: sekarang })
+  const website = bangkitkanWebsite({ desa: desaDemo, dusun: DUSUN_DEMO, pengguna: PENGGUNA_DEMO, acuan: sekarang })
   return {
     versiData: VERSI_DATA,
     tanggalAcuan: waktuIsoWib(sekarang),
@@ -132,6 +132,9 @@ export function bangkitkanDb(sekarang: Date): DbDemo {
     agenda: website.agenda,
     galeri: website.galeri,
     tampilanWebsite: [website.tampilan],
+    profilDesa: [website.profil],
+    potensi: website.potensi,
+    umkm: website.umkm,
     // Tanpa PRNG: data tahap sebelumnya tetap identik.
     akunWarga: AKUN_WARGA_DEMO.map(({ pendudukId, desaId, pin, whatsapp }) => ({ pendudukId, desaId, pin, whatsapp })),
     percobaanMasukWarga: [],

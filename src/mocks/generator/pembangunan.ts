@@ -23,6 +23,8 @@ type Rencana = {
   dok50: number | null
   dok100: number | null
   titik: Titik
+  /** Foto kurasi dokumentasi per persen progres (nama berkas di /demo/foto/), bila ada. */
+  foto?: Partial<Record<Dokumentasi['persen'], string>>
 }
 
 /** SPEC §12.6: Pembangunan 2026, total Rp721.900.000 di dalam bidang Pelaksanaan Pembangunan. */
@@ -30,6 +32,7 @@ const RENCANA: readonly Rencana[] = [
   {
     nama: 'Semenisasi jalan lingkungan Dusun III', volume: '450 m', lokasi: 'Jalan lingkungan RT 011–013', dusun: 3, anggaran: 245_000_000,
     sumber: 'DD', fisik: 70, keuangan: 0.62, mulai: -100, target: 45, dok50: -40, dok100: null, titik: [102.7505, 0.233],
+    foto: { 0: 'semenisasi-0', 50: 'semenisasi-50' },
   },
   {
     nama: 'Drainase RT 006–007', volume: '320 m', lokasi: 'RT 006 dan RT 007', dusun: 2, anggaran: 98_000_000,
@@ -83,10 +86,14 @@ export function bangkitkanPembangunan(o: { desa: Desa; dusun: readonly Dusun[]; 
   const kegiatan = RENCANA.map((r, i): Kegiatan => {
     const nomor = String(i + 1).padStart(2, '0')
     const mulai = r.mulai === null ? null : geser(r.mulai)
+    const foto = (persen: Dokumentasi['persen']) => {
+      const berkas = r.foto?.[persen]
+      return berkas ? `/demo/foto/${berkas}.jpg` : null
+    }
     const dokumentasi: Dokumentasi[] = [
-      { persen: 0, tanggal: geser(r.mulai ?? -10), keterangan: KETERANGAN[0], foto: null },
-      ...(r.dok50 === null ? [] : [{ persen: 50 as const, tanggal: geser(r.dok50), keterangan: KETERANGAN[50], foto: null }]),
-      ...(r.dok100 === null ? [] : [{ persen: 100 as const, tanggal: geser(r.dok100), keterangan: KETERANGAN[100], foto: null }]),
+      { persen: 0, tanggal: geser(r.mulai ?? -10), keterangan: KETERANGAN[0], foto: foto(0) },
+      ...(r.dok50 === null ? [] : [{ persen: 50 as const, tanggal: geser(r.dok50), keterangan: KETERANGAN[50], foto: foto(50) }]),
+      ...(r.dok100 === null ? [] : [{ persen: 100 as const, tanggal: geser(r.dok100), keterangan: KETERANGAN[100], foto: foto(100) }]),
     ]
     return {
       id: `kgt_${kode}_${nomor}`, desaId: o.desa.id, kodeApbdes: `5.2.${nomor}`, nama: r.nama, volume: r.volume, lokasi: r.lokasi,

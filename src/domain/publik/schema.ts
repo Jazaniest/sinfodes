@@ -1,6 +1,8 @@
 import { z } from 'zod'
 import { jenisSuratWargaSchema } from '../warga/ajukan'
-import { agendaSchema, ID_AKSEN, KATEGORI_ARTIKEL, kreditFotoSchema, MOTIF_WEBSITE, pengumumanSchema } from '../website/schema'
+import {
+  agendaSchema, ID_AKSEN, KATEGORI_ARTIKEL, KATEGORI_POTENSI, kreditFotoSchema, MOTIF_WEBSITE, pengumumanSchema,
+} from '../website/schema'
 import { desaSchema } from '../wilayah/schema'
 
 const waktu = z.iso.datetime({ offset: true })
@@ -45,6 +47,17 @@ export const agendaPublikSchema = agendaSchema.omit({ desaId: true })
 export const angkaDesaSchema = z.object({ jiwa: jumlah, kk: jumlah, dusun: jumlah, rt: jumlah, luasKm2: z.number().positive().nullable() })
 export type AngkaDesa = z.infer<typeof angkaDesaSchema>
 
+const anggaranRealisasiSchema = z.object({ anggaran: jumlah, realisasi: jumlah })
+
+/** Potensi desa di Beranda (SPEC §9): judul, kategori, dan foto; isinya ada di halaman Potensi. */
+export const ringkasPotensiSchema = z.object({
+  id: z.string(),
+  judul: z.string(),
+  kategori: z.enum(KATEGORI_POTENSI),
+  foto: fotoPublikSchema.nullable(),
+})
+export type RingkasPotensi = z.infer<typeof ringkasPotensiSchema>
+
 /** GET /publik/:slug/beranda (SPEC §9). */
 export const berandaPublikSchema = z.object({
   utama: ringkasArtikelSchema.nullable(),
@@ -53,6 +66,9 @@ export const berandaPublikSchema = z.object({
   agenda: z.array(agendaPublikSchema),
   angka: angkaDesaSchema,
   sampul: fotoPublikSchema.nullable(),
+  /** Cuplikan APBDes terbaru (SPEC §9: MiniBar pendapatan dan belanja); null bila desa belum mengumumkan APBDes. */
+  apbdes: z.object({ tahun: z.number().int(), pendapatan: anggaranRealisasiSchema, belanja: anggaranRealisasiSchema }).nullable(),
+  potensi: z.array(ringkasPotensiSchema),
 })
 export type BerandaPublik = z.infer<typeof berandaPublikSchema>
 

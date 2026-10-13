@@ -4,7 +4,23 @@ import type { LapisanPeta } from '@/domain/peta/schema'
 import { ambilDb } from '../db'
 import { API, balasDaftar, balasGalat, denganJaringan } from '../http'
 import { butuhPengguna } from '../sesi-mock'
+import type { DbDemo } from '../tipe-db'
 import { balasIsianTidakValid, butuhKemampuan } from '../tulis'
+
+/** Lapisan Peta Desa: geometri desa ditambah lokasi kegiatan dari modul Pembangunan (SPEC §8); null bila peta belum ada. */
+export function lapisanDesa(db: DbDemo, desaId: string): LapisanPeta | null {
+  const peta = db.peta.find((p) => p.desaId === desaId)
+  if (!peta) return null
+  return {
+    pusat: peta.pusat,
+    zoom: peta.zoom,
+    dusun: peta.dusun,
+    fasilitas: peta.fasilitas,
+    kegiatan: db.kegiatan
+      .filter((k) => k.desaId === desaId)
+      .map((k) => ({ id: k.id, nama: k.nama, status: k.status, progresFisik: k.progresFisik, dusunId: k.dusunId, titik: k.titik })),
+  }
+}
 
 /** Aset Desa, Lembaga Desa, dan Peta Desa (SPEC §8): semuanya hanya lihat. */
 export const handlerTataKelola = [
@@ -35,19 +51,8 @@ export const handlerTataKelola = [
     denganJaringan(({ request }) => {
       const pengguna = butuhPengguna(request)
       if (pengguna instanceof Response) return pengguna
-      const db = ambilDb()
-      const peta = db.peta.find((p) => p.desaId === pengguna.desaId)
-      if (!peta) return balasGalat('NOT_FOUND', 'Peta desa belum tersedia.', 404)
-      const lapisan: LapisanPeta = {
-        pusat: peta.pusat,
-        zoom: peta.zoom,
-        dusun: peta.dusun,
-        fasilitas: peta.fasilitas,
-        // Lokasi kegiatan diambil dari modul Pembangunan (SPEC §8).
-        kegiatan: db.kegiatan
-          .filter((k) => k.desaId === pengguna.desaId)
-          .map((k) => ({ id: k.id, nama: k.nama, status: k.status, progresFisik: k.progresFisik, dusunId: k.dusunId, titik: k.titik })),
-      }
+      const lapisan = lapisanDesa(ambilDb(), pengguna.desaId)
+      if (!lapisan) return balasGalat('NOT_FOUND', 'Peta desa belum tersedia.', 404)
       return HttpResponse.json(lapisan)
     }),
   ),

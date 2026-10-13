@@ -102,6 +102,49 @@ export const fotoGaleriSchema = z.object({
 })
 export type FotoGaleri = z.infer<typeof fotoGaleriSchema>
 
+/** Profil desa di website (SPEC §9): sejarah, visi dan misi, serta jarak ke ibu kota kecamatan dan kabupaten. */
+export const profilDesaSchema = z.object({
+  desaId: z.string(),
+  /** Foto kurasi di kepala halaman Profil, mis. kantor desa. */
+  foto: z.string().regex(POLA_FOTO_KURASI).nullable(),
+  sejarah: z.array(z.string().min(1)).min(1),
+  visi: z.string().min(1),
+  misi: z.array(z.string().min(1)).min(1),
+  /** Mis. { ke: 'ibu kota kecamatan', tempat: 'Teluk Meranti', km: 14 }. */
+  jarak: z.array(z.object({ ke: z.string().min(1), tempat: z.string().min(1), km: z.number().positive() })),
+})
+export type ProfilDesa = z.infer<typeof profilDesaSchema>
+
+/** Kategori potensi desa (SPEC §9). */
+export const KATEGORI_POTENSI = ['Hasil hutan', 'Perkebunan', 'Perikanan', 'Wisata'] as const
+export type KategoriPotensi = (typeof KATEGORI_POTENSI)[number]
+
+/** Potensi desa (SPEC §9, §12.6: 6 potensi), tampil urut `urutan`. */
+export const potensiSchema = z.object({
+  id: z.string(),
+  desaId: z.string(),
+  judul: z.string().min(1),
+  kategori: z.enum(KATEGORI_POTENSI),
+  ringkasan: z.string().min(1),
+  isi: z.array(z.string().min(1)).min(1),
+  foto: z.string().regex(POLA_FOTO_KURASI).nullable(),
+  urutan: z.number().int().min(0),
+})
+export type Potensi = z.infer<typeof potensiSchema>
+
+/** UMKM warga (SPEC §9, §12.6: 5 UMKM), masing-masing dengan WhatsApp penjual. */
+export const umkmSchema = z.object({
+  id: z.string(),
+  desaId: z.string(),
+  nama: z.string().min(1),
+  pemilik: z.string().min(1),
+  produk: z.string().min(1),
+  dusunId: z.string(),
+  /** Nomor HP berawalan 08, tanpa spasi; diubah menjadi tautan wa.me di layar. */
+  whatsapp: z.string().regex(/^08\d{8,11}$/),
+})
+export type Umkm = z.infer<typeof umkmSchema>
+
 /** Aksen website (SPEC §9): semuanya lolos kontras dengan teks putih di atasnya. */
 export const ID_AKSEN = ['biru-tinta', 'hijau-sawit', 'teal-sungai', 'merah-bata', 'coklat-tanah', 'ungu-songket'] as const
 export type AksenWebsite = (typeof ID_AKSEN)[number]

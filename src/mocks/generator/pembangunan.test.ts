@@ -32,8 +32,16 @@ describe('pembangunan demo (SPEC §12.6)', () => {
       const persen = k.dokumentasi.map((d) => d.persen)
       expect(persen[0], k.nama).toBe(0)
       expect(persen.every((p) => p <= k.progresFisik)).toBe(true)
-      expect(k.dokumentasi.every((d) => d.tanggal <= '2026-09-24' && d.foto === null)).toBe(true)
+      expect(k.dokumentasi.every((d) => d.tanggal <= '2026-09-24')).toBe(true)
     }
+  })
+  it('foto kurasi semenisasi menjadi dokumentasi 0% dan 50% semenisasi Dusun III; kegiatan lain belum berfoto', () => {
+    const berkasGaleri = new Set(db.galeri.filter((f) => f.tersedia).map((f) => f.berkas))
+    const semenisasi = db.kegiatan.find((k) => k.nama === 'Semenisasi jalan lingkungan Dusun III')
+    expect(semenisasi?.dokumentasi.map((d) => d.foto)).toEqual(['/demo/foto/semenisasi-0.jpg', '/demo/foto/semenisasi-50.jpg'])
+    for (const d of semenisasi?.dokumentasi ?? []) expect(d.foto !== null && berkasGaleri.has(d.foto)).toBe(true)
+    const lain = db.kegiatan.filter((k) => k !== semenisasi)
+    expect(lain.every((k) => k.dokumentasi.every((d) => d.foto === null))).toBe(true)
   })
   it('lokasi setiap kegiatan berada di dalam dusunnya', () => {
     const [peta] = db.peta
