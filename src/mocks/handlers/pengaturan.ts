@@ -2,11 +2,13 @@ import { http, HttpResponse } from 'msw'
 import { angkaRomawi } from '@/domain/format/romawi'
 import { tanggalIsoWib } from '@/domain/format/tanggal'
 import { identitasDesaSchema, type PengaturanDesa } from '@/domain/pengaturan/identitas'
+import { jabatanBawaan } from '@/domain/pengaturan/pengguna'
 import { ubahPenomoranSchema, type Penomoran } from '@/domain/pengaturan/penomoran'
-import { susunanSama, ubahWilayahSchema, type WilayahDesa } from '@/domain/pengaturan/wilayah'
+import { nomoriSusunan, susunanSama, ubahWilayahSchema, type UbahWilayah, type WilayahDesa } from '@/domain/pengaturan/wilayah'
 import type { Pengguna } from '@/domain/pengguna/schema'
 import { urutBerikutnya } from '@/domain/surat/nomor-surat'
 import { pengaturanBawaan } from '@/domain/surat/pengaturan'
+import { namaDusun } from '@/domain/wilayah/alamat'
 import type { Desa, Dusun } from '@/domain/wilayah/schema'
 import { ambilDb, ubahDb } from '../db'
 import { API, balasGalat, denganJaringan } from '../http'
@@ -38,10 +40,62 @@ function pengaturanDesaDari(db: DbDemo, desa: Desa): PengaturanDesa {
   }
 }
 
+/** Susunan dusun, RW, dan RT terkunci begitu desa punya penduduk atau KK: setiap data itu terikat ke nomornya. */
+const susunanTerkunci = (db: DbDemo, desa: Desa) =>
+  db.penduduk.some((p) => p.desaId === desa.id) || db.keluarga.some((k) => k.desaId === desa.id)
+
 const wilayahDari = (db: DbDemo, desa: Desa): WilayahDesa => ({
   istilah: desa.istilahWilayah,
   dusun: db.dusun.filter((d) => d.desaId === desa.id).sort((a, b) => a.nomor - b.nomor),
+  susunanTerkunci: susunanTerkunci(db, desa),
 })
+
+/** ID dusun baru yang belum pernah dipakai, mis. "dsn_tl_3". ID dusun yang baru dihapus tidak dipakai ulang. */
+function idDusunBaru(desa: Desa, terpakai: Set<string>): string {
+  const awalan = `dsn_${desa.kodeSurat.toLowerCase()}_`
+  let n = 1
+  while (terpakai.has(`${awalan}${n}`)) n += 1
+  terpakai.add(`${awalan}${n}`)
+  return `${awalan}${n}`
+}
+
+/**
+ * Susunan baru selama desa belum punya penduduk (tahap 6C). Dusun dikenali dari ID-nya; ID yang bukan milik desa ini
+ * berarti dusun baru, jadi data desa lain tidak pernah tersentuh. Nomor mengikuti urutan (`nomoriSusunan`). Dusun yang
+ * masih dipakai akun Kepala Dusun tidak boleh dihapus; jabatan bawaan akun itu ikut nomor barunya.
+ */
+function aturSusunan(db: DbDemo, desa: Desa, isian: UbahWilayah): Response | null {
+  const lama = db.dusun.filter((d) => d.desaId === desa.id)
+  const tetap = new Set(isian.dusun.map((d) => d.id))
+  for (const d of lama) {
+    const kadus = tetap.has(d.id) ? undefined : db.pengguna.find((p) => p.dusunId === d.id)
+    if (kadus) {
+      return balasGalat(
+        'CONFLICT',
+        `${namaDusun(d, desa.istilahWilayah)} masih dipakai akun ${kadus.nama}. Ganti peran akun itu dulu di Pengaturan › Pengguna.`,
+        409,
+      )
+    }
+  }
+  const terpakai = new Set(db.dusun.map((d) => d.id))
+  const baru: Dusun[] = nomoriSusunan(isian.dusun).map((d, i) => {
+    const asal = lama.find((x) => x.id === d.id)
+    return {
+      id: asal?.id ?? idDusunBaru(desa, terpakai), desaId: desa.id, nomor: i + 1, nama: d.nama, kepalaDusun: d.kepalaDusun,
+      posyandu: asal?.posyandu ?? '', rw: d.rw,
+    }
+  })
+  ubahDb((x) => {
+    desa.istilahWilayah = isian.istilah
+    x.dusun = [...x.dusun.filter((d) => d.desaId !== desa.id), ...baru]
+    for (const p of x.pengguna) {
+      const sebelum = lama.find((d) => d.id === p.dusunId)
+      const sesudah = baru.find((d) => d.id === p.dusunId)
+      if (p.peran === 'kadus' && sebelum && sesudah && p.jabatan === jabatanBawaan('kadus', sebelum)) p.jabatan = jabatanBawaan('kadus', sesudah)
+    }
+  })
+  return null
+}
 
 /** Nama kepala dusun dan ketua RT/RW yang diubah ikut diperbarui di pengurus Lembaga Desa (keputusan Tahap 3B). */
 function selaraskanLembaga(db: DbDemo, dusun: readonly Dusun[]): void {
@@ -129,6 +183,10 @@ export const handlerPengaturan = [
       const db = ambilDb()
       const desa = desaMilik(db, pengguna)
       if (!desa) return desaTidakAda()
+      if (!susunanTerkunci(db, desa)) {
+        const ditolak = aturSusunan(db, desa, isian.data)
+        return ditolak ?? HttpResponse.json(wilayahDari(ambilDb(), desa))
+      }
       const dusun = wilayahDari(db, desa).dusun
       if (!susunanSama(isian.data, dusun)) {
         return balasGalat('CONFLICT', 'Susunan wilayah sudah berubah. Muat ulang halaman, lalu ulangi perubahan.', 409)

@@ -2,9 +2,9 @@ import { screen, within } from '@testing-library/react'
 import userEvent, { type UserEvent } from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { ambilRingkasanPenduduk } from '@/api/penduduk'
-import { AKUN_UJI, masukSebagai, pakaiApiTiruan, SEKARANG_UJI } from '@/test/api-tiruan'
+import { AKUN_DESA_BARU_UJI, AKUN_UJI, masukSebagai, pakaiApiTiruan, SEKARANG_UJI } from '@/test/api-tiruan'
 import { renderPanel } from '@/test/render'
-import { contohSesi } from '@/test/sesi'
+import { contohSesi, contohSesiDesaBaru } from '@/test/sesi'
 import { unduhBerkas } from '@/ui/unduh'
 import { ImporPenduduk } from './ImporPenduduk'
 
@@ -71,5 +71,12 @@ describe('Impor Excel (SPEC §6.8)', { timeout: 30_000 }, () => {
     expect(await screen.findByText(/^12 siap · 4 bermasalah .* · 1 dilewati$/)).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Batal lewati baris 17' }))
     expect(await screen.findByText(/^12 siap · 5 bermasalah/)).toBeInTheDocument()
+  })
+  it('desa tanpa dusun: arahan ke Pengaturan › Wilayah, bukan langkah unggah (tahap 6C)', () => {
+    masukSebagai(AKUN_DESA_BARU_UJI)
+    renderPanel(<ImporPenduduk onLihatDaftar={vi.fn()} sekarang={SEKARANG_UJI} />, contohSesiDesaBaru())
+    expect(screen.getByText('Atur wilayah desa dulu')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Buka Pengaturan › Wilayah' })).toHaveAttribute('href', '/admin/pengaturan/wilayah')
+    expect(screen.queryByRole('button', { name: 'Coba dengan file contoh' })).not.toBeInTheDocument()
   })
 })

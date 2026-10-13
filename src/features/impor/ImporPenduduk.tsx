@@ -6,8 +6,12 @@ import { segarkanKependudukan } from '@/api/segarkan'
 import type { Pemetaan } from '@/domain/impor/kolom'
 import type { NilaiBaris } from '@/domain/impor/periksa'
 import type { HasilImpor, LaporanImpor } from '@/domain/impor/schema'
+import { boleh } from '@/domain/pengguna/hak-akses'
 import { Stepper } from '@/ui/navigasi/Stepper'
 import { tampilkanToast } from '@/ui/toast/antrean'
+import { TautanTombol } from '@/ui/tombol/TautanTombol'
+import { EmptyState } from '@/ui/umpan-balik/EmptyState'
+import { useSesiAdmin } from '../admin/sesi-konteks'
 import { LangkahCocokkan } from './LangkahCocokkan'
 import { LangkahHasil } from './LangkahHasil'
 import { LangkahPeriksa } from './LangkahPeriksa'
@@ -38,6 +42,7 @@ type Props = { onKotor?: (kotor: boolean) => void; onLihatDaftar: () => void; se
 
 /** Impor penduduk dari Excel dalam empat langkah (SPEC §6.8). Data baru tersimpan di langkah terakhir. */
 export function ImporPenduduk({ onKotor, onLihatDaftar, sekarang }: Props) {
+  const { dusun, pengguna } = useSesiAdmin()
   const queryClient = useQueryClient()
   const hariIni = useMemo(() => sekarang ?? new Date(), [sekarang])
   const [tahap, setTahap] = useState<Tahap>({ langkah: 'unggah' })
@@ -67,6 +72,23 @@ export function ImporPenduduk({ onKotor, onLihatDaftar, sekarang }: Props) {
       }
     },
   })
+
+  // Setiap penduduk dicatat dengan dusun, RW, dan RT-nya: desa baru menyusun wilayahnya dulu (tahap 6C).
+  if (dusun.length === 0) {
+    return (
+      <EmptyState
+        judul="Atur wilayah desa dulu"
+        keterangan="Setiap penduduk dicatat dengan dusun, RW, dan RT-nya, dan desa ini belum punya dusun. Tambahkan dusun, RW, dan RT di Pengaturan › Wilayah, lalu kembali ke sini."
+        aksi={
+          boleh(pengguna.peran, 'pengaturan.kelola') && (
+            <TautanTombol href="/admin/pengaturan/wilayah" varian="utama">
+              Buka Pengaturan › Wilayah
+            </TautanTombol>
+          )
+        }
+      />
+    )
+  }
 
   return (
     <div className="flex flex-col gap-6">

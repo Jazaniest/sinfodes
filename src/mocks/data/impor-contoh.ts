@@ -1,8 +1,11 @@
+import { angkaRomawi } from '@/domain/format/romawi'
 import { buatNik } from '@/domain/penduduk/nik'
+import type { Desa, Dusun } from '@/domain/wilayah/schema'
 
 /**
  * Berkas contoh untuk impor (SPEC §6.8). API tiruan tidak membaca isi berkas yang diunggah; laporannya selalu berisi
- * data ini: 17 baris dalam 4 KK di Dusun III, dengan lima baris yang sengaja bermasalah dan satu peringatan.
+ * data ini: 17 baris dalam 4 KK, dengan lima baris yang sengaja bermasalah dan satu peringatan. Wilayahnya mengikuti desa
+ * yang mengimpor (tahap 6C); untuk Sungai Sialang hasilnya Dusun III, RW 005, RT 011–013.
  */
 export const NAMA_BERKAS_CONTOH = 'pendataan-rt-teluk-rengas.xlsx'
 
@@ -24,10 +27,13 @@ const NIK_LASMA = nik('121201', '1978-06-15', 'P', 9979)
 
 type Baris = {
   nik: string; nama: string; jk: 'L' | 'P'; tempat: string; tgl: string; agama?: string; pendidikan: string; pekerjaan: string
-  kawin: string; shdk: string; kk: string; dusun: string; rt: string; gol?: string; ket?: string
+  kawin: string; shdk: string; kk: string; dusun: string; rw?: string; rt: string; gol?: string; ket?: string
 }
+/** Wilayah baris contoh di berkas aslinya: Dusun III Teluk Rengas, RW 005, RT 011–013 (data Sungai Sialang). */
+const RW_CONTOH = '005'
+const RT_CONTOH = ['011', '012', '013']
 const sel = (b: Baris): string[] => [
-  b.nik, b.nama, b.jk, b.tempat, b.tgl, b.agama ?? 'Islam', b.pendidikan, b.pekerjaan, b.kawin, b.shdk, b.kk, b.dusun, '005', b.rt,
+  b.nik, b.nama, b.jk, b.tempat, b.tgl, b.agama ?? 'Islam', b.pendidikan, b.pekerjaan, b.kawin, b.shdk, b.kk, b.dusun, b.rw ?? RW_CONTOH, b.rt,
   b.gol ?? '', b.ket ?? '',
 ]
 
@@ -51,7 +57,28 @@ const BARIS: Baris[] = [
   { nik: nik('140509', '1945-04-02', 'P', 9986), nama: 'Wan Syarifah', jk: 'P', tempat: 'Teluk Meranti', tgl: '02/04/1945', pendidikan: 'Tidak/Belum Sekolah', pekerjaan: 'Belum/Tidak Bekerja', kawin: 'Cerai Mati', shdk: 'Orang Tua', kk: KK_D, dusun: 'Teluk Rengas', rt: '013' },
 ]
 
-/** Salinan baru setiap kali dipanggil, supaya laporan impor yang tersimpan tidak saling berbagi larik. */
-export function berkasContoh(): { kolom: string[]; baris: { nomor: number; sel: string[] }[] } {
-  return { kolom: [...KOLOM], baris: BARIS.map((b, i) => ({ nomor: i + 2, sel: sel(b) })) }
+/**
+ * Pindahkan wilayah satu baris contoh ke dusun sasaran, RW pertamanya, dan RT-RT di RW itu. Cara tulisnya dipertahankan
+ * ("III", "Dusun III", "3", nama dusun; RT "12" atau "012"), jadi pemeriksaan wilayah tetap diuji.
+ */
+function pindahkanWilayah(b: Baris, d: Dusun, istilah: Desa['istilahWilayah']): Baris {
+  const rw = d.rw[0]
+  const rt = rw.rt[RT_CONTOH.indexOf(b.rt.padStart(3, '0')) % rw.rt.length].nomor
+  const romawi = angkaRomawi(d.nomor)
+  const caraTulis: Record<string, string> = { III: romawi, 'Dusun III': `${istilah.dusun} ${romawi}`, '3': String(d.nomor), 'Teluk Rengas': d.nama }
+  return { ...b, dusun: caraTulis[b.dusun] ?? b.dusun, rw: rw.nomor, rt: b.rt.length < 3 ? String(Number(rt)) : rt }
+}
+
+/**
+ * Salinan baru setiap kali dipanggil, supaya laporan impor yang tersimpan tidak saling berbagi larik. Wilayahnya dusun
+ * ketiga desa (dusun terakhir bila desa punya kurang dari tiga); desa tanpa dusun ditolak lebih dulu oleh API impor.
+ */
+export function berkasContoh(
+  dusun: readonly Dusun[],
+  istilah: Desa['istilahWilayah'],
+): { kolom: string[]; baris: { nomor: number; sel: string[] }[] } {
+  const urut = [...dusun].sort((a, b) => a.nomor - b.nomor)
+  const sasaran = urut[Math.min(2, urut.length - 1)]
+  if (!sasaran) throw new Error('Desa belum punya dusun')
+  return { kolom: [...KOLOM], baris: BARIS.map((b, i) => ({ nomor: i + 2, sel: sel(pindahkanWilayah(b, sasaran, istilah)) })) }
 }

@@ -3,8 +3,10 @@ import { describe, expect, it } from 'vitest'
 import { ambilBeranda } from '@/api/beranda'
 import { GalatApi } from '@/api/galat'
 import { konfirmasiImpor, unggahImpor } from '@/api/impor'
+import { simpanWilayah } from '@/api/pengaturan'
 import { ambilRingkasanPenduduk } from '@/api/penduduk'
-import { AKUN_UJI, masukSebagai, pakaiApiTiruan } from '@/test/api-tiruan'
+import { ambilDb } from '@/mocks/db'
+import { AKUN_DESA_BARU_UJI, AKUN_UJI, masukSebagai, pakaiApiTiruan } from '@/test/api-tiruan'
 
 pakaiApiTiruan({ dbSegarTiapUji: true })
 
@@ -78,5 +80,34 @@ describe('POST /impor/penduduk/:id/konfirmasi (fokus review 2 dan 3)', () => {
     const pemetaan = lap.kolom.map((k) => (k.field === 'nik' ? null : k.field))
     const g = await galatDari(konfirmasiImpor(lap.id, { pemetaan, perbaikan: {}, lewati: BERMASALAH }))
     expect(g).toMatchObject({ kode: 'VALIDATION', message: 'Pemetaan kolom belum lengkap.' })
+  })
+})
+
+describe('impor desa baru (tahap 6C)', () => {
+  it('desa tanpa dusun: impor ditolak dengan arahan ke Pengaturan › Wilayah', async () => {
+    masukSebagai(AKUN_DESA_BARU_UJI)
+    expect(await galatDari(unggahImpor(null))).toMatchObject({
+      kode: 'VALIDATION',
+      message: 'Desa belum punya dusun. Atur dusun, RW, dan RT di Pengaturan › Wilayah sebelum mengimpor penduduk.',
+    })
+  })
+  it('desa baru dengan dusun: 12 baris contoh masuk ke wilayahnya; jiwa Sungai Sialang tetap (fokus review 1)', async () => {
+    masukSebagai(AKUN_DESA_BARU_UJI)
+    await simpanWilayah({
+      istilah: { dusun: 'Dusun', rw: 'RW', rt: 'RT' },
+      dusun: [
+        {
+          id: 'baru-1', nama: 'Tanjung', kepalaDusun: 'Ahmad Yani',
+          rw: [{ nomor: '001', ketua: 'Rasyid', rt: [{ nomor: '001', ketua: 'Udin' }, { nomor: '002', ketua: 'Usman' }] }],
+        },
+      ],
+    })
+    const lap = await unggahImpor(null)
+    await konfirmasiImpor(lap.id, { pemetaan: lap.kolom.map((k) => k.field), perbaikan: {}, lewati: BERMASALAH })
+    const baru = ambilDb().penduduk.filter((p) => p.desaId === 'desa_tanjung_lamo')
+    expect(baru).toHaveLength(12)
+    expect(new Set(baru.map((p) => `${p.dusunId} ${p.rw}`))).toEqual(new Set(['dsn_tl_1 001']))
+    masukSebagai(AKUN_UJI.operator)
+    expect((await ambilRingkasanPenduduk()).jiwa).toBe(2812)
   })
 })

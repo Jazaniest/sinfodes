@@ -60,10 +60,16 @@ export const handlerImpor = [
     denganJaringan(async ({ request }) => {
       const pengguna = butuhPengubah(request)
       if (pengguna instanceof Response) return pengguna
+      const { db, dusun } = dataMilik(pengguna)
+      // Setiap penduduk dicatat dengan dusun, RW, dan RT-nya: desa baru menyusun wilayahnya dulu (tahap 6C).
+      if (dusun.length === 0) {
+        return balasGalat('VALIDATION', 'Desa belum punya dusun. Atur dusun, RW, dan RT di Pengaturan › Wilayah sebelum mengimpor penduduk.', 422)
+      }
+      const desa = db.desa.find((d) => d.id === pengguna.desaId)
+      if (!desa) return balasGalat('SERVER', 'Data desa tidak ditemukan.', 500)
       const namaBerkas = await namaBerkasDari(request)
       if (namaBerkas instanceof Response) return namaBerkas
-      const { db } = dataMilik(pengguna)
-      const contoh = berkasContoh()
+      const contoh = berkasContoh(dusun, desa.istilahWilayah)
       const laporan: LaporanImpor = {
         id: idBaru(db, 'imp'),
         namaBerkas,
