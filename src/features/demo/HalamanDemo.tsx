@@ -14,6 +14,8 @@ import { Tombol } from '@/ui/tombol/Tombol'
 import { Skeleton } from '@/ui/umpan-balik/Skeleton'
 import { masukDemo } from './masuk-demo'
 import { masukKonsolDemo } from './masuk-konsol-demo'
+import type { TombolSkenario } from './skenario'
+import { SkenarioDemo } from './SkenarioDemo'
 import { useKendaliDemo } from './useKendaliDemo'
 
 /** Halaman `/`: pintu masuk demo. Hanya menampilkan bagian yang sudah dibangun (tidak ada tombol mati). */
@@ -27,41 +29,62 @@ export function HalamanDemo() {
   const queryClient = useQueryClient()
   const router = useRouter()
   const [sedangMasuk, setSedangMasuk] = useState<string | null>(null)
-  const masukPanel = async (akun: { id: string; email: string }) => {
+  const masukPanel = async (akun: { id: string; email: string }, ke = '/admin', kunci = akun.id) => {
     if (!kendali) return
-    setSedangMasuk(akun.id)
+    setSedangMasuk(kunci)
     try {
       await masukDemo(akun.email, kendali.KATA_SANDI_DEMO, queryClient)
-      await router.navigate({ to: '/admin' })
+      await router.navigate({ href: ke })
     } catch (e) {
       tampilkanToast({ pesan: pesanGalat(e), nada: 'galat' })
     } finally {
       setSedangMasuk(null)
     }
   }
-  const masukLayananWarga = async (akun: { pendudukId: string; nik: string; pin: string }) => {
-    setSedangMasuk(akun.pendudukId)
+  const masukLayananWarga = async (akun: { pendudukId: string; nik: string; pin: string }, ke = '/warga', kunci = akun.pendudukId) => {
+    setSedangMasuk(kunci)
     try {
       const { token, sesi } = await masukWarga(akun.nik, akun.pin)
       pasangSesiWarga(token, sesi, queryClient)
-      await router.navigate({ to: '/warga' })
+      await router.navigate({ href: ke })
     } catch (e) {
       tampilkanToast({ pesan: pesanGalat(e), nada: 'galat' })
     } finally {
       setSedangMasuk(null)
     }
   }
-  const masukKonsolSebagai = async (akun: { id: string; email: string }) => {
+  const masukKonsolSebagai = async (akun: { id: string; email: string }, ke = '/konsol', kunci = akun.id) => {
     if (!kendali) return
-    setSedangMasuk(akun.id)
+    setSedangMasuk(kunci)
     try {
       await masukKonsolDemo(akun.email, kendali.KATA_SANDI_DEMO, queryClient)
-      await router.navigate({ to: '/konsol' })
+      await router.navigate({ href: ke })
     } catch (e) {
       tampilkanToast({ pesan: pesanGalat(e), nada: 'galat' })
     } finally {
       setSedangMasuk(null)
     }
+  }
+  /** Tombol skenario: masuk dengan akun langkah itu (sesi bagian lain tidak disentuh), lalu buka halamannya. */
+  const jalankanSkenario = async (t: TombolSkenario, kunci: string) => {
+    if (!kendali) return
+    const m = t.masuk
+    if (m.bagian === 'publik') {
+      await router.navigate({ href: t.ke })
+      return
+    }
+    if (m.bagian === 'admin') {
+      const akun = kendali.AKUN_DEMO_ADMIN.find((a) => a.peran === m.peran)
+      if (akun) await masukPanel(akun, t.ke, kunci)
+      return
+    }
+    if (m.bagian === 'warga') {
+      const akun = kendali.AKUN_DEMO_WARGA.find((a) => a.pendudukId === m.pendudukId)
+      if (akun) await masukLayananWarga(akun, t.ke, kunci)
+      return
+    }
+    const akun = kendali.AKUN_DEMO_KONSOL.find((a) => a.peran === m.peran)
+    if (akun) await masukKonsolSebagai(akun, t.ke, kunci)
   }
 
   return (
@@ -211,6 +234,8 @@ export function HalamanDemo() {
           </li>
         </ul>
       </section>
+
+      <SkenarioDemo sedang={sedangMasuk} onJalankan={(t, kunci) => void jalankanSkenario(t, kunci)} />
     </main>
   )
 }

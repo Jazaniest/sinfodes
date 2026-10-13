@@ -34,6 +34,7 @@ import { Route as DesaSlugStatistikRouteImport } from './routes/desa/$slug/stati
 import { Route as DesaSlugTransparansiRouteImport } from './routes/desa/$slug/transparansi'
 import { Route as DesaSlugVerifikasiRouteImport } from './routes/desa/$slug/verifikasi'
 import { Route as KonsolKonsolIndexRouteImport } from './routes/konsol/_konsol/index'
+import { Route as KonsolKonsolPemantauanRouteImport } from './routes/konsol/_konsol/pemantauan'
 import { Route as WargaAppIndexRouteImport } from './routes/warga/_app/index'
 import { Route as WargaAppAjukanRouteImport } from './routes/warga/_app/ajukan'
 import { Route as WargaAppAkunRouteImport } from './routes/warga/_app/akun'
@@ -212,6 +213,11 @@ const DesaSlugVerifikasiRoute = DesaSlugVerifikasiRouteImport.update({
 const KonsolKonsolIndexRoute = KonsolKonsolIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => KonsolKonsolRoute,
+} as any)
+const KonsolKonsolPemantauanRoute = KonsolKonsolPemantauanRouteImport.update({
+  id: '/pemantauan',
+  path: '/pemantauan',
   getParentRoute: () => KonsolKonsolRoute,
 } as any)
 const WargaAppIndexRoute = WargaAppIndexRouteImport.update({
@@ -534,6 +540,7 @@ export interface FileRoutesByFullPath {
   '/desa/$slug/statistik': typeof DesaSlugStatistikRoute
   '/desa/$slug/transparansi': typeof DesaSlugTransparansiRoute
   '/desa/$slug/verifikasi': typeof DesaSlugVerifikasiRoute
+  '/konsol/pemantauan': typeof KonsolKonsolPemantauanRoute
   '/warga/ajukan': typeof WargaAppAjukanRoute
   '/warga/akun': typeof WargaAppAkunRoute
   '/admin/': typeof AdminPanelIndexRoute
@@ -611,6 +618,7 @@ export interface FileRoutesByTo {
   '/desa/$slug/statistik': typeof DesaSlugStatistikRoute
   '/desa/$slug/transparansi': typeof DesaSlugTransparansiRoute
   '/desa/$slug/verifikasi': typeof DesaSlugVerifikasiRoute
+  '/konsol/pemantauan': typeof KonsolKonsolPemantauanRoute
   '/warga/ajukan': typeof WargaAppAjukanRoute
   '/warga/akun': typeof WargaAppAkunRoute
   '/admin': typeof AdminPanelIndexRoute
@@ -693,6 +701,7 @@ export interface FileRoutesById {
   '/desa/$slug/statistik': typeof DesaSlugStatistikRoute
   '/desa/$slug/transparansi': typeof DesaSlugTransparansiRoute
   '/desa/$slug/verifikasi': typeof DesaSlugVerifikasiRoute
+  '/konsol/_konsol/pemantauan': typeof KonsolKonsolPemantauanRoute
   '/warga/_app/ajukan': typeof WargaAppAjukanRoute
   '/warga/_app/akun': typeof WargaAppAkunRoute
   '/admin/_panel/': typeof AdminPanelIndexRoute
@@ -776,6 +785,7 @@ export interface FileRouteTypes {
     | '/desa/$slug/statistik'
     | '/desa/$slug/transparansi'
     | '/desa/$slug/verifikasi'
+    | '/konsol/pemantauan'
     | '/warga/ajukan'
     | '/warga/akun'
     | '/admin/'
@@ -853,6 +863,7 @@ export interface FileRouteTypes {
     | '/desa/$slug/statistik'
     | '/desa/$slug/transparansi'
     | '/desa/$slug/verifikasi'
+    | '/konsol/pemantauan'
     | '/warga/ajukan'
     | '/warga/akun'
     | '/admin'
@@ -934,6 +945,7 @@ export interface FileRouteTypes {
     | '/desa/$slug/statistik'
     | '/desa/$slug/transparansi'
     | '/desa/$slug/verifikasi'
+    | '/konsol/_konsol/pemantauan'
     | '/warga/_app/ajukan'
     | '/warga/_app/akun'
     | '/admin/_panel/'
@@ -1180,6 +1192,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/konsol/'
       preLoaderRoute: typeof KonsolKonsolIndexRouteImport
+      parentRoute: typeof KonsolKonsolRoute
+    }
+    '/konsol/_konsol/pemantauan': {
+      id: '/konsol/_konsol/pemantauan'
+      path: '/pemantauan'
+      fullPath: '/konsol/pemantauan'
+      preLoaderRoute: typeof KonsolKonsolPemantauanRouteImport
       parentRoute: typeof KonsolKonsolRoute
     }
     '/warga/_app/': {
@@ -1706,6 +1725,7 @@ const DesaSlugRouteWithChildren = DesaSlugRoute._addFileChildren(
 )
 
 interface KonsolKonsolRouteChildren {
+  KonsolKonsolPemantauanRoute: typeof KonsolKonsolPemantauanRoute
   KonsolKonsolIndexRoute: typeof KonsolKonsolIndexRoute
   KonsolKonsolDesaIdRoute: typeof KonsolKonsolDesaIdRoute
   KonsolKonsolDesaBaruRoute: typeof KonsolKonsolDesaBaruRoute
@@ -1713,6 +1733,7 @@ interface KonsolKonsolRouteChildren {
 }
 
 const KonsolKonsolRouteChildren: KonsolKonsolRouteChildren = {
+  KonsolKonsolPemantauanRoute: KonsolKonsolPemantauanRoute,
   KonsolKonsolIndexRoute: KonsolKonsolIndexRoute,
   KonsolKonsolDesaIdRoute: KonsolKonsolDesaIdRoute,
   KonsolKonsolDesaBaruRoute: KonsolKonsolDesaBaruRoute,

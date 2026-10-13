@@ -2,9 +2,13 @@ import type { PeranKonsol } from '@/domain/konsol/schema'
 
 export type ItemMenuKonsol = { label: string; href: string }
 
-/** Menu Konsol (SPEC §11): menu Desa khusus Tim Sinfodes. Pemantauan menyusul di Tahap 6B bersama halamannya. */
+/** Menu Konsol (SPEC §11): Ringkasan · Desa · Pemantauan; menu Desa khusus Tim Sinfodes. */
 export function menuKonsol(peran: PeranKonsol): ItemMenuKonsol[] {
-  return [{ label: 'Ringkasan', href: '/konsol' }, ...(peran === 'tim' ? [{ label: 'Desa', href: '/konsol/desa' }] : [])]
+  return [
+    { label: 'Ringkasan', href: '/konsol' },
+    ...(peran === 'tim' ? [{ label: 'Desa', href: '/konsol/desa' }] : []),
+    { label: 'Pemantauan', href: '/konsol/pemantauan' },
+  ]
 }
 
 /** Ringkasan hanya aktif di /konsol; menu lain juga aktif di halaman di bawahnya, mis. detail desa. */

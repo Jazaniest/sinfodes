@@ -51,6 +51,9 @@ export function RingkasanKonsol({ sekarang = new Date() }: { sekarang?: Date }) 
               {pengguna.wilayah ? `Desa di Kabupaten ${pengguna.wilayah.nama}` : 'Angka platform'}
             </h2>
             <p className="mt-2 font-serif text-judul-bagian">{kalimatPlatform(kueri.data)}</p>
+            <Tautan href="/konsol/pemantauan" className="mt-3 inline-block">
+              Buka Pemantauan wilayah
+            </Tautan>
           </section>
         </>
       )}

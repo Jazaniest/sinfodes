@@ -32,5 +32,6 @@ describe('Ringkasan Konsol (SPEC §11)', () => {
     expect(screen.getByRole('region', { name: 'Desa di Kabupaten Pelalawan' })).toHaveTextContent(
       '21 desa aktif, 4 uji coba, 5 dalam persiapan, dan 2 ditangguhkan.',
     )
+    expect(screen.getByRole('link', { name: 'Buka Pemantauan wilayah' })).toHaveAttribute('href', '/konsol/pemantauan')
   })
 })
