@@ -1,4 +1,6 @@
 import { http, HttpResponse } from 'msw'
+import { waktuIsoWib } from '@/domain/format/tanggal'
+import type { Penduduk } from '@/domain/penduduk/schema'
 import type { JenisSurat } from '@/domain/surat/jenis'
 import type { Permohonan } from '@/domain/surat/permohonan'
 import { periksaJenisSurat, ubahJenisSuratSchema, type DetailJenisSurat } from '@/domain/surat/ubah-jenis'
@@ -12,8 +14,24 @@ import { hitungPakai, namaPejabat, pengaturanDesa } from './surat'
 const TIDAK_DITEMUKAN = 'Jenis surat tidak ditemukan.'
 
 /**
+ * Pemohon tiruan untuk pratinjau di desa yang belum punya penduduk (tahap 6C). Tanpa NIK dan tanpa data desa lain, jadi
+ * pratinjau tidak pernah menampilkan data pribadi siapa pun.
+ */
+function pemohonContoh(desaId: string): Penduduk {
+  const waktu = waktuIsoWib(new Date())
+  return {
+    id: 'pemohon-contoh', desaId, nik: null, nama: 'Nama Pemohon', jenisKelamin: 'L', golonganDarah: 'Tidak Tahu', agama: 'Islam',
+    kewarganegaraan: 'WNI', tempatLahir: 'Tempat Lahir', tanggalLahir: '1990-01-01', nomorAktaLahir: null, keluargaId: '',
+    hubunganKeluarga: 'Kepala Keluarga', namaAyah: '', namaIbu: '', dusunId: '', rw: '001', rt: '001', pendidikan: null,
+    pekerjaan: null, statusPerkawinan: null, statusDasar: 'Hidup', statusPenduduk: 'Tetap', ktpEl: 'Belum rekam', telepon: null,
+    catatan: null, dibuatPada: waktu, diubahPada: waktu,
+  }
+}
+
+/**
  * Jenis surat beserta bahan pratinjau halaman ubah. Contohnya permohonan terakhir jenis ini (pemohon, bayi/almarhum,
- * mutasi, dan isiannya), supaya pratinjau tampak seperti surat sungguhan.
+ * mutasi, dan isiannya), supaya pratinjau tampak seperti surat sungguhan. Desa yang belum punya penduduk memakai pemohon
+ * contoh (tahap 6C).
  */
 function detailJenis(db: DbDemo, jenis: JenisSurat, permohonan: readonly Permohonan[]): DetailJenisSurat {
   const terakhir = permohonan.filter((p) => p.jenisId === jenis.id).sort((a, b) => b.masukPada.localeCompare(a.masukPada))[0]
@@ -21,11 +39,11 @@ function detailJenis(db: DbDemo, jenis: JenisSurat, permohonan: readonly Permoho
   const pemohon =
     orang(terakhir?.pemohonId) ??
     db.penduduk.find((p) => p.desaId === jenis.desaId && p.statusDasar === 'Hidup' && p.hubunganKeluarga === 'Kepala Keluarga')
-  if (!pemohon) throw new Error('Tidak ada penduduk untuk contoh surat')
   return {
     jenis: { ...jenis, jumlahPakai: hitungPakai(permohonan).get(jenis.id) ?? 0 },
     contoh: {
-      pemohon,
+      pemohon: pemohon ?? pemohonContoh(jenis.desaId),
+      tiruan: !pemohon,
       subjek: orang(terakhir?.subjekId),
       mutasi: terakhir?.mutasiId ? (db.mutasi.find((m) => m.id === terakhir.mutasiId) ?? null) : null,
       isian: terakhir?.isian ?? {},

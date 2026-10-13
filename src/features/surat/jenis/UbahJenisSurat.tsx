@@ -274,7 +274,9 @@ function FormJenis({ detail, onSelesai, onKotor, sekarang }: Omit<Props, 'id'> &
             />
             <div className="flex flex-col gap-2">
               <p className="text-teks-kecil text-tinta-2">
-                Pratinjau memakai permohonan terakhir jenis ini, atas nama {detail.contoh.pemohon.nama}.
+                {detail.contoh.tiruan
+                  ? 'Pratinjau memakai data contoh, karena desa belum punya data penduduk.'
+                  : `Pratinjau memakai permohonan terakhir jenis ini, atas nama ${detail.contoh.pemohon.nama}.`}
               </p>
               <PratinjauLembar label="Pratinjau surat">
                 <LembarSurat {...lembar} penanda={<Cap varian="draf" />} />

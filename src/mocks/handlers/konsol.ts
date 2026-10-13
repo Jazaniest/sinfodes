@@ -4,10 +4,11 @@ import { tanggalIsoWib } from '@/domain/format/tanggal'
 import { hitungPerhatian, slugDesa, statusTagihan } from '@/domain/konsol/aturan'
 import { ringkasWilayah, type BarisPemantauanDesa, type Pemantauan } from '@/domain/konsol/pemantauan'
 import {
-  filterDesaKonsolSchema, tambahDesaSchema, type BarisDesaKonsol, type DetailDesaKonsol, type PenggunaKonsol, type RingkasanKonsol,
-  type SesiKonsol,
+  filterDesaKonsolSchema, tambahDesaSchema, undangSekdesSchema, type BarisDesaKonsol, type DetailDesaKonsol, type PenggunaKonsol,
+  type RingkasanKonsol, type SesiKonsol,
 } from '@/domain/konsol/schema'
 import type { Pengguna } from '@/domain/pengguna/schema'
+import { katalogDesaBaru } from '@/domain/surat/bawaan'
 import { KABUPATEN, wilayahKecamatan } from '@/domain/wilayah/kode-wilayah'
 import { langkahBerikut } from '@/domain/wilayah/persiapan'
 import type { Desa } from '@/domain/wilayah/schema'
@@ -17,7 +18,7 @@ import { API, balasDaftar, balasGalat, denganJaringan } from '../http'
 import { angkaKonsolDesa, type AngkaKonsol } from '../konsol-angka'
 import { butuhPenggunaKonsol, tokenKonsolUntuk } from '../sesi-mock'
 import type { DbDemo } from '../tipe-db'
-import { bacaJson, balasField, balasIsianTidakValid } from '../tulis'
+import { bacaJson, balasField, balasIsianTidakValid, idBaru } from '../tulis'
 
 const masukSchema = z.object({ email: z.string().trim().toLowerCase().min(1), kataSandi: z.string().min(1) })
 
@@ -43,6 +44,8 @@ function detailDesa(db: DbDemo, desa: Desa, sekarang: Date): DetailDesaKonsol {
   return {
     ...barisDesa(db, desa, a),
     alamatKantor: desa.alamatKantor, surel: desa.surel, telepon: desa.telepon, kontak: a.kontak, jiwa: a.jiwa, persiapan: a.persiapan,
+    // Undangan dari Konsol hanya untuk desa berdata panel; desa contoh (rekaman) tidak punya akun sungguhan.
+    bisaUndangSekdes: !db.rekamDesa.some((r) => r.desaId === desa.id) && a.kontak.sekdes === null,
     suratPerBulan: a.suratPerBulan, masukPerMinggu: a.masukPerMinggu,
     langganan: l ? { paket: l.paket, mulai: l.mulai, sampai: l.sampai, tagihan: l.tagihan } : { paket: 'Dasar', mulai: null, sampai: null, tagihan: [] },
   }
@@ -184,17 +187,48 @@ export const handlerKonsol = [
         kodeSurat: nama.split(' ').map((k) => k[0]).join('').toUpperCase(),
         status: 'Persiapan',
       }
-      // Akun admin pertama menunggu undangannya diterima (undangan tiruan), jadi belum bisa masuk.
+      // Admin pertama berperan Sekretaris Desa: hanya peran ini yang bisa menambah pengguna (SPEC §5.1), dan ia juga berhak
+      // atas empat langkah persiapan lainnya. Di demo undangan langsung aktif dengan kata sandi demo, sama dengan undangan di
+      // Pengaturan › Pengguna (tahap 6C).
       const admin: Pengguna = {
-        id: `pgn_${slug.replaceAll('-', '_')}_admin`, desaId: id, nama: 'Admin desa', jabatan: 'Operator Desa', peran: 'operator',
-        dusunId: null, email, aktif: false,
+        id: `pgn_${slug.replaceAll('-', '_')}_admin`, desaId: id, nama: 'Admin desa', jabatan: 'Sekretaris Desa', peran: 'sekdes',
+        dusunId: null, email, aktif: true,
       }
       ubahDb((d) => {
         d.desa.push(desa)
         d.pengguna.push(admin)
         d.langganan.push({ desaId: id, paket, mulai: null, sampai: null, tagihan: [] })
+        // Katalog bawaan, semuanya belum dilayani: desa memilihnya di langkah persiapan terakhir (tahap 6C).
+        d.jenisSurat.push(...katalogDesaBaru(desa))
       })
       return HttpResponse.json({ id, nama, email }, { status: 201 })
+    }),
+  ),
+  http.post(
+    `${API}/konsol/desa/:id/sekdes`,
+    denganJaringan(async ({ request, params }) => {
+      const pengguna = butuhPenggunaKonsol(request)
+      if (pengguna instanceof Response) return pengguna
+      const ditolak = tolakPemantau(pengguna)
+      if (ditolak) return ditolak
+      const db = ambilDb()
+      const desa = db.desa.find((d) => d.id === String(params.id))
+      if (!desa) return balasGalat('NOT_FOUND', 'Desa tidak ditemukan.', 404)
+      if (db.rekamDesa.some((r) => r.desaId === desa.id)) return balasGalat('CONFLICT', 'Akun desa contoh tidak bisa diubah di demo.', 409)
+      const isian = undangSekdesSchema.safeParse(await bacaJson(request))
+      if (!isian.success) return balasIsianTidakValid(isian.error)
+      const ada = db.pengguna.find((p) => p.desaId === desa.id && p.peran === 'sekdes' && p.aktif)
+      if (ada) return balasGalat('CONFLICT', `Desa ini sudah punya Sekretaris Desa aktif: ${ada.nama}.`, 409)
+      const { nama, email } = isian.data
+      if ([...db.pengguna, ...db.penggunaKonsol].some((p) => p.email.toLowerCase() === email)) {
+        return balasField('email', 'Email ini sudah dipakai akun lain.', 'CONFLICT')
+      }
+      // Di demo undangan langsung aktif dengan kata sandi demo, sama dengan undangan di Pengaturan › Pengguna (tahap 6C).
+      const baru: Pengguna = { id: idBaru(db, 'pgn'), desaId: desa.id, nama, jabatan: 'Sekretaris Desa', peran: 'sekdes', dusunId: null, email, aktif: true }
+      ubahDb((d) => {
+        d.pengguna.push(baru)
+      })
+      return HttpResponse.json({ nama, email }, { status: 201 })
     }),
   ),
   http.get(

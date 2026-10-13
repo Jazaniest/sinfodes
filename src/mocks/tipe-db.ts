@@ -24,7 +24,7 @@ import type { Agenda, Artikel, FotoGaleri, Pengumuman, Potensi, ProfilDesa, Tamp
 import type { Desa, Dusun } from '@/domain/wilayah/schema'
 
 /** Naikkan setiap kali seed atau struktur data berubah; data lama di IndexedDB otomatis diganti (SPEC §12). */
-export const VERSI_DATA = 15
+export const VERSI_DATA = 17
 
 /** Berkas impor yang sudah diperiksa dan menunggu konfirmasi (SPEC §6.8). */
 export type SesiImpor = { id: string; desaId: string; olehId: string; laporan: LaporanImpor; selesai: boolean }
@@ -55,7 +55,7 @@ export type RekamDesa = {
   suratPerBulan: { bulan: string; jumlah: number }[]
   masukPerMinggu: { mulai: string; jumlah: number }[]
   suratMingguIni: number
-  kontak: { kades: string | null; operator: { nama: string; email: string } | null }
+  kontak: { kades: string | null; operator: { nama: string; email: string } | null; sekdes: { nama: string; email: string } | null }
   /** Pemantauan wilayah (SPEC §11): median jam layanan surat 30 hari dan tanggapan pengaduan 90 hari, belanja APBDes tahun ini. */
   waktuLayananJam: number | null
   waktuTanggapanJam: number | null

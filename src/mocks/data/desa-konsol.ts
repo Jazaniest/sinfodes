@@ -73,7 +73,7 @@ export const PENGGUNA_KONSOL_DEMO: readonly PenggunaKonsol[] = [
   },
 ]
 
-/** Nama fiktif kepala desa dan operator desa-desa Konsol. */
+/** Nama fiktif kepala desa, operator, dan Sekretaris Desa desa-desa Konsol. */
 export const NAMA_KADES: readonly string[] = [
   'Abdul Rahman', 'Syafruddin', 'Muhammad Yunus', 'Zainal Abidin', 'Hasanuddin', 'Darmawan', 'Saharuddin', 'Ismail',
   'Junaidi', 'Azwar', 'Khairul Anwar', 'Ridwan', 'Sulaiman', 'Amiruddin', 'Nasrul', 'Herman Syah',
@@ -81,4 +81,8 @@ export const NAMA_KADES: readonly string[] = [
 export const NAMA_OPERATOR: readonly string[] = [
   'Rina Wati', 'Fitri Handayani', 'Dewi Sartika', 'Yuliana', 'Nur Hidayah', 'Andi Saputra', 'Rizki Ramadhan', 'Wulan Sari',
   'Eka Putri', 'Fajar Hidayat', 'Siti Aisyah', 'Rahmat Hidayat',
+]
+export const NAMA_SEKDES: readonly string[] = [
+  'Azhari', 'Bustami', 'Candra Wijaya', 'Dedi Kurniawan', 'Effendi', 'Firmansyah', 'Hamdani', 'Irawati', 'Jasmani', 'Kurniati',
+  'Lukman Hakim', 'Marlina',
 ]

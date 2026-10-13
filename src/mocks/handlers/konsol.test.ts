@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { ambilBerandaPublik } from '@/api/publik'
 import { ambilDetailDesaKonsol, ambilRingkasanKonsol, daftarDesaKonsol, tambahDesa } from '@/api/konsol'
+import { masuk } from '@/api/sesi'
 import { ambilDb } from '@/mocks/db'
 import { AKUN_KONSOL_UJI, masukKonsolSebagai, pakaiApiTiruan } from '@/test/api-tiruan'
 
@@ -61,18 +62,23 @@ describe('API Konsol (SPEC §11, §3.4)', () => {
     expect(tl).toMatchObject({ status: 'Persiapan', jiwa: 0, kelengkapan: null, aktivitasTerakhir: null, langganan: { mulai: null, tagihan: [] } })
     await expect(ambilDetailDesaKonsol('desa_tidak_ada')).rejects.toMatchObject({ kode: 'NOT_FOUND' })
   })
-  it('Tambah desa: tercipta berstatus Persiapan beserta akun admin undangan dan langganannya', async () => {
+  it('Tambah desa: tercipta berstatus Persiapan beserta admin Sekretaris Desa yang langsung aktif, langganan, dan katalog', async () => {
     masukKonsolSebagai(AKUN_KONSOL_UJI.tim)
     const hasil = await tambahDesa(isianBaru)
     expect(hasil).toEqual({ id: 'desa_koto_baru_sentosa', nama: 'Koto Baru Sentosa', email: 'admin@kotobarusentosa.desa.id' })
     const d = await ambilDetailDesaKonsol(hasil.id)
     expect(d).toMatchObject({
       status: 'Persiapan', kodeDesa: '14.01.17.2077', kecamatan: { nama: 'Kampa' }, kabupaten: { nama: 'Kampar' }, paket: 'Lengkap',
-      kontak: { operator: { email: 'admin@kotobarusentosa.desa.id' } },
+      kontak: { operator: null, sekdes: { nama: 'Admin desa', email: 'admin@kotobarusentosa.desa.id' } },
+      bisaUndangSekdes: false,
     })
     expect(d.persiapan.filter((l) => l.selesai)).toEqual([])
     const admin = ambilDb().pengguna.find((p) => p.email === 'admin@kotobarusentosa.desa.id')
-    expect(admin).toMatchObject({ desaId: 'desa_koto_baru_sentosa', peran: 'operator', aktif: false })
+    expect(admin).toMatchObject({ desaId: 'desa_koto_baru_sentosa', peran: 'sekdes', jabatan: 'Sekretaris Desa', aktif: true })
+    expect((await masuk('admin@kotobarusentosa.desa.id', 'demo')).sesi.desa).toMatchObject({ id: hasil.id, status: 'Persiapan' })
+    const katalog = ambilDb().jenisSurat.filter((j) => j.desaId === hasil.id)
+    expect(katalog).toHaveLength(12)
+    expect(katalog.every((j) => !j.aktif && j.id.startsWith('js_koto_baru_sentosa_'))).toBe(true)
     expect((await ambilRingkasanKonsol()).desa.persiapan).toBe(8)
   })
   it('Tambah desa yang bentrok atau tidak sah: galat per kolom, dan tidak ada yang tercipta setengah jadi (fokus review 3)', async () => {

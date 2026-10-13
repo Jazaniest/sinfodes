@@ -3,8 +3,8 @@ import { z } from 'zod'
 import { daftarSchema } from '@/domain/api'
 import { pemantauanSchema } from '@/domain/konsol/pemantauan'
 import {
-  barisDesaKonsolSchema, detailDesaKonsolSchema, hasilTambahDesaSchema, ringkasanKonsolSchema, sesiKonsolSchema, type FilterDesaKonsol,
-  type TambahDesa,
+  barisDesaKonsolSchema, detailDesaKonsolSchema, hasilTambahDesaSchema, hasilUndangSekdesSchema, ringkasanKonsolSchema, sesiKonsolSchema,
+  type FilterDesaKonsol, type TambahDesa, type UndangSekdes,
 } from '@/domain/konsol/schema'
 import { panggilApi } from './client'
 
@@ -47,6 +47,10 @@ export const opsiDetailDesaKonsol = (id: string) =>
 
 export const tambahDesa = (isian: TambahDesa) =>
   panggilApi('POST', '/konsol/desa', { skema: hasilTambahDesaSchema, body: isian, sesi: 'konsol' })
+
+/** Undang Sekretaris Desa untuk desa yang belum punya (tahap 6C). */
+export const undangSekdes = (desaId: string, isian: UndangSekdes) =>
+  panggilApi('POST', `/konsol/desa/${encodeURIComponent(desaId)}/sekdes`, { skema: hasilUndangSekdesSchema, body: isian, sesi: 'konsol' })
 
 /** `wilayah` null: pemantau memakai wilayahnya sendiri; Tim Sinfodes wajib memilih kabupaten. */
 export const ambilPemantauan = (wilayah: string | null, signal?: AbortSignal) =>

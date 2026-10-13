@@ -20,11 +20,17 @@ const status = (s: StatusPermohonan) => db.permohonan.filter((p) => p.status ===
 
 describe('data surat demo (SPEC §12.6)', () => {
   it('12 jenis surat untuk Sungai Sialang; pengaturan surat bawaan untuk setiap desa', () => {
-    expect(db.jenisSurat.map((j) => j.id)).toEqual([
+    expect(db.jenisSurat.filter((j) => j.desaId === 'desa_sungai_sialang').map((j) => j.id)).toEqual([
       'js_ss_skd', 'js_ss_sktm', 'js_ss_sku', 'js_ss_spck', 'js_ss_skl', 'js_ss_skm',
       'js_ss_spp', 'js_ss_skp', 'js_ss_spn', 'js_ss_skbn', 'js_ss_skbm', 'js_ss_skh',
     ])
     for (const j of db.jenisSurat) expect(jenisSuratSchema.safeParse(j).success, j.id).toBe(true)
+    // Tanjung Lamo (Persiapan) memulai dengan katalog bawaan yang belum dilayani (tahap 6C).
+    const katalogBaru = db.jenisSurat.filter((j) => j.desaId === 'desa_tanjung_lamo')
+    expect(katalogBaru.map((j) => j.id.replace('js_tanjung_lamo_', 'js_ss_'))).toEqual(
+      db.jenisSurat.filter((j) => j.desaId === 'desa_sungai_sialang').map((j) => j.id),
+    )
+    expect(katalogBaru.every((j) => !j.aktif)).toBe(true)
     expect(db.pengaturanSurat.map((p) => [p.desaId, p.kertas, p.modeTandaTangan])).toEqual([
       ['desa_sungai_sialang', 'A4', 'tte'],
       ['desa_tanjung_lamo', 'A4', 'tte'],

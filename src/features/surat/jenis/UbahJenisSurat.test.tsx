@@ -2,9 +2,9 @@ import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { ambilDb } from '@/mocks/db'
-import { AKUN_UJI, masukSebagai, pakaiApiTiruan, SEKARANG_UJI } from '@/test/api-tiruan'
+import { AKUN_DESA_BARU_UJI, AKUN_UJI, masukSebagai, pakaiApiTiruan, SEKARANG_UJI } from '@/test/api-tiruan'
 import { renderPanel } from '@/test/render'
-import { contohSesi } from '@/test/sesi'
+import { contohSesi, contohSesiDesaBaru } from '@/test/sesi'
 import { kosongkanToast } from '@/ui/toast/antrean'
 import { PenampungToast } from '@/ui/toast/PenampungToast'
 import { UbahJenisSurat } from './UbahJenisSurat'
@@ -79,6 +79,13 @@ describe('ubah jenis surat (SPEC §7.4 layar 6)', () => {
     pasang('js_tidak_ada')
     expect(await screen.findByText('Jenis surat tidak ditemukan')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Kembali ke Jenis Surat' })).toHaveAttribute('href', '/admin/surat/jenis')
+  })
+  it('desa tanpa penduduk: pratinjau memakai data contoh dan menyebutnya (tahap 6C)', async () => {
+    masukSebagai(AKUN_DESA_BARU_UJI)
+    renderPanel(<UbahJenisSurat id="js_tanjung_lamo_sktm" onSelesai={vi.fn()} sekarang={SEKARANG_UJI} />, contohSesiDesaBaru())
+    expect(await screen.findByText('Pratinjau memakai data contoh, karena desa belum punya data penduduk.')).toBeInTheDocument()
+    // Lembar surat menulis nama dengan huruf kapital.
+    expect(screen.getByRole('region', { name: 'Pratinjau surat' })).toHaveTextContent('NAMA PEMOHON')
   })
 })
 

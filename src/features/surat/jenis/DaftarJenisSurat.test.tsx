@@ -4,9 +4,9 @@ import { afterEach, describe, expect, it } from 'vitest'
 import type { Peran } from '@/domain/pengguna/schema'
 import { ambilDb } from '@/mocks/db'
 import { aturModeJaringan } from '@/mocks/jaringan'
-import { AKUN_UJI, masukSebagai, pakaiApiTiruan } from '@/test/api-tiruan'
+import { AKUN_DESA_BARU_UJI, AKUN_UJI, masukSebagai, pakaiApiTiruan } from '@/test/api-tiruan'
 import { renderPanel } from '@/test/render'
-import { contohSesi } from '@/test/sesi'
+import { contohSesi, contohSesiDesaBaru } from '@/test/sesi'
 import { kosongkanToast } from '@/ui/toast/antrean'
 import { PenampungToast } from '@/ui/toast/PenampungToast'
 import { DaftarJenisSurat } from './DaftarJenisSurat'
@@ -67,5 +67,11 @@ describe('Jenis Surat (SPEC §7.4 layar 6)', () => {
     expect(within(daftar).queryAllByRole('switch')).toHaveLength(0)
     expect(within(daftar).getAllByText('Aktif')).toHaveLength(12)
     expect(screen.queryByRole('link', { name: /^Ubah / })).not.toBeInTheDocument()
+  })
+  it('desa baru: belum ada jenis yang dilayani diberi keterangan (tahap 6C)', async () => {
+    masukSebagai(AKUN_DESA_BARU_UJI)
+    renderPanel(<DaftarJenisSurat />, contohSesiDesaBaru())
+    expect(await screen.findByText(/^Belum ada jenis surat yang dilayani\. Aktifkan jenis surat/)).toBeInTheDocument()
+    expect(screen.getByText('0 dari 12 jenis dilayani · 0 bisa diajukan online')).toBeInTheDocument()
   })
 })

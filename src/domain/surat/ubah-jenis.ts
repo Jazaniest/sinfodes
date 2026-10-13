@@ -112,12 +112,14 @@ export function kunciDariLabel(label: string, terpakai: readonly string[]): stri
 
 /**
  * GET /jenis-surat/:id: jenis surat dan bahan pratinjau halaman ubah. Contohnya permohonan terakhir jenis ini beserta
- * isiannya; bila belum ada, penduduk dewasa pertama dengan isian kosong.
+ * isiannya; bila belum ada, penduduk dewasa pertama dengan isian kosong; bila desa belum punya penduduk, pemohon contoh.
  */
 export const detailJenisSuratSchema = z.object({
   jenis: jenisDenganPakaiSchema,
   contoh: z.object({
     pemohon: pendudukSchema,
+    /** Pemohon contoh tanpa NIK, karena desa belum punya penduduk (tahap 6C). */
+    tiruan: z.boolean(),
     subjek: pendudukSchema.nullable(),
     mutasi: mutasiSchema.nullable(),
     isian: z.record(z.string(), z.string()),

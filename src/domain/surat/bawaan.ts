@@ -1,4 +1,5 @@
 import type { IsianTambahan, JenisSurat } from './jenis'
+import type { Desa } from '../wilayah/schema'
 
 type Bawaan = Omit<JenisSurat, 'id' | 'desaId'>
 
@@ -196,3 +197,12 @@ export const JENIS_SURAT_BAWAAN: readonly Bawaan[] = [
     aktif: true,
   },
 ]
+
+/**
+ * Katalog desa baru (tahap 6C): 12 jenis bawaan, semuanya belum dilayani. Desa memilih sendiri jenis yang dilayaninya di
+ * langkah persiapan "Pilih jenis surat yang dilayani" (SPEC §5.3). ID memakai slug desa, yang unik di seluruh Sinfodes.
+ */
+export function katalogDesaBaru(desa: Pick<Desa, 'id' | 'slug'>): JenisSurat[] {
+  const awalan = desa.slug.replaceAll('-', '_')
+  return JENIS_SURAT_BAWAAN.map((j) => ({ ...structuredClone(j), id: `js_${awalan}_${j.kode.toLowerCase()}`, desaId: desa.id, aktif: false }))
+}

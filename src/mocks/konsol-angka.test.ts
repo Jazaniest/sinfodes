@@ -32,7 +32,11 @@ describe('angka Konsol per desa (SPEC §11)', () => {
     expect(a.masukPerMinggu.at(-1)?.mulai).toBe('2026-09-21')
     expect(a.masukPerMinggu.reduce((n, m) => n + m.jumlah, 0)).toBe(db.riwayatMasuk.filter((m) => m.waktu >= '2026-07-06').length)
     expect(a.aktivitasTerakhir?.slice(0, 10)).toBe('2026-09-24')
-    expect(a.kontak).toEqual({ kades: 'H. Muhammad Nasir', operator: { nama: 'Rosmiati', email: 'rosmiati@sungaisialang.desa.id' } })
+    expect(a.kontak).toEqual({
+      kades: 'H. Muhammad Nasir',
+      operator: { nama: 'Rosmiati', email: 'rosmiati@sungaisialang.desa.id' },
+      sekdes: { nama: 'Hendri Saputra', email: 'hendri@sungaisialang.desa.id' },
+    })
   })
   it('Tanjung Lamo, desa baru: 0 dari 5 langkah, tanpa penduduk, tanpa aktivitas, kelengkapan kosong (fokus review 4)', () => {
     const db = bangkitkanDb(SEKARANG)
@@ -40,7 +44,7 @@ describe('angka Konsol per desa (SPEC §11)', () => {
     expect(jumlahSelesai(a.persiapan)).toBe(0)
     expect(a).toMatchObject({ jiwa: 0, kelengkapan: null, penggunaAktif: 0, aktivitasTerakhir: null, suratMingguIni: 0 })
     expect(a.suratPerBulan.every((b) => b.jumlah === 0)).toBe(true)
-    expect(a.kontak).toEqual({ kades: null, operator: { nama: 'Yusri', email: 'operator@tanjunglamo.desa.id' } })
+    expect(a.kontak).toEqual({ kades: null, operator: { nama: 'Yusri', email: 'operator@tanjunglamo.desa.id' }, sekdes: null })
   })
   it('langkah persiapan mengikuti data panel: identitas, dusun, penduduk, pengguna kedua, dan jenis surat aktif (fokus review 5)', () => {
     const db = bangkitkanDb(SEKARANG)

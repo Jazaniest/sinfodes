@@ -63,12 +63,19 @@ export const barisDesaKonsolSchema = desaInti.extend({
 })
 export type BarisDesaKonsol = z.infer<typeof barisDesaKonsolSchema>
 
+const kontakOrang = z.object({ nama: z.string(), email: z.string() })
+
 /** GET /konsol/desa/:id: isi empat tab Detail desa (SPEC §11). */
 export const detailDesaKonsolSchema = barisDesaKonsolSchema.extend({
   alamatKantor: z.string(),
   surel: z.string(),
   telepon: z.string(),
-  kontak: z.object({ kades: z.string().nullable(), operator: z.object({ nama: z.string(), email: z.string() }).nullable() }),
+  kontak: z.object({ kades: z.string().nullable(), operator: kontakOrang.nullable(), sekdes: kontakOrang.nullable() }),
+  /**
+   * Tim Sinfodes bisa mengundang Sekretaris Desa (tahap 6C): desa berdata panel yang belum punya Sekretaris Desa aktif, satu-
+   * satunya peran yang bisa menambah pengguna desa (SPEC §5.1). Desa contoh (rekaman) tidak punya akun sungguhan.
+   */
+  bisaUndangSekdes: z.boolean(),
   jiwa: jumlah,
   persiapan: persiapanSchema,
   /** 12 bulan terakhir, terlama dulu. */
@@ -113,3 +120,11 @@ export const tambahDesaSchema = z.object({
 })
 export type TambahDesa = z.infer<typeof tambahDesaSchema>
 export const hasilTambahDesaSchema = z.object({ id: z.string(), nama: z.string(), email: z.string() })
+
+/** POST /konsol/desa/:id/sekdes (tahap 6C): undang Sekretaris Desa untuk desa yang belum punya. */
+export const undangSekdesSchema = z.object({
+  nama: z.string().trim().min(2, 'Nama wajib diisi').max(60, 'Paling banyak 60 karakter'),
+  email: z.string().trim().toLowerCase().regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Email belum benar.'),
+})
+export type UndangSekdes = z.infer<typeof undangSekdesSchema>
+export const hasilUndangSekdesSchema = z.object({ nama: z.string(), email: z.string() })

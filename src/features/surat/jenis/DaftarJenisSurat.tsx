@@ -78,48 +78,57 @@ export function DaftarJenisSurat() {
       ) : daftar.isError ? (
         <ErrorState pesan={pesanGalat(daftar.error)} onCobaLagi={() => void daftar.refetch()} />
       ) : (
-        <ul aria-label="Jenis surat" className="divide-y divide-garis border-y border-garis bg-lembar">
-          {daftar.data.data.map((j) => {
-            const sibuk = saklar.isPending && saklar.variables?.jenis.id === j.id
-            return (
-              <li key={j.id} className="flex flex-col gap-3 px-4 py-3 lg:flex-row lg:items-center lg:gap-6">
-                <div className="min-w-0 flex-1">
-                  <p className="flex flex-wrap items-baseline gap-x-2">
-                    <span className="font-medium">{j.nama}</span>
-                    <span className="font-mono text-teks-kecil text-tinta-2">
-                      {j.kode} · {j.klasifikasi}
-                    </span>
-                  </p>
-                  <p className="text-teks-kecil text-tinta-2">{ringkasJenis(j)}</p>
-                </div>
-                {bolehUbah ? (
-                  <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-                    <Saklar aria-label={`${j.nama} aktif`} isSelected={j.aktif} isDisabled={sibuk} onChange={(aktif) => saklar.mutate({ jenis: j, ubah: { aktif } })}>
-                      Aktif
-                    </Saklar>
-                    <Saklar
-                      aria-label={`${j.nama} bisa diajukan online`}
-                      isSelected={j.online}
-                      isDisabled={sibuk}
-                      onChange={(online) => saklar.mutate({ jenis: j, ubah: { online } })}
-                    >
-                      Layanan online
-                    </Saklar>
-                    <Tautan href={`/admin/surat/jenis/${j.id}`} aria-label={`Ubah ${j.nama}`}>
-                      Ubah
-                    </Tautan>
+        <>
+          {daftar.data.data.every((j) => !j.aktif) && (
+            <p className="text-tinta-2">
+              {bolehUbah
+                ? 'Belum ada jenis surat yang dilayani. Aktifkan jenis surat yang dilayani desa; surat hanya bisa dibuat dan diajukan dari jenis yang aktif.'
+                : 'Belum ada jenis surat yang dilayani. Operator atau Sekretaris Desa yang mengaktifkannya.'}
+            </p>
+          )}
+          <ul aria-label="Jenis surat" className="divide-y divide-garis border-y border-garis bg-lembar">
+            {daftar.data.data.map((j) => {
+              const sibuk = saklar.isPending && saklar.variables?.jenis.id === j.id
+              return (
+                <li key={j.id} className="flex flex-col gap-3 px-4 py-3 lg:flex-row lg:items-center lg:gap-6">
+                  <div className="min-w-0 flex-1">
+                    <p className="flex flex-wrap items-baseline gap-x-2">
+                      <span className="font-medium">{j.nama}</span>
+                      <span className="font-mono text-teks-kecil text-tinta-2">
+                        {j.kode} · {j.klasifikasi}
+                      </span>
+                    </p>
+                    <p className="text-teks-kecil text-tinta-2">{ringkasJenis(j)}</p>
                   </div>
-                ) : (
-                  <p className="text-teks-kecil">
-                    <span>{j.aktif ? 'Aktif' : 'Tidak aktif'}</span>
-                    <span className="text-tinta-2"> · </span>
-                    <span>{j.online ? 'Online' : 'Hanya di kantor desa'}</span>
-                  </p>
-                )}
-              </li>
-            )
-          })}
-        </ul>
+                  {bolehUbah ? (
+                    <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+                      <Saklar aria-label={`${j.nama} aktif`} isSelected={j.aktif} isDisabled={sibuk} onChange={(aktif) => saklar.mutate({ jenis: j, ubah: { aktif } })}>
+                        Aktif
+                      </Saklar>
+                      <Saklar
+                        aria-label={`${j.nama} bisa diajukan online`}
+                        isSelected={j.online}
+                        isDisabled={sibuk}
+                        onChange={(online) => saklar.mutate({ jenis: j, ubah: { online } })}
+                      >
+                        Layanan online
+                      </Saklar>
+                      <Tautan href={`/admin/surat/jenis/${j.id}`} aria-label={`Ubah ${j.nama}`}>
+                        Ubah
+                      </Tautan>
+                    </div>
+                  ) : (
+                    <p className="text-teks-kecil">
+                      <span>{j.aktif ? 'Aktif' : 'Tidak aktif'}</span>
+                      <span className="text-tinta-2"> · </span>
+                      <span>{j.online ? 'Online' : 'Hanya di kantor desa'}</span>
+                    </p>
+                  )}
+                </li>
+              )
+            })}
+          </ul>
+        </>
       )}
     </div>
   )

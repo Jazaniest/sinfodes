@@ -3,6 +3,7 @@ import { DESA_DEMO, DUSUN_DEMO, ID_SUNGAI_SIALANG, PENGGUNA_DEMO } from '../data
 import { AKUN_WARGA_DEMO } from '../data/warga-demo'
 import { buatAcak } from '../prng'
 import { VERSI_DATA, type DbDemo } from '../tipe-db'
+import { katalogDesaBaru } from '@/domain/surat/bawaan'
 import { pengaturanBawaan } from '@/domain/surat/pengaturan'
 import { bangkitkanSuratMasuk } from './arsip'
 import { bangkitkanAset } from './aset'
@@ -103,11 +104,12 @@ export function bangkitkanDb(sekarang: Date): DbDemo {
   })
   // Tanpa PRNG: isi website tetap (SPEC §12.6).
   const website = bangkitkanWebsite({ desa: desaDemo, dusun: DUSUN_DEMO, pengguna: PENGGUNA_DEMO, acuan: sekarang })
-  // Aliran acak kesepuluh sampai kedua belas: data Konsol, riwayat masuk panel, dan angka Pemantauan desa fiktif (SPEC §11).
+  // Aliran acak kesepuluh sampai ketiga belas: data Konsol, riwayat masuk panel, angka Pemantauan, dan Sekretaris Desa desa fiktif (SPEC §11).
   const konsol = bangkitkanKonsol(buatAcak(SEED_DEMO + 9), {
     acuan: sekarang,
     desaPanel: DESA_DEMO,
     acakPemantauan: buatAcak(SEED_DEMO + 11),
+    acakKontak: buatAcak(SEED_DEMO + 12),
   })
   const riwayatMasuk = bangkitkanRiwayatMasuk(buatAcak(SEED_DEMO + 10), {
     pengguna: PENGGUNA_DEMO.filter((p) => p.desaId === ID_SUNGAI_SIALANG),
@@ -123,7 +125,8 @@ export function bangkitkanDb(sekarang: Date): DbDemo {
     aktivitas: [...hasil.aktivitas, ...surat.aktivitas, ...pengaduan.aktivitas],
     laporanData,
     impor: [],
-    jenisSurat: surat.jenisSurat,
+    // Desa berstatus Persiapan (Tanjung Lamo) memulai dengan katalog bawaan yang belum dilayani (tahap 6C).
+    jenisSurat: [...surat.jenisSurat, ...DESA_DEMO.filter((d) => d.status === 'Persiapan').flatMap((d) => katalogDesaBaru(d))],
     permohonan: surat.permohonan,
     pengaturanSurat: DESA_DEMO.map((d) => pengaturanBawaan(d.id)),
     suratMasuk,

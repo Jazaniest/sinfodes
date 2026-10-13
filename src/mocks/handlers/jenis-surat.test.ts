@@ -3,7 +3,7 @@ import { GalatApi } from '@/api/galat'
 import { ambilAntrianTtd, ambilJenisSurat, ambilPermohonan, buatPermohonan, daftarJenisSurat, jalankanAksi, ubahJenisSurat } from '@/api/surat'
 import type { UbahJenisSurat } from '@/domain/surat/ubah-jenis'
 import { ambilDb } from '@/mocks/db'
-import { AKUN_UJI, masukSebagai, pakaiApiTiruan } from '@/test/api-tiruan'
+import { AKUN_DESA_BARU_UJI, AKUN_UJI, masukSebagai, pakaiApiTiruan } from '@/test/api-tiruan'
 
 pakaiApiTiruan({ dbSegarTiapUji: true })
 
@@ -89,5 +89,31 @@ describe('jenis surat: detail dan ubah (SPEC §7.4 layar 6)', () => {
     masukSebagai(AKUN_UJI.sekdes)
     const d = await ubahJenisSurat('js_ss_skd', { kode: 'XYZ', online: false } as UbahJenisSurat)
     expect(d.jenis).toMatchObject({ kode: 'SKD', online: false })
+  })
+})
+
+describe('jenis surat desa baru (tahap 6C)', () => {
+  it('Tanjung Lamo: 12 jenis bawaan, semuanya belum dilayani', async () => {
+    masukSebagai(AKUN_DESA_BARU_UJI)
+    const { data } = await daftarJenisSurat()
+    expect(data).toHaveLength(12)
+    expect(data.every((j) => !j.aktif && j.id.startsWith('js_tanjung_lamo_') && j.jumlahPakai === 0)).toBe(true)
+  })
+  it('mengaktifkan dan membuka jenis surat tanpa penduduk: pratinjau memakai pemohon contoh tanpa NIK (fokus review 1)', async () => {
+    masukSebagai(AKUN_DESA_BARU_UJI)
+    const d = await ubahJenisSurat('js_tanjung_lamo_sktm', { aktif: true })
+    expect(d.jenis.aktif).toBe(true)
+    expect(d.contoh).toMatchObject({ tiruan: true, pemohon: { nama: 'Nama Pemohon', nik: null, desaId: 'desa_tanjung_lamo' }, subjek: null })
+    expect((await ambilJenisSurat('js_tanjung_lamo_skl')).contoh.tiruan).toBe(true)
+  })
+  it('jenis surat desa lain tidak bisa dibuka atau diubah (fokus review 1)', async () => {
+    masukSebagai(AKUN_DESA_BARU_UJI)
+    expect((await galatDari(ambilJenisSurat('js_ss_skd'))).kode).toBe('NOT_FOUND')
+    expect((await galatDari(ubahJenisSurat('js_ss_skd', { aktif: false }))).kode).toBe('NOT_FOUND')
+    expect(ambilDb().jenisSurat.find((j) => j.id === 'js_ss_skd')?.aktif).toBe(true)
+  })
+  it('Sungai Sialang tetap memakai permohonan sungguhan sebagai contoh', async () => {
+    masukSebagai(AKUN_UJI.operator)
+    expect((await ambilJenisSurat('js_ss_skd')).contoh.tiruan).toBe(false)
   })
 })

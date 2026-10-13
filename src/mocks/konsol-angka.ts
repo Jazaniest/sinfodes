@@ -41,6 +41,7 @@ export function angkaKonsolDesa(db: DbDemo, desa: Desa, sekarang: Date): AngkaKo
   const terbit = db.permohonan.filter((p) => p.desaId === desa.id).flatMap((p) => (p.terbit ? [p.terbit.pada] : []))
   const penggunaDesa = db.pengguna.filter((p) => p.desaId === desa.id)
   const operator = penggunaDesa.find((p) => p.peran === 'operator')
+  const sekdes = penggunaDesa.find((p) => p.peran === 'sekdes' && p.aktif)
   // Pemantauan wilayah (SPEC §11): hanya surat Selesai (sah), sama dengan daftar Selesai di panel desa.
   const selesai = db.permohonan.flatMap((p) => (p.desaId === desa.id && p.status === 'selesai' && p.terbit ? [{ masuk: p.masukPada, terbit: p.terbit.pada }] : []))
   const bulanIni = tanggalIsoWib(sekarang).slice(0, 7)
@@ -67,6 +68,7 @@ export function angkaKonsolDesa(db: DbDemo, desa: Desa, sekarang: Date): AngkaKo
     kontak: {
       kades: penggunaDesa.find((p) => p.peran === 'kades' && p.aktif)?.nama ?? null,
       operator: operator ? { nama: operator.nama, email: operator.email } : null,
+      sekdes: sekdes ? { nama: sekdes.nama, email: sekdes.email } : null,
     },
     suratBulanIni: selesai.filter((s) => tanggalIsoWib(new Date(s.terbit)).startsWith(bulanIni)).length,
     waktuLayananJam: bulatJam(

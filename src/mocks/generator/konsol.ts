@@ -4,7 +4,7 @@ import { HARGA_TRIWULAN, type Langganan, type Paket, type PenggunaKonsol, type T
 import type { Pengguna } from '@/domain/pengguna/schema'
 import { bertitik, wilayahKecamatan } from '@/domain/wilayah/kode-wilayah'
 import type { Desa } from '@/domain/wilayah/schema'
-import { DESA_KONSOL, NAMA_KADES, NAMA_OPERATOR, PAKET_DESA_DEMO, PENGGUNA_KONSOL_DEMO, type RencanaDesaKonsol } from '../data/desa-konsol'
+import { DESA_KONSOL, NAMA_KADES, NAMA_OPERATOR, NAMA_SEKDES, PAKET_DESA_DEMO, PENGGUNA_KONSOL_DEMO, type RencanaDesaKonsol } from '../data/desa-konsol'
 import type { Acak } from '../prng'
 import type { MasukPanel, RekamDesa } from '../tipe-db'
 
@@ -83,8 +83,10 @@ function rentangPakai(acak: Acak, r: RencanaDesaKonsol, acuan: Date): { mulai: n
 }
 
 type AngkaPemantauanRekam = Pick<RekamDesa, 'waktuLayananJam' | 'waktuTanggapanJam' | 'apbdes'>
+/** Rekaman tanpa angka Pemantauan dan tanpa Sekretaris Desa; keduanya dari aliran acaknya sendiri (tahap 6B dan 6C). */
+type RekamDasar = Omit<RekamDesa, keyof AngkaPemantauanRekam | 'kontak'> & { kontak: Omit<RekamDesa['kontak'], 'sekdes'> }
 
-function rekamDesa(acak: Acak, r: RencanaDesaKonsol, desa: Desa, acuan: Date): Omit<RekamDesa, keyof AngkaPemantauanRekam> {
+function rekamDesa(acak: Acak, r: RencanaDesaKonsol, desa: Desa, acuan: Date): RekamDasar {
   const hariIni = tanggalIsoWib(acuan)
   const pakai = rentangPakai(acak, r, acuan)
   const langkahSelesai = r.status === 'Persiapan' ? (r.langkah ?? 0) : 5
@@ -177,12 +179,21 @@ export function angkaPemantauanFiktif(acak: Acak, r: RencanaDesaKonsol): AngkaPe
 }
 
 /**
+ * Sekretaris Desa desa fiktif (tahap 6C). Desa Persiapan yang belum sampai langkah Tambah pengguna baru punya akun admin
+ * pertamanya, jadi belum punya Sekretaris Desa.
+ */
+export function sekdesFiktif(acak: Acak, desa: Desa, langkahSelesai: number): RekamDesa['kontak']['sekdes'] {
+  if (desa.status === 'Persiapan' && langkahSelesai < 4) return null
+  return { nama: acak.pilih(NAMA_SEKDES), email: `sekdes@${desa.slug.replaceAll('-', '')}.desa.id` }
+}
+
+/**
  * Data Konsol (SPEC §11, §12.8): 38 desa fiktif dengan angka pemakaiannya, langganan dan tagihan semua desa, dan akun konsol.
  * `desaPanel` adalah desa yang punya data panel (Sungai Sialang, Tanjung Lamo); angkanya dihitung langsung, bukan dari sini.
  */
 export function bangkitkanKonsol(
   acak: Acak,
-  o: { acuan: Date; desaPanel: readonly Desa[]; acakPemantauan: Acak },
+  o: { acuan: Date; desaPanel: readonly Desa[]; acakPemantauan: Acak; acakKontak: Acak },
 ): { desa: Desa[]; rekam: RekamDesa[]; langganan: Langganan[]; penggunaKonsol: PenggunaKonsol[] } {
   const desa = DESA_KONSOL.map((r, i) => desaFiktif(r, i))
   const nomor = (i: number) => String(i + 1).padStart(3, '0')
@@ -194,8 +205,15 @@ export function bangkitkanKonsol(
   ]
   return {
     desa,
-    // Aliran acak terpisah: angka Pemantauan tidak menggeser angka rekaman lain (tahap 6A).
-    rekam: DESA_KONSOL.map((r, i) => ({ ...rekamDesa(acak, r, desa[i], o.acuan), ...angkaPemantauanFiktif(o.acakPemantauan, r) })),
+    // Aliran acak terpisah: angka Pemantauan (6B) dan Sekretaris Desa (6C) tidak menggeser angka rekaman lain.
+    rekam: DESA_KONSOL.map((r, i) => {
+      const dasar = rekamDesa(acak, r, desa[i], o.acuan)
+      return {
+        ...dasar,
+        ...angkaPemantauanFiktif(o.acakPemantauan, r),
+        kontak: { ...dasar.kontak, sekdes: sekdesFiktif(o.acakKontak, desa[i], dasar.langkahSelesai) },
+      }
+    }),
     langganan,
     penggunaKonsol: PENGGUNA_KONSOL_DEMO.map((p) => structuredClone(p)),
   }

@@ -4,8 +4,11 @@ import { HARGA_TRIWULAN, langgananSchema, penggunaKonsolSchema } from '@/domain/
 import { langkahBerikut, persiapanBerurutan } from '@/domain/wilayah/persiapan'
 import { desaSchema } from '@/domain/wilayah/schema'
 import { DESA_ASLI_PELALAWAN } from '../data/desa-asli-pelalawan'
-import { ID_SUNGAI_SIALANG } from '../data/desa-demo'
-import { bangkitkanDb } from './index'
+import { DESA_DEMO, ID_SUNGAI_SIALANG } from '../data/desa-demo'
+import { buatAcak } from '../prng'
+import type { RekamDesa } from '../tipe-db'
+import { bangkitkanDb, SEED_DEMO } from './index'
+import { bangkitkanKonsol } from './konsol'
 
 const SEKARANG = new Date('2026-09-24T02:00:00Z')
 const db = bangkitkanDb(SEKARANG)
@@ -106,5 +109,18 @@ describe('data Konsol (SPEC §12.8, §11)', () => {
     }
     // Uji coba Bukit Pelangi diam 30 hari: tidak ada surat 30 hari terakhir, jadi median layanannya kosong.
     expect(db.rekamDesa.find((r) => r.desaId === 'desa_bukit_pelangi')?.waktuLayananJam).toBeNull()
+  })
+  it('Sekretaris Desa desa fiktif: ada kecuali di desa Persiapan sebelum langkah Tambah pengguna; aliran acaknya terpisah', () => {
+    for (const r of db.rekamDesa) {
+      const desa = db.desa.find((d) => d.id === r.desaId)
+      const harusAda = desa?.status !== 'Persiapan' || r.langkahSelesai >= 4
+      expect(r.kontak.sekdes !== null, desa?.nama).toBe(harusAda)
+    }
+    expect(db.rekamDesa.some((r) => r.kontak.sekdes === null)).toBe(true)
+    const lain = bangkitkanKonsol(buatAcak(SEED_DEMO + 9), {
+      acuan: SEKARANG, desaPanel: DESA_DEMO, acakPemantauan: buatAcak(SEED_DEMO + 11), acakKontak: buatAcak(1),
+    })
+    const tanpaSekdes = (r: RekamDesa) => ({ ...r, kontak: { ...r.kontak, sekdes: null } })
+    expect(lain.rekam.map(tanpaSekdes)).toEqual(db.rekamDesa.map(tanpaSekdes))
   })
 })
