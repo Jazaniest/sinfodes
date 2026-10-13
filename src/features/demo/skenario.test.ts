@@ -38,6 +38,10 @@ describe('skenario terpandu (SPEC §3.6, §13.5)', () => {
       expect(ditemukan, t.ke).toBeDefined()
     }
   })
+  it('Sekdes memaraf dari daftar surat Perlu TTD (tombol Paraf ada di sana), bukan dari tumpukan tanda tangan', () => {
+    const paraf = semuaTombol.find((t) => t.masuk.bagian === 'admin' && t.masuk.peran === 'sekdes')
+    expect(paraf?.ke).toBe('/admin/surat?status=perlu-ttd')
+  })
   it('setiap tombol memakai akun yang ada di data demo (fokus review 5)', () => {
     for (const t of semuaTombol) expect(akunAda(t.masuk), `${t.label} → ${JSON.stringify(t.masuk)}`).toBe(true)
   })

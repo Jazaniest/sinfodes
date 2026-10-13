@@ -27,7 +27,8 @@ export const SKENARIO_DEMO: readonly Skenario[] = [
         teks: 'Operator memprosesnya, lalu Sekretaris Desa memaraf.',
         tombol: [
           { label: 'Operator: antrean surat', masuk: OPERATOR, ke: '/admin/surat' },
-          { label: 'Sekdes: paraf', masuk: { bagian: 'admin', peran: 'sekdes' }, ke: '/admin/surat/tanda-tangan' },
+          // Paraf dilakukan di ruang kerja surat, lewat daftar Perlu TTD; tumpukan tanda tangan hanya untuk penanda tangan.
+          { label: 'Sekdes: paraf', masuk: { bagian: 'admin', peran: 'sekdes' }, ke: '/admin/surat?status=perlu-ttd' },
         ],
       },
       {
