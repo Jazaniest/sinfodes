@@ -24,6 +24,9 @@ import { Route as AdminPanelLembagaRouteImport } from './routes/admin/_panel/lem
 import { Route as AdminPanelNotifikasiRouteImport } from './routes/admin/_panel/notifikasi'
 import { Route as AdminPanelPetaRouteImport } from './routes/admin/_panel/peta'
 import { Route as DesaSlugIndexRouteImport } from './routes/desa/$slug/index'
+import { Route as DesaSlugKreditFotoRouteImport } from './routes/desa/$slug/kredit-foto'
+import { Route as DesaSlugLayananRouteImport } from './routes/desa/$slug/layanan'
+import { Route as DesaSlugVerifikasiRouteImport } from './routes/desa/$slug/verifikasi'
 import { Route as WargaAppIndexRouteImport } from './routes/warga/_app/index'
 import { Route as WargaAppAjukanRouteImport } from './routes/warga/_app/ajukan'
 import { Route as WargaAppAkunRouteImport } from './routes/warga/_app/akun'
@@ -50,6 +53,8 @@ import { Route as AdminPanelWebsiteAgendaRouteImport } from './routes/admin/_pan
 import { Route as AdminPanelWebsiteGaleriRouteImport } from './routes/admin/_panel/website/galeri'
 import { Route as AdminPanelWebsitePengumumanRouteImport } from './routes/admin/_panel/website/pengumuman'
 import { Route as AdminPanelWebsiteTampilanRouteImport } from './routes/admin/_panel/website/tampilan'
+import { Route as DesaSlugKabarIndexRouteImport } from './routes/desa/$slug/kabar/index'
+import { Route as DesaSlugKabarArtikelRouteImport } from './routes/desa/$slug/kabar/$artikel'
 import { Route as WargaAppKeluargaIndexRouteImport } from './routes/warga/_app/keluarga/index'
 import { Route as WargaAppKeluargaLaporRouteImport } from './routes/warga/_app/keluarga/lapor'
 import { Route as WargaAppPengaduanIndexRouteImport } from './routes/warga/_app/pengaduan/index'
@@ -147,6 +152,21 @@ const AdminPanelPetaRoute = AdminPanelPetaRouteImport.update({
 const DesaSlugIndexRoute = DesaSlugIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => DesaSlugRoute,
+} as any)
+const DesaSlugKreditFotoRoute = DesaSlugKreditFotoRouteImport.update({
+  id: '/kredit-foto',
+  path: '/kredit-foto',
+  getParentRoute: () => DesaSlugRoute,
+} as any)
+const DesaSlugLayananRoute = DesaSlugLayananRouteImport.update({
+  id: '/layanan',
+  path: '/layanan',
+  getParentRoute: () => DesaSlugRoute,
+} as any)
+const DesaSlugVerifikasiRoute = DesaSlugVerifikasiRouteImport.update({
+  id: '/verifikasi',
+  path: '/verifikasi',
   getParentRoute: () => DesaSlugRoute,
 } as any)
 const WargaAppIndexRoute = WargaAppIndexRouteImport.update({
@@ -290,6 +310,16 @@ const AdminPanelWebsiteTampilanRoute =
     path: '/website/tampilan',
     getParentRoute: () => AdminPanelRoute,
   } as any)
+const DesaSlugKabarIndexRoute = DesaSlugKabarIndexRouteImport.update({
+  id: '/kabar/',
+  path: '/kabar/',
+  getParentRoute: () => DesaSlugRoute,
+} as any)
+const DesaSlugKabarArtikelRoute = DesaSlugKabarArtikelRouteImport.update({
+  id: '/kabar/$artikel',
+  path: '/kabar/$artikel',
+  getParentRoute: () => DesaSlugRoute,
+} as any)
 const WargaAppKeluargaIndexRoute = WargaAppKeluargaIndexRouteImport.update({
   id: '/keluarga/',
   path: '/keluarga/',
@@ -435,6 +465,9 @@ export interface FileRoutesByFullPath {
   '/admin/lembaga': typeof AdminPanelLembagaRoute
   '/admin/notifikasi': typeof AdminPanelNotifikasiRoute
   '/admin/peta': typeof AdminPanelPetaRoute
+  '/desa/$slug/kredit-foto': typeof DesaSlugKreditFotoRoute
+  '/desa/$slug/layanan': typeof DesaSlugLayananRoute
+  '/desa/$slug/verifikasi': typeof DesaSlugVerifikasiRoute
   '/warga/ajukan': typeof WargaAppAjukanRoute
   '/warga/akun': typeof WargaAppAkunRoute
   '/admin/': typeof AdminPanelIndexRoute
@@ -455,6 +488,7 @@ export interface FileRoutesByFullPath {
   '/admin/website/galeri': typeof AdminPanelWebsiteGaleriRoute
   '/admin/website/pengumuman': typeof AdminPanelWebsitePengumumanRoute
   '/admin/website/tampilan': typeof AdminPanelWebsiteTampilanRoute
+  '/desa/$slug/kabar/$artikel': typeof DesaSlugKabarArtikelRoute
   '/warga/keluarga/lapor': typeof WargaAppKeluargaLaporRoute
   '/warga/pengaduan/$id': typeof WargaAppPengaduanIdRoute
   '/warga/pengaduan/baru': typeof WargaAppPengaduanBaruRoute
@@ -467,6 +501,7 @@ export interface FileRoutesByFullPath {
   '/admin/pengaturan/': typeof AdminPanelPengaturanIndexRoute
   '/admin/surat/': typeof AdminPanelSuratIndexRoute
   '/admin/website/': typeof AdminPanelWebsiteIndexRoute
+  '/desa/$slug/kabar/': typeof DesaSlugKabarIndexRoute
   '/warga/keluarga/': typeof WargaAppKeluargaIndexRoute
   '/warga/pengaduan/': typeof WargaAppPengaduanIndexRoute
   '/warga/riwayat/': typeof WargaAppRiwayatIndexRoute
@@ -498,6 +533,9 @@ export interface FileRoutesByTo {
   '/admin/lembaga': typeof AdminPanelLembagaRoute
   '/admin/notifikasi': typeof AdminPanelNotifikasiRoute
   '/admin/peta': typeof AdminPanelPetaRoute
+  '/desa/$slug/kredit-foto': typeof DesaSlugKreditFotoRoute
+  '/desa/$slug/layanan': typeof DesaSlugLayananRoute
+  '/desa/$slug/verifikasi': typeof DesaSlugVerifikasiRoute
   '/warga/ajukan': typeof WargaAppAjukanRoute
   '/warga/akun': typeof WargaAppAkunRoute
   '/admin': typeof AdminPanelIndexRoute
@@ -518,6 +556,7 @@ export interface FileRoutesByTo {
   '/admin/website/galeri': typeof AdminPanelWebsiteGaleriRoute
   '/admin/website/pengumuman': typeof AdminPanelWebsitePengumumanRoute
   '/admin/website/tampilan': typeof AdminPanelWebsiteTampilanRoute
+  '/desa/$slug/kabar/$artikel': typeof DesaSlugKabarArtikelRoute
   '/warga/keluarga/lapor': typeof WargaAppKeluargaLaporRoute
   '/warga/pengaduan/$id': typeof WargaAppPengaduanIdRoute
   '/warga/pengaduan/baru': typeof WargaAppPengaduanBaruRoute
@@ -530,6 +569,7 @@ export interface FileRoutesByTo {
   '/admin/pengaturan': typeof AdminPanelPengaturanIndexRoute
   '/admin/surat': typeof AdminPanelSuratIndexRoute
   '/admin/website': typeof AdminPanelWebsiteIndexRoute
+  '/desa/$slug/kabar': typeof DesaSlugKabarIndexRoute
   '/warga/keluarga': typeof WargaAppKeluargaIndexRoute
   '/warga/pengaduan': typeof WargaAppPengaduanIndexRoute
   '/warga/riwayat': typeof WargaAppRiwayatIndexRoute
@@ -565,6 +605,9 @@ export interface FileRoutesById {
   '/admin/_panel/lembaga': typeof AdminPanelLembagaRoute
   '/admin/_panel/notifikasi': typeof AdminPanelNotifikasiRoute
   '/admin/_panel/peta': typeof AdminPanelPetaRoute
+  '/desa/$slug/kredit-foto': typeof DesaSlugKreditFotoRoute
+  '/desa/$slug/layanan': typeof DesaSlugLayananRoute
+  '/desa/$slug/verifikasi': typeof DesaSlugVerifikasiRoute
   '/warga/_app/ajukan': typeof WargaAppAjukanRoute
   '/warga/_app/akun': typeof WargaAppAkunRoute
   '/admin/_panel/': typeof AdminPanelIndexRoute
@@ -585,6 +628,7 @@ export interface FileRoutesById {
   '/admin/_panel/website/galeri': typeof AdminPanelWebsiteGaleriRoute
   '/admin/_panel/website/pengumuman': typeof AdminPanelWebsitePengumumanRoute
   '/admin/_panel/website/tampilan': typeof AdminPanelWebsiteTampilanRoute
+  '/desa/$slug/kabar/$artikel': typeof DesaSlugKabarArtikelRoute
   '/warga/_app/keluarga/lapor': typeof WargaAppKeluargaLaporRoute
   '/warga/_app/pengaduan/$id': typeof WargaAppPengaduanIdRoute
   '/warga/_app/pengaduan/baru': typeof WargaAppPengaduanBaruRoute
@@ -597,6 +641,7 @@ export interface FileRoutesById {
   '/admin/_panel/pengaturan/': typeof AdminPanelPengaturanIndexRoute
   '/admin/_panel/surat/': typeof AdminPanelSuratIndexRoute
   '/admin/_panel/website/': typeof AdminPanelWebsiteIndexRoute
+  '/desa/$slug/kabar/': typeof DesaSlugKabarIndexRoute
   '/warga/_app/keluarga/': typeof WargaAppKeluargaIndexRoute
   '/warga/_app/pengaduan/': typeof WargaAppPengaduanIndexRoute
   '/warga/_app/riwayat/': typeof WargaAppRiwayatIndexRoute
@@ -633,6 +678,9 @@ export interface FileRouteTypes {
     | '/admin/lembaga'
     | '/admin/notifikasi'
     | '/admin/peta'
+    | '/desa/$slug/kredit-foto'
+    | '/desa/$slug/layanan'
+    | '/desa/$slug/verifikasi'
     | '/warga/ajukan'
     | '/warga/akun'
     | '/admin/'
@@ -653,6 +701,7 @@ export interface FileRouteTypes {
     | '/admin/website/galeri'
     | '/admin/website/pengumuman'
     | '/admin/website/tampilan'
+    | '/desa/$slug/kabar/$artikel'
     | '/warga/keluarga/lapor'
     | '/warga/pengaduan/$id'
     | '/warga/pengaduan/baru'
@@ -665,6 +714,7 @@ export interface FileRouteTypes {
     | '/admin/pengaturan/'
     | '/admin/surat/'
     | '/admin/website/'
+    | '/desa/$slug/kabar/'
     | '/warga/keluarga/'
     | '/warga/pengaduan/'
     | '/warga/riwayat/'
@@ -696,6 +746,9 @@ export interface FileRouteTypes {
     | '/admin/lembaga'
     | '/admin/notifikasi'
     | '/admin/peta'
+    | '/desa/$slug/kredit-foto'
+    | '/desa/$slug/layanan'
+    | '/desa/$slug/verifikasi'
     | '/warga/ajukan'
     | '/warga/akun'
     | '/admin'
@@ -716,6 +769,7 @@ export interface FileRouteTypes {
     | '/admin/website/galeri'
     | '/admin/website/pengumuman'
     | '/admin/website/tampilan'
+    | '/desa/$slug/kabar/$artikel'
     | '/warga/keluarga/lapor'
     | '/warga/pengaduan/$id'
     | '/warga/pengaduan/baru'
@@ -728,6 +782,7 @@ export interface FileRouteTypes {
     | '/admin/pengaturan'
     | '/admin/surat'
     | '/admin/website'
+    | '/desa/$slug/kabar'
     | '/warga/keluarga'
     | '/warga/pengaduan'
     | '/warga/riwayat'
@@ -762,6 +817,9 @@ export interface FileRouteTypes {
     | '/admin/_panel/lembaga'
     | '/admin/_panel/notifikasi'
     | '/admin/_panel/peta'
+    | '/desa/$slug/kredit-foto'
+    | '/desa/$slug/layanan'
+    | '/desa/$slug/verifikasi'
     | '/warga/_app/ajukan'
     | '/warga/_app/akun'
     | '/admin/_panel/'
@@ -782,6 +840,7 @@ export interface FileRouteTypes {
     | '/admin/_panel/website/galeri'
     | '/admin/_panel/website/pengumuman'
     | '/admin/_panel/website/tampilan'
+    | '/desa/$slug/kabar/$artikel'
     | '/warga/_app/keluarga/lapor'
     | '/warga/_app/pengaduan/$id'
     | '/warga/_app/pengaduan/baru'
@@ -794,6 +853,7 @@ export interface FileRouteTypes {
     | '/admin/_panel/pengaturan/'
     | '/admin/_panel/surat/'
     | '/admin/_panel/website/'
+    | '/desa/$slug/kabar/'
     | '/warga/_app/keluarga/'
     | '/warga/_app/pengaduan/'
     | '/warga/_app/riwayat/'
@@ -930,6 +990,27 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/desa/$slug/'
       preLoaderRoute: typeof DesaSlugIndexRouteImport
+      parentRoute: typeof DesaSlugRoute
+    }
+    '/desa/$slug/kredit-foto': {
+      id: '/desa/$slug/kredit-foto'
+      path: '/kredit-foto'
+      fullPath: '/desa/$slug/kredit-foto'
+      preLoaderRoute: typeof DesaSlugKreditFotoRouteImport
+      parentRoute: typeof DesaSlugRoute
+    }
+    '/desa/$slug/layanan': {
+      id: '/desa/$slug/layanan'
+      path: '/layanan'
+      fullPath: '/desa/$slug/layanan'
+      preLoaderRoute: typeof DesaSlugLayananRouteImport
+      parentRoute: typeof DesaSlugRoute
+    }
+    '/desa/$slug/verifikasi': {
+      id: '/desa/$slug/verifikasi'
+      path: '/verifikasi'
+      fullPath: '/desa/$slug/verifikasi'
+      preLoaderRoute: typeof DesaSlugVerifikasiRouteImport
       parentRoute: typeof DesaSlugRoute
     }
     '/warga/_app/': {
@@ -1113,6 +1194,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/website/tampilan'
       preLoaderRoute: typeof AdminPanelWebsiteTampilanRouteImport
       parentRoute: typeof AdminPanelRoute
+    }
+    '/desa/$slug/kabar/': {
+      id: '/desa/$slug/kabar/'
+      path: '/kabar'
+      fullPath: '/desa/$slug/kabar/'
+      preLoaderRoute: typeof DesaSlugKabarIndexRouteImport
+      parentRoute: typeof DesaSlugRoute
+    }
+    '/desa/$slug/kabar/$artikel': {
+      id: '/desa/$slug/kabar/$artikel'
+      path: '/kabar/$artikel'
+      fullPath: '/desa/$slug/kabar/$artikel'
+      preLoaderRoute: typeof DesaSlugKabarArtikelRouteImport
+      parentRoute: typeof DesaSlugRoute
     }
     '/warga/_app/keluarga/': {
       id: '/warga/_app/keluarga/'
@@ -1391,11 +1486,21 @@ const AdminPanelRouteWithChildren = AdminPanelRoute._addFileChildren(
 )
 
 interface DesaSlugRouteChildren {
+  DesaSlugKreditFotoRoute: typeof DesaSlugKreditFotoRoute
+  DesaSlugLayananRoute: typeof DesaSlugLayananRoute
+  DesaSlugVerifikasiRoute: typeof DesaSlugVerifikasiRoute
   DesaSlugIndexRoute: typeof DesaSlugIndexRoute
+  DesaSlugKabarArtikelRoute: typeof DesaSlugKabarArtikelRoute
+  DesaSlugKabarIndexRoute: typeof DesaSlugKabarIndexRoute
 }
 
 const DesaSlugRouteChildren: DesaSlugRouteChildren = {
+  DesaSlugKreditFotoRoute: DesaSlugKreditFotoRoute,
+  DesaSlugLayananRoute: DesaSlugLayananRoute,
+  DesaSlugVerifikasiRoute: DesaSlugVerifikasiRoute,
   DesaSlugIndexRoute: DesaSlugIndexRoute,
+  DesaSlugKabarArtikelRoute: DesaSlugKabarArtikelRoute,
+  DesaSlugKabarIndexRoute: DesaSlugKabarIndexRoute,
 }
 
 const DesaSlugRouteWithChildren = DesaSlugRoute._addFileChildren(
