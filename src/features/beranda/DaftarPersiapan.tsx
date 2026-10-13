@@ -14,7 +14,7 @@ import { MiniBar } from '@/ui/grafik/MiniBar'
 import { Tautan } from '@/ui/navigasi/Tautan'
 import { TautanTombol } from '@/ui/tombol/TautanTombol'
 
-type Tujuan = { href: string; kemampuan: Kemampuan; oleh: string }
+type Tujuan = { href: string; kemampuan: Kemampuan; oleh: string; catatan?: string }
 
 /**
  * Halaman tiap langkah dan hak yang diminta gerbang `ButuhAkses` halaman itu. Jenis surat memakai `pengaturan.kelola`,
@@ -24,7 +24,12 @@ const TUJUAN: Readonly<Record<LangkahPersiapan, Tujuan>> = {
   identitas: { href: '/admin/pengaturan', kemampuan: 'pengaturan.kelola', oleh: 'Operator atau Sekretaris Desa' },
   wilayah: { href: '/admin/pengaturan/wilayah', kemampuan: 'pengaturan.kelola', oleh: 'Operator atau Sekretaris Desa' },
   impor: { href: '/admin/kependudukan/penduduk/impor', kemampuan: 'penduduk.ubah', oleh: 'Operator atau Sekretaris Desa' },
-  pengguna: { href: '/admin/pengaturan/pengguna', kemampuan: 'pengguna.kelola', oleh: 'Sekretaris Desa' },
+  pengguna: {
+    href: '/admin/pengaturan/pengguna',
+    kemampuan: 'pengguna.kelola',
+    oleh: 'Sekretaris Desa',
+    catatan: 'Desa yang belum punya Sekretaris Desa meminta Tim Sinfodes mengundangnya.',
+  },
   'jenis-surat': { href: '/admin/surat/jenis', kemampuan: 'pengaturan.kelola', oleh: 'Operator atau Sekretaris Desa' },
 }
 
@@ -69,7 +74,9 @@ export function DaftarPersiapan({ persiapan, peran }: { persiapan: Persiapan; pe
                 ) : (
                   <span>{label}</span>
                 )}
-                {!bisa && !l.selesai && <span className="text-teks-kecil text-tinta-2">{`Dikerjakan ${tujuan.oleh}`}</span>}
+                {!bisa && !l.selesai && (
+                  <span className="text-teks-kecil text-tinta-2">{[`Dikerjakan ${tujuan.oleh}.`, tujuan.catatan].filter(Boolean).join(' ')}</span>
+                )}
               </span>
               <Cap varian={l.selesai ? 'selesai' : 'menunggu'} label={l.selesai ? 'Selesai' : 'Belum'} />
             </li>

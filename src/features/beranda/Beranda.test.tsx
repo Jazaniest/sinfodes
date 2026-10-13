@@ -1,5 +1,6 @@
 import { screen, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
+import { opsiBeranda } from '@/api/beranda'
 import { aturModeJaringan } from '@/mocks/jaringan'
 import { AKUN_DESA_BARU_UJI, AKUN_UJI, masukSebagai, pakaiApiTiruan, SEKARANG_UJI } from '@/test/api-tiruan'
 import { renderPanel } from '@/test/render'
@@ -162,6 +163,7 @@ describe('Beranda desa berstatus Persiapan (SPEC §5.3)', () => {
     const langkah = within(await screen.findByRole('list', { name: 'Langkah persiapan' })).getAllByRole('listitem')
     expect(langkah[3]).toHaveTextContent('Tambah pengguna')
     expect(langkah[3]).toHaveTextContent('Dikerjakan Sekretaris Desa')
+    expect(langkah[3]).toHaveTextContent('Desa yang belum punya Sekretaris Desa meminta Tim Sinfodes mengundangnya.')
     expect(within(langkah[3]).queryByRole('link')).not.toBeInTheDocument()
     expect(within(langkah[3]).queryByRole('button')).not.toBeInTheDocument()
   })
@@ -170,5 +172,8 @@ describe('Beranda desa berstatus Persiapan (SPEC §5.3)', () => {
     renderPanel(<Beranda sekarang={SEKARANG_UJI} />, contohSesi('operator'))
     expect(await screen.findByRole('heading', { name: 'Keadaan desa' })).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Persiapan desa' })).not.toBeInTheDocument()
+  })
+  it('Beranda selalu dimuat ulang saat dibuka: progres persiapan langsung segar (fokus review 5)', () => {
+    expect(opsiBeranda().staleTime).toBe(0)
   })
 })

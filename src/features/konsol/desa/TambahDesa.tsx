@@ -21,7 +21,8 @@ const PROVINSI = daftarProvinsi()
 
 /**
  * Tambah desa (SPEC §11): nama, wilayah bertingkat (provinsi → kabupaten → kecamatan → kode desa), paket, dan email
- * admin pertama. Isian diperiksa dulu di layar; bentrok kode desa atau email dari server tampil di kolomnya.
+ * admin pertama. Isian diperiksa dulu di layar; bentrok kode desa atau email dari server tampil di kolomnya. Admin pertama
+ * berperan Sekretaris Desa (tahap 6C).
  */
 export function TambahDesa({ onSelesai, onBatal }: Props) {
   const queryClient = useQueryClient()
@@ -36,7 +37,10 @@ export function TambahDesa({ onSelesai, onBatal }: Props) {
   const simpan = useMutation({
     mutationFn: tambahDesa,
     onSuccess: async (hasil) => {
-      tampilkanToast({ pesan: `Undangan terkirim ke ${hasil.email} (tiruan). Desa ${hasil.nama} masuk berstatus Persiapan.`, nada: 'berhasil' })
+      tampilkanToast({
+        pesan: `Undangan terkirim ke ${hasil.email} (tiruan). Di demo, akunnya langsung aktif dengan kata sandi demo. Desa ${hasil.nama} masuk berstatus Persiapan.`,
+        nada: 'berhasil',
+      })
       await queryClient.invalidateQueries({ queryKey: kunciKonsol.semua })
       onSelesai(hasil)
     },
@@ -115,7 +119,7 @@ export function TambahDesa({ onSelesai, onBatal }: Props) {
           type="email"
           value={email}
           onChange={setEmail}
-          keterangan="Undangan masuk dikirim ke email ini."
+          keterangan="Admin pertama berperan Sekretaris Desa: ia mengerjakan lima langkah persiapan dan menambah pengguna desa. Undangan dikirim ke email ini."
           galat={galat.email}
           isRequired
         />

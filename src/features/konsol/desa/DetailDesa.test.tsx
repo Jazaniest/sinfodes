@@ -24,6 +24,7 @@ describe('Detail desa Konsol (SPEC §11)', () => {
     expect(within(tab).getByRole('link', { name: 'Penggunaan' })).toHaveAttribute('href', '/konsol/desa/desa_sungai_sialang?tab=penggunaan')
     expect(screen.getByText('H. Muhammad Nasir')).toBeInTheDocument()
     expect(screen.getByText('Rosmiati · rosmiati@sungaisialang.desa.id')).toBeInTheDocument()
+    expect(screen.getByText('Hendri Saputra · hendri@sungaisialang.desa.id')).toBeInTheDocument()
     expect(screen.getByText('2.812 jiwa')).toBeInTheDocument()
     expect(screen.getByText('99,6%')).toBeInTheDocument()
   })

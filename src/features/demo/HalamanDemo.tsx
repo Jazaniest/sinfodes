@@ -25,6 +25,8 @@ export function HalamanDemo() {
     queryKey: ['demo', 'info'],
     queryFn: () => kendali!.infoDataDemo(),
     enabled: kendali !== null,
+    // Akun yang baru dibuat di Konsol (Tambah desa, undangan Sekretaris Desa) langsung tampil saat halaman ini dibuka lagi.
+    staleTime: 0,
   })
   const queryClient = useQueryClient()
   const router = useRouter()
@@ -148,12 +150,12 @@ export function HalamanDemo() {
                 </Tombol>
               ))}
             </div>
-            {kendali && kendali.AKUN_DEMO_DESA_BARU.length > 0 && (
+            {info.data && info.data.desaBaru.length > 0 && (
               <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-teks-kecil text-tinta-2">
                 Desa baru berstatus Persiapan:
-                {kendali.AKUN_DEMO_DESA_BARU.map((a) => (
+                {info.data.desaBaru.map((a) => (
                   <Tombol key={a.id} ukuran="kecil" varian="sekunder" memuat={sedangMasuk === a.id} onPress={() => void masukPanel(a)}>
-                    {a.nama} · Operator Desa Tanjung Lamo
+                    {`${a.nama} · ${a.jabatan} ${a.namaDesa}`}
                   </Tombol>
                 ))}
               </p>

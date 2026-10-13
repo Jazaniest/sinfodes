@@ -16,9 +16,11 @@ import { Checkbox } from '@/ui/isian/Checkbox'
 import { TabNav } from '@/ui/navigasi/TabNav'
 import { Tautan } from '@/ui/navigasi/Tautan'
 import { PageHeader } from '@/ui/tata-letak/PageHeader'
+import { Tombol } from '@/ui/tombol/Tombol'
 import { EmptyState } from '@/ui/umpan-balik/EmptyState'
 import { ErrorState } from '@/ui/umpan-balik/ErrorState'
 import { BarisKerangka } from '@/ui/umpan-balik/Skeleton'
+import { DialogUndangSekdes } from './DialogUndangSekdes'
 import { LABEL_TAB_DETAIL_DESA, TAB_DETAIL_DESA, type TabDetailDesa } from './tab-detail'
 
 const judulBagian = 'text-label font-medium text-tinta-2 uppercase'
@@ -41,6 +43,7 @@ function TabRingkasan({ d }: { d: DetailDesaKonsol }) {
         { label: 'Surel', nilai: d.surel || null },
         { label: 'Telepon', nilai: d.telepon || null },
         { label: 'Kepala desa', nilai: d.kontak.kades },
+        { label: 'Sekretaris Desa', nilai: d.kontak.sekdes && `${d.kontak.sekdes.nama} · ${d.kontak.sekdes.email}` },
         { label: 'Operator', nilai: d.kontak.operator && `${d.kontak.operator.nama} · ${d.kontak.operator.email}` },
         { label: 'Penduduk', nilai: d.jiwa > 0 ? `${formatAngka(d.jiwa)} jiwa` : <span className={redup}>Belum ada data penduduk</span> },
         { label: 'Kelengkapan data', nilai: d.kelengkapan === null ? <span className={redup}>—</span> : formatPersen(d.kelengkapan) },
@@ -52,6 +55,7 @@ function TabRingkasan({ d }: { d: DetailDesaKonsol }) {
 }
 
 function TabPersiapan({ d }: { d: DetailDesaKonsol }) {
+  const [undang, setUndang] = useState(false)
   const selesai = jumlahSelesai(d.persiapan)
   return (
     <section aria-labelledby="judul-persiapan" className="flex max-w-2xl flex-col gap-4">
@@ -68,6 +72,16 @@ function TabPersiapan({ d }: { d: DetailDesaKonsol }) {
           </li>
         ))}
       </ol>
+      {d.bisaUndangSekdes && (
+        <div className="flex flex-col items-start gap-3">
+          <p className={redup}>
+            Langkah Tambah pengguna hanya bisa dikerjakan Sekretaris Desa, dan desa ini belum punya. Undang Sekretaris Desa supaya
+            desa bisa menambah penggunanya sendiri.
+          </p>
+          <Tombol onPress={() => setUndang(true)}>Undang Sekretaris Desa</Tombol>
+        </div>
+      )}
+      {undang && <DialogUndangSekdes desaId={d.id} namaDesa={d.nama} onTutup={() => setUndang(false)} />}
     </section>
   )
 }
