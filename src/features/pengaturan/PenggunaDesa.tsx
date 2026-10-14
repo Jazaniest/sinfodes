@@ -9,6 +9,7 @@ import { LABEL_PERAN, PERAN, type Pengguna, type Peran } from '@/domain/pengguna
 import { namaDusun } from '@/domain/wilayah/alamat'
 import { Cap } from '@/ui/cap/Cap'
 import { DataTable, type KolomTabel } from '@/ui/data/DataTable'
+import { fokusIsianSalah } from '@/ui/hooks/fokus-isian'
 import { Select } from '@/ui/isian/Select'
 import { TextField } from '@/ui/isian/TextField'
 import { ConfirmDialog } from '@/ui/lapisan/ConfirmDialog'
@@ -143,6 +144,11 @@ function DialogUndang({ onTutup, onBerhasil }: PropsDialog) {
   })
   const [galat, setGalat] = useState<Record<string, string>>({})
   const mengirim = useRef(false)
+  const wadah = useRef<HTMLDivElement>(null)
+  const tandai = (g: Record<string, string>) => {
+    setGalat(g)
+    fokusIsianSalah(wadah.current)
+  }
   const ubah = <K extends keyof typeof isian>(kunci: K, nilai: (typeof isian)[K]) => {
     setIsian((l) => ({ ...l, [kunci]: nilai }))
     setGalat((g) => ({ ...g, [kunci]: '' }))
@@ -155,7 +161,7 @@ function DialogUndang({ onTutup, onBerhasil }: PropsDialog) {
       tampilkanToast({ pesan: `Undangan dikirim ke ${baru.email}.`, nada: 'berhasil' })
       onTutup()
     },
-    onError: (e) => tanganiGalat(e, setGalat),
+    onError: (e) => tanganiGalat(e, tandai),
     onSettled: () => {
       mengirim.current = false
     },
@@ -165,7 +171,7 @@ function DialogUndang({ onTutup, onBerhasil }: PropsDialog) {
     const hasil = undangPenggunaSchema.safeParse(bahan())
     const g = { ...(hasil.success ? {} : galatDariZod(hasil.error)), ...(isian.peran === null ? { peran: 'Pilih peran' } : {}) }
     if (Object.keys(g).length > 0) {
-      setGalat(g)
+      tandai(g)
       return
     }
     mengirim.current = true
@@ -188,7 +194,7 @@ function DialogUndang({ onTutup, onBerhasil }: PropsDialog) {
         </>
       }
     >
-      <div className="flex flex-col gap-4">
+      <div ref={wadah} className="flex flex-col gap-4">
         <TextField label="Nama" value={isian.nama} onChange={(v) => ubah('nama', v)} galat={galat.nama || undefined} isRequired />
         <TextField label="Surel" type="email" value={isian.email} onChange={(v) => ubah('email', v)} galat={galat.email || undefined} isRequired />
         <Select label="Peran" pilihan={PILIHAN_PERAN} nilai={isian.peran} onUbah={(id) => ubah('peran', peranDari(id))} galat={galat.peran || undefined} />

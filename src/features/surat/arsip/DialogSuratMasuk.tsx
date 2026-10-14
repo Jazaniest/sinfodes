@@ -9,6 +9,7 @@ import { tanggalIsoWib } from '@/domain/format/tanggal'
 import {
   BERKAS_SCAN, isianSuratMasukSchema, MAKS_SCAN_MB, TUJUAN_DISPOSISI, type IsianSuratMasuk, type SuratMasuk,
 } from '@/domain/surat/arsip'
+import { fokusIsianSalah } from '@/ui/hooks/fokus-isian'
 import { DatePicker } from '@/ui/isian/DatePicker'
 import { gayaGalat, gayaKeterangan, gayaLabel } from '@/ui/isian/gaya'
 import { Select } from '@/ui/isian/Select'
@@ -40,6 +41,11 @@ export function DialogSuratMasuk({ hariIni, onTutup, onTersimpan }: Props) {
   const [scan, setScan] = useState<File | null>(null)
   const [galat, setGalat] = useState<Record<string, string>>({})
   const mengirim = useRef(false)
+  const wadah = useRef<HTMLDivElement>(null)
+  const tandai = (g: Record<string, string>) => {
+    setGalat(g)
+    fokusIsianSalah(wadah.current)
+  }
 
   const ubah = <K extends keyof IsianSuratMasuk>(kunci: K, nilai: IsianSuratMasuk[K]) => {
     setIsian((lama) => ({ ...lama, [kunci]: nilai }))
@@ -72,7 +78,7 @@ export function DialogSuratMasuk({ hariIni, onTutup, onTersimpan }: Props) {
       onTersimpan(s)
     },
     onError: (e) => {
-      if (e instanceof GalatApi && e.kode === 'VALIDATION' && Object.keys(e.fields).length > 0) setGalat(e.fields)
+      if (e instanceof GalatApi && e.kode === 'VALIDATION' && Object.keys(e.fields).length > 0) tandai(e.fields)
       else tampilkanToast({ pesan: pesanGalat(e), nada: 'galat' })
     },
     onSettled: () => {
@@ -83,7 +89,7 @@ export function DialogSuratMasuk({ hariIni, onTutup, onTersimpan }: Props) {
     if (mengirim.current) return
     const periksa = isianSuratMasukSchema.safeParse(isian)
     if (!periksa.success) {
-      setGalat(galatPerKolom(periksa.error.issues))
+      tandai(galatPerKolom(periksa.error.issues))
       return
     }
     mengirim.current = true
@@ -108,7 +114,7 @@ export function DialogSuratMasuk({ hariIni, onTutup, onTersimpan }: Props) {
         </>
       }
     >
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div ref={wadah} className="grid gap-4 sm:grid-cols-2">
         <DatePicker
           label="Tanggal terima"
           nilai={isian.diterima}

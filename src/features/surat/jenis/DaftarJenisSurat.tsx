@@ -27,9 +27,10 @@ function ringkasJenis(j: JenisDenganPakai): string {
     .join(' · ')
 }
 
+// "kini dilayani": data tidak menyimpan riwayat saklar, jadi "kembali" tidak bisa dipastikan untuk desa baru (tahap 6D).
 function pesanSaklar(j: JenisDenganPakai, ubah: UbahSaklar): string {
   if (ubah.aktif !== undefined) {
-    return ubah.aktif ? `${j.nama} kembali dilayani.` : `${j.nama} tidak dilayani lagi. Permohonan yang sudah ada tetap bisa diproses.`
+    return ubah.aktif ? `${j.nama} kini dilayani.` : `${j.nama} tidak dilayani lagi. Permohonan yang sudah ada tetap bisa diproses.`
   }
   return ubah.online ? `${j.nama} bisa diajukan lewat layanan warga.` : `${j.nama} hanya dilayani di kantor desa.`
 }

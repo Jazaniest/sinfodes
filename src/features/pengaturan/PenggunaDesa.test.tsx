@@ -71,6 +71,7 @@ describe('Pengaturan › Pengguna (SPEC §8)', () => {
     await pilihDi(user, dialog, /Peran$/, 'Operator')
     await user.click(within(dialog).getByRole('button', { name: 'Kirim undangan' }))
     expect(await within(dialog).findByText('Surel ini sudah dipakai Rosmiati.')).toBeInTheDocument()
+    await waitFor(() => expect(within(dialog).getByRole('textbox', { name: /Surel/ })).toHaveFocus())
   })
   it('Kepala Desa kedua ditolak dengan pesan; nonaktifkan lewat konfirmasi, lalu aktifkan lagi (fokus review 2)', async () => {
     const user = pasang()

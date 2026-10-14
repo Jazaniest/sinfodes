@@ -37,4 +37,15 @@ describe('ganti peran demo (SPEC §3.6)', () => {
     await userEvent.selectOptions(pilihan, 'pgn_sukardi')
     expect(onPilih).toHaveBeenCalledWith(AKUN[1])
   })
+  it('akun desa lain yang sedang masuk tampil terpilih, bukan akun pertama (tahap 6D)', async () => {
+    const onPilih = vi.fn()
+    render(
+      <PilihPeranDemo akun={AKUN} aktifId="pgn_yusri" lain={{ id: 'pgn_yusri', label: 'Operator · Yusri · Tanjung Lamo' }} sibuk={false} onPilih={onPilih} />,
+    )
+    const pilihan = screen.getByLabelText('Peran')
+    expect(pilihan).toHaveValue('pgn_yusri')
+    expect(screen.getByRole('option', { name: 'Operator · Yusri · Tanjung Lamo', selected: true })).toBeInTheDocument()
+    await userEvent.selectOptions(pilihan, 'pgn_sukardi')
+    expect(onPilih).toHaveBeenCalledWith(AKUN[1])
+  })
 })

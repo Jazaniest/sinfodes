@@ -58,6 +58,7 @@ describe('arsip surat masuk (SPEC §7.4 layar 5)', () => {
     await user.click(within(dialog).getByRole('button', { name: 'Simpan' }))
     expect(within(dialog).getByText('Nomor surat wajib diisi')).toBeInTheDocument()
     expect(within(dialog).getByText('Pengirim wajib diisi')).toBeInTheDocument()
+    await waitFor(() => expect(within(dialog).getByRole('textbox', { name: /Nomor surat/ })).toHaveFocus())
     await isi(user, dialog, 'Nomor surat', '005/312/Kec-TM/IX/2026')
     await isi(user, dialog, 'Pengirim', 'Camat Teluk Meranti')
     await isi(user, dialog, 'Perihal', 'Undangan rapat koordinasi kepala desa')

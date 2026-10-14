@@ -4,6 +4,7 @@ import { GalatApi, pesanGalat } from '@/api/galat'
 import { kunciKonsol, undangSekdes } from '@/api/konsol'
 import { galatDariZod } from '@/domain/format/galat-isian'
 import { undangSekdesSchema } from '@/domain/konsol/schema'
+import { fokusIsianSalah } from '@/ui/hooks/fokus-isian'
 import { TextField } from '@/ui/isian/TextField'
 import { Dialog } from '@/ui/lapisan/Dialog'
 import { tampilkanToast } from '@/ui/toast/antrean'
@@ -20,6 +21,11 @@ export function DialogUndangSekdes({ desaId, namaDesa, onTutup }: Props) {
   const [isian, setIsian] = useState({ nama: '', email: '' })
   const [galat, setGalat] = useState<Record<string, string>>({})
   const mengirim = useRef(false)
+  const wadah = useRef<HTMLDivElement>(null)
+  const tandai = (g: Record<string, string>) => {
+    setGalat(g)
+    fokusIsianSalah(wadah.current)
+  }
   const ubah = (kunci: 'nama' | 'email', nilai: string) => {
     setIsian((l) => ({ ...l, [kunci]: nilai }))
     setGalat((g) => ({ ...g, [kunci]: '' }))
@@ -32,7 +38,7 @@ export function DialogUndangSekdes({ desaId, namaDesa, onTutup }: Props) {
       onTutup()
     },
     onError: (e) => {
-      if (e instanceof GalatApi && Object.keys(e.fields).length > 0) setGalat(e.fields)
+      if (e instanceof GalatApi && Object.keys(e.fields).length > 0) tandai(e.fields)
       else tampilkanToast({ pesan: pesanGalat(e), nada: 'galat' })
     },
     onSettled: () => {
@@ -43,7 +49,7 @@ export function DialogUndangSekdes({ desaId, namaDesa, onTutup }: Props) {
     if (mengirim.current) return
     const hasil = undangSekdesSchema.safeParse(isian)
     if (!hasil.success) {
-      setGalat(galatDariZod(hasil.error))
+      tandai(galatDariZod(hasil.error))
       return
     }
     mengirim.current = true
@@ -66,7 +72,7 @@ export function DialogUndangSekdes({ desaId, namaDesa, onTutup }: Props) {
         </>
       }
     >
-      <div className="flex flex-col gap-4">
+      <div ref={wadah} className="flex flex-col gap-4">
         <TextField label="Nama" value={isian.nama} onChange={(v) => ubah('nama', v)} galat={galat.nama || undefined} isRequired />
         <TextField label="Email" type="email" value={isian.email} onChange={(v) => ubah('email', v)} galat={galat.email || undefined} isRequired />
       </div>

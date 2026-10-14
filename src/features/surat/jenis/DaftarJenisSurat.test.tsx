@@ -74,4 +74,17 @@ describe('Jenis Surat (SPEC §7.4 layar 6)', () => {
     expect(await screen.findByText(/^Belum ada jenis surat yang dilayani\. Aktifkan jenis surat/)).toBeInTheDocument()
     expect(screen.getByText('0 dari 12 jenis dilayani · 0 bisa diajukan online')).toBeInTheDocument()
   })
+  it('mengaktifkan jenis surat di desa baru: pesannya "kini dilayani", bukan "kembali" (tahap 6D)', async () => {
+    masukSebagai(AKUN_DESA_BARU_UJI)
+    renderPanel(
+      <>
+        <DaftarJenisSurat />
+        <PenampungToast />
+      </>,
+      contohSesiDesaBaru(),
+    )
+    const user = userEvent.setup()
+    await user.click(await screen.findByRole('switch', { name: 'Surat Keterangan Tidak Mampu aktif' }))
+    expect(await screen.findByText('Surat Keterangan Tidak Mampu kini dilayani.')).toBeInTheDocument()
+  })
 })

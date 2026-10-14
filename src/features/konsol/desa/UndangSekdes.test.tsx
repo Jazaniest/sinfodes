@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it } from 'vitest'
 import { ambilDb } from '@/mocks/db'
@@ -31,6 +31,7 @@ describe('Undang Sekretaris Desa dari Konsol (tahap 6C)', () => {
     await user.click(within(dialog).getByRole('button', { name: 'Kirim undangan' }))
     expect(within(dialog).getByText('Nama wajib diisi')).toBeInTheDocument()
     expect(within(dialog).getByText('Email belum benar.')).toBeInTheDocument()
+    await waitFor(() => expect(within(dialog).getByRole('textbox', { name: 'Nama' })).toHaveFocus())
     await user.type(within(dialog).getByRole('textbox', { name: 'Nama' }), 'Rahmawati')
     await user.type(within(dialog).getByRole('textbox', { name: 'Email' }), 'sekdes@tanjunglamo.desa.id')
     await user.click(within(dialog).getByRole('button', { name: 'Kirim undangan' }))
@@ -47,6 +48,7 @@ describe('Undang Sekretaris Desa dari Konsol (tahap 6C)', () => {
     await user.type(within(dialog).getByRole('textbox', { name: 'Email' }), 'rosmiati@sungaisialang.desa.id')
     await user.click(within(dialog).getByRole('button', { name: 'Kirim undangan' }))
     expect(await within(dialog).findByText('Email ini sudah dipakai akun lain.')).toBeInTheDocument()
+    await waitFor(() => expect(within(dialog).getByRole('textbox', { name: 'Email' })).toHaveFocus())
     expect(screen.getByRole('dialog', { name: 'Undang Sekretaris Desa' })).toBeInTheDocument()
   })
   it('desa yang sudah punya Sekretaris Desa tidak menawarkan undangan', async () => {
