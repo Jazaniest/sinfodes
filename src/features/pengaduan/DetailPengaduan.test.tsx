@@ -68,7 +68,7 @@ describe('detail pengaduan (SPEC §8)', () => {
   })
   it('Kepala Dusun II membuka pengaduan dusun lain → tidak ditemukan (fokus review 1)', async () => {
     pasang(idDengan('baru', 'dsn_ss_3'), 'kadus')
-    expect(await screen.findByText('Pengaduan tidak ditemukan')).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: 'Pengaduan tidak ditemukan' })).toBeInTheDocument()
   })
   it('foto dan lokasi dari warga tampil bila ada', async () => {
     const a = ambilDb().pengaduan.find((x) => {

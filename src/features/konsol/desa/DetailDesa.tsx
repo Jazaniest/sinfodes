@@ -234,6 +234,7 @@ export function DetailDesa({ id, tab, sekarang = new Date() }: { id: string; tab
   if (kueri.isError && kueri.error instanceof GalatApi && kueri.error.kode === 'NOT_FOUND') {
     return (
       <EmptyState
+        judulHalaman
         judul="Desa tidak ditemukan"
         keterangan="Alamatnya mungkin salah, atau desa ini sudah dihapus."
         aksi={<Tautan href="/konsol/desa">Kembali ke daftar desa</Tautan>}

@@ -40,7 +40,7 @@ describe('Kabar desa (SPEC §9)', () => {
   })
   it('kabar yang masih draf atau alamat yang salah → "Kabar tidak ditemukan" dengan jalan kembali (fokus review 4)', async () => {
     renderPublik(<ArtikelPublik artikel="festival-bono-teluk-meranti-warga-siapkan-homestay" />)
-    expect(await screen.findByText('Kabar tidak ditemukan')).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: 'Kabar tidak ditemukan' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Lihat semua kabar' })).toHaveAttribute('href', '/desa/sungai-sialang/kabar')
   })
 })

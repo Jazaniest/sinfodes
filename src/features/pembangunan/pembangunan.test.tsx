@@ -54,6 +54,6 @@ describe('Pembangunan (SPEC §8)', () => {
   })
   it('kegiatan tak dikenal → tidak ditemukan', async () => {
     pasangDetail('kgt_xx')
-    expect(await screen.findByText('Kegiatan pembangunan tidak ditemukan')).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: 'Kegiatan pembangunan tidak ditemukan' })).toBeInTheDocument()
   })
 })

@@ -156,6 +156,7 @@ export function RuangKerjaSurat({ id, sekarang, onKotor }: Props) {
     if (kueri.error instanceof GalatApi && kueri.error.kode === 'NOT_FOUND') {
       return (
         <EmptyState
+          judulHalaman
           judul="Permohonan tidak ditemukan"
           keterangan="Permohonan ini tidak ada, atau berasal dari luar wilayah yang bisa Anda lihat."
           aksi={<Tautan href="/admin/surat">Kembali ke daftar permohonan</Tautan>}

@@ -52,6 +52,7 @@ export function UbahJenisSurat({ id, ...lain }: Props) {
     if (kueri.error instanceof GalatApi && kueri.error.kode === 'NOT_FOUND') {
       return (
         <EmptyState
+          judulHalaman
           judul="Jenis surat tidak ditemukan"
           keterangan="Jenis surat ini tidak ada di desa Anda."
           aksi={<Tautan href="/admin/surat/jenis">Kembali ke Jenis Surat</Tautan>}

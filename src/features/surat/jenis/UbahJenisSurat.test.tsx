@@ -77,7 +77,7 @@ describe('ubah jenis surat (SPEC §7.4 layar 6)', () => {
   })
   it('jenis surat tidak ada → keterangan dan tautan kembali', async () => {
     pasang('js_tidak_ada')
-    expect(await screen.findByText('Jenis surat tidak ditemukan')).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: 'Jenis surat tidak ditemukan' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Kembali ke Jenis Surat' })).toHaveAttribute('href', '/admin/surat/jenis')
   })
   it('desa tanpa penduduk: pratinjau memakai data contoh dan menyebutnya (tahap 6C)', async () => {

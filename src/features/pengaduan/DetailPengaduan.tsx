@@ -34,6 +34,7 @@ export function DetailPengaduan({ id, onKotor }: Props) {
     if (kueri.error instanceof GalatApi && kueri.error.kode === 'NOT_FOUND') {
       return (
         <EmptyState
+          judulHalaman
           judul="Pengaduan tidak ditemukan"
           keterangan="Pengaduan ini tidak ada, atau berada di luar wilayah Anda."
           aksi={<Tautan href="/admin/pengaduan">Kembali ke Pengaduan</Tautan>}

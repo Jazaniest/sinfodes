@@ -59,6 +59,7 @@ export function DetailKeluarga({ id, onBukaPenduduk, onBukaKeluarga }: Props) {
     if (kueri.error instanceof GalatApi && kueri.error.kode === 'NOT_FOUND') {
       return (
         <EmptyState
+          judulHalaman
           judul="Data keluarga tidak ditemukan"
           keterangan="KK ini tidak ada, atau berada di luar wilayah yang bisa Anda lihat."
           aksi={<Tautan href="/admin/kependudukan/keluarga">Kembali ke daftar keluarga</Tautan>}

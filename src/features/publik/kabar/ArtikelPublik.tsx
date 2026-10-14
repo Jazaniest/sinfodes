@@ -22,6 +22,7 @@ export function ArtikelPublik({ artikel }: { artikel: string }) {
     if (kueri.error instanceof GalatApi && kueri.error.kode === 'NOT_FOUND') {
       return (
         <EmptyState
+          judulHalaman
           judul="Kabar tidak ditemukan"
           keterangan="Kabar ini mungkin belum terbit, sudah dihapus, atau alamatnya salah."
           aksi={<Tautan href={daftar}>Lihat semua kabar</Tautan>}

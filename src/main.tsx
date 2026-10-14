@@ -1,15 +1,15 @@
 import '@/ui/styles/fonts'
 import '@/ui/styles/register.css'
 import { QueryClientProvider } from '@tanstack/react-query'
-import { createRouter, RouterProvider } from '@tanstack/react-router'
+import { RouterProvider } from '@tanstack/react-router'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { buatQueryClient } from '@/app/query-client'
+import { buatRouter } from '@/app/router'
 import { pulihkanSesi } from '@/app/sesi'
-import { routeTree } from './routeTree.gen'
 
 const queryClient = buatQueryClient()
-const router = createRouter({ routeTree, context: { queryClient }, defaultPreload: 'intent', scrollRestoration: true })
+const router = buatRouter(queryClient)
 
 declare module '@tanstack/react-router' {
   interface Register {

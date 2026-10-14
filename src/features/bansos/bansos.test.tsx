@@ -74,6 +74,6 @@ describe('Bantuan Sosial (SPEC §8)', () => {
   })
   it('program tidak ada → tidak ditemukan', async () => {
     pasangDetail('bns_xx')
-    expect(await screen.findByText('Program bantuan tidak ditemukan')).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: 'Program bantuan tidak ditemukan' })).toBeInTheDocument()
   })
 })

@@ -40,7 +40,7 @@ describe('Profil penduduk (SPEC §6.3)', () => {
   it('di luar wilayah Kepala Dusun → tidak ditemukan, dengan tautan kembali', async () => {
     masukSebagai(AKUN_UJI.kadus)
     renderPanel(<ProfilPenduduk id="pdk_siti_rahmah" sekarang={SEKARANG_UJI} />, contohSesi('kadus'))
-    expect(await screen.findByText('Data penduduk tidak ditemukan')).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: 'Data penduduk tidak ditemukan' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Kembali ke daftar penduduk' })).toHaveAttribute('href', '/admin/kependudukan/penduduk')
   })
   it('tombol Ubah hanya untuk Operator dan Sekretaris Desa (SPEC §5.1)', async () => {

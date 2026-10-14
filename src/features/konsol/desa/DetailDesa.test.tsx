@@ -66,7 +66,7 @@ describe('Detail desa Konsol (SPEC §11)', () => {
   })
   it('desa yang tidak ada → "Desa tidak ditemukan" dengan jalan kembali', async () => {
     pasang('desa_tidak_ada', 'ringkasan')
-    expect(await screen.findByText('Desa tidak ditemukan')).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: 'Desa tidak ditemukan' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Kembali ke daftar desa' })).toHaveAttribute('href', '/konsol/desa')
   })
 })

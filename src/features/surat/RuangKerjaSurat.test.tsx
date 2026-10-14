@@ -124,7 +124,7 @@ describe('ruang kerja surat (SPEC §7.4 layar 3)', () => {
   })
   it('Kepala Dusun membuka permohonan dari dusun lain → tidak ditemukan, dengan tautan kembali (fokus review 1)', async () => {
     pasang(cari((p) => p.dusunId !== 'dsn_ss_2').id, 'kadus')
-    expect(await screen.findByText('Permohonan tidak ditemukan')).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: 'Permohonan tidak ditemukan' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Kembali ke daftar permohonan' })).toHaveAttribute('href', '/admin/surat')
   })
 })

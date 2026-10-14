@@ -40,7 +40,7 @@ export function DetailProgram({ id, ...lain }: Props) {
   if (program.isError) {
     if (program.error instanceof GalatApi && program.error.kode === 'NOT_FOUND') {
       return (
-        <EmptyState judul="Program bantuan tidak ditemukan" aksi={<Tautan href="/admin/bansos">Kembali ke Bantuan Sosial</Tautan>} />
+        <EmptyState judulHalaman judul="Program bantuan tidak ditemukan" aksi={<Tautan href="/admin/bansos">Kembali ke Bantuan Sosial</Tautan>} />
       )
     }
     return <ErrorState pesan={pesanGalat(program.error)} onCobaLagi={() => void program.refetch()} />

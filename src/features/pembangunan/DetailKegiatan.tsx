@@ -29,7 +29,7 @@ export function DetailKegiatan({ id }: { id: string }) {
   if (kueri.isError) {
     if (kueri.error instanceof GalatApi && kueri.error.kode === 'NOT_FOUND') {
       return (
-        <EmptyState judul="Kegiatan pembangunan tidak ditemukan" aksi={<Tautan href="/admin/pembangunan">Kembali ke Pembangunan</Tautan>} />
+        <EmptyState judulHalaman judul="Kegiatan pembangunan tidak ditemukan" aksi={<Tautan href="/admin/pembangunan">Kembali ke Pembangunan</Tautan>} />
       )
     }
     return <ErrorState pesan={pesanGalat(kueri.error)} onCobaLagi={() => void kueri.refetch()} />

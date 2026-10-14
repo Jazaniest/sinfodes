@@ -67,6 +67,6 @@ describe('Detail keluarga (SPEC §6.5)', () => {
   it('KK dusun lain untuk Kepala Dusun → tidak ditemukan', async () => {
     masukSebagai(AKUN_UJI.kadus)
     renderPanel(<DetailKeluarga id="kk_syahrial" onBukaPenduduk={vi.fn()} onBukaKeluarga={vi.fn()} />, contohSesi('kadus'))
-    expect(await screen.findByText('Data keluarga tidak ditemukan')).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: 'Data keluarga tidak ditemukan' })).toBeInTheDocument()
   })
 })

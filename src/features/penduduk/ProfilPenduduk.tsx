@@ -87,6 +87,7 @@ export function ProfilPenduduk({ id, sekarang, tawaran, onTutupTawaran }: Props)
     if (kueri.error instanceof GalatApi && kueri.error.kode === 'NOT_FOUND') {
       return (
         <EmptyState
+          judulHalaman
           judul="Data penduduk tidak ditemukan"
           keterangan="Data ini tidak ada, atau berada di luar wilayah yang bisa Anda lihat."
           aksi={<Tautan href="/admin/kependudukan/penduduk">Kembali ke daftar penduduk</Tautan>}
