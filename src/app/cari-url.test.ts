@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { bacaFilterDesa } from '@/features/konsol/desa/filter-url'
+import { bacaCariBuatSurat } from '@/features/surat/buat/cari-buat'
 import { parseSearch, stringifySearch } from './cari-url'
 
 describe('parameter URL (tahap 6D)', () => {
@@ -16,6 +17,9 @@ describe('parameter URL (tahap 6D)', () => {
   })
   it('true, null, dan angka negatif tetap teks', () => {
     expect(parseSearch('?a=true&b=null&c=-5')).toEqual({ a: 'true', b: 'null', c: '-5' })
+  })
+  it('parameter angka di rute sungguhan tetap angka: ?langkah=2 di Buat surat (fokus review 3)', () => {
+    expect(bacaCariBuatSurat(parseSearch('?langkah=2')).langkah).toBe(2)
   })
   it('Daftar desa Konsol: ?kabupaten=14.10 tanpa kutip terpakai sebagai filter (minor 6A)', () => {
     expect(bacaFilterDesa(parseSearch('?provinsi=14&kabupaten=14.10'))).toEqual({ provinsi: '14', kabupaten: '14.10' })

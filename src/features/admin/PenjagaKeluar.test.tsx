@@ -50,7 +50,8 @@ describe('penjaga keluar halaman (SPEC §6.4)', () => {
     await act(async () => {
       router.history.push('/?langkah=2')
     })
-    expect(router.state.location.search).toEqual({ langkah: 2 })
+    // Rute uji tanpa validateSearch: nilainya teks apa adanya (tahap 6D); rute sungguhan mengubahnya lewat z.coerce.
+    expect(router.state.location.search).toEqual({ langkah: '2' })
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
   })
 })
