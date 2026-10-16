@@ -10,7 +10,9 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AlamatTidakDikenalRouteImport } from './routes/alamat-tidak-dikenal'
 import { Route as KatalogRouteImport } from './routes/katalog'
+import { Route as PanelPindahRouteImport } from './routes/panel-pindah'
 import { Route as AdminPanelRouteImport } from './routes/admin/_panel'
 import { Route as AdminMasukRouteImport } from './routes/admin/masuk'
 import { Route as DesaSlugRouteImport } from './routes/desa/$slug'
@@ -95,9 +97,19 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AlamatTidakDikenalRoute = AlamatTidakDikenalRouteImport.update({
+  id: '/alamat-tidak-dikenal',
+  path: '/alamat-tidak-dikenal',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const KatalogRoute = KatalogRouteImport.update({
   id: '/katalog',
   path: '/katalog',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PanelPindahRoute = PanelPindahRouteImport.update({
+  id: '/panel-pindah',
+  path: '/panel-pindah',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminPanelRoute = AdminPanelRouteImport.update({
@@ -519,7 +531,9 @@ const AdminPanelKependudukanPendudukIdUbahRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/alamat-tidak-dikenal': typeof AlamatTidakDikenalRoute
   '/katalog': typeof KatalogRoute
+  '/panel-pindah': typeof PanelPindahRoute
   '/admin': typeof AdminPanelRouteWithChildren
   '/admin/masuk': typeof AdminMasukRoute
   '/desa/$slug': typeof DesaSlugRouteWithChildren
@@ -601,7 +615,9 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/alamat-tidak-dikenal': typeof AlamatTidakDikenalRoute
   '/katalog': typeof KatalogRoute
+  '/panel-pindah': typeof PanelPindahRoute
   '/admin/masuk': typeof AdminMasukRoute
   '/konsol/masuk': typeof KonsolMasukRoute
   '/warga/masuk': typeof WargaMasukRoute
@@ -680,7 +696,9 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/alamat-tidak-dikenal': typeof AlamatTidakDikenalRoute
   '/katalog': typeof KatalogRoute
+  '/panel-pindah': typeof PanelPindahRoute
   '/admin/_panel': typeof AdminPanelRouteWithChildren
   '/admin/masuk': typeof AdminMasukRoute
   '/desa/$slug': typeof DesaSlugRouteWithChildren
@@ -764,7 +782,9 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/alamat-tidak-dikenal'
     | '/katalog'
+    | '/panel-pindah'
     | '/admin'
     | '/admin/masuk'
     | '/desa/$slug'
@@ -846,7 +866,9 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/alamat-tidak-dikenal'
     | '/katalog'
+    | '/panel-pindah'
     | '/admin/masuk'
     | '/konsol/masuk'
     | '/warga/masuk'
@@ -924,7 +946,9 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/alamat-tidak-dikenal'
     | '/katalog'
+    | '/panel-pindah'
     | '/admin/_panel'
     | '/admin/masuk'
     | '/desa/$slug'
@@ -1007,7 +1031,9 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AlamatTidakDikenalRoute: typeof AlamatTidakDikenalRoute
   KatalogRoute: typeof KatalogRoute
+  PanelPindahRoute: typeof PanelPindahRoute
   AdminPanelRoute: typeof AdminPanelRouteWithChildren
   AdminMasukRoute: typeof AdminMasukRoute
   DesaSlugRoute: typeof DesaSlugRouteWithChildren
@@ -1026,11 +1052,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/alamat-tidak-dikenal': {
+      id: '/alamat-tidak-dikenal'
+      path: '/alamat-tidak-dikenal'
+      fullPath: '/alamat-tidak-dikenal'
+      preLoaderRoute: typeof AlamatTidakDikenalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/katalog': {
       id: '/katalog'
       path: '/katalog'
       fullPath: '/katalog'
       preLoaderRoute: typeof KatalogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/panel-pindah': {
+      id: '/panel-pindah'
+      path: '/panel-pindah'
+      fullPath: '/panel-pindah'
+      preLoaderRoute: typeof PanelPindahRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/_panel': {
@@ -1776,7 +1816,9 @@ const WargaAppRouteWithChildren = WargaAppRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AlamatTidakDikenalRoute: AlamatTidakDikenalRoute,
   KatalogRoute: KatalogRoute,
+  PanelPindahRoute: PanelPindahRoute,
   AdminPanelRoute: AdminPanelRouteWithChildren,
   AdminMasukRoute: AdminMasukRoute,
   DesaSlugRoute: DesaSlugRouteWithChildren,
