@@ -52,3 +52,10 @@ it('luar tanpa rewrite', () => expect(rewriteAlamat({ jenis: 'luar' })).toBeUnde
 
 it('hrefPublik menjaga query dan hash', () =>
   expect(hrefPublik(desa, '/desa/sungaisialang/kabar?kategori=umum#atas')).toBe('/kabar?kategori=umum#atas'))
+
+it.each([
+  'https://commons.wikimedia.org/wiki/File:Contoh.jpg',
+  'mailto:pemdes@sungaisialang.desa.id',
+  'tel:081266031140',
+  '//cdn.contoh.id/berkas.pdf',
+])('hrefPublik membiarkan tautan ke luar apa adanya: %s', (href) => expect(hrefPublik(desa, href)).toBe(href))

@@ -6,6 +6,32 @@ Semua perubahan penting Sinfodes dicatat di sini. Formatnya mengikuti [Keep a Ch
 
 Pekerjaan v0.2.0 (tahap 7A–7H) dicatat di sini selama berjalan di branch `develop`.
 
+### Ditambahkan (7A-1: alamat subdomain)
+
+- **Setiap alamat punya isinya sendiri.**
+  - Desa: `sungaisialang.sinfodes.localhost`, dengan website publik di `/`, layanan warga di `/warga`, dan panel di `/admin`.
+  - Konsol: `konsol.…`. Halaman induk: `sinfodes.localhost`.
+  - Domain induk diatur lewat `VITE_DOMAIN_INDUK`.
+- **Aturan alamat desa.**
+  - Nama desa saja; bila sudah dipakai, ditambah nama kabupaten, lalu nama kecamatan.
+  - Nama terlarang ditolak.
+  - Alamat lama v0.1 (`sungai-sialang`) disimpan sebagai alias dan dialihkan.
+- **Alamat v0.1 dialihkan otomatis,** termasuk tautan verifikasi dengan `?kode=`.
+  - `localhost` polos dialihkan ke alamat induk.
+  - `/admin` dan `/warga` di alamat induk menunjukkan bahwa panel kini ada di alamat desa.
+- **Sesi terpisah per alamat.**
+  - API tiruan menentukan desa dari alamat.
+  - Akun desa lain ditolak dengan petunjuk alamat desanya, hanya setelah kata sandinya benar.
+  - NIK warga desa lain diperlakukan seperti NIK yang tidak dikenal.
+- **Halaman masuk panel satu langkah,** dengan desa ditampilkan dari alamatnya. Halaman masuk warga ikut menampilkan nama desa.
+- **Dunia demo bersama:** hub penyimpanan `hub-demo.html` di alamat induk. Perubahan di satu tab ikut tampil di tab alamat lain.
+- **Masuk cepat demo lintas alamat** (`?demo=<id akun>`). Toolbar demo mendapat tautan "Halaman demo" dan keterangan bila data terpisah per alamat.
+- **QR dan domain di surat** memakai alamat subdomain desa.
+
+### Diubah
+
+- Langkah "kenali email" di halaman masuk panel dihapus, karena desa sudah diketahui dari alamat.
+
 ## [0.1.0] - 2026-10-16
 
 Demo tahap 1: frontend sungguhan dengan API tiruan (MSW) dan data dummy Desa Sungai Sialang, Kabupaten Pelalawan.

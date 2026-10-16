@@ -65,8 +65,12 @@ export function rewriteAlamat(konteks: KonteksAlamat): LocationRewrite | undefin
   }
 }
 
-/** Href internal → href yang tampil di atribut `<a>` (buka di tab baru, salin tautan). Query dan hash utuh. */
+/**
+ * Href internal → href yang tampil di atribut `<a>` (buka di tab baru, salin tautan). Query dan hash utuh. Tautan ke luar
+ * (`https:`, `mailto:`, `tel:`, `//…`) dibiarkan: React Aria memanggil fungsi ini untuk setiap href.
+ */
 export function hrefPublik(konteks: KonteksAlamat, href: string): string {
+  if (/^[a-z][a-z0-9+.-]*:/i.test(href) || href.startsWith('//')) return href
   const url = new URL(href, 'http://alamat.invalid')
   return `${keluarkanJalur(konteks, url.pathname)}${url.search}${url.hash}`
 }
