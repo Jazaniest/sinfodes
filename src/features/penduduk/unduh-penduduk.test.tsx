@@ -40,7 +40,7 @@ describe('Unduh daftar penduduk (SPEC §6.2)', { timeout: 20_000 }, () => {
     await user.click(within(dialog).getByRole('button', { name: 'Unduh CSV' }))
     await vi.waitFor(() => expect(unduhBerkas).toHaveBeenCalled())
     const [nama, isi] = vi.mocked(unduhBerkas).mock.calls[0]
-    expect(nama).toBe('penduduk-sungai-sialang-2026-09-24.csv')
+    expect(nama).toBe('penduduk-sungaisialang-2026-09-24.csv')
     const baris = isi.split('\r\n')
     expect(baris[0]).toBe(
       '﻿No;Nama lengkap;Jenis kelamin;Status perkawinan;Tempat lahir;Tanggal lahir;Agama;Pendidikan terakhir;Pekerjaan;' +

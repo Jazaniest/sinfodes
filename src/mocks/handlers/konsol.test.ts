@@ -41,7 +41,7 @@ describe('API Konsol (SPEC §11, §3.4)', () => {
     const semua = (await daftarDesaKonsol({})).data
     expect(semua).toHaveLength(40)
     expect(semua.map((d) => d.nama)).toEqual([...semua.map((d) => d.nama)].sort((a, b) => a.localeCompare(b, 'id')))
-    const ss = semua.find((d) => d.slug === 'sungai-sialang')
+    const ss = semua.find((d) => d.slug === 'sungaisialang')
     expect(ss).toMatchObject({ status: 'Aktif', paket: 'Lengkap', penggunaAktif: 5 })
     expect(ss?.kelengkapan).toBeCloseTo(2800 / 2812, 6)
     expect((await daftarDesaKonsol({ kabupaten: '14.08' })).data.map((d) => d.nama).sort()).toEqual(['Sungai Limau Hilir', 'Tualang Permai'])
@@ -65,7 +65,7 @@ describe('API Konsol (SPEC §11, §3.4)', () => {
   it('Tambah desa: tercipta berstatus Persiapan beserta admin Sekretaris Desa yang langsung aktif, langganan, dan katalog', async () => {
     masukKonsolSebagai(AKUN_KONSOL_UJI.tim)
     const hasil = await tambahDesa(isianBaru)
-    expect(hasil).toEqual({ id: 'desa_koto_baru_sentosa', nama: 'Koto Baru Sentosa', email: 'admin@kotobarusentosa.desa.id' })
+    expect(hasil).toEqual({ id: 'desa_kotobarusentosa', nama: 'Koto Baru Sentosa', email: 'admin@kotobarusentosa.desa.id' })
     const d = await ambilDetailDesaKonsol(hasil.id)
     expect(d).toMatchObject({
       status: 'Persiapan', kodeDesa: '14.01.17.2077', kecamatan: { nama: 'Kampa' }, kabupaten: { nama: 'Kampar' }, paket: 'Lengkap',
@@ -74,12 +74,17 @@ describe('API Konsol (SPEC §11, §3.4)', () => {
     })
     expect(d.persiapan.filter((l) => l.selesai)).toEqual([])
     const admin = ambilDb().pengguna.find((p) => p.email === 'admin@kotobarusentosa.desa.id')
-    expect(admin).toMatchObject({ desaId: 'desa_koto_baru_sentosa', peran: 'sekdes', jabatan: 'Sekretaris Desa', aktif: true })
+    expect(admin).toMatchObject({ desaId: 'desa_kotobarusentosa', peran: 'sekdes', jabatan: 'Sekretaris Desa', aktif: true })
     expect((await masuk('admin@kotobarusentosa.desa.id', 'demo')).sesi.desa).toMatchObject({ id: hasil.id, status: 'Persiapan' })
     const katalog = ambilDb().jenisSurat.filter((j) => j.desaId === hasil.id)
     expect(katalog).toHaveLength(12)
-    expect(katalog.every((j) => !j.aktif && j.id.startsWith('js_koto_baru_sentosa_'))).toBe(true)
+    expect(katalog.every((j) => !j.aktif && j.id.startsWith('js_kotobarusentosa_'))).toBe(true)
     expect((await ambilRingkasanKonsol()).desa.persiapan).toBe(8)
+  })
+  it('Tambah desa bernama sama di kabupaten lain: alamatnya diberi nama kabupaten (SPEC-V0.2 §4.2)', async () => {
+    masukKonsolSebagai(AKUN_KONSOL_UJI.tim)
+    const hasil = await tambahDesa({ nama: 'Sungai Sialang', kecamatan: '14.08.02', kodeDesa: '2099', paket: 'Dasar', email: 'admin@sungaisialangsiak.desa.id' })
+    expect(ambilDb().desa.find((d) => d.id === hasil.id)?.slug).toBe('sungaisialang-siak')
   })
   it('Tambah desa yang bentrok atau tidak sah: galat per kolom, dan tidak ada yang tercipta setengah jadi (fokus review 3)', async () => {
     masukKonsolSebagai(AKUN_KONSOL_UJI.tim)
@@ -100,11 +105,11 @@ describe('API Konsol (SPEC §11, §3.4)', () => {
   it('nama desa yang sudah dipakai mendapat slug lain, bukan menimpa desa lama', async () => {
     masukKonsolSebagai(AKUN_KONSOL_UJI.tim)
     const hasil = await tambahDesa({ ...isianBaru, nama: 'Sungai Sialang', email: 'admin2@contoh.desa.id' })
-    expect(hasil.id).toBe('desa_sungai_sialang_2')
+    expect(hasil.id).toBe('desa_sungaisialang_kampar')
     expect(ambilDb().desa.filter((d) => d.nama === 'Sungai Sialang')).toHaveLength(2)
   })
   it('website desa fiktif yang Aktif tetap terbuka dengan isi kosong, bukan galat (fokus review 4)', async () => {
-    const b = await ambilBerandaPublik('sungai-gelugur')
+    const b = await ambilBerandaPublik('sungaigelugur')
     expect(b).toMatchObject({ utama: null, terbaru: [], pengumuman: [], agenda: [], apbdes: null, potensi: [] })
   })
 })

@@ -21,7 +21,7 @@ describe('verifikasi surat (SPEC §7.6)', () => {
     const { p, terbit } = suratBerlaku()
     const orang = ambilDb().penduduk.find((x) => x.id === (p.subjekId ?? p.pemohonId))
     const jenis = ambilDb().jenisSurat.find((j) => j.id === p.jenisId)
-    const h = await verifikasiSurat('sungai-sialang', terbit.kodeVerifikasi)
+    const h = await verifikasiSurat('sungaisialang', terbit.kodeVerifikasi)
     expect(h).toEqual({
       jenis: jenis?.nama,
       nomor: terbit.nomor,
@@ -34,7 +34,7 @@ describe('verifikasi surat (SPEC §7.6)', () => {
   })
   it('kode diketik huruf kecil dengan spasi tetap dikenali (fokus review 1)', async () => {
     const { terbit } = suratBerlaku()
-    const h = await verifikasiSurat('sungai-sialang', terbit.kodeVerifikasi.toLowerCase().replace(/-/g, ' '))
+    const h = await verifikasiSurat('sungaisialang', terbit.kodeVerifikasi.toLowerCase().replace(/-/g, ' '))
     expect(h.nomor).toBe(terbit.nomor)
   })
   it('surat kedaluwarsa dan surat yang dibatalkan tetap ditemukan beserta statusnya (fokus review 2)', async () => {
@@ -44,7 +44,7 @@ describe('verifikasi surat (SPEC §7.6)', () => {
       const x = d.permohonan.find((y) => y.id === p.id)
       if (x?.terbit) x.terbit.berlakuSampai = '2026-09-01'
     })
-    expect((await verifikasiSurat('sungai-sialang', kode)).berlaku).toEqual({ status: 'kedaluwarsa', sampai: '2026-09-01' })
+    expect((await verifikasiSurat('sungaisialang', kode)).berlaku).toEqual({ status: 'kedaluwarsa', sampai: '2026-09-01' })
     ubahDb((d) => {
       const x = d.permohonan.find((y) => y.id === p.id)
       if (x) {
@@ -52,27 +52,27 @@ describe('verifikasi surat (SPEC §7.6)', () => {
         x.pembatalan = { oleh: { id: 'pgn_hendri', nama: 'Hendri Saputra' }, pada: '2026-09-20T10:00:00+07:00', catatan: 'Data salah' }
       }
     })
-    expect((await verifikasiSurat('sungai-sialang', kode)).berlaku).toEqual({ status: 'dibatalkan', pada: '2026-09-20T10:00:00+07:00' })
+    expect((await verifikasiSurat('sungaisialang', kode)).berlaku).toEqual({ status: 'dibatalkan', pada: '2026-09-20T10:00:00+07:00' })
   })
   it('kode yang tidak ada → pesan SPEC; format salah → VALIDATION tanpa dihitung sebagai percobaan', async () => {
-    await expect(verifikasiSurat('sungai-sialang', KODE_ASING)).rejects.toMatchObject({
+    await expect(verifikasiSurat('sungaisialang', KODE_ASING)).rejects.toMatchObject({
       kode: 'NOT_FOUND', message: 'Kode tidak ditemukan. Periksa kembali, atau hubungi kantor desa.',
     })
-    await expect(verifikasiSurat('sungai-sialang', 'halo')).rejects.toMatchObject({
+    await expect(verifikasiSurat('sungaisialang', 'halo')).rejects.toMatchObject({
       kode: 'VALIDATION', fields: { kode: 'Kode verifikasi berbentuk seperti SS-7K3M-Q9TD.' },
     })
     expect(ambilDb().percobaanVerifikasi[0].gagal).toHaveLength(1)
   })
   it('10 kode salah dalam 10 menit → RATE_LIMITED, juga untuk kode asli; terbuka lagi 10 menit kemudian (fokus review 3)', async () => {
     const { terbit } = suratBerlaku()
-    for (let i = 0; i < 9; i++) await expect(verifikasiSurat('sungai-sialang', KODE_ASING)).rejects.toMatchObject({ kode: 'NOT_FOUND' })
-    await expect(verifikasiSurat('sungai-sialang', KODE_ASING)).rejects.toMatchObject({
+    for (let i = 0; i < 9; i++) await expect(verifikasiSurat('sungaisialang', KODE_ASING)).rejects.toMatchObject({ kode: 'NOT_FOUND' })
+    await expect(verifikasiSurat('sungaisialang', KODE_ASING)).rejects.toMatchObject({
       kode: 'RATE_LIMITED', message: 'Terlalu banyak percobaan. Coba lagi dalam 10 menit.',
     })
-    await expect(verifikasiSurat('sungai-sialang', terbit.kodeVerifikasi)).rejects.toMatchObject({ kode: 'RATE_LIMITED' })
+    await expect(verifikasiSurat('sungaisialang', terbit.kodeVerifikasi)).rejects.toMatchObject({ kode: 'RATE_LIMITED' })
     vi.setSystemTime(new Date(SEKARANG_UJI.getTime() + 11 * 60_000))
     try {
-      expect((await verifikasiSurat('sungai-sialang', terbit.kodeVerifikasi)).nomor).toBe(terbit.nomor)
+      expect((await verifikasiSurat('sungaisialang', terbit.kodeVerifikasi)).nomor).toBe(terbit.nomor)
     } finally {
       vi.setSystemTime(SEKARANG_UJI)
     }

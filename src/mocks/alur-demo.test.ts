@@ -78,7 +78,7 @@ describe('tiga alur demo kriteria selesai tahap 1 (SPEC §13.5)', () => {
     expect(riwayat.permohonan.status).toBe('selesai')
     if (!riwayat.terbit) throw new Error('Surat belum terbit')
     // 5. Kode surat lolos di halaman verifikasi website desa.
-    expect(await verifikasiSurat('sungai-sialang', riwayat.terbit.kodeVerifikasi)).toMatchObject({
+    expect(await verifikasiSurat('sungaisialang', riwayat.terbit.kodeVerifikasi)).toMatchObject({
       nomor: riwayat.terbit.nomor,
       berlaku: { status: 'berlaku' },
     })
@@ -86,7 +86,7 @@ describe('tiga alur demo kriteria selesai tahap 1 (SPEC §13.5)', () => {
   it('2. mencatat kelahiran: penduduk dan KK bertambah, bayi tanpa NIK; Statistik, Buku Mutasi, Buku hari ini, dan website berubah', async () => {
     masukSebagai(AKUN_UJI.operator)
     const jiwaAwal = (await ambilStatistikPenduduk(null)).jiwa
-    const jiwaWebAwal = (await ambilStatistikPublik('sungai-sialang')).jiwa
+    const jiwaWebAwal = (await ambilStatistikPublik('sungaisialang')).jiwa
     const anggotaAwal = (await ambilKeluarga('kk_syahrial')).anggota.length
     const mutasiAwal = (await ambilIsiBuku('mutasi-penduduk', { page: 1, pageSize: 25 })).meta.total
     const [bayi] = (await catatLahir(LAHIR)).penduduk
@@ -95,7 +95,7 @@ describe('tiga alur demo kriteria selesai tahap 1 (SPEC §13.5)', () => {
     expect((await ambilStatistikPenduduk(null)).jiwa).toBe(jiwaAwal + 1)
     expect((await ambilIsiBuku('mutasi-penduduk', { page: 1, pageSize: 25 })).meta.total).toBe(mutasiAwal + 1)
     expect((await ambilBeranda()).bukuHariIni?.map((a) => a.ringkasan)).toContain('Kelahiran dicatat · Aisyah Putri')
-    expect((await ambilStatistikPublik('sungai-sialang')).jiwa).toBe(jiwaWebAwal + 1)
+    expect((await ambilStatistikPublik('sungaisialang')).jiwa).toBe(jiwaWebAwal + 1)
   })
   it('3. pemantau Pelalawan melihat Sungai Sialang dengan angka yang sama dengan panel desanya (fokus review 2)', async () => {
     masukKonsolSebagai(AKUN_KONSOL_UJI.pemantau)

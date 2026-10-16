@@ -4,6 +4,7 @@ import { AKUN_WARGA_DEMO } from '../data/warga-demo'
 import { buatAcak } from '../prng'
 import { VERSI_DATA, type DbDemo } from '../tipe-db'
 import { katalogDesaBaru } from '@/domain/surat/bawaan'
+import { slugDesa } from '@/domain/konsol/aturan'
 import { pengaturanBawaan } from '@/domain/surat/pengaturan'
 import { bangkitkanSuratMasuk } from './arsip'
 import { bangkitkanAset } from './aset'
@@ -115,10 +116,11 @@ export function bangkitkanDb(sekarang: Date): DbDemo {
     pengguna: PENGGUNA_DEMO.filter((p) => p.desaId === ID_SUNGAI_SIALANG),
     acuan: sekarang,
   })
+  const semuaDesa = [...structuredClone(DESA_DEMO), ...konsol.desa]
   return {
     versiData: VERSI_DATA,
     tanggalAcuan: waktuIsoWib(sekarang),
-    desa: [...structuredClone(DESA_DEMO), ...konsol.desa],
+    desa: semuaDesa,
     dusun: structuredClone(DUSUN_DEMO),
     pengguna: structuredClone(PENGGUNA_DEMO),
     ...hasil,
@@ -158,5 +160,7 @@ export function bangkitkanDb(sekarang: Date): DbDemo {
     langganan: konsol.langganan,
     rekamDesa: konsol.rekam,
     riwayatMasuk,
+    // Slug v0.1 ("sungai-sialang") tetap mengarah ke desanya lewat alias (SPEC-V0.2 §4.2).
+    aliasAlamat: semuaDesa.flatMap((d) => (slugDesa(d.nama) === d.slug ? [] : [{ label: slugDesa(d.nama), desaId: d.id }])),
   }
 }

@@ -20,7 +20,7 @@ const ISI: IsiLembar = {
   ],
   tempatTanggal: 'Sungai Sialang, 24 September 2026',
 }
-const ISI_QR = 'https://demo.sinfodes.id/desa/sungai-sialang/verifikasi?kode=SS-7K3M-Q9TD'
+const ISI_QR = 'https://demo.sinfodes.id/desa/sungaisialang/verifikasi?kode=SS-7K3M-Q9TD'
 const TTD: DataTandaTangan = {
   tempatTanggal: ISI.tempatTanggal, jabatan: 'Kepala Desa Sungai Sialang', atasNama: null, nama: 'H. Muhammad Nasir',
   mode: 'tte', qr: { isi: ISI_QR, kode: 'SS-7K3M-Q9TD' },

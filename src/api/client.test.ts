@@ -28,7 +28,7 @@ describe('panggilApi', () => {
     const { token, sesi } = await masuk(OPERATOR, 'demo')
     expect(sesi.pengguna.peran).toBe('operator')
     aturTokenSesi(token)
-    expect((await ambilSesi()).desa.slug).toBe('sungai-sialang')
+    expect((await ambilSesi()).desa.slug).toBe('sungaisialang')
   })
   it('galat 422 menjadi GalatApi dengan kode dan kolom', async () => {
     const galat = await masuk(OPERATOR, 'salah').catch((e: unknown) => e)

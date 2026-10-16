@@ -46,7 +46,7 @@ describe('dataLembar (SPEC §7.4, §7.5)', () => {
     const l = dataLembar(detail({ status: 'selesai', terbit: TERBIT }), KONTEKS)
     expect(l.isi.pembuka).toBe('Isi yang dibekukan')
     expect(l.nomor).toBe('470/087/SS/IX/2026')
-    const isiQr = 'https://demo.sinfodes.id/desa/sungai-sialang/verifikasi?kode=SS-7K3M-Q9TD'
+    const isiQr = 'https://demo.sinfodes.id/desa/sungaisialang/verifikasi?kode=SS-7K3M-Q9TD'
     expect(l.tandaTangan).toEqual({
       tempatTanggal: 'Sungai Sialang, 20 September 2026', jabatan: 'Kepala Desa Sungai Sialang', atasNama: 'Sekretaris Desa',
       nama: 'Hendri Saputra', mode: 'tte', qr: { isi: isiQr, kode: 'SS-7K3M-Q9TD' },

@@ -14,7 +14,7 @@ const detail = (terbit: Terbit): DetailPermohonan => ({
   permohonan: contohPermohonan({ status: 'selesai', terbit }), jenis: contohJenis('SKD'), pemohon: contohPenduduk(),
   subjek: null, mutasi: null, pengaturan: pengaturanBawaan('desa_sungai_sialang'), pejabat: { kades: 'H. Muhammad Nasir', sekdes: 'Hendri Saputra' },
 })
-const DESA = { nama: 'Sungai Sialang', slug: 'sungai-sialang' }
+const DESA = { nama: 'Sungai Sialang', slug: 'sungaisialang' }
 
 describe('pesan WhatsApp (SPEC §7.4)', () => {
   it('nama, jenis, nomor, tautan unduh, dan masa berlaku', () =>

@@ -200,9 +200,9 @@ export const JENIS_SURAT_BAWAAN: readonly Bawaan[] = [
 
 /**
  * Katalog desa baru (tahap 6C): 12 jenis bawaan, semuanya belum dilayani. Desa memilih sendiri jenis yang dilayaninya di
- * langkah persiapan "Pilih jenis surat yang dilayani" (SPEC §5.3). ID memakai slug desa, yang unik di seluruh Sinfodes.
+ * langkah persiapan "Pilih jenis surat yang dilayani" (SPEC §5.3). ID memakai ID desa, yang unik dan tidak berubah walau alamat desa diganti.
  */
 export function katalogDesaBaru(desa: Pick<Desa, 'id' | 'slug'>): JenisSurat[] {
-  const awalan = desa.slug.replaceAll('-', '_')
+  const awalan = desa.id.replace(/^desa_/, '')
   return JENIS_SURAT_BAWAAN.map((j) => ({ ...structuredClone(j), id: `js_${awalan}_${j.kode.toLowerCase()}`, desaId: desa.id, aktif: false }))
 }

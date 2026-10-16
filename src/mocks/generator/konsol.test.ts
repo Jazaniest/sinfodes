@@ -4,7 +4,8 @@ import { HARGA_TRIWULAN, langgananSchema, penggunaKonsolSchema } from '@/domain/
 import { langkahBerikut, persiapanBerurutan } from '@/domain/wilayah/persiapan'
 import { desaSchema } from '@/domain/wilayah/schema'
 import { DESA_ASLI_PELALAWAN } from '../data/desa-asli-pelalawan'
-import { DESA_DEMO, ID_SUNGAI_SIALANG } from '../data/desa-demo'
+import { labelAlamatSah } from '@/domain/alamat/alamat'
+import { DESA_DEMO, ID_SUNGAI_SIALANG, ID_TANJUNG_LAMO } from '../data/desa-demo'
 import { buatAcak } from '../prng'
 import type { RekamDesa } from '../tipe-db'
 import { bangkitkanDb, SEED_DEMO } from './index'
@@ -122,5 +123,14 @@ describe('data Konsol (SPEC §12.8, §11)', () => {
     })
     const tanpaSekdes = (r: RekamDesa) => ({ ...r, kontak: { ...r.kontak, sekdes: null } })
     expect(lain.rekam.map(tanpaSekdes)).toEqual(db.rekamDesa.map(tanpaSekdes))
+  })
+  it('alamat semua desa sah dan unik, slug v0.1 jadi alias (SPEC-V0.2 §4.2)', () => {
+    expect(db.desa.every((d) => labelAlamatSah(d.slug))).toBe(true)
+    expect(new Set(db.desa.map((d) => d.slug)).size).toBe(db.desa.length)
+    expect(db.desa.find((d) => d.id === ID_SUNGAI_SIALANG)?.slug).toBe('sungaisialang')
+    expect(db.aliasAlamat).toContainEqual({ label: 'sungai-sialang', desaId: ID_SUNGAI_SIALANG })
+    expect(db.aliasAlamat).toContainEqual({ label: 'tanjung-lamo', desaId: ID_TANJUNG_LAMO })
+    const aktif = new Set(db.desa.map((d) => d.slug))
+    expect(db.aliasAlamat.some((a) => aktif.has(a.label))).toBe(false)
   })
 })

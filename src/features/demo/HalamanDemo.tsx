@@ -194,7 +194,7 @@ export function HalamanDemo() {
             </div>
             <Link
               to="/desa/$slug"
-              params={{ slug: 'sungai-sialang' }}
+              params={{ slug: 'sungaisialang' }}
               className="inline-flex h-9 items-center rounded-1 bg-biru px-4 font-medium text-putih hover:bg-biru-tua"
             >
               Buka website

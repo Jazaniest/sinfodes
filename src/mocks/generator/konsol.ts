@@ -1,3 +1,4 @@
+import { usulanAlamatDesa } from '@/domain/alamat/alamat'
 import { daftarBulanTerakhir, tanggalIsoWib, waktuIsoWib } from '@/domain/format/tanggal'
 import { daftarMingguTerakhir, labelTriwulan, slugDesa } from '@/domain/konsol/aturan'
 import { HARGA_TRIWULAN, type Langganan, type Paket, type PenggunaKonsol, type Tagihan } from '@/domain/konsol/schema'
@@ -195,7 +196,15 @@ export function bangkitkanKonsol(
   acak: Acak,
   o: { acuan: Date; desaPanel: readonly Desa[]; acakPemantauan: Acak; acakKontak: Acak },
 ): { desa: Desa[]; rekam: RekamDesa[]; langganan: Langganan[]; penggunaKonsol: PenggunaKonsol[] } {
-  const desa = DESA_KONSOL.map((r, i) => desaFiktif(r, i))
+  // Alamat subdomain (SPEC-V0.2 §4.2) dibagikan berurutan setelah desa panel; ID tetap dari slug v0.1 supaya stabil.
+  const terpakai = new Set(o.desaPanel.map((d) => d.slug))
+  const desa = DESA_KONSOL.map((r, i) => {
+    const d = desaFiktif(r, i)
+    const slug = usulanAlamatDesa({ nama: d.nama, kecamatan: d.kecamatan.nama, kabupaten: d.kabupaten.nama }, terpakai)
+    if (!slug) throw new Error(`Alamat untuk desa ${d.nama} habis`)
+    terpakai.add(slug)
+    return { ...d, slug }
+  })
   const nomor = (i: number) => String(i + 1).padStart(3, '0')
   const langganan = [
     ...o.desaPanel.map((d, i) => langgananDesa(acak, { desa: d, paket: PAKET_DESA_DEMO[d.id] ?? 'Dasar', rencana: null, acuan: o.acuan, nomorDesa: nomor(i) })),

@@ -38,7 +38,7 @@ export const SKENARIO_DEMO: readonly Skenario[] = [
       { teks: 'Siti melihat status Selesai dan membuka suratnya.', tombol: [{ label: 'Riwayat Siti', masuk: SITI, ke: '/warga/riwayat' }] },
       {
         teks: 'Kode atau QR surat lolos di halaman verifikasi website desa.',
-        tombol: [{ label: 'Cek keaslian surat', masuk: PUBLIK, ke: '/desa/sungai-sialang/verifikasi' }],
+        tombol: [{ label: 'Cek keaslian surat', masuk: PUBLIK, ke: '/desa/sungaisialang/verifikasi' }],
       },
     ],
   },
@@ -58,7 +58,7 @@ export const SKENARIO_DEMO: readonly Skenario[] = [
           { label: 'Statistik', masuk: OPERATOR, ke: '/admin/kependudukan/statistik' },
           { label: 'Buku Mutasi', masuk: OPERATOR, ke: '/admin/buku/mutasi-penduduk' },
           { label: 'Buku hari ini', masuk: OPERATOR, ke: '/admin' },
-          { label: 'Statistik website', masuk: PUBLIK, ke: '/desa/sungai-sialang/statistik' },
+          { label: 'Statistik website', masuk: PUBLIK, ke: '/desa/sungaisialang/statistik' },
         ],
       },
     ],

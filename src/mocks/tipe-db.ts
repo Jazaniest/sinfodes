@@ -24,7 +24,10 @@ import type { Agenda, Artikel, FotoGaleri, Pengumuman, Potensi, ProfilDesa, Tamp
 import type { Desa, Dusun } from '@/domain/wilayah/schema'
 
 /** Naikkan setiap kali seed atau struktur data berubah; data lama di IndexedDB otomatis diganti (SPEC §12). */
-export const VERSI_DATA = 17
+export const VERSI_DATA = 18
+
+/** Satu alamat lama desa, mis. slug v0.1 "sungai-sialang" untuk Sungai Sialang. */
+export type AliasAlamat = { label: string; desaId: string }
 
 /** Berkas impor yang sudah diperiksa dan menunggu konfirmasi (SPEC §6.8). */
 export type SesiImpor = { id: string; desaId: string; olehId: string; laporan: LaporanImpor; selesai: boolean }
@@ -127,4 +130,6 @@ export type DbDemo = {
   langganan: Langganan[]
   rekamDesa: RekamDesa[]
   riwayatMasuk: MasukPanel[]
+  /** Alamat lama desa (SPEC-V0.2 §4.2): tetap mengarah ke desanya selamanya dan tidak boleh dipakai desa lain. */
+  aliasAlamat: AliasAlamat[]
 }

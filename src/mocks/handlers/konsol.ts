@@ -1,7 +1,8 @@
 import { http, HttpResponse } from 'msw'
 import { z } from 'zod'
 import { tanggalIsoWib } from '@/domain/format/tanggal'
-import { hitungPerhatian, slugDesa, statusTagihan } from '@/domain/konsol/aturan'
+import { usulanAlamatDesa } from '@/domain/alamat/alamat'
+import { hitungPerhatian, statusTagihan } from '@/domain/konsol/aturan'
 import { ringkasWilayah, type BarisPemantauanDesa, type Pemantauan } from '@/domain/konsol/pemantauan'
 import {
   filterDesaKonsolSchema, tambahDesaSchema, undangSekdesSchema, type BarisDesaKonsol, type DetailDesaKonsol, type PenggunaKonsol,
@@ -59,13 +60,8 @@ const barisPemantauan = (desa: Desa, a: AngkaKonsol): BarisPemantauanDesa => ({
 
 const urutNama = (a: { nama: string }, b: { nama: string }) => a.nama.localeCompare(b.nama, 'id')
 
-/** Slug yang belum dipakai: "sungai-sialang", lalu "sungai-sialang-2", dan seterusnya. */
-function slugBaru(db: DbDemo, nama: string): string {
-  const dasar = slugDesa(nama)
-  let slug = dasar
-  for (let n = 2; db.desa.some((d) => d.slug === slug); n++) slug = `${dasar}-${n}`
-  return slug
-}
+/** Alamat yang sudah dipakai desa mana pun, termasuk alamat lama (alias) yang disimpan selamanya (SPEC-V0.2 §4.2). */
+const alamatTerpakai = (db: DbDemo): Set<string> => new Set([...db.desa.map((d) => d.slug), ...db.aliasAlamat.map((a) => a.label)])
 
 /** Konsol Sinfodes (SPEC §11). Akun konsol terpisah dari akun panel desa. */
 export const handlerKonsol = [
@@ -178,7 +174,8 @@ export const handlerKonsol = [
       if ([...db.pengguna, ...db.penggunaKonsol].some((p) => p.email.toLowerCase() === email)) {
         return balasField('email', 'Email ini sudah dipakai akun lain.', 'CONFLICT')
       }
-      const slug = slugBaru(db, nama)
+      const slug = usulanAlamatDesa({ nama, kecamatan: wilayah.kecamatan.nama, kabupaten: wilayah.kabupaten.nama }, alamatTerpakai(db))
+      if (!slug) return balasField('nama', 'Alamat untuk desa ini sudah terpakai.', 'CONFLICT')
       const id = `desa_${slug.replaceAll('-', '_')}`
       const desa: Desa = {
         id, slug, nama, kodeDesa: kodeLengkap, kecamatan: wilayah.kecamatan, kabupaten: wilayah.kabupaten, provinsi: wilayah.provinsi,

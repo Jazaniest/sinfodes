@@ -15,7 +15,7 @@ const PELALAWAN = { kode: '14.05', nama: 'Pelalawan' }
 export const DESA_DEMO: Desa[] = [
   {
     id: ID_SUNGAI_SIALANG,
-    slug: 'sungai-sialang',
+    slug: 'sungaisialang',
     nama: 'Sungai Sialang',
     kodeDesa: '14.05.09.2009',
     kecamatan: { kode: '14.05.09', nama: 'Teluk Meranti' },
@@ -42,7 +42,7 @@ export const DESA_DEMO: Desa[] = [
   },
   {
     id: ID_TANJUNG_LAMO,
-    slug: 'tanjung-lamo',
+    slug: 'tanjunglamo',
     nama: 'Tanjung Lamo',
     kodeDesa: '14.05.10.2010',
     kecamatan: { kode: '14.05.10', nama: 'Kuala Kampar' },

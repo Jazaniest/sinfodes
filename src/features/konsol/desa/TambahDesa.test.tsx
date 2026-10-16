@@ -47,10 +47,10 @@ describe('Tambah desa (SPEC §11)', () => {
     expect(screen.getByText(/^Admin pertama berperan Sekretaris Desa/)).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Simpan dan kirim undangan' }))
     await vi.waitFor(() =>
-      expect(onSelesai).toHaveBeenCalledWith({ id: 'desa_koto_baru_sentosa', nama: 'Koto Baru Sentosa', email: 'admin@kotobarusentosa.desa.id' }),
+      expect(onSelesai).toHaveBeenCalledWith({ id: 'desa_kotobarusentosa', nama: 'Koto Baru Sentosa', email: 'admin@kotobarusentosa.desa.id' }),
     )
     expect(await screen.findByText(/^Undangan terkirim ke admin@kotobarusentosa\.desa\.id \(tiruan\)\. Di demo, akunnya langsung aktif/)).toBeInTheDocument()
-    expect(ambilDb().desa.find((d) => d.id === 'desa_koto_baru_sentosa')?.status).toBe('Persiapan')
+    expect(ambilDb().desa.find((d) => d.id === 'desa_kotobarusentosa')?.status).toBe('Persiapan')
   })
   it('isian kosong: galat di setiap kolom, tanpa permintaan ke server (fokus review 3)', async () => {
     const { onSelesai, user } = pasang()
