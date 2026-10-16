@@ -4,7 +4,7 @@ import { ambilKeluarga, cariKeluarga, daftarKeluarga } from '@/api/keluarga'
 import {
   ambilPenduduk, ambilRingkasanPenduduk, ambilRiwayatPenduduk, cariPenduduk, daftarPenduduk,
 } from '@/api/penduduk'
-import { ambilSesi, kenali, masuk } from '@/api/sesi'
+import { ambilSesi, masuk } from '@/api/sesi'
 import { AKUN_UJI, masukSebagai, pakaiApiTiruan } from '@/test/api-tiruan'
 
 pakaiApiTiruan()
@@ -18,14 +18,6 @@ describe('sesi', () => {
     const hasil = await masuk('hendri@sungaisialang.desa.id', 'demo')
     expect(hasil.token).toBe('demo.pgn_hendri')
     expect(hasil.sesi.dusun).toHaveLength(4)
-  })
-  it('kenali: email terdaftar menampilkan desa, email asing tidak', async () => {
-    expect((await kenali('Rosmiati@SungaiSialang.desa.id')).desa).toEqual({
-      nama: 'Sungai Sialang',
-      kecamatan: 'Teluk Meranti',
-      kabupaten: 'Pelalawan',
-    })
-    expect((await kenali('tidak.ada@contoh.id')).desa).toBeNull()
   })
 })
 

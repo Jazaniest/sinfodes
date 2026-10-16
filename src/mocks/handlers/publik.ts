@@ -13,6 +13,7 @@ import { namaDusun } from '@/domain/wilayah/alamat'
 import type { Desa } from '@/domain/wilayah/schema'
 import { ambilDb, ubahDb } from '../db'
 import { API, balasDaftar, balasGalat, denganJaringan } from '../http'
+import { desaKonteks, konteksPermintaan, tanpaKonteks } from '../konteks-permintaan'
 import { perkiraanHariKerja } from '../surat-perkiraan'
 import type { DbDemo } from '../tipe-db'
 import { bacaJson } from '../tulis'
@@ -23,11 +24,16 @@ import { tampilanDesa } from './website'
 const desaPublik = (db: DbDemo, slug: string): Desa | undefined =>
   db.desa.find((d) => d.slug === slug && (d.status === 'Aktif' || d.status === 'Uji coba'))
 
-/** Desa dari parameter `:slug`, atau balasan NOT_FOUND. Dipakai juga handler verifikasi. */
-export function cariDesaPublik(slug: unknown): { db: DbDemo; desa: Desa } | Response {
+/**
+ * Desa dari parameter `:slug`, atau balasan NOT_FOUND. Dipakai juga handler verifikasi. Di alamat desa, slug harus milik
+ * desa alamat itu: website desa lain tidak bisa dibaca lewat alamat desa ini (SPEC-V0.2 §4.5).
+ */
+export function cariDesaPublik(slug: unknown, request: Request): { db: DbDemo; desa: Desa } | Response {
   const db = ambilDb()
+  const k = konteksPermintaan(request)
   const desa = desaPublik(db, String(slug))
-  return desa ? { db, desa } : balasGalat('NOT_FOUND', 'Website desa tidak ditemukan.', 404)
+  const sesuai = tanpaKonteks(k) || (desa !== undefined && desaKonteks(db, k)?.id === desa.id)
+  return desa && sesuai ? { db, desa } : balasGalat('NOT_FOUND', 'Website desa tidak ditemukan.', 404)
 }
 
 function identitas(db: DbDemo, d: Desa): IdentitasPublik {
@@ -115,16 +121,16 @@ function catatKodeSalah(desaId: string, sekarang: Date): boolean {
 export const handlerPublik = [
   http.get(
     `${API}/publik/:slug`,
-    denganJaringan(({ params }) => {
-      const c = cariDesaPublik(params.slug)
+    denganJaringan(({ request, params }) => {
+      const c = cariDesaPublik(params.slug, request)
       if (c instanceof Response) return c
       return HttpResponse.json(identitas(c.db, c.desa))
     }),
   ),
   http.get(
     `${API}/publik/:slug/beranda`,
-    denganJaringan(({ params }) => {
-      const c = cariDesaPublik(params.slug)
+    denganJaringan(({ request, params }) => {
+      const c = cariDesaPublik(params.slug, request)
       if (c instanceof Response) return c
       const { db, desa } = c
       const hariIni = tanggalIsoWib(new Date())
@@ -160,7 +166,7 @@ export const handlerPublik = [
   http.get(
     `${API}/publik/:slug/kabar`,
     denganJaringan(({ request, params }) => {
-      const c = cariDesaPublik(params.slug)
+      const c = cariDesaPublik(params.slug, request)
       if (c instanceof Response) return c
       const kategori = new URL(request.url).searchParams.get('kategori')
       const daftar = terbit(c.db, c.desa.id).filter((a) => !kategori || a.kategori === kategori)
@@ -169,8 +175,8 @@ export const handlerPublik = [
   ),
   http.get(
     `${API}/publik/:slug/kabar/:artikel`,
-    denganJaringan(({ params }) => {
-      const c = cariDesaPublik(params.slug)
+    denganJaringan(({ request, params }) => {
+      const c = cariDesaPublik(params.slug, request)
       if (c instanceof Response) return c
       const a = terbit(c.db, c.desa.id).find((x) => x.slug === String(params.artikel))
       if (!a) return balasGalat('NOT_FOUND', 'Kabar tidak ditemukan.', 404)
@@ -180,8 +186,8 @@ export const handlerPublik = [
   ),
   http.get(
     `${API}/publik/:slug/layanan`,
-    denganJaringan(({ params }) => {
-      const c = cariDesaPublik(params.slug)
+    denganJaringan(({ request, params }) => {
+      const c = cariDesaPublik(params.slug, request)
       if (c instanceof Response) return c
       const { db, desa } = c
       const sekarang = new Date()
@@ -203,8 +209,8 @@ export const handlerPublik = [
   ),
   http.get(
     `${API}/publik/:slug/kredit-foto`,
-    denganJaringan(({ params }) => {
-      const c = cariDesaPublik(params.slug)
+    denganJaringan(({ request, params }) => {
+      const c = cariDesaPublik(params.slug, request)
       if (c instanceof Response) return c
       const hasil: KreditFotoPublik[] = c.db.galeri.flatMap((f) =>
         f.desaId === c.desa.id && f.tersedia && f.kredit ? [{ berkas: f.berkas, keterangan: f.judul, ...f.kredit }] : [],
@@ -215,7 +221,7 @@ export const handlerPublik = [
   http.post(
     `${API}/publik/:slug/verifikasi`,
     denganJaringan(async ({ request, params }) => {
-      const c = cariDesaPublik(params.slug)
+      const c = cariDesaPublik(params.slug, request)
       if (c instanceof Response) return c
       const { db, desa } = c
       const sekarang = new Date()

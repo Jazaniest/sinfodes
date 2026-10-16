@@ -21,8 +21,8 @@ const keOrang = (p: Pengurus): PengurusPublik => ({ jabatan: p.jabatan, nama: p.
 export const handlerPublikHalaman = [
   http.get(
     `${API}/publik/:slug/profil`,
-    denganJaringan(({ params }) => {
-      const c = cariDesaPublik(params.slug)
+    denganJaringan(({ request, params }) => {
+      const c = cariDesaPublik(params.slug, request)
       if (c instanceof Response) return c
       const { db, desa } = c
       const profil = db.profilDesa.find((p) => p.desaId === desa.id)
@@ -53,8 +53,8 @@ export const handlerPublikHalaman = [
   ),
   http.get(
     `${API}/publik/:slug/transparansi`,
-    denganJaringan(({ params }) => {
-      const c = cariDesaPublik(params.slug)
+    denganJaringan(({ request, params }) => {
+      const c = cariDesaPublik(params.slug, request)
       if (c instanceof Response) return c
       const { db, desa } = c
       const apbdes = apbdesTerbaru(desa.id)
@@ -75,8 +75,8 @@ export const handlerPublikHalaman = [
   ),
   http.get(
     `${API}/publik/:slug/statistik`,
-    denganJaringan(({ params }) => {
-      const c = cariDesaPublik(params.slug)
+    denganJaringan(({ request, params }) => {
+      const c = cariDesaPublik(params.slug, request)
       if (c instanceof Response) return c
       const { db, desa } = c
       const sekarang = new Date()
@@ -93,8 +93,8 @@ export const handlerPublikHalaman = [
   ),
   http.get(
     `${API}/publik/:slug/potensi`,
-    denganJaringan(({ params }) => {
-      const c = cariDesaPublik(params.slug)
+    denganJaringan(({ request, params }) => {
+      const c = cariDesaPublik(params.slug, request)
       if (c instanceof Response) return c
       const { db, desa } = c
       const hasil: PotensiPublik = {

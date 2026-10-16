@@ -1,3 +1,4 @@
+import { handlerAlamat } from './alamat'
 import { handlerArsip } from './arsip'
 import { handlerBansos } from './bansos'
 import { handlerBeranda } from './beranda'
@@ -35,7 +36,7 @@ import { handlerWargaSesi } from './warga-sesi'
 import { handlerWebsite } from './website'
 
 export const handlers = [
-  ...handlerArsip,
+  ...handlerAlamat, ...handlerArsip,
   ...handlerSesi, ...handlerBeranda, ...handlerCari, ...handlerPenduduk, ...handlerPendudukTulis, ...handlerKeluarga,
   ...handlerKeluargaTulis, ...handlerMutasi, ...handlerStatistik, ...handlerLaporan, ...handlerImpor, ...handlerJenisSurat,
   ...handlerSuratLoket, ...handlerSurat, ...handlerSuratAksi,

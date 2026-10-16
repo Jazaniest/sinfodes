@@ -1,7 +1,7 @@
 import { http, HttpResponse } from 'msw'
 import { z } from 'zod'
-import { tanggalIsoWib } from '@/domain/format/tanggal'
 import { usulanAlamatDesa } from '@/domain/alamat/alamat'
+import { tanggalIsoWib } from '@/domain/format/tanggal'
 import { hitungPerhatian, statusTagihan } from '@/domain/konsol/aturan'
 import { ringkasWilayah, type BarisPemantauanDesa, type Pemantauan } from '@/domain/konsol/pemantauan'
 import {
@@ -17,6 +17,7 @@ import { KATA_SANDI_DEMO } from '../data/desa-demo'
 import { ambilDb, ubahDb } from '../db'
 import { API, balasDaftar, balasGalat, denganJaringan } from '../http'
 import { angkaKonsolDesa, type AngkaKonsol } from '../konsol-angka'
+import { konteksPermintaan, tanpaKonteks } from '../konteks-permintaan'
 import { butuhPenggunaKonsol, tokenKonsolUntuk } from '../sesi-mock'
 import type { DbDemo } from '../tipe-db'
 import { bacaJson, balasField, balasIsianTidakValid, idBaru } from '../tulis'
@@ -68,6 +69,9 @@ export const handlerKonsol = [
   http.post(
     `${API}/konsol/sesi/masuk`,
     denganJaringan(async ({ request }) => {
+      // Konsol hanya dibuka dari alamatnya sendiri (SPEC-V0.2 §4.1).
+      const k = konteksPermintaan(request)
+      if (!tanpaKonteks(k) && k.jenis !== 'konsol') return balasGalat('NOT_FOUND', 'Konsol tidak ada di alamat ini.', 404)
       const isian = masukSchema.safeParse(await bacaJson(request))
       if (!isian.success) return balasGalat('VALIDATION', 'Email dan kata sandi wajib diisi.', 422)
       const akun = ambilDb().penggunaKonsol.find((p) => p.email === isian.data.email)
