@@ -10,12 +10,13 @@ import { Tombol } from '@/ui/tombol/Tombol'
 import { Banner } from '@/ui/umpan-balik/Banner'
 
 type Galat = { nik?: string; pin?: string; umum?: string }
-type Props = { onBerhasil: (token: string, sesi: SesiWarga) => void; modeDemo?: boolean }
+/** `namaDesa`: desa pemilik alamat ini (SPEC-V0.2 §4.3); kosong bila alamatnya tidak dikenali. */
+type Props = { onBerhasil: (token: string, sesi: SesiWarga) => void; modeDemo?: boolean; namaDesa?: string | null }
 
 const PESAN_NIK = 'NIK terdiri dari 16 angka.'
 
 /** Masuk layanan warga dengan NIK dan PIN 6 angka (SPEC §10). */
-export function FormMasukWarga({ onBerhasil, modeDemo = false }: Props) {
+export function FormMasukWarga({ onBerhasil, modeDemo = false, namaDesa = null }: Props) {
   const [nik, setNik] = useState('')
   const [pin, setPin] = useState('')
   const [galat, setGalat] = useState<Galat>({})
@@ -67,6 +68,7 @@ export function FormMasukWarga({ onBerhasil, modeDemo = false }: Props) {
       <div className="mx-auto w-full max-w-sm">
         <img src={logoMark} alt="Sinfodes" className="h-9 w-auto" />
         <h1 className="mt-4 font-serif text-judul-halaman font-medium">Layanan warga</h1>
+        {namaDesa && <p className="font-medium">Desa {namaDesa}</p>}
         <p className="mt-1 text-tinta-2">Urus surat desa dan pantau perkembangannya dari HP.</p>
         <form
           noValidate

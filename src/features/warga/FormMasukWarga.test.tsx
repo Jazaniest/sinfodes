@@ -16,6 +16,10 @@ const kolomPin = () => screen.getByLabelText('PIN')
 const tombolMasuk = () => screen.getByRole('button', { name: 'Masuk' })
 
 describe('masuk layanan warga (SPEC §10)', () => {
+  it('nama desa dari alamat tampil di bawah judul (SPEC-V0.2 §4.3)', () => {
+    render(<FormMasukWarga namaDesa="Sungai Sialang" onBerhasil={vi.fn()} />)
+    expect(screen.getByText('Desa Sungai Sialang')).toBeInTheDocument()
+  })
   it('NIK dan PIN benar → onBerhasil dengan token dan sesi warga', async () => {
     const { onBerhasil, user } = pasang()
     await user.type(kolomNik(), '1405095203918002')
