@@ -20,7 +20,7 @@ declare module '@tanstack/react-router' {
 async function mulai() {
   if (import.meta.env.VITE_DEMO === 'true') {
     const { mulaiMock } = await import('@/mocks/browser')
-    await mulaiMock()
+    await mulaiMock({ saatBerubah: () => void queryClient.invalidateQueries() })
   }
   pulihkanSesi()
   const akar = document.getElementById('root')

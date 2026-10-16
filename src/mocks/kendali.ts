@@ -4,6 +4,7 @@ import { ambilDb, resetDb } from './db'
 import type { DbDemo } from './tipe-db'
 
 export { aturModeJaringan, bacaModeJaringan, MODE_JARINGAN } from './jaringan'
+export { dataDemoTerpisah } from './status-penyimpanan'
 export type { ModeJaringan } from './jaringan'
 
 /** Satu akun desa berstatus Persiapan untuk tombol masuk di halaman demo. */

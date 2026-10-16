@@ -31,6 +31,18 @@ export async function muatDb(penyimpanan: Penyimpanan, sekarang: Date = new Date
   return db
 }
 
+/**
+ * Muat ulang dari penyimpanan setelah tab lain mengubahnya lewat hub (SPEC-V0.2 §4.6). Dilewati (false) bila tab ini
+ * masih punya tulisan tertunda: tulisan itu yang menjadi terbaru, dan perubahan lokal tidak hilang.
+ */
+export async function muatUlangDb(): Promise<boolean> {
+  if (!penyimpananAktif || jadwalSimpan) return false
+  const tersimpan = await penyimpananAktif.baca(KUNCI_DB)
+  if (!tampakSepertiDb(tersimpan) || jadwalSimpan) return false
+  db = tersimpan
+  return true
+}
+
 /** Tombol "Reset data" di toolbar demo: bangkitkan ulang dengan tanggal acuan = sekarang. */
 export async function resetDb(sekarang: Date = new Date()): Promise<DbDemo> {
   if (!penyimpananAktif) throw new Error('Data demo belum dimuat.')

@@ -11,6 +11,15 @@ export default defineConfig({
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },
+  build: {
+    // hub-demo.html: penyimpanan demo bersama untuk semua subdomain (SPEC-V0.2 §4.6).
+    rolldownOptions: {
+      input: {
+        main: fileURLToPath(new URL('./index.html', import.meta.url)),
+        hub: fileURLToPath(new URL('./hub-demo.html', import.meta.url)),
+      },
+    },
+  },
   test: {
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
