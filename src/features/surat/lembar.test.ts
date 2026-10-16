@@ -17,7 +17,7 @@ const detail = (ubah: Partial<Permohonan> = {}): DetailPermohonan => ({
   pejabat: { kades: 'H. Muhammad Nasir', sekdes: 'Hendri Saputra' },
 })
 const KONTEKS = {
-  desa, dusun, isian: { keperluan: 'pembukaan rekening bank' }, hariIni: new Date('2026-09-24T02:00:00Z'), asal: 'https://demo.sinfodes.id',
+  desa, dusun, isian: { keperluan: 'pembukaan rekening bank' }, hariIni: new Date('2026-09-24T02:00:00Z'), asal: 'http://sungaisialang.sinfodes.localhost:3000',
 }
 const TERBIT: Terbit = {
   nomor: '470/087/SS/IX/2026', tahun: 2026, urut: 87, kodeVerifikasi: 'SS-7K3M-Q9TD', pada: '2026-09-20T10:00:00+07:00',
@@ -46,12 +46,12 @@ describe('dataLembar (SPEC §7.4, §7.5)', () => {
     const l = dataLembar(detail({ status: 'selesai', terbit: TERBIT }), KONTEKS)
     expect(l.isi.pembuka).toBe('Isi yang dibekukan')
     expect(l.nomor).toBe('470/087/SS/IX/2026')
-    const isiQr = 'https://demo.sinfodes.id/desa/sungaisialang/verifikasi?kode=SS-7K3M-Q9TD'
+    const isiQr = 'http://sungaisialang.sinfodes.localhost:3000/verifikasi?kode=SS-7K3M-Q9TD'
     expect(l.tandaTangan).toEqual({
       tempatTanggal: 'Sungai Sialang, 20 September 2026', jabatan: 'Kepala Desa Sungai Sialang', atasNama: 'Sekretaris Desa',
       nama: 'Hendri Saputra', mode: 'tte', qr: { isi: isiQr, kode: 'SS-7K3M-Q9TD' },
     })
-    expect(l.verifikasi).toEqual({ kode: 'SS-7K3M-Q9TD', domain: 'sungaisialang.desa.id', isiQr })
+    expect(l.verifikasi).toEqual({ kode: 'SS-7K3M-Q9TD', domain: 'sungaisialang.sinfodes.localhost', isiQr })
   })
   it('lambang yang diunggah desa ikut ke kop surat (3C)', () => {
     const lambang = `data:image/png;base64,${'A'.repeat(64)}`

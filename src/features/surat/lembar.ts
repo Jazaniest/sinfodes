@@ -2,6 +2,7 @@ import { tanggalIsoWib } from '@/domain/format/tanggal'
 import { susunLembar } from '@/domain/surat/lembar'
 import type { PengaturanSurat } from '@/domain/surat/pengaturan'
 import type { DetailPermohonan, Permohonan, Terbit } from '@/domain/surat/permohonan'
+import { DOMAIN_INDUK } from '@/app/alamat'
 import { domainDesa, tautanVerifikasi } from '@/domain/surat/verifikasi'
 import type { Desa, Dusun } from '@/domain/wilayah/schema'
 import type { PropsLembarSurat } from '@/ui/dokumen/LembarSurat'
@@ -15,7 +16,7 @@ export type KonteksLembarLayar = {
   /** Isian yang sedang tampil di layar, termasuk yang belum disimpan. */
   isian: Readonly<Record<string, string>>
   hariIni: Date
-  /** Origin aplikasi untuk isi QR, mis. `window.location.origin`. */
+  /** Asal website desa untuk isi QR, mis. `asalDesa(desa.slug)`. */
   asal: string
 }
 
@@ -41,7 +42,7 @@ export function lembarTerbit(
   desa: Desa,
   asal: string,
 ): Omit<PropsLembarSurat, 'penanda'> {
-  const isiQr = tautanVerifikasi(asal, desa.slug, t.kodeVerifikasi)
+  const isiQr = tautanVerifikasi(asal, t.kodeVerifikasi)
   return {
     kop: kopDari(desa),
     kertas: p.kertas,
@@ -57,7 +58,7 @@ export function lembarTerbit(
       mode: t.mode,
       qr: t.mode === 'tte' ? { isi: isiQr, kode: t.kodeVerifikasi } : null,
     },
-    verifikasi: { kode: t.kodeVerifikasi, domain: domainDesa(desa.slug), isiQr },
+    verifikasi: { kode: t.kodeVerifikasi, domain: domainDesa(desa.slug, DOMAIN_INDUK), isiQr },
   }
 }
 

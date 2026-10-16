@@ -23,7 +23,7 @@ describe('pesan WhatsApp (SPEC §7.4)', () => {
         'Yth. Siti Rahmah,',
         'Surat Keterangan Domisili Anda sudah selesai ditandatangani.',
         'Nomor: 470/087/SS/IX/2026',
-        'Unduh: https://sungaisialang.desa.id/unduh/SS-7K3M-Q9TD',
+        'Unduh: https://sungaisialang.sinfodes.localhost/unduh/SS-7K3M-Q9TD',
         'Berlaku sampai 24 Desember 2026.',
         'Pemerintah Desa Sungai Sialang',
       ].join('\n'),

@@ -4,6 +4,7 @@ import { GalatApi, pesanGalat } from '@/api/galat'
 import { opsiPenduduk } from '@/api/penduduk'
 import { segarkanSurat } from '@/api/segarkan'
 import { buatPermohonan, opsiJenisSurat, opsiSaranSurat } from '@/api/surat'
+import { asalDesa } from '@/app/alamat'
 import { periksaIsian } from '@/domain/surat/jenis'
 import { periksaPemohon } from '@/domain/surat/pemohon'
 import { Cap } from '@/ui/cap/Cap'
@@ -135,7 +136,7 @@ export function BuatSurat({ cari, onUbahCari, onSelesai, onKotor, sekarang }: Pr
         }
       : null
   const lembar = bahan ? (
-    <LembarSurat {...dataLembar(bahan, { desa, dusun, isian: isianAktif, hariIni, asal: window.location.origin })} penanda={<Cap varian="draf" />} />
+    <LembarSurat {...dataLembar(bahan, { desa, dusun, isian: isianAktif, hariIni, asal: asalDesa(desa.slug) })} penanda={<Cap varian="draf" />} />
   ) : null
   const samping = lebar && (langkah === 2 || langkah === 3)
   const lanjutKePratinjau = () => {

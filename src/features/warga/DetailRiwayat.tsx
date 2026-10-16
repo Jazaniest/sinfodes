@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { GalatApi, pesanGalat } from '@/api/galat'
 import { opsiDetailRiwayat } from '@/api/warga'
+import { asalDesa } from '@/app/alamat'
 import { formatWaktuLog } from '@/domain/format/tanggal'
 import { JUDUL_KEJADIAN } from '@/domain/surat/alur'
 import { kalimat, namaJenisLengkap, type DetailPermohonanWarga } from '@/domain/warga/permohonan'
@@ -27,7 +28,7 @@ function IsiDetail({ d, sesi }: { d: DetailPermohonanWarga; sesi: SesiWarga }) {
   const [cetak, setCetak] = useState(false)
   const { permohonan: p, jenis, terbit, pengaturan } = d
   // Hanya surat TTE yang boleh diunduh; surat bertanda tangan basah diambil di kantor desa.
-  const lembar = p.status === 'selesai' && terbit?.mode === 'tte' ? lembarTerbit(terbit, pengaturan, sesi.desa, window.location.origin) : null
+  const lembar = p.status === 'selesai' && terbit?.mode === 'tte' ? lembarTerbit(terbit, pengaturan, sesi.desa, asalDesa(sesi.desa.slug)) : null
   const rincian = [
     { label: 'Nomor tiket', nilai: <span className="font-mono">{p.tiket}</span> },
     { label: 'Untuk', nilai: p.untuk.nama },

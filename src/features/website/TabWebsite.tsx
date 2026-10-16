@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { DOMAIN_INDUK } from '@/app/alamat'
 import { domainDesa } from '@/domain/surat/verifikasi'
 import { TabNav } from '@/ui/navigasi/TabNav'
 import { PageHeader } from '@/ui/tata-letak/PageHeader'
@@ -29,7 +30,7 @@ export function KepalaWebsite({ aktif, meta }: { aktif: Aktif; meta?: ReactNode 
     <PageHeader
       jejak={[{ label: 'Publikasi' }]}
       judul="Website Desa"
-      meta={meta ?? `Tampil di ${domainDesa(desa.slug)}`}
+      meta={meta ?? `Tampil di ${domainDesa(desa.slug, DOMAIN_INDUK)}`}
       tab={<TabWebsite aktif={aktif} />}
     />
   )

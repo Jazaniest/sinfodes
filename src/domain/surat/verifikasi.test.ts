@@ -15,10 +15,10 @@ describe('kode verifikasi surat (SPEC §7.5)', () => {
     expect(kode).toMatch(POLA_KODE_VERIFIKASI)
     expect('SS-7K3M-Q9T0').not.toMatch(POLA_KODE_VERIFIKASI)
   })
-  it('domain website desa dan isi QR', () => {
-    expect(domainDesa('sungai-sialang')).toBe('sungaisialang.desa.id')
-    expect(tautanVerifikasi('https://demo.sinfodes.id', 'sungai-sialang', 'SS-7K3M-Q9TD')).toBe(
-      'https://demo.sinfodes.id/desa/sungai-sialang/verifikasi?kode=SS-7K3M-Q9TD',
+  it('domain website desa dan isi QR memakai alamat subdomain desa (SPEC-V0.2 §4.4)', () => {
+    expect(domainDesa('sungaisialang', 'sinfodes.com')).toBe('sungaisialang.sinfodes.com')
+    expect(tautanVerifikasi('http://sungaisialang.sinfodes.localhost:5173', 'SS-7K3M-Q9TD')).toBe(
+      'http://sungaisialang.sinfodes.localhost:5173/verifikasi?kode=SS-7K3M-Q9TD',
     )
   })
 })

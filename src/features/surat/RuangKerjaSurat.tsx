@@ -3,6 +3,7 @@ import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'rea
 import { GalatApi, pesanGalat } from '@/api/galat'
 import { segarkanSurat } from '@/api/segarkan'
 import { kunciSurat, opsiPermohonan, ubahPermohonan } from '@/api/surat'
+import { asalDesa } from '@/app/alamat'
 import { formatJam, formatTanggal, formatWaktuLog } from '@/domain/format/tanggal'
 import { boleh } from '@/domain/pengguna/hak-akses'
 import { JUDUL_KEJADIAN } from '@/domain/surat/alur'
@@ -170,7 +171,7 @@ export function RuangKerjaSurat({ id, sekarang, onKotor }: Props) {
   const p = d.permohonan
   const isian = ubahan ?? p.isian
   const bisaUbahIsian = p.status === 'diproses' && boleh(pengguna.peran, 'surat.proses')
-  const lembar = dataLembar(d, { desa, dusun, isian, hariIni, asal: window.location.origin })
+  const lembar = dataLembar(d, { desa, dusun, isian, hariIni, asal: asalDesa(desa.slug) })
   const penanda = p.status === 'dibatalkan' ? <Cap varian="dibatalkan" /> : p.terbit ? undefined : <Cap varian="draf" />
   const ubahIsian = (kunci: string, nilai: string) => {
     setUbahan({ ...isian, [kunci]: nilai })

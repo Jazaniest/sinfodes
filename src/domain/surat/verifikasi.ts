@@ -8,12 +8,12 @@ export function buatKodeVerifikasi(kodeDesa: string, acak: () => number): string
   return `${kodeDesa}-${huruf.slice(0, 4).join('')}-${huruf.slice(4).join('')}`
 }
 
-/** Domain website desa (SPEC §3.1): "sungai-sialang" → "sungaisialang.desa.id". */
-export function domainDesa(slug: string): string {
-  return `${slug.replace(/-/g, '')}.desa.id`
+/** Alamat website desa yang tercetak di surat (SPEC-V0.2 §4.1): "sungaisialang" → "sungaisialang.sinfodes.com". */
+export function domainDesa(label: string, domainInduk: string): string {
+  return `${label}.${domainInduk}`
 }
 
-/** Isi QR surat: halaman verifikasi website desa. Di demo, website desa ada di `/desa/:slug` (SPEC §3.1, §7.6). */
-export function tautanVerifikasi(asal: string, slug: string, kode: string): string {
-  return `${asal}/desa/${slug}/verifikasi?kode=${encodeURIComponent(kode)}`
+/** Isi QR surat: halaman verifikasi di alamat desa (SPEC §7.6, SPEC-V0.2 §4.4). `asal` adalah asal website desa. */
+export function tautanVerifikasi(asal: string, kode: string): string {
+  return `${asal}/verifikasi?kode=${encodeURIComponent(kode)}`
 }

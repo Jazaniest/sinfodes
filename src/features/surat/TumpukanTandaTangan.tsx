@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useMemo, useRef, useState } from 'react'
 import { pesanGalat } from '@/api/galat'
 import { opsiAntrianTtd } from '@/api/surat'
+import { asalDesa } from '@/app/alamat'
 import type { DetailPermohonan } from '@/domain/surat/permohonan'
 import { Cap } from '@/ui/cap/Cap'
 import { DescriptionList } from '@/ui/data/DescriptionList'
@@ -79,7 +80,7 @@ export function TumpukanTandaTangan({ sekarang }: { sekarang?: Date }) {
 
   const d = sekarangDitinjau
   const p = d.permohonan
-  const lembar = dataLembar(d, { desa, dusun, isian: p.isian, hariIni, asal: window.location.origin })
+  const lembar = dataLembar(d, { desa, dusun, isian: p.isian, hariIni, asal: asalDesa(desa.slug) })
   const buka = (jenis: 'tandatangani' | 'kembalikan') => {
     setGalatDialog(undefined)
     setDialog(jenis)

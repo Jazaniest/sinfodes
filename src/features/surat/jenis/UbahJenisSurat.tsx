@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { GalatApi, pesanGalat } from '@/api/galat'
 import { segarkanSurat } from '@/api/segarkan'
 import { kunciSurat, opsiDetailJenisSurat, ubahJenisSurat } from '@/api/surat'
+import { asalDesa } from '@/app/alamat'
 import { formatAngka } from '@/domain/format/angka'
 import { formDariJenis, periksaJenisSurat, type DetailJenisSurat, type FormJenisSurat } from '@/domain/surat/ubah-jenis'
 import { Cap } from '@/ui/cap/Cap'
@@ -86,7 +87,7 @@ function FormJenis({ detail, onSelesai, onKotor, sekarang }: Omit<Props, 'id'> &
       pejabat: detail.pejabat,
       permohonan: { terbit: null },
     },
-    { desa, dusun, isian: detail.contoh.isian, hariIni, asal: window.location.origin },
+    { desa, dusun, isian: detail.contoh.isian, hariIni, asal: asalDesa(desa.slug) },
   )
   const kotor = JSON.stringify(form) !== JSON.stringify(awal)
 
