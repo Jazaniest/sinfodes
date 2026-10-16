@@ -11,6 +11,7 @@ const kendali = vi.hoisted(() => ({
   aturModeJaringan: vi.fn(),
   infoDataDemo: vi.fn(() => ({ tanggalAcuan: '2026-09-24T09:00:00+07:00', jiwa: 2812, kk: 806, dusun: 4 })),
   resetDataDemo: vi.fn(async () => ({ tanggalAcuan: '2026-09-24T09:00:00+07:00', jiwa: 2812, kk: 806, dusun: 4 })),
+  dataDemoTerpisah: vi.fn(() => false),
 }))
 vi.mock('@/mocks/kendali', () => kendali)
 
@@ -26,6 +27,15 @@ function pasang() {
 }
 
 describe('DemoToolbar (SPEC §3.6)', () => {
+  it('di luar alamat induk ada tautan kembali ke halaman demo (SPEC-V0.2 §4.6)', async () => {
+    pasang()
+    expect(await screen.findByRole('link', { name: 'Halaman demo' })).toHaveAttribute('href', 'http://sinfodes.localhost:3000/')
+  })
+  it('hub tidak terjangkau → keterangan data terpisah per alamat', async () => {
+    kendali.dataDemoTerpisah.mockReturnValue(true)
+    pasang()
+    expect(await screen.findByText('Data demo terpisah per alamat')).toBeInTheDocument()
+  })
   it('mengganti mode koneksi', async () => {
     pasang()
     await userEvent.selectOptions(await screen.findByLabelText('Koneksi'), 'lambat')

@@ -16,7 +16,11 @@ describe('daftar skenario di halaman demo (SPEC §3.6)', () => {
     expect(within(sktm).getAllByRole('listitem')).toHaveLength(5)
     await userEvent.setup().click(within(sktm).getByRole('button', { name: 'Kades: tanda tangan' }))
     expect(onJalankan).toHaveBeenCalledWith(
-      expect.objectContaining({ masuk: { bagian: 'admin', peran: 'kades' }, ke: '/admin/surat/tanda-tangan' }),
+      expect.objectContaining({
+        masuk: { bagian: 'admin', peran: 'kades' },
+        tujuan: { jenis: 'desa', label: 'sungaisialang' },
+        jalur: '/admin/surat/tanda-tangan',
+      }),
       expect.any(String),
     )
   })

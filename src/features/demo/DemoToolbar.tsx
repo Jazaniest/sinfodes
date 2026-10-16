@@ -1,6 +1,7 @@
 import { ArrowCounterClockwise, X } from '@phosphor-icons/react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState, type ReactNode } from 'react'
+import { keAlamat, konteksSekarang } from '@/app/alamat'
 import type { ModeJaringan } from '@/mocks/kendali'
 import { tampilkanToast } from '@/ui/toast/antrean'
 import { useKendaliDemo } from './useKendaliDemo'
@@ -82,6 +83,13 @@ export function DemoToolbar({ sisipan }: { sisipan?: ReactNode }) {
     >
       <span className="flex items-center px-2 text-label font-semibold tracking-widest text-oker-muda sm:px-3">DEMO</span>
       {sisipan && <span className={bagian}>{sisipan}</span>}
+      {/* Setiap alamat terpisah, jadi pintu kembali ke daftar akun dan skenario selalu ada (SPEC-V0.2 §4.6). */}
+      {konteksSekarang().jenis !== 'induk' && (
+        <a href={keAlamat({ jenis: 'induk' })} className={`${bagian} underline underline-offset-2 hover:bg-kapur/10`}>
+          Halaman demo
+        </a>
+      )}
+      {kendali.dataDemoTerpisah() && <span className={`${bagian} text-oker-muda`}>Data demo terpisah per alamat</span>}
       <span className={bagian}>
         {/* Di ponsel 360 px toolbar tidak muat satu baris; label tetap terbaca pembaca layar. */}
         <label htmlFor="demo-koneksi" className="max-sm:sr-only">

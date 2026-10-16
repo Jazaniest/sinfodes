@@ -1,22 +1,21 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Link, useRouter } from '@tanstack/react-router'
+import { useQuery } from '@tanstack/react-query'
+import { Link } from '@tanstack/react-router'
 import { useState } from 'react'
-import { pesanGalat } from '@/api/galat'
-import { masukWarga } from '@/api/warga'
+import { keAlamat } from '@/app/alamat'
 import logoMark from '@/assets/brand/sinfodes-mark.svg'
+import type { TujuanAlamat } from '@/domain/alamat/alamat'
 import { formatAngka } from '@/domain/format/angka'
 import { formatTanggal } from '@/domain/format/tanggal'
 import { LABEL_PERAN_KONSOL } from '@/domain/konsol/schema'
 import { LABEL_PERAN } from '@/domain/pengguna/schema'
-import { pasangSesiWarga } from '@/features/warga/masuk-warga'
-import { tampilkanToast } from '@/ui/toast/antrean'
 import { Tombol } from '@/ui/tombol/Tombol'
 import { Skeleton } from '@/ui/umpan-balik/Skeleton'
-import { masukDemo } from './masuk-demo'
-import { masukKonsolDemo } from './masuk-konsol-demo'
-import type { TombolSkenario } from './skenario'
+import { tautanMasukCepat } from './masuk-cepat'
+import { tautanSkenario, type TombolSkenario } from './skenario'
 import { SkenarioDemo } from './SkenarioDemo'
 import { useKendaliDemo } from './useKendaliDemo'
+
+const SUNGAI_SIALANG: TujuanAlamat = { jenis: 'desa', label: 'sungaisialang' }
 
 /** Halaman `/`: pintu masuk demo. Hanya menampilkan bagian yang sudah dibangun (tidak ada tombol mati). */
 export function HalamanDemo() {
@@ -28,65 +27,15 @@ export function HalamanDemo() {
     // Akun yang baru dibuat di Konsol (Tambah desa, undangan Sekretaris Desa) langsung tampil saat halaman ini dibuka lagi.
     staleTime: 0,
   })
-  const queryClient = useQueryClient()
-  const router = useRouter()
   const [sedangMasuk, setSedangMasuk] = useState<string | null>(null)
-  const masukPanel = async (akun: { id: string; email: string }, ke = '/admin', kunci = akun.id) => {
-    if (!kendali) return
+  /** Sesi terpisah per alamat: tombol membuka alamat tujuan, dan halaman di sana yang masuk (SPEC-V0.2 §4.6). */
+  const buka = (tautan: string, kunci: string) => {
     setSedangMasuk(kunci)
-    try {
-      await masukDemo(akun.email, kendali.KATA_SANDI_DEMO, queryClient)
-      await router.navigate({ href: ke })
-    } catch (e) {
-      tampilkanToast({ pesan: pesanGalat(e), nada: 'galat' })
-    } finally {
-      setSedangMasuk(null)
-    }
+    window.location.assign(tautan)
   }
-  const masukLayananWarga = async (akun: { pendudukId: string; nik: string; pin: string }, ke = '/warga', kunci = akun.pendudukId) => {
-    setSedangMasuk(kunci)
-    try {
-      const { token, sesi } = await masukWarga(akun.nik, akun.pin)
-      pasangSesiWarga(token, sesi, queryClient)
-      await router.navigate({ href: ke })
-    } catch (e) {
-      tampilkanToast({ pesan: pesanGalat(e), nada: 'galat' })
-    } finally {
-      setSedangMasuk(null)
-    }
-  }
-  const masukKonsolSebagai = async (akun: { id: string; email: string }, ke = '/konsol', kunci = akun.id) => {
+  const jalankanSkenario = (t: TombolSkenario, kunci: string) => {
     if (!kendali) return
-    setSedangMasuk(kunci)
-    try {
-      await masukKonsolDemo(akun.email, kendali.KATA_SANDI_DEMO, queryClient)
-      await router.navigate({ href: ke })
-    } catch (e) {
-      tampilkanToast({ pesan: pesanGalat(e), nada: 'galat' })
-    } finally {
-      setSedangMasuk(null)
-    }
-  }
-  /** Tombol skenario: masuk dengan akun langkah itu (sesi bagian lain tidak disentuh), lalu buka halamannya. */
-  const jalankanSkenario = async (t: TombolSkenario, kunci: string) => {
-    if (!kendali) return
-    const m = t.masuk
-    if (m.bagian === 'publik') {
-      await router.navigate({ href: t.ke })
-      return
-    }
-    if (m.bagian === 'admin') {
-      const akun = kendali.AKUN_DEMO_ADMIN.find((a) => a.peran === m.peran)
-      if (akun) await masukPanel(akun, t.ke, kunci)
-      return
-    }
-    if (m.bagian === 'warga') {
-      const akun = kendali.AKUN_DEMO_WARGA.find((a) => a.pendudukId === m.pendudukId)
-      if (akun) await masukLayananWarga(akun, t.ke, kunci)
-      return
-    }
-    const akun = kendali.AKUN_DEMO_KONSOL.find((a) => a.peran === m.peran)
-    if (akun) await masukKonsolSebagai(akun, t.ke, kunci)
+    buka(tautanSkenario(t, { admin: kendali.AKUN_DEMO_ADMIN, konsol: kendali.AKUN_DEMO_KONSOL }), kunci)
   }
 
   return (
@@ -144,7 +93,7 @@ export function HalamanDemo() {
                   ukuran="kecil"
                   varian={a.peran === 'operator' ? 'utama' : 'sekunder'}
                   memuat={sedangMasuk === a.id}
-                  onPress={() => void masukPanel(a)}
+                  onPress={() => buka(tautanMasukCepat(SUNGAI_SIALANG, '/admin', a.id), a.id)}
                 >
                   {a.nama} · {LABEL_PERAN[a.peran]}
                 </Tombol>
@@ -154,7 +103,13 @@ export function HalamanDemo() {
               <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-teks-kecil text-tinta-2">
                 Desa baru berstatus Persiapan:
                 {info.data.desaBaru.map((a) => (
-                  <Tombol key={a.id} ukuran="kecil" varian="sekunder" memuat={sedangMasuk === a.id} onPress={() => void masukPanel(a)}>
+                  <Tombol
+                    key={a.id}
+                    ukuran="kecil"
+                    varian="sekunder"
+                    memuat={sedangMasuk === a.id}
+                    onPress={() => buka(tautanMasukCepat({ jenis: 'desa', label: a.labelDesa }, '/admin', a.id), a.id)}
+                  >
                     {`${a.nama} · ${a.jabatan} ${a.namaDesa}`}
                   </Tombol>
                 ))}
@@ -173,7 +128,7 @@ export function HalamanDemo() {
                     ukuran="kecil"
                     varian="sekunder"
                     memuat={sedangMasuk === a.pendudukId}
-                    onPress={() => void masukLayananWarga(a)}
+                    onPress={() => buka(tautanMasukCepat(SUNGAI_SIALANG, '/warga', a.pendudukId), a.pendudukId)}
                   >
                     {a.nama}
                   </Tombol>
@@ -192,13 +147,12 @@ export function HalamanDemo() {
                 kode atau QR.
               </p>
             </div>
-            <Link
-              to="/desa/$slug"
-              params={{ slug: 'sungaisialang' }}
+            <a
+              href={keAlamat(SUNGAI_SIALANG)}
               className="inline-flex h-9 items-center rounded-1 bg-biru px-4 font-medium text-putih hover:bg-biru-tua"
             >
               Buka website
-            </Link>
+            </a>
           </li>
           <li className="flex flex-col gap-3 py-4">
             <div>
@@ -215,7 +169,7 @@ export function HalamanDemo() {
                   ukuran="kecil"
                   varian={a.peran === 'tim' ? 'utama' : 'sekunder'}
                   memuat={sedangMasuk === a.id}
-                  onPress={() => void masukKonsolSebagai(a)}
+                  onPress={() => buka(tautanMasukCepat({ jenis: 'konsol' }, '/', a.id), a.id)}
                 >
                   {a.nama} · {a.wilayah ? 'Pemantau wilayah' : LABEL_PERAN_KONSOL[a.peran]}
                 </Tombol>
@@ -237,7 +191,7 @@ export function HalamanDemo() {
         </ul>
       </section>
 
-      <SkenarioDemo sedang={sedangMasuk} onJalankan={(t, kunci) => void jalankanSkenario(t, kunci)} />
+      <SkenarioDemo sedang={sedangMasuk} onJalankan={jalankanSkenario} />
     </main>
   )
 }

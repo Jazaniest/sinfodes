@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { ambilTokenSesi } from '@/api/client'
 import { pesanGalat } from '@/api/galat'
 import { opsiSesi } from '@/api/sesi'
+import { konteksSekarang } from '@/app/alamat'
 import { LABEL_PERAN } from '@/domain/pengguna/schema'
 import { tampilkanToast } from '@/ui/toast/antrean'
 import { akunLain } from './akun-lain'
@@ -21,6 +22,9 @@ export function PilihPeranPanel() {
   // Sesi panel sudah dimuat penjaga rute; dipakai untuk menampilkan akun desa lain apa adanya (tahap 6D).
   const sesi = useQuery({ ...opsiSesi(), enabled: aktifId !== null })
   if (!kendali) return null
+  // Panel hanya menerima akun desa pemilik alamat ini (SPEC-V0.2 §4.3).
+  const konteks = konteksSekarang()
+  const akun = konteks.jenis === 'desa' ? kendali.akunPanelDesa(konteks.label) : kendali.AKUN_DEMO_ADMIN
 
   const pilih = async (akun: AkunDemo) => {
     setSibuk(true)
@@ -38,9 +42,9 @@ export function PilihPeranPanel() {
 
   return (
     <PilihPeranDemo
-      akun={kendali.AKUN_DEMO_ADMIN}
+      akun={akun}
       aktifId={aktifId}
-      lain={akunLain(kendali.AKUN_DEMO_ADMIN, sesi.data)}
+      lain={akunLain(akun, sesi.data)}
       sibuk={sibuk}
       onPilih={(a) => void pilih(a)}
     />
