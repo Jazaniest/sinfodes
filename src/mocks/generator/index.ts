@@ -6,6 +6,7 @@ import { VERSI_DATA, type DbDemo } from '../tipe-db'
 import { katalogDesaBaru } from '@/domain/surat/bawaan'
 import { slugDesa } from '@/domain/konsol/aturan'
 import { pengaturanBawaan } from '@/domain/surat/pengaturan'
+import { contohAksesBantuan } from './akses-bantuan'
 import { bangkitkanSuratMasuk } from './arsip'
 import { bangkitkanAset } from './aset'
 import { bangkitkanBansos } from './bansos'
@@ -162,5 +163,6 @@ export function bangkitkanDb(sekarang: Date): DbDemo {
     riwayatMasuk,
     // Slug v0.1 ("sungai-sialang") tetap mengarah ke desanya lewat alias (SPEC-V0.2 §4.2).
     aliasAlamat: semuaDesa.flatMap((d) => (slugDesa(d.nama) === d.slug ? [] : [{ label: slugDesa(d.nama), desaId: d.id }])),
+    aksesBantuan: contohAksesBantuan(sekarang),
   }
 }

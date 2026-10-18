@@ -1,13 +1,13 @@
 import { http, HttpResponse } from 'msw'
 import { tandaiDibacaSchema, type KotakNotifikasi } from '@/domain/notifikasi/schema'
-import type { Pengguna } from '@/domain/pengguna/schema'
+import type { PenggunaSesi } from '@/domain/pengguna/schema'
 import { ambilDb, ubahDb } from '../db'
 import { API, denganJaringan } from '../http'
 import { butuhPengguna } from '../sesi-mock'
 import { bacaJson, balasIsianTidakValid } from '../tulis'
 
 /** 50 notifikasi terbaru milik pengguna dan jumlah yang belum dibaca (angka menu Notifikasi). */
-function kotakMilik(pengguna: Pengguna): KotakNotifikasi {
+function kotakMilik(pengguna: PenggunaSesi): KotakNotifikasi {
   const milik = ambilDb()
     .notifikasi.filter((n) => n.penggunaId === pengguna.id)
     .sort((a, b) => b.waktu.localeCompare(a.waktu))

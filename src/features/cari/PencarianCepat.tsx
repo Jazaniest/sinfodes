@@ -8,12 +8,12 @@ import { opsiCari } from '@/api/cari'
 import { cocokNama, kataAngka, kataCukup } from '@/domain/penduduk/cari'
 import { kelompokkanNik } from '@/domain/penduduk/nik'
 import { boleh } from '@/domain/pengguna/hak-akses'
-import type { Peran } from '@/domain/pengguna/schema'
+import type { PeranSesi } from '@/domain/pengguna/schema'
 import { LABEL_STATUS } from '@/domain/surat/permohonan'
 import { useTunda } from '@/ui/hooks/useTunda'
 import { HALAMAN_CARI } from './halaman'
 
-type Props = { isOpen: boolean; onOpenChange: (buka: boolean) => void; peran: Peran }
+type Props = { isOpen: boolean; onOpenChange: (buka: boolean) => void; peran: PeranSesi }
 
 const kelasKepala = 'px-5 pt-3 pb-1 text-label font-medium text-tinta-2 uppercase'
 

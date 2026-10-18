@@ -1,7 +1,7 @@
 import { http, HttpResponse } from 'msw'
 import { z } from 'zod'
 import { labelAlamatSah, PESAN_ALAMAT_TIDAK_SAH, usulanAlamatDesa } from '@/domain/alamat/alamat'
-import { tanggalIsoWib } from '@/domain/format/tanggal'
+import { tanggalIsoWib, waktuIsoWib } from '@/domain/format/tanggal'
 import { hitungPerhatian, statusTagihan } from '@/domain/konsol/aturan'
 import { ringkasWilayah, type BarisPemantauanDesa, type Pemantauan } from '@/domain/konsol/pemantauan'
 import {
@@ -15,7 +15,8 @@ import { KABUPATEN, wilayahKecamatan } from '@/domain/wilayah/kode-wilayah'
 import { langkahBerikut } from '@/domain/wilayah/persiapan'
 import type { Desa } from '@/domain/wilayah/schema'
 import { KATA_SANDI_DEMO } from '../data/desa-demo'
-import { ambilDb, ubahDb } from '../db'
+import { masihBerlaku, UMUR_TIKET_MS } from '../bantuan'
+import { ambilDb, simpanSekarang, ubahDb } from '../db'
 import { API, balasDaftar, balasGalat, denganJaringan } from '../http'
 import { angkaKonsolDesa, type AngkaKonsol } from '../konsol-angka'
 import { konteksPermintaan, tanpaKonteks } from '../konteks-permintaan'
@@ -44,6 +45,7 @@ function barisDesa(db: DbDemo, desa: Desa, a: AngkaKonsol): BarisDesaKonsol {
 function detailDesa(db: DbDemo, desa: Desa, sekarang: Date): DetailDesaKonsol {
   const a = angkaKonsolDesa(db, desa, sekarang)
   const l = db.langganan.find((x) => x.desaId === desa.id)
+  const bantuan = db.aksesBantuan.find((x) => x.desaId === desa.id && masihBerlaku(x, sekarang))
   return {
     ...barisDesa(db, desa, a),
     alamatKantor: desa.alamatKantor, surel: desa.surel, telepon: desa.telepon, kontak: a.kontak, persiapan: a.persiapan,
@@ -51,6 +53,7 @@ function detailDesa(db: DbDemo, desa: Desa, sekarang: Date): DetailDesaKonsol {
     bisaUndangSekdes: !db.rekamDesa.some((r) => r.desaId === desa.id) && a.kontak.sekdes === null,
     aliasAlamat: db.aliasAlamat.filter((x) => x.desaId === desa.id).map((x) => x.label),
     penyimpananKb: a.penyimpananKb, masukPerMinggu: a.masukPerMinggu,
+    aksesBantuan: bantuan ? { sampai: bantuan.sampai, sembunyikanDataPribadi: bantuan.sembunyikanDataPribadi } : null,
     langganan: l ? { paket: l.paket, mulai: l.mulai, sampai: l.sampai, tagihan: l.tagihan } : { paket: 'Dasar', mulai: null, sampai: null, tagihan: [] },
   }
 }
@@ -269,6 +272,31 @@ export const handlerKonsol = [
         desa.slug = alamat
       })
       return HttpResponse.json({ slug: alamat, aliasAlamat: db.aliasAlamat.filter((a) => a.desaId === desa.id).map((a) => a.label) })
+    }),
+  ),
+  http.post(
+    `${API}/konsol/desa/:id/tiket-bantuan`,
+    denganJaringan(async ({ request, params }) => {
+      const pengguna = butuhPenggunaKonsol(request)
+      if (pengguna instanceof Response) return pengguna
+      const ditolak = tolakPemantau(pengguna)
+      if (ditolak) return ditolak
+      const db = ambilDb()
+      const desa = db.desa.find((d) => d.id === String(params.id))
+      if (!desa) return balasGalat('NOT_FOUND', 'Desa tidak ditemukan.', 404)
+      const sekarang = new Date()
+      const akses = db.aksesBantuan.find((a) => a.desaId === desa.id && masihBerlaku(a, sekarang))
+      if (!akses) return balasGalat('CONFLICT', 'Desa belum memberi akses bantuan.', 409)
+      const kode = crypto.randomUUID()
+      ubahDb((d) => {
+        const a = d.aksesBantuan.find((x) => x.id === akses.id)
+        if (a) {
+          a.tiket = { kode, berlakuSampai: waktuIsoWib(new Date(sekarang.getTime() + UMUR_TIKET_MS)), olehId: pengguna.id, olehNama: pengguna.nama }
+        }
+      })
+      // Tiket ditukar di alamat desa, yang membaca data dari penyimpanan bersama: simpan sebelum Konsol berpindah halaman.
+      await simpanSekarang()
+      return HttpResponse.json({ tiket: kode, alamat: desa.slug })
     }),
   ),
   http.post(

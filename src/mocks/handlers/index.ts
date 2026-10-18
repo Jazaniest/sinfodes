@@ -1,3 +1,4 @@
+import { handlerAksesSinfodes } from './akses-sinfodes'
 import { handlerAlamat } from './alamat'
 import { handlerArsip } from './arsip'
 import { handlerBansos } from './bansos'
@@ -43,7 +44,7 @@ export const handlers = [
   ...handlerSuratLoket, ...handlerSurat, ...handlerSuratAksi,
   ...handlerNotifikasi, ...handlerPengaduan, ...handlerBansos, ...handlerKesehatan,
   ...handlerKeuangan, ...handlerPembangunan, ...handlerTataKelola,
-  ...handlerPengaturan, ...handlerPenggunaDesa, ...handlerWebsite, ...handlerBuku,
+  ...handlerPengaturan, ...handlerPenggunaDesa, ...handlerAksesSinfodes, ...handlerWebsite, ...handlerBuku,
   ...handlerWargaSesi, ...handlerWarga, ...handlerWargaAjukan, ...handlerWargaKeluarga, ...handlerWargaPengaduan,
   ...handlerPublik, ...handlerPublikHalaman, ...handlerKonsol,
 ]

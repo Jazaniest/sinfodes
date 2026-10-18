@@ -13,7 +13,9 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AlamatTidakDikenalRouteImport } from './routes/alamat-tidak-dikenal'
 import { Route as KatalogRouteImport } from './routes/katalog'
 import { Route as PanelPindahRouteImport } from './routes/panel-pindah'
+import { Route as PrivasiRouteImport } from './routes/privasi'
 import { Route as AdminPanelRouteImport } from './routes/admin/_panel'
+import { Route as AdminBantuanRouteImport } from './routes/admin/bantuan'
 import { Route as AdminMasukRouteImport } from './routes/admin/masuk'
 import { Route as DesaSlugRouteImport } from './routes/desa/$slug'
 import { Route as KonsolKonsolRouteImport } from './routes/konsol/_konsol'
@@ -51,6 +53,7 @@ import { Route as AdminPanelPembangunanIdRouteImport } from './routes/admin/_pan
 import { Route as AdminPanelPengaduanIndexRouteImport } from './routes/admin/_panel/pengaduan/index'
 import { Route as AdminPanelPengaduanIdRouteImport } from './routes/admin/_panel/pengaduan/$id'
 import { Route as AdminPanelPengaturanIndexRouteImport } from './routes/admin/_panel/pengaturan/index'
+import { Route as AdminPanelPengaturanAksesSinfodesRouteImport } from './routes/admin/_panel/pengaturan/akses-sinfodes'
 import { Route as AdminPanelPengaturanPenggunaRouteImport } from './routes/admin/_panel/pengaturan/pengguna'
 import { Route as AdminPanelPengaturanPenomoranRouteImport } from './routes/admin/_panel/pengaturan/penomoran'
 import { Route as AdminPanelPengaturanWilayahRouteImport } from './routes/admin/_panel/pengaturan/wilayah'
@@ -112,9 +115,19 @@ const PanelPindahRoute = PanelPindahRouteImport.update({
   path: '/panel-pindah',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivasiRoute = PrivasiRouteImport.update({
+  id: '/privasi',
+  path: '/privasi',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminPanelRoute = AdminPanelRouteImport.update({
   id: '/admin/_panel',
   path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminBantuanRoute = AdminBantuanRouteImport.update({
+  id: '/admin/bantuan',
+  path: '/admin/bantuan',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminMasukRoute = AdminMasukRouteImport.update({
@@ -305,6 +318,12 @@ const AdminPanelPengaturanIndexRoute =
   AdminPanelPengaturanIndexRouteImport.update({
     id: '/pengaturan/',
     path: '/pengaturan/',
+    getParentRoute: () => AdminPanelRoute,
+  } as any)
+const AdminPanelPengaturanAksesSinfodesRoute =
+  AdminPanelPengaturanAksesSinfodesRouteImport.update({
+    id: '/pengaturan/akses-sinfodes',
+    path: '/pengaturan/akses-sinfodes',
     getParentRoute: () => AdminPanelRoute,
   } as any)
 const AdminPanelPengaturanPenggunaRoute =
@@ -534,7 +553,9 @@ export interface FileRoutesByFullPath {
   '/alamat-tidak-dikenal': typeof AlamatTidakDikenalRoute
   '/katalog': typeof KatalogRoute
   '/panel-pindah': typeof PanelPindahRoute
+  '/privasi': typeof PrivasiRoute
   '/admin': typeof AdminPanelRouteWithChildren
+  '/admin/bantuan': typeof AdminBantuanRoute
   '/admin/masuk': typeof AdminMasukRoute
   '/desa/$slug': typeof DesaSlugRouteWithChildren
   '/konsol': typeof KonsolKonsolRouteWithChildren
@@ -566,6 +587,7 @@ export interface FileRoutesByFullPath {
   '/admin/kependudukan/statistik': typeof AdminPanelKependudukanStatistikRoute
   '/admin/pembangunan/$id': typeof AdminPanelPembangunanIdRoute
   '/admin/pengaduan/$id': typeof AdminPanelPengaduanIdRoute
+  '/admin/pengaturan/akses-sinfodes': typeof AdminPanelPengaturanAksesSinfodesRoute
   '/admin/pengaturan/pengguna': typeof AdminPanelPengaturanPenggunaRoute
   '/admin/pengaturan/penomoran': typeof AdminPanelPengaturanPenomoranRoute
   '/admin/pengaturan/wilayah': typeof AdminPanelPengaturanWilayahRoute
@@ -618,6 +640,8 @@ export interface FileRoutesByTo {
   '/alamat-tidak-dikenal': typeof AlamatTidakDikenalRoute
   '/katalog': typeof KatalogRoute
   '/panel-pindah': typeof PanelPindahRoute
+  '/privasi': typeof PrivasiRoute
+  '/admin/bantuan': typeof AdminBantuanRoute
   '/admin/masuk': typeof AdminMasukRoute
   '/konsol/masuk': typeof KonsolMasukRoute
   '/warga/masuk': typeof WargaMasukRoute
@@ -646,6 +670,7 @@ export interface FileRoutesByTo {
   '/admin/kependudukan/statistik': typeof AdminPanelKependudukanStatistikRoute
   '/admin/pembangunan/$id': typeof AdminPanelPembangunanIdRoute
   '/admin/pengaduan/$id': typeof AdminPanelPengaduanIdRoute
+  '/admin/pengaturan/akses-sinfodes': typeof AdminPanelPengaturanAksesSinfodesRoute
   '/admin/pengaturan/pengguna': typeof AdminPanelPengaturanPenggunaRoute
   '/admin/pengaturan/penomoran': typeof AdminPanelPengaturanPenomoranRoute
   '/admin/pengaturan/wilayah': typeof AdminPanelPengaturanWilayahRoute
@@ -699,7 +724,9 @@ export interface FileRoutesById {
   '/alamat-tidak-dikenal': typeof AlamatTidakDikenalRoute
   '/katalog': typeof KatalogRoute
   '/panel-pindah': typeof PanelPindahRoute
+  '/privasi': typeof PrivasiRoute
   '/admin/_panel': typeof AdminPanelRouteWithChildren
+  '/admin/bantuan': typeof AdminBantuanRoute
   '/admin/masuk': typeof AdminMasukRoute
   '/desa/$slug': typeof DesaSlugRouteWithChildren
   '/konsol/_konsol': typeof KonsolKonsolRouteWithChildren
@@ -731,6 +758,7 @@ export interface FileRoutesById {
   '/admin/_panel/kependudukan/statistik': typeof AdminPanelKependudukanStatistikRoute
   '/admin/_panel/pembangunan/$id': typeof AdminPanelPembangunanIdRoute
   '/admin/_panel/pengaduan/$id': typeof AdminPanelPengaduanIdRoute
+  '/admin/_panel/pengaturan/akses-sinfodes': typeof AdminPanelPengaturanAksesSinfodesRoute
   '/admin/_panel/pengaturan/pengguna': typeof AdminPanelPengaturanPenggunaRoute
   '/admin/_panel/pengaturan/penomoran': typeof AdminPanelPengaturanPenomoranRoute
   '/admin/_panel/pengaturan/wilayah': typeof AdminPanelPengaturanWilayahRoute
@@ -785,7 +813,9 @@ export interface FileRouteTypes {
     | '/alamat-tidak-dikenal'
     | '/katalog'
     | '/panel-pindah'
+    | '/privasi'
     | '/admin'
+    | '/admin/bantuan'
     | '/admin/masuk'
     | '/desa/$slug'
     | '/konsol'
@@ -817,6 +847,7 @@ export interface FileRouteTypes {
     | '/admin/kependudukan/statistik'
     | '/admin/pembangunan/$id'
     | '/admin/pengaduan/$id'
+    | '/admin/pengaturan/akses-sinfodes'
     | '/admin/pengaturan/pengguna'
     | '/admin/pengaturan/penomoran'
     | '/admin/pengaturan/wilayah'
@@ -869,6 +900,8 @@ export interface FileRouteTypes {
     | '/alamat-tidak-dikenal'
     | '/katalog'
     | '/panel-pindah'
+    | '/privasi'
+    | '/admin/bantuan'
     | '/admin/masuk'
     | '/konsol/masuk'
     | '/warga/masuk'
@@ -897,6 +930,7 @@ export interface FileRouteTypes {
     | '/admin/kependudukan/statistik'
     | '/admin/pembangunan/$id'
     | '/admin/pengaduan/$id'
+    | '/admin/pengaturan/akses-sinfodes'
     | '/admin/pengaturan/pengguna'
     | '/admin/pengaturan/penomoran'
     | '/admin/pengaturan/wilayah'
@@ -949,7 +983,9 @@ export interface FileRouteTypes {
     | '/alamat-tidak-dikenal'
     | '/katalog'
     | '/panel-pindah'
+    | '/privasi'
     | '/admin/_panel'
+    | '/admin/bantuan'
     | '/admin/masuk'
     | '/desa/$slug'
     | '/konsol/_konsol'
@@ -981,6 +1017,7 @@ export interface FileRouteTypes {
     | '/admin/_panel/kependudukan/statistik'
     | '/admin/_panel/pembangunan/$id'
     | '/admin/_panel/pengaduan/$id'
+    | '/admin/_panel/pengaturan/akses-sinfodes'
     | '/admin/_panel/pengaturan/pengguna'
     | '/admin/_panel/pengaturan/penomoran'
     | '/admin/_panel/pengaturan/wilayah'
@@ -1034,7 +1071,9 @@ export interface RootRouteChildren {
   AlamatTidakDikenalRoute: typeof AlamatTidakDikenalRoute
   KatalogRoute: typeof KatalogRoute
   PanelPindahRoute: typeof PanelPindahRoute
+  PrivasiRoute: typeof PrivasiRoute
   AdminPanelRoute: typeof AdminPanelRouteWithChildren
+  AdminBantuanRoute: typeof AdminBantuanRoute
   AdminMasukRoute: typeof AdminMasukRoute
   DesaSlugRoute: typeof DesaSlugRouteWithChildren
   KonsolKonsolRoute: typeof KonsolKonsolRouteWithChildren
@@ -1073,11 +1112,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PanelPindahRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privasi': {
+      id: '/privasi'
+      path: '/privasi'
+      fullPath: '/privasi'
+      preLoaderRoute: typeof PrivasiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/_panel': {
       id: '/admin/_panel'
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminPanelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/bantuan': {
+      id: '/admin/bantuan'
+      path: '/admin/bantuan'
+      fullPath: '/admin/bantuan'
+      preLoaderRoute: typeof AdminBantuanRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/masuk': {
@@ -1337,6 +1390,13 @@ declare module '@tanstack/react-router' {
       path: '/pengaturan'
       fullPath: '/admin/pengaturan/'
       preLoaderRoute: typeof AdminPanelPengaturanIndexRouteImport
+      parentRoute: typeof AdminPanelRoute
+    }
+    '/admin/_panel/pengaturan/akses-sinfodes': {
+      id: '/admin/_panel/pengaturan/akses-sinfodes'
+      path: '/pengaturan/akses-sinfodes'
+      fullPath: '/admin/pengaturan/akses-sinfodes'
+      preLoaderRoute: typeof AdminPanelPengaturanAksesSinfodesRouteImport
       parentRoute: typeof AdminPanelRoute
     }
     '/admin/_panel/pengaturan/pengguna': {
@@ -1635,6 +1695,7 @@ interface AdminPanelRouteChildren {
   AdminPanelKependudukanStatistikRoute: typeof AdminPanelKependudukanStatistikRoute
   AdminPanelPembangunanIdRoute: typeof AdminPanelPembangunanIdRoute
   AdminPanelPengaduanIdRoute: typeof AdminPanelPengaduanIdRoute
+  AdminPanelPengaturanAksesSinfodesRoute: typeof AdminPanelPengaturanAksesSinfodesRoute
   AdminPanelPengaturanPenggunaRoute: typeof AdminPanelPengaturanPenggunaRoute
   AdminPanelPengaturanPenomoranRoute: typeof AdminPanelPengaturanPenomoranRoute
   AdminPanelPengaturanWilayahRoute: typeof AdminPanelPengaturanWilayahRoute
@@ -1684,6 +1745,8 @@ const AdminPanelRouteChildren: AdminPanelRouteChildren = {
   AdminPanelKependudukanStatistikRoute: AdminPanelKependudukanStatistikRoute,
   AdminPanelPembangunanIdRoute: AdminPanelPembangunanIdRoute,
   AdminPanelPengaduanIdRoute: AdminPanelPengaduanIdRoute,
+  AdminPanelPengaturanAksesSinfodesRoute:
+    AdminPanelPengaturanAksesSinfodesRoute,
   AdminPanelPengaturanPenggunaRoute: AdminPanelPengaturanPenggunaRoute,
   AdminPanelPengaturanPenomoranRoute: AdminPanelPengaturanPenomoranRoute,
   AdminPanelPengaturanWilayahRoute: AdminPanelPengaturanWilayahRoute,
@@ -1819,7 +1882,9 @@ const rootRouteChildren: RootRouteChildren = {
   AlamatTidakDikenalRoute: AlamatTidakDikenalRoute,
   KatalogRoute: KatalogRoute,
   PanelPindahRoute: PanelPindahRoute,
+  PrivasiRoute: PrivasiRoute,
   AdminPanelRoute: AdminPanelRouteWithChildren,
+  AdminBantuanRoute: AdminBantuanRoute,
   AdminMasukRoute: AdminMasukRoute,
   DesaSlugRoute: DesaSlugRouteWithChildren,
   KonsolKonsolRoute: KonsolKonsolRouteWithChildren,

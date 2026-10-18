@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { angkaRomawi } from '../format/romawi'
+import { POLA_NOMOR16_TAMPIL } from '../penduduk/nomor16'
 
 export const STATUS_PENYALURAN = ['tersalur', 'belum-diambil', 'dijadwalkan', 'ditahan'] as const
 export type StatusPenyaluran = (typeof STATUS_PENYALURAN)[number]
@@ -37,7 +38,7 @@ export const penerimaBansosSchema = z.object({
   desaId: z.string(),
   programId: z.string(),
   keluargaId: z.string(),
-  nomorKk: z.string().regex(/^\d{16}$/),
+  nomorKk: z.string().regex(POLA_NOMOR16_TAMPIL),
   dusunId: z.string(),
   rw: nomor3,
   rt: nomor3,

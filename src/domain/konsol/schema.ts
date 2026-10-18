@@ -80,6 +80,8 @@ export const detailDesaKonsolSchema = barisDesaKonsolSchema.extend({
   aliasAlamat: z.array(z.string()),
   /** Pemakaian penyimpanan berkas desa, dalam KB. */
   penyimpananKb: jumlah,
+  /** Akses bantuan yang sedang diberikan desa kepada Tim Sinfodes (SPEC-V0.2 §5.3), atau null. */
+  aksesBantuan: z.object({ sampai: waktu, sembunyikanDataPribadi: z.boolean() }).nullable(),
   /** 12 minggu terakhir, terlama dulu; `mulai` adalah Senin minggu itu. */
   masukPerMinggu: z.array(z.object({ mulai: tanggal, jumlah })),
   langganan: langgananSchema.omit({ desaId: true }),
@@ -133,6 +135,9 @@ export const STATUS_PERIKSA_ALAMAT = ['tersedia', 'dipakai', 'tidak-sah', 'sekar
 /** GET /konsol/alamat-desa/periksa: apakah sebuah alamat bisa dipakai desa ini. */
 export const periksaAlamatSchema = z.object({ status: z.enum(STATUS_PERIKSA_ALAMAT), pesan: z.string() })
 export type PeriksaAlamat = z.infer<typeof periksaAlamatSchema>
+
+/** POST /konsol/desa/:id/tiket-bantuan: tiket sekali pakai untuk membuka panel desa, lihat saja (SPEC-V0.2 §5.3). */
+export const tiketBantuanSchema = z.object({ tiket: z.string(), alamat: z.string() })
 
 /** POST /konsol/desa/:id/sekdes (tahap 6C): undang Sekretaris Desa untuk desa yang belum punya. */
 export const undangSekdesSchema = z.object({

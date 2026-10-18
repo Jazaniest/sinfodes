@@ -24,10 +24,26 @@ import type { Agenda, Artikel, FotoGaleri, Pengumuman, Potensi, ProfilDesa, Tamp
 import type { Desa, Dusun } from '@/domain/wilayah/schema'
 
 /** Naikkan setiap kali seed atau struktur data berubah; data lama di IndexedDB otomatis diganti (SPEC §12). */
-export const VERSI_DATA = 18
+export const VERSI_DATA = 19
 
 /** Satu alamat lama desa, mis. slug v0.1 "sungai-sialang" untuk Sungai Sialang. */
 export type AliasAlamat = { label: string; desaId: string }
+
+/** Sesi Tim Sinfodes selama akses bantuan; `halaman` adalah path API yang dibuka (tanpa `/api/v1`). */
+export type SesiBantuan = { id: string; olehId: string; olehNama: string; mulai: string; halaman: { jalur: string; waktu: string }[] }
+/** Akses bantuan sementara yang diberikan desa (SPEC-V0.2 §5.3). `dicabut`: waktu desa mencabutnya, atau null. */
+export type AksesBantuan = {
+  id: string
+  desaId: string
+  diberiOlehId: string
+  mulai: string
+  sampai: string
+  sembunyikanDataPribadi: boolean
+  dicabut: string | null
+  sesi: SesiBantuan[]
+  /** Tiket terakhir yang diminta Tim Sinfodes dari Konsol: berlaku 60 detik dan dihapus begitu ditukar. */
+  tiket?: { kode: string; berlakuSampai: string; olehId: string; olehNama: string } | null
+}
 
 /** Berkas impor yang sudah diperiksa dan menunggu konfirmasi (SPEC §6.8). */
 export type SesiImpor = { id: string; desaId: string; olehId: string; laporan: LaporanImpor; selesai: boolean }
@@ -132,4 +148,6 @@ export type DbDemo = {
   riwayatMasuk: MasukPanel[]
   /** Alamat lama desa (SPEC-V0.2 §4.2): tetap mengarah ke desanya selamanya dan tidak boleh dipakai desa lain. */
   aliasAlamat: AliasAlamat[]
+  /** Akses bantuan Tim Sinfodes ke panel desa beserta jejaknya (SPEC-V0.2 §5.3). */
+  aksesBantuan: AksesBantuan[]
 }

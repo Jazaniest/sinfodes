@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { Peran } from '@/domain/pengguna/schema'
+import type { PeranSesi as Peran } from '@/domain/pengguna/schema'
 import { angkaPengaduan, MENU_ADMIN, menuAktif, menuBawahUntuk, menuUntuk, type ItemMenu } from './navigasi'
 
 const label = (peran: Peran) => menuUntuk(peran).flatMap((k) => k.item.map((i) => i.label))
@@ -61,6 +61,17 @@ describe('menu admin (SPEC §5.1, §5.2)', () => {
     const bawah = (peran: Peran) => menuBawahUntuk(peran).map((i) => i.label)
     expect(bawah('operator')).toEqual(['Pengaturan', 'Notifikasi'])
     expect(bawah('sekdes')).toEqual(['Pengaturan', 'Notifikasi'])
-    for (const peran of ['kades', 'kaur-keuangan', 'kadus'] as const) expect(bawah(peran)).toEqual(['Notifikasi'])
+    for (const peran of ['kaur-keuangan', 'kadus'] as const) expect(bawah(peran)).toEqual(['Notifikasi'])
+  })
+  it('sesi bantuan Tim Sinfodes: menu lihat saja, tanpa Website Desa dan Pengaturan (SPEC-V0.2 §5.3)', () => {
+    expect(label('bantuan')).not.toContain('Website Desa')
+    expect(label('bantuan')).toEqual(expect.arrayContaining(['Kependudukan', 'Layanan Surat', 'Keuangan']))
+    expect(menuBawahUntuk('bantuan').map((i) => i.label)).toEqual(['Notifikasi'])
+  })
+  it('Kepala Desa: menu Pengaturan langsung ke Akses Sinfodes; peran lain tetap ke Pengaturan (SPEC-V0.2 §5.3)', () => {
+    const pengaturan = (peran: Peran) => menuBawahUntuk(peran).find((i) => i.label === 'Pengaturan')
+    expect(pengaturan('kades')?.href).toBe('/admin/pengaturan/akses-sinfodes')
+    expect(pengaturan('operator')?.href).toBe('/admin/pengaturan')
+    expect(pengaturan('sekdes')?.href).toBe('/admin/pengaturan')
   })
 })

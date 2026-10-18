@@ -7,6 +7,10 @@ export const hasilMasukSchema = z.object({ token: z.string(), sesi: sesiAdminSch
 export const masuk = (email: string, kataSandi: string) =>
   panggilApi('POST', '/sesi/masuk', { skema: hasilMasukSchema, body: { email, kataSandi } })
 
+/** Tukar tiket bantuan dari Konsol menjadi sesi panel lihat saja (SPEC-V0.2 §5.3). Tanpa token: sesi lama tidak ikut. */
+export const tukarTiketBantuan = (tiket: string) =>
+  panggilApi('POST', '/sesi/bantuan', { skema: hasilMasukSchema, body: { tiket }, sesi: null })
+
 export const ambilSesi = (signal?: AbortSignal) => panggilApi('GET', '/sesi', { skema: sesiAdminSchema, signal })
 
 export const keluar = () => panggilApi('POST', '/sesi/keluar', { skema: z.undefined() })

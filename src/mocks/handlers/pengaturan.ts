@@ -5,7 +5,7 @@ import { identitasDesaSchema, type PengaturanDesa } from '@/domain/pengaturan/id
 import { jabatanBawaan } from '@/domain/pengaturan/pengguna'
 import { ubahPenomoranSchema, type Penomoran } from '@/domain/pengaturan/penomoran'
 import { nomoriSusunan, susunanSama, ubahWilayahSchema, type UbahWilayah, type WilayahDesa } from '@/domain/pengaturan/wilayah'
-import type { Pengguna } from '@/domain/pengguna/schema'
+import type { PenggunaSesi } from '@/domain/pengguna/schema'
 import { urutBerikutnya } from '@/domain/surat/nomor-surat'
 import { pengaturanBawaan } from '@/domain/surat/pengaturan'
 import { namaDusun } from '@/domain/wilayah/alamat'
@@ -18,7 +18,7 @@ import { namaPejabat, pengaturanDesa } from './surat'
 
 const butuhPengatur = (request: Request) => butuhKemampuan(request, 'pengaturan.kelola', 'Peran Anda tidak berhak membuka Pengaturan desa.')
 
-const desaMilik = (db: DbDemo, p: Pengguna): Desa | undefined => db.desa.find((d) => d.id === p.desaId)
+const desaMilik = (db: DbDemo, p: Pick<PenggunaSesi, 'desaId'>): Desa | undefined => db.desa.find((d) => d.id === p.desaId)
 const desaTidakAda = () => balasGalat('SERVER', 'Data desa tidak ditemukan.', 500)
 
 function pengaturanDesaDari(db: DbDemo, desa: Desa): PengaturanDesa {

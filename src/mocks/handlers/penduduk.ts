@@ -7,7 +7,7 @@ import { filterPendudukSchema, saringPenduduk, urutkanPenduduk, type FilterPendu
 import type { EntriRiwayat } from '@/domain/penduduk/riwayat'
 import type { BarisPenduduk, Penduduk } from '@/domain/penduduk/schema'
 import { boleh, cakupanDusun } from '@/domain/pengguna/hak-akses'
-import type { Pengguna } from '@/domain/pengguna/schema'
+import type { PenggunaSesi } from '@/domain/pengguna/schema'
 import { dataMilik, idPendatangTahun } from '../cakupan'
 import { ubahDb } from '../db'
 import { API, balasDaftar, balasGalat, denganJaringan } from '../http'
@@ -24,14 +24,14 @@ const eksporSchema = z.object({
 })
 
 /** Pengguna yang boleh melihat data penduduk, atau Response galat yang langsung dikembalikan. */
-function butuhPembaca(request: Request): Pengguna | Response {
+function butuhPembaca(request: Request): PenggunaSesi | Response {
   const pengguna = butuhPengguna(request)
   if (pengguna instanceof Response) return pengguna
   return boleh(pengguna.peran, 'penduduk.lihat') ? pengguna : balasGalat('FORBIDDEN', TIDAK_BERHAK, 403)
 }
 
 /** Penduduk sesuai filter dan kata cari, sudah diurutkan, lengkap dengan nomor KK (tanpa halaman). */
-function barisTersaring(pengguna: Pengguna, filter: FilterPenduduk, kata: string | null): BarisPenduduk[] {
+function barisTersaring(pengguna: PenggunaSesi, filter: FilterPenduduk, kata: string | null): BarisPenduduk[] {
   const milik = dataMilik(pengguna)
   const hariIni = new Date()
   const nomorKkPerId = new Map(milik.semuaKeluarga.map((k) => [k.id, k.nomorKk] as const))
@@ -46,7 +46,7 @@ function barisTersaring(pengguna: Pengguna, filter: FilterPenduduk, kata: string
   return urutkanPenduduk(tersaring, filter.urut, { nomorDusun }).map((p) => ({ ...p, nomorKk: nomorKk(p) }))
 }
 
-function daftarTersaring(pengguna: Pengguna, filter: FilterPenduduk, kata: string | null): Response {
+function daftarTersaring(pengguna: PenggunaSesi, filter: FilterPenduduk, kata: string | null): Response {
   return balasDaftar(barisTersaring(pengguna, filter, kata), filter.page, filter.pageSize)
 }
 

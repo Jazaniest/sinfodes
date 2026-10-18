@@ -5,7 +5,7 @@ import { pemantauanSchema } from '@/domain/konsol/pemantauan'
 import {
   barisDesaKonsolSchema, detailDesaKonsolSchema, hasilTambahDesaSchema, hasilUbahAlamatSchema, hasilUndangSekdesSchema, periksaAlamatSchema,
   ringkasanKonsolSchema,
-  sesiKonsolSchema, usulanAlamatSchema,
+  sesiKonsolSchema, tiketBantuanSchema, usulanAlamatSchema,
   type FilterDesaKonsol, type TambahDesa, type UndangSekdes,
 } from '@/domain/konsol/schema'
 import { panggilApi } from './client'
@@ -55,6 +55,10 @@ export const tambahDesa = (isian: TambahDesa) =>
 /** Undang Sekretaris Desa untuk desa yang belum punya (tahap 6C). */
 export const undangSekdes = (desaId: string, isian: UndangSekdes) =>
   panggilApi('POST', `/konsol/desa/${encodeURIComponent(desaId)}/sekdes`, { skema: hasilUndangSekdesSchema, body: isian, sesi: 'konsol' })
+
+/** Tiket sekali pakai untuk membuka panel desa dalam mode bantuan, lihat saja (SPEC-V0.2 §5.3). */
+export const ambilTiketBantuan = (desaId: string) =>
+  panggilApi('POST', `/konsol/desa/${encodeURIComponent(desaId)}/tiket-bantuan`, { skema: tiketBantuanSchema, sesi: 'konsol' })
 
 /** Ubah alamat website desa (SPEC-V0.2 §4.2); alamat lama tetap mengarah ke desa ini. */
 export const ubahAlamatDesa = (desaId: string, alamat: string) =>

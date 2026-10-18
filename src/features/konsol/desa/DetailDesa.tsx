@@ -21,6 +21,7 @@ import { Tombol } from '@/ui/tombol/Tombol'
 import { EmptyState } from '@/ui/umpan-balik/EmptyState'
 import { ErrorState } from '@/ui/umpan-balik/ErrorState'
 import { BarisKerangka } from '@/ui/umpan-balik/Skeleton'
+import { AksesBantuanDesa } from './AksesBantuanDesa'
 import { DialogUbahAlamat } from './DialogUbahAlamat'
 import { DialogUndangSekdes } from './DialogUndangSekdes'
 import { LABEL_TAB_DETAIL_DESA, TAB_DETAIL_DESA, type TabDetailDesa } from './tab-detail'
@@ -162,6 +163,7 @@ function TabKeaktifan({ d }: { d: DetailDesaKonsol }) {
           { label: 'Penyimpanan berkas', nilai: formatUkuranKb(d.penyimpananKb) },
         ]}
       />
+      <AksesBantuanDesa d={d} />
       <Checkbox isSelected={tabel} onChange={setTabel} className="self-start">
         Lihat sebagai tabel
       </Checkbox>

@@ -1,7 +1,7 @@
 import { http, HttpResponse } from 'msw'
 import type { Apbdes } from '@/domain/keuangan/schema'
 import { URUTAN_STATUS, type BarisKegiatan, type Kegiatan } from '@/domain/pembangunan/schema'
-import type { Pengguna } from '@/domain/pengguna/schema'
+import type { PenggunaSesi } from '@/domain/pengguna/schema'
 import { ambilDb } from '../db'
 import { API, balasDaftar, balasGalat, denganJaringan } from '../http'
 import { butuhPengguna } from '../sesi-mock'
@@ -13,7 +13,7 @@ export function barisKegiatan(k: Kegiatan, apbdes: Apbdes | undefined): BarisKeg
   return { ...k, anggaran: pos?.anggaran ?? 0, realisasi: pos?.realisasi ?? 0 }
 }
 
-function kegiatanMilik(pengguna: Pengguna): BarisKegiatan[] {
+function kegiatanMilik(pengguna: PenggunaSesi): BarisKegiatan[] {
   const apbdes = apbdesTerbaru(pengguna.desaId)
   return ambilDb()
     .kegiatan.filter((k) => k.desaId === pengguna.desaId)

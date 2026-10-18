@@ -3,6 +3,7 @@ import {
   AGAMA, GOLONGAN_DARAH, HUBUNGAN_KELUARGA, JENIS_KELAMIN, KEWARGANEGARAAN, KTP_EL, PEKERJAAN, PENDIDIKAN,
   STATUS_DASAR, STATUS_PENDUDUK, STATUS_PERKAWINAN,
 } from './enum'
+import { POLA_NOMOR16_TAMPIL } from './nomor16'
 
 const nomor3 = z.string().regex(/^\d{3}$/)
 
@@ -10,7 +11,7 @@ const nomor3 = z.string().regex(/^\d{3}$/)
 export const pendudukSchema = z.object({
   id: z.string(),
   desaId: z.string(),
-  nik: z.string().regex(/^\d{16}$/).nullable(),
+  nik: z.string().regex(POLA_NOMOR16_TAMPIL).nullable(),
   nama: z.string().min(1),
   jenisKelamin: z.enum(JENIS_KELAMIN),
   golonganDarah: z.enum(GOLONGAN_DARAH),
@@ -40,7 +41,7 @@ export const pendudukSchema = z.object({
 export type Penduduk = z.infer<typeof pendudukSchema>
 
 /** Baris daftar penduduk: data penduduk + nomor KK-nya (kolom "Hubungan · No. KK", SPEC §6.2). */
-export const barisPendudukSchema = pendudukSchema.extend({ nomorKk: z.string().regex(/^\d{16}$/) })
+export const barisPendudukSchema = pendudukSchema.extend({ nomorKk: z.string().regex(POLA_NOMOR16_TAMPIL) })
 export type BarisPenduduk = z.infer<typeof barisPendudukSchema>
 
 /** Kepala halaman Penduduk: "2.812 jiwa · diperbarui hari ini 08.15". */

@@ -1,6 +1,6 @@
 import { Check } from '@phosphor-icons/react'
 import { boleh, type Kemampuan } from '@/domain/pengguna/hak-akses'
-import type { Peran } from '@/domain/pengguna/schema'
+import type { PeranSesi } from '@/domain/pengguna/schema'
 import {
   jumlahSelesai,
   LABEL_LANGKAH_PERSIAPAN,
@@ -37,7 +37,7 @@ const TUJUAN: Readonly<Record<LangkahPersiapan, Tujuan>> = {
  * Beranda desa berstatus Persiapan (SPEC §5.3): lima langkah dengan progres, tiap langkah menuju halamannya. Langkah yang
  * halamannya tidak boleh dibuka peran ini ditulis tanpa tautan beserta siapa yang mengerjakannya, jadi tidak ada tombol mati.
  */
-export function DaftarPersiapan({ persiapan, peran }: { persiapan: Persiapan; peran: Peran }) {
+export function DaftarPersiapan({ persiapan, peran }: { persiapan: Persiapan; peran: PeranSesi }) {
   const selesai = jumlahSelesai(persiapan)
   const berikut = langkahBerikut(persiapan)
   return (

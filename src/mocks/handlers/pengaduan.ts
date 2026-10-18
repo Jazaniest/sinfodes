@@ -5,7 +5,7 @@ import {
   type Pengaduan,
 } from '@/domain/pengaduan/schema'
 import { cakupanDusun } from '@/domain/pengguna/hak-akses'
-import type { Pengguna } from '@/domain/pengguna/schema'
+import type { PenggunaSesi } from '@/domain/pengguna/schema'
 import { ambilDb, ubahDb } from '../db'
 import { API, balasDaftar, balasGalat, denganJaringan } from '../http'
 import { bacaJson, balasIsianTidakValid, butuhKemampuan, catatAktivitas, idBaru, pelakuDari } from '../tulis'
@@ -16,7 +16,7 @@ const butuhPenanggap = (request: Request) =>
 const TIDAK_DITEMUKAN = 'Pengaduan tidak ditemukan.'
 
 /** Pengaduan dalam cakupan pengguna: desanya; Kepala Dusun hanya dusunnya (SPEC §5.1). */
-function pengaduanMilik(pengguna: Pengguna): Pengaduan[] {
+function pengaduanMilik(pengguna: PenggunaSesi): Pengaduan[] {
   const dusunSaja = cakupanDusun(pengguna)
   return ambilDb().pengaduan.filter((a) => a.desaId === pengguna.desaId && (dusunSaja === null || a.dusunId === dusunSaja))
 }
