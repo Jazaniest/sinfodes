@@ -40,7 +40,7 @@ describe('pembangunan (SPEC §8)', () => {
   it('detail kegiatan; ID tak dikenal → NOT_FOUND', async () => {
     masukSebagai(AKUN_UJI.kadus)
     const k = await ambilKegiatan('kgt_ss_02')
-    expect(k).toMatchObject({ nama: 'Drainase RT 006–007', status: 'selesai', anggaran: 98_000_000 })
+    expect(k).toMatchObject({ nama: 'Drainase RT 006-007', status: 'selesai', anggaran: 98_000_000 })
     expect(k.dokumentasi.map((d) => d.persen)).toEqual([0, 50, 100])
     expect((await galatDari(ambilKegiatan('kgt_xx'))).kode).toBe('NOT_FOUND')
     expect(ambilDb().kegiatan).toHaveLength(7)

@@ -23,7 +23,7 @@ export const AKUN_DESA_BARU_UJI = 'pgn_yusri'
 export const AKUN_WARGA_UJI = { siti: 'pdk_siti_rahmah', zulkifli: 'pdk_zulkifli' } as const
 
 /** Akun Konsol demo (SPEC §12.9). */
-export const AKUN_KONSOL_UJI = { tim: 'kns_dina', pemantau: 'kns_pmd_pelalawan' } as const
+export const AKUN_KONSOL_UJI = { tim: 'kns_dina' } as const
 
 type OpsiApiTiruan = {
   /** Muat ulang data seed sebelum setiap uji. Wajib untuk uji yang menulis data, supaya uji tidak saling memengaruhi. */
@@ -50,6 +50,7 @@ export function pakaiApiTiruan({ dbSegarTiapUji = false }: OpsiApiTiruan = {}): 
     aturTokenSesi(null)
     aturTokenSesi(null, 'warga')
     aturTokenSesi(null, 'konsol')
+    aturTokenSesi(null, 'kabupaten')
   })
   afterAll(() => {
     serverUji.close()
@@ -67,4 +68,11 @@ export function masukSebagaiWarga(pendudukId: string): void {
 
 export function masukKonsolSebagai(penggunaId: string): void {
   aturTokenSesi(`konsol.${penggunaId}`, 'konsol')
+}
+
+/** Akun kabupaten demo (SPEC-V0.2 §13). */
+export const AKUN_KABUPATEN_UJI = { admin: 'kab_fajar', peninjau: 'kab_rosnani', adminSiak: 'kab_wahyu' } as const
+
+export function masukKabupatenSebagai(penggunaId: string): void {
+  aturTokenSesi(`kab.${penggunaId}`, 'kabupaten')
 }

@@ -32,7 +32,7 @@ function pasang(filter: FilterPenduduk = FILTER_PENDUDUK_BAWAAN) {
 describe('Unduh daftar penduduk (SPEC §6.2)', { timeout: 20_000 }, () => {
   it('CSV: konfirmasi dulu, lalu berkas titik koma ber-BOM dengan kolom Buku Induk', async () => {
     const user = pasang()
-    await screen.findByText('1–25 dari 2.812')
+    await screen.findByText('1-25 dari 2.812')
     await user.click(screen.getByRole('button', { name: 'Unduh' }))
     await user.click(await screen.findByRole('menuitem', { name: 'Unduh CSV' }))
     const dialog = await screen.findByRole('alertdialog', { name: 'Unduh data penduduk?' })
@@ -44,14 +44,14 @@ describe('Unduh daftar penduduk (SPEC §6.2)', { timeout: 20_000 }, () => {
     const baris = isi.split('\r\n')
     expect(baris[0]).toBe(
       '﻿No;Nama lengkap;Jenis kelamin;Status perkawinan;Tempat lahir;Tanggal lahir;Agama;Pendidikan terakhir;Pekerjaan;' +
-        'Dapat membaca huruf;Kewarganegaraan;Alamat lengkap;Kedudukan dalam keluarga;NIK;Nomor KK;Keterangan',
+      'Dapat membaca huruf;Kewarganegaraan;Alamat lengkap;Kedudukan dalam keluarga;NIK;Nomor KK;Keterangan',
     )
     expect(baris).toHaveLength(2812 + 2)
     expect(isi).toContain('="1405095203918002"')
     expect(await screen.findByText('2.812 baris data penduduk diunduh.')).toBeInTheDocument()
   })
   it('Cetak Buku Induk: dialog cetak browser dibuka dengan lembar terisi; lembar dilepas setelah cetak', async () => {
-    const cetak = vi.spyOn(window, 'print').mockImplementation(() => {})
+    const cetak = vi.spyOn(window, 'print').mockImplementation(() => { })
     const user = pasang({ ...FILTER_PENDUDUK_BAWAAN, preset: 'lansia' })
     await screen.findByRole('grid', { name: 'Daftar penduduk' })
     await user.click(screen.getByRole('button', { name: 'Unduh' }))

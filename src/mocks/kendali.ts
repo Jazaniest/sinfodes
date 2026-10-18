@@ -1,3 +1,5 @@
+import { urutAkunKabupaten } from '@/domain/kabupaten/pengguna'
+import type { PeranKabupaten } from '@/domain/kabupaten/schema'
 import { PERAN, type Peran } from '@/domain/pengguna/schema'
 import { ID_SUNGAI_SIALANG, PENGGUNA_DEMO } from './data/desa-demo'
 import { PENGGUNA_KONSOL_DEMO } from './data/desa-konsol'
@@ -11,7 +13,17 @@ export type { ModeJaringan } from './jaringan'
 /** Satu akun desa berstatus Persiapan untuk tombol masuk di halaman demo. */
 export type AkunDesaBaru = { id: string; nama: string; email: string; jabatan: string; namaDesa: string; labelDesa: string }
 
-export type InfoDataDemo = { tanggalAcuan: string; jiwa: number; kk: number; dusun: number; desaBaru: AkunDesaBaru[] }
+/** Satu akun kabupaten aktif untuk tombol masuk di halaman demo. */
+export type AkunKabupatenDemo = { id: string; nama: string; jabatan: string; peran: PeranKabupaten; namaKabupaten: string; label: string }
+
+export type InfoDataDemo = {
+  tanggalAcuan: string
+  jiwa: number
+  kk: number
+  dusun: number
+  desaBaru: AkunDesaBaru[]
+  akunKabupaten: AkunKabupatenDemo[]
+}
 
 /**
  * Akun aktif desa berstatus Persiapan, dibaca dari data (tahap 6C): Tanjung Lamo (SPEC §12.9), Sekretaris Desa undangan
@@ -29,6 +41,21 @@ function akunDesaBaru(db: DbDemo): AkunDesaBaru[] {
     .sort((a, b) => a.namaDesa.localeCompare(b.namaDesa, 'id'))
 }
 
+/**
+ * Akun aktif semua kabupaten mitra, dibaca dari data: tiga akun demo (SPEC-V0.2 §13) dan akun yang dibuat kemudian, mis. Admin
+ * kabupaten baru dari Konsol. Urut nama kabupaten, lalu Admin dulu.
+ */
+function akunKabupaten(db: DbDemo): AkunKabupatenDemo[] {
+  const mitra = new Map(db.kabupatenMitra.map((k) => [k.kode, k]))
+  return db.penggunaKabupaten
+    .filter((p) => p.aktif && mitra.has(p.kabupatenKode))
+    .sort((a, b) => (mitra.get(a.kabupatenKode)?.nama ?? '').localeCompare(mitra.get(b.kabupatenKode)?.nama ?? '', 'id') || urutAkunKabupaten(a, b))
+    .map((p) => {
+      const k = mitra.get(p.kabupatenKode)
+      return { id: p.id, nama: p.nama, jabatan: p.jabatan, peran: p.peran, namaKabupaten: k?.nama ?? '', label: k?.label ?? '' }
+    })
+}
+
 /** Ringkasan data demo untuk halaman demo (SPEC §3.6). */
 export function infoDataDemo(): InfoDataDemo {
   const db = ambilDb()
@@ -38,6 +65,7 @@ export function infoDataDemo(): InfoDataDemo {
     kk: db.keluarga.filter((k) => k.desaId === ID_SUNGAI_SIALANG).length,
     dusun: db.dusun.filter((d) => d.desaId === ID_SUNGAI_SIALANG).length,
     desaBaru: akunDesaBaru(db),
+    akunKabupaten: akunKabupaten(db),
   }
 }
 
@@ -59,14 +87,15 @@ export const AKUN_DEMO_ADMIN = PENGGUNA_DEMO.filter((p) => p.desaId === ID_SUNGA
 /** Akun layanan warga untuk tombol masuk di halaman demo (SPEC §12.9). */
 export { AKUN_WARGA_DEMO as AKUN_DEMO_WARGA } from './data/warga-demo'
 
-/** Akun Konsol (SPEC §12.9): Tim Sinfodes dan pemantau Kabupaten Pelalawan. */
-export const AKUN_DEMO_KONSOL = PENGGUNA_KONSOL_DEMO.map(({ id, nama, peran, email, wilayah }) => ({ id, nama, peran, email, wilayah }))
+/** Akun Konsol (SPEC §12.9): Tim Sinfodes. */
+export const AKUN_DEMO_KONSOL = PENGGUNA_KONSOL_DEMO.map(({ id, nama, peran, email }) => ({ id, nama, peran, email }))
 
 /** Akun demo yang dikenali dari kuncinya (ID akun), untuk masuk cepat lintas alamat (SPEC-V0.2 §4.6). */
 export type AkunDemoCepat =
   | { bagian: 'admin'; email: string; labelDesa: string }
   | { bagian: 'warga'; nik: string; pin: string; labelDesa: string }
   | { bagian: 'konsol'; email: string }
+  | { bagian: 'kabupaten'; email: string; labelKabupaten: string }
 
 export function cariAkunDemo(kunci: string): AkunDemoCepat | null {
   const db = ambilDb()
@@ -84,7 +113,10 @@ export function cariAkunDemo(kunci: string): AkunDemoCepat | null {
     return label ? { bagian: 'warga', nik: penduduk.nik, pin: akunWarga.pin, labelDesa: label } : null
   }
   const konsol = db.penggunaKonsol.find((p) => p.id === kunci)
-  return konsol ? { bagian: 'konsol', email: konsol.email } : null
+  if (konsol) return { bagian: 'konsol', email: konsol.email }
+  const kab = db.penggunaKabupaten.find((p) => p.id === kunci && p.aktif)
+  const mitra = kab && db.kabupatenMitra.find((m) => m.kode === kab.kabupatenKode)
+  return kab && mitra ? { bagian: 'kabupaten', email: kab.email, labelKabupaten: mitra.label } : null
 }
 
 /** Akun panel aktif satu desa (menurut alamatnya), urut peran lalu nama, untuk pilihan peran di toolbar demo. */

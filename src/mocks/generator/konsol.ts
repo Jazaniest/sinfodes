@@ -11,7 +11,7 @@ import type { MasukPanel, RekamDesa } from '../tipe-db'
 
 const HARI_MS = 86_400_000
 const JAM_LAYANAN = [
-  { hari: 'Senin–Kamis', buka: '08.00', tutup: '15.00' },
+  { hari: 'Senin-Kamis', buka: '08.00', tutup: '15.00' },
   { hari: 'Jumat', buka: '08.00', tutup: '11.30' },
 ]
 

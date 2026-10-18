@@ -52,7 +52,7 @@ export const ubahPenomoranSchema = z
   .object({
     formatNomor: z.string(),
     urutan,
-    kodeSurat: z.string().trim().toUpperCase().regex(/^[A-Z0-9]{1,8}$/, 'Kode desa 1–8 huruf atau angka, mis. SS'),
+    kodeSurat: z.string().trim().toUpperCase().regex(/^[A-Z0-9]{1,8}$/, 'Kode desa 1-8 huruf atau angka, mis. SS'),
   })
   .superRefine((p, ctx) => {
     const susunan = pecahFormat(p.formatNomor)

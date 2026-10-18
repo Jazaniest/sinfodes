@@ -22,8 +22,8 @@ describe('akun layanan warga (SPEC §10)', () => {
     expect(bersihkanWhatsapp('+62 812-7740-2231')).toBe('081277402231')
     expect(bersihkanWhatsapp('0812 7740 2231')).toBe('081277402231')
     expect(periksaWhatsapp('081277402231')).toBeNull()
-    expect(periksaWhatsapp('0812774')).toBe('Nomor WhatsApp diawali 08 dan terdiri dari 10–13 angka.')
-    expect(periksaWhatsapp('0761123456')).toBe('Nomor WhatsApp diawali 08 dan terdiri dari 10–13 angka.')
+    expect(periksaWhatsapp('0812774')).toBe('Nomor WhatsApp diawali 08 dan terdiri dari 10-13 angka.')
+    expect(periksaWhatsapp('0761123456')).toBe('Nomor WhatsApp diawali 08 dan terdiri dari 10-13 angka.')
     expect(formatWhatsapp('081277402231')).toBe('0812-7740-2231')
   })
   it('NIK disamarkan: hanya 4 angka terakhir yang tampil', () => {

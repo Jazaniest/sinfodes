@@ -7,7 +7,7 @@ import { cn } from '@/ui/cn'
 import { useMediaQuery } from '@/ui/hooks/useMediaQuery'
 import { Drawer } from '@/ui/lapisan/Drawer'
 import { MenuAksi } from '@/ui/lapisan/Menu'
-import { menuKonsol, menuKonsolAktif } from './navigasi'
+import { MENU_KONSOL, menuKonsolAktif } from './navigasi'
 
 type Props = { sesi: SesiKonsol; jalur: string; onKeluar: () => void; children: ReactNode }
 
@@ -35,7 +35,7 @@ function IsiNavigasi({ sesi, jalur, onKeluar, onPilih }: Omit<Props, 'children'>
       <Merek />
       <nav aria-label="Menu konsol" className="flex-1">
         <ul className="flex flex-col gap-0.5">
-          {menuKonsol(pengguna.peran).map((m) => {
+          {MENU_KONSOL.map((m) => {
             const aktif = menuKonsolAktif(m.href, jalur)
             return (
               <li key={m.href}>
@@ -63,7 +63,7 @@ function IsiNavigasi({ sesi, jalur, onKeluar, onPilih }: Omit<Props, 'children'>
             <Button className={cn('w-full min-w-0 rounded-1 px-2 py-1 text-left hover:bg-kapur/10', fokus)}>
               <span className="block truncate font-medium">{pengguna.nama}</span>
               <span className="block truncate text-teks-kecil text-kapur/75">
-                {pengguna.wilayah ? `Pemantau · Kabupaten ${pengguna.wilayah.nama}` : LABEL_PERAN_KONSOL[pengguna.peran]}
+                {LABEL_PERAN_KONSOL[pengguna.peran]}
               </span>
             </Button>
           }

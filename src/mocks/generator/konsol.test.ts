@@ -88,11 +88,8 @@ describe('data Konsol (SPEC §12.8, §11)', () => {
     expect(db.riwayatMasuk.every((m) => new Date(m.waktu) < SEKARANG)).toBe(true)
     expect(db.riwayatMasuk.every((m) => new Date(m.waktu).getTime() > SEKARANG.getTime() - 85 * 86_400_000)).toBe(true)
   })
-  it('akun konsol: Tim Sinfodes dan pemantau Kabupaten Pelalawan (SPEC §12.9)', () => {
-    expect(db.penggunaKonsol.map((p) => penggunaKonsolSchema.parse(p))).toEqual([
-      expect.objectContaining({ nama: 'Dina', peran: 'tim', wilayah: null }),
-      expect.objectContaining({ nama: 'Dinas PMD Kabupaten Pelalawan', peran: 'pemantau', wilayah: { kode: '14.05', nama: 'Pelalawan' } }),
-    ])
+  it('akun konsol hanya Tim Sinfodes; pemantau v0.1 kini akun kabupaten (SPEC-V0.2 §13)', () => {
+    expect(db.penggunaKonsol.map((p) => penggunaKonsolSchema.parse(p))).toEqual([expect.objectContaining({ nama: 'Dina', peran: 'tim' })])
   })
   it('angka Pemantauan desa fiktif: Persiapan dan Ditangguhkan kosong; yang lain dalam rentang wajar', () => {
     for (const r of db.rekamDesa) {

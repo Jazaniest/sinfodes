@@ -29,7 +29,7 @@ describe('buku administrasi umum (SPEC Lampiran B)', () => {
     expect(bukuTanahKas(db, DESA).baris.map((b) => b[2])).toEqual(['Tanah kas desa (kebun sawit)', 'Tanah kantor desa'])
     const aparat = bukuAparat(db, DESA)
     expect(aparat.baris).toHaveLength(14)
-    expect(aparat.baris[0].slice(1, 4)).toEqual(['H. Muhammad Nasir', 'Kepala Desa', '2021–2029'])
+    expect(aparat.baris[0].slice(1, 4)).toEqual(['H. Muhammad Nasir', 'Kepala Desa', '2021-2029'])
     expect(aparat.baris.find((b) => b[2] === 'Kepala Dusun II')?.[4]).toBe('Dusun II Sialang Jaya')
   })
   it('Agenda: surat keluar bernomor dan surat masuk, urut tanggal dicatat', () => {

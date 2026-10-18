@@ -24,15 +24,15 @@ const ambilSebagaiTim = (jalur: string) =>
 
 describe('batas data Konsol untuk Tim Sinfodes (SPEC-V0.2 §5.1)', () => {
   it('tidak satu pun respons Konsol memuat isi data desa', async () => {
-    const jalur = ['/konsol/sesi', '/konsol/ringkasan', '/konsol/desa?page=1&pageSize=50', '/konsol/desa/desa_sungai_sialang', '/konsol/desa/desa_tanjung_lamo']
+    const jalur = [
+      '/konsol/sesi', '/konsol/ringkasan', '/konsol/desa?page=1&pageSize=50', '/konsol/desa/desa_sungai_sialang', '/konsol/desa/desa_tanjung_lamo',
+      '/konsol/kabupaten', '/konsol/kabupaten/14.05',
+    ]
     for (const j of jalur) {
       const r = await ambilSebagaiTim(j)
       expect(r.status, j).toBe(200)
       expect(semuaKunci(await r.json()).filter((k) => TERLARANG.includes(k)), j).toEqual([])
     }
-  })
-  it('Pemantauan wilayah tidak lagi dibuka Tim Sinfodes', async () => {
-    expect((await ambilSebagaiTim('/konsol/pemantauan?wilayah=14.05')).status).toBe(403)
   })
   it('Detail desa: alamat lama dan pemakaian penyimpanan', async () => {
     masukKonsolSebagai(AKUN_KONSOL_UJI.tim)

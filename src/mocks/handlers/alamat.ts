@@ -1,5 +1,6 @@
 import { http, HttpResponse } from 'msw'
 import type { HasilAlamat } from '@/domain/alamat/schema'
+import { kabupatenDariLabel } from '@/domain/kabupaten/wilayah'
 import { ambilDb } from '../db'
 import { API, balasGalat, denganJaringan } from '../http'
 import { konteksPermintaan } from '../konteks-permintaan'
@@ -11,6 +12,12 @@ export const handlerAlamat = [
     denganJaringan(({ request }) => {
       const k = konteksPermintaan(request)
       if (k.jenis === 'induk' || k.jenis === 'konsol') return HttpResponse.json({ jenis: k.jenis } satisfies HasilAlamat)
+      if (k.jenis === 'kabupaten') {
+        const kab = kabupatenDariLabel(k.label)
+        if (!kab) return balasGalat('NOT_FOUND', 'Alamat tidak dikenal.', 404)
+        const mitra = ambilDb().kabupatenMitra.some((m) => m.label === k.label)
+        return HttpResponse.json({ jenis: 'kabupaten', kabupaten: { label: k.label, ...kab, mitra } } satisfies HasilAlamat)
+      }
       if (k.jenis !== 'desa') return balasGalat('NOT_FOUND', 'Alamat tidak dikenal.', 404)
       const db = ambilDb()
       const desa = db.desa.find((d) => d.slug === k.label)

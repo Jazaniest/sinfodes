@@ -38,7 +38,7 @@ describe('kerangka website desa (SPEC §9)', () => {
     const kaki = screen.getByRole('contentinfo')
     expect(kaki).toHaveTextContent('Jalan Lintas Teluk Meranti Km 4, Sungai Sialang')
     expect(kaki).toHaveTextContent('Kecamatan Teluk Meranti, Kabupaten Pelalawan, Riau 28353')
-    expect(kaki).toHaveTextContent('Senin–Kamis 08.00–15.00 WIB')
+    expect(kaki).toHaveTextContent('Senin-Kamis 08.00-15.00 WIB')
     expect(within(kaki).getByRole('link', { name: /^WhatsApp kantor/ })).toHaveAttribute('href', 'https://wa.me/6281266031140')
     expect(kaki).toHaveTextContent('Dikelola Pemerintah Desa Sungai Sialang · Didukung Sinfodes')
     expect(within(kaki).getByRole('link', { name: 'Kredit foto' })).toHaveAttribute('href', '/desa/sungaisialang/kredit-foto')

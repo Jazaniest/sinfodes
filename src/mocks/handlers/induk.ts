@@ -26,8 +26,12 @@ export const handlerInduk = [
   http.get(
     `${API}/induk/ringkasan`,
     denganJaringan(() => {
-      const desaBergabung = ambilDb().desa.filter((d) => d.status === 'Aktif' || d.status === 'Uji coba').length
-      return HttpResponse.json({ desaBergabung } satisfies RingkasanInduk)
+      const db = ambilDb()
+      const desaBergabung = db.desa.filter((d) => d.status === 'Aktif' || d.status === 'Uji coba').length
+      const kabupatenMitra = db.kabupatenMitra
+        .map((k) => ({ label: k.label, nama: k.nama }))
+        .sort((a, b) => a.nama.localeCompare(b.nama, 'id'))
+      return HttpResponse.json({ desaBergabung, kabupatenMitra } satisfies RingkasanInduk)
     }),
   ),
 ]

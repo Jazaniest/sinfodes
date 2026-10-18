@@ -40,7 +40,7 @@ const AGAMA_PER_SUKU: Readonly<Record<Suku, Bobot<Agama>>> = {
   Batak: [['Kristen', 75], ['Katolik', 15], ['Islam', 10]],
   Lainnya: [['Islam', 45], ['Kristen', 35], ['Katolik', 20]],
 }
-/** SPEC §12.5 — kode kabupaten nyata (diverifikasi 25 Sep 2026) dengan kecamatan 01–20. */
+/** SPEC §12.5 — kode kabupaten nyata (diverifikasi 25 Sep 2026) dengan kecamatan 01-20. */
 const ASAL_PER_SUKU: Readonly<Record<Suku, Bobot<Asal>>> = {
   Melayu: [[{ kode: '140107', kota: 'Bangkinang' }, 1]],
   Jawa: [[{ kode: '331007', kota: 'Klaten' }, 55], [{ kode: '330912', kota: 'Boyolali' }, 45]],
@@ -256,7 +256,7 @@ const URUTAN_HUBUNGAN: readonly HubunganKeluarga[] = [
   'Kepala Keluarga', 'Istri', 'Anak', 'Menantu', 'Cucu', 'Orang Tua', 'Mertua', 'Famili Lain',
 ]
 
-/** Membangkitkan seluruh penduduk dan KK satu desa (SPEC §12.3–12.5). Seed + acuan sama → hasil sama. */
+/** Membangkitkan seluruh penduduk dan KK satu desa (SPEC §12.3-12.5). Seed + acuan sama → hasil sama. */
 export function bangkitkanPenduduk(acak: Acak, opsi: Opsi): { penduduk: Penduduk[]; keluarga: Keluarga[] } {
   const { desaId, dusun, acuan } = opsi
   const rumah = buatKerangka(acak, acuan)
@@ -278,7 +278,7 @@ export function bangkitkanPenduduk(acak: Acak, opsi: Opsi): { penduduk: Penduduk
   const nikBaru = (kode: string, lahir: string, jk: JenisKelamin): string => {
     const kunci = `${kode}|${lahir}|${jk}`
     let urut = urutNik.get(kunci) ?? 8001
-    for (;;) {
+    for (; ;) {
       const nik = buatNik({ kodeWilayah: kode, tanggalLahir: lahir, jenisKelamin: jk, nomorUrut: urut })
       urut += 1
       if (!nikTerpakai.has(nik)) {
@@ -396,8 +396,8 @@ export function bangkitkanPenduduk(acak: Acak, opsi: Opsi): { penduduk: Penduduk
       const keturunan = a.hubungan === 'Anak' || a.hubungan === 'Cucu'
       const marga = a.hubungan === 'Kepala Keluarga' ? margaKepala
         : keturunan ? margaAnak
-        : a.hubungan === 'Orang Tua' && a.jk === 'L' ? margaKepala
-        : margaLain()
+          : a.hubungan === 'Orang Tua' && a.jk === 'L' ? margaKepala
+            : margaLain()
       const gelarHaji = !keturunan && tahunLahir <= 1971 && (suku === 'Melayu' || suku === 'Minang') && acak.peluang(0.08)
       const nama = `${gelarHaji ? (a.jk === 'L' ? 'H. ' : 'Hj. ') : ''}${namaDari(a.jk, tahunLahir, marga)}`
       if (a.hubungan === 'Kepala Keluarga') namaKepala = nama

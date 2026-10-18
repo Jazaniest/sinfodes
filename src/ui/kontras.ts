@@ -9,7 +9,7 @@ export function luminans(hex: string): number {
   return 0.2126 * r + 0.7152 * g + 0.0722 * b
 }
 
-/** Rasio kontras WCAG antara dua warna (1–21). */
+/** Rasio kontras WCAG antara dua warna (1-21). */
 export function rasioKontras(a: string, b: string): number {
   const [terang, gelap] = [luminans(a), luminans(b)].sort((x, y) => y - x)
   return (terang + 0.05) / (gelap + 0.05)

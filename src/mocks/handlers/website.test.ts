@@ -37,7 +37,7 @@ describe('Website Desa (SPEC §8)', () => {
     expect((await daftarPengumuman()).meta.total).toBe(4)
     const agenda = (await daftarAgenda()).data
     expect(agenda.map((a) => a.judul)).toEqual([
-      'Gotong Royong Parit RT 006–007', 'Penyaluran BLT Dana Desa Tahap III', 'Musyawarah Desa Penyusunan RKPDes 2027',
+      'Gotong Royong Parit RT 006-007', 'Penyaluran BLT Dana Desa Tahap III', 'Musyawarah Desa Penyusunan RKPDes 2027',
       'Rapat Pleno BPD', 'Pelatihan Pengolahan Ikan Salai BUMDes',
     ])
     expect((await daftarGaleri()).meta.total).toBe(15)

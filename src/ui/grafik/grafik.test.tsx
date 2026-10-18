@@ -33,7 +33,7 @@ describe('PyramidChart', () => {
       <PyramidChart
         label="Piramida penduduk"
         baris={[
-          { id: '0–4', label: '0–4', laki: 100, perempuan: 90, hrefLaki: '/l04', hrefPerempuan: '/p04' },
+          { id: '0-4', label: '0-4', laki: 100, perempuan: 90, hrefLaki: '/l04', hrefPerempuan: '/p04' },
           { id: '75+', label: '75+', laki: 20, perempuan: 30, hrefLaki: '/l75', hrefPerempuan: '/p75' },
         ]}
       />,
@@ -41,6 +41,6 @@ describe('PyramidChart', () => {
     const baris = within(screen.getByRole('list', { name: 'Piramida penduduk' })).getAllByRole('listitem')
     expect(baris[0]).toHaveTextContent('75+')
     expect(screen.getByRole('link', { name: '75+ tahun, perempuan: 30 jiwa. Buka daftar penduduk' })).toHaveAttribute('href', '/p75')
-    expect(screen.getByRole('link', { name: '0–4 tahun, laki-laki: 100 jiwa. Buka daftar penduduk' })).toHaveAttribute('href', '/l04')
+    expect(screen.getByRole('link', { name: '0-4 tahun, laki-laki: 100 jiwa. Buka daftar penduduk' })).toHaveAttribute('href', '/l04')
   })
 })

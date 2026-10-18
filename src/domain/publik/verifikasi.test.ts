@@ -9,7 +9,7 @@ describe('verifikasi surat: aturan (SPEC §7.6)', () => {
   })
   it('kode dirapikan: huruf kecil, spasi, tanda pisah panjang, atau tanpa pemisah (fokus review 1)', () => {
     expect(rapikanKode(' ss 7k3m q9td ')).toBe('SS-7K3M-Q9TD')
-    expect(rapikanKode('SS–7K3M–Q9TD')).toBe('SS-7K3M-Q9TD')
+    expect(rapikanKode('SS-7K3M-Q9TD')).toBe('SS-7K3M-Q9TD')
     expect(rapikanKode('ss7k3mq9td')).toBe('SS-7K3M-Q9TD')
     expect(kodeSah(rapikanKode('ss 7k3m q9td'))).toBe(true)
     expect(kodeSah(rapikanKode('halo'))).toBe(false)

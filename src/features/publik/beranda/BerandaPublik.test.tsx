@@ -39,7 +39,7 @@ describe('Beranda website desa (SPEC §9)', () => {
     const agenda = screen.getByRole('region', { name: 'Agenda' })
     expect(within(agenda).getAllByRole('listitem')).toHaveLength(5)
     expect(agenda).toHaveTextContent('Penyaluran BLT Dana Desa Tahap III')
-    expect(agenda).toHaveTextContent('09.00–12.00 WIB · Kantor Desa')
+    expect(agenda).toHaveTextContent('09.00-12.00 WIB · Kantor Desa')
     const angka = screen.getByRole('region', { name: 'Desa dalam angka' })
     expect(angka).toHaveTextContent(/Desa Sungai Sialang dihuni [\d.]+ jiwa dalam [\d.]+ keluarga, tersebar di 4 dusun/)
     expect(within(angka).getByRole('img', { name: 'Lanskap Sungai Kampar' })).toHaveAttribute('loading', 'lazy')

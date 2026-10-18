@@ -45,9 +45,9 @@ describe('Website Desa (SPEC §8)', () => {
     pasang(<DaftarAgenda />)
     const baris = await barisDi('Agenda')
     expect(baris).toHaveLength(5)
-    expect(baris[0]).toHaveTextContent('Gotong Royong Parit RT 006–007')
+    expect(baris[0]).toHaveTextContent('Gotong Royong Parit RT 006-007')
     expect(baris[0]).toHaveTextContent('Senin, 28 September 2026')
-    expect(baris[0]).toHaveTextContent('07.30–10.00 WIB')
+    expect(baris[0]).toHaveTextContent('07.30-10.00 WIB')
     expect(baris.find((b) => b.textContent?.includes('Rapat Pleno BPD'))).toHaveTextContent('14.00 WIB sampai selesai')
   })
   it('galeri: 15 foto kurasi per album, masing-masing dengan judulnya', async () => {

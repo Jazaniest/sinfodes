@@ -1,28 +1,23 @@
 import { CaretRight, DownloadSimple } from '@phosphor-icons/react'
-import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Button } from 'react-aria-components'
 import { pesanGalat } from '@/api/galat'
-import { opsiDaftarDesaKonsol, opsiPemantauan } from '@/api/konsol'
+import { opsiPemantauanKabupaten } from '@/api/kabupaten'
+import { keAlamat } from '@/app/alamat'
+import { labelKabupaten } from '@/domain/alamat/alamat'
 import { formatAngka, formatPersen } from '@/domain/format/angka'
 import { keCsv } from '@/domain/format/csv'
 import { formatTanggal, tanggalIsoWib } from '@/domain/format/tanggal'
-import { slugDesa } from '@/domain/konsol/aturan'
-import { barisCsvPemantauan, rasioApbdes, type RingkasanWilayah } from '@/domain/konsol/pemantauan'
+import { barisCsvPemantauan, rasioApbdes, type RingkasanWilayah } from '@/domain/kabupaten/pemantauan'
 import { cn } from '@/ui/cn'
-import { Select } from '@/ui/isian/Select'
+import { Tautan } from '@/ui/navigasi/Tautan'
 import { PageHeader } from '@/ui/tata-letak/PageHeader'
 import { Tombol } from '@/ui/tombol/Tombol'
 import { unduhBerkas } from '@/ui/unduh'
 import { EmptyState } from '@/ui/umpan-balik/EmptyState'
 import { ErrorState } from '@/ui/umpan-balik/ErrorState'
 import { BarisKerangka } from '@/ui/umpan-balik/Skeleton'
-import { useSesiKonsol } from '../sesi-konteks'
-
-type Props = { wilayah: string | null; onUbahWilayah: (kode: string) => void; sekarang?: Date }
-
-/** Kabupaten bawaan Tim Sinfodes: Pelalawan, tempat sebagian besar desa pelanggan. */
-const WILAYAH_BAWAAN = '14.05'
 const kepala = 'border-b border-garis px-3 py-2 text-label font-medium whitespace-nowrap text-tinta-2 uppercase'
 const sel = 'px-3 py-2 tabular-nums'
 const fokus =
@@ -46,18 +41,11 @@ function SelAngka(p: { surat: number; layanan: number | null; kelengkapan: numbe
 }
 
 /**
- * Pemantauan wilayah (SPEC §11 layar 5): tabel per kecamatan yang bisa dibuka menjadi per desa, dengan Unduh CSV. Pemantau
- * hanya melihat kabupatennya dan hanya angka agregat; Tim Sinfodes memilih kabupaten.
+ * Pemantauan di dasbor kabupaten (SPEC §11 layar 5, dipindah dari Konsol di SPEC-V0.2 §8.3): tabel per kecamatan yang bisa
+ * dibuka menjadi per desa, dengan Unduh CSV. Kabupaten dari sesi; hanya angka agregat.
  */
-export function PemantauanWilayah({ wilayah, onUbahWilayah, sekarang = new Date() }: Props) {
-  const { pengguna } = useSesiKonsol()
-  const tim = pengguna.peran === 'tim'
-  const kode = tim ? (wilayah ?? WILAYAH_BAWAAN) : null
-  const kueri = useQuery({ ...opsiPemantauan(kode), placeholderData: keepPreviousData })
-  const daftarDesa = useQuery({ ...opsiDaftarDesaKonsol({}), enabled: tim })
-  const kabupaten = [...new Map((daftarDesa.data ?? []).map((d) => [d.kabupaten.kode, d.kabupaten])).values()].sort((a, b) =>
-    a.nama.localeCompare(b.nama, 'id'),
-  )
+export function PemantauanKabupaten({ sekarang = new Date() }: { sekarang?: Date }) {
+  const kueri = useQuery(opsiPemantauanKabupaten())
   const [terbuka, setTerbuka] = useState<ReadonlySet<string>>(new Set())
   const d = kueri.data
   const semuaTerbuka = d !== undefined && d.kecamatan.length > 0 && d.kecamatan.every((k) => terbuka.has(k.kecamatan.kode))
@@ -69,13 +57,13 @@ export function PemantauanWilayah({ wilayah, onUbahWilayah, sekarang = new Date(
       return baru
     })
   const unduh = () => {
-    if (d) unduhBerkas(`pemantauan-${slugDesa(d.wilayah.nama)}-${tanggalIsoWib(sekarang)}.csv`, keCsv(barisCsvPemantauan(d)))
+    if (d) unduhBerkas(`pemantauan-${labelKabupaten(d.wilayah.nama)}-${d.bulan}.csv`, keCsv(barisCsvPemantauan(d)))
   }
 
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
-        judul="Pemantauan wilayah"
+        judul="Pemantauan"
         meta={d && `Kabupaten ${d.wilayah.nama} · ${formatAngka(d.total.jumlahDesa)} desa · ${formatTanggal(tanggalIsoWib(sekarang), 'hari')}`}
         aksi={
           <Tombol ikon={<DownloadSimple aria-hidden size={16} />} isDisabled={!d} onPress={unduh}>
@@ -84,19 +72,7 @@ export function PemantauanWilayah({ wilayah, onUbahWilayah, sekarang = new Date(
         }
       />
       <div className="flex flex-wrap items-end justify-between gap-3">
-        {tim ? (
-          <Select
-            label="Kabupaten"
-            className="w-56"
-            pilihan={kabupaten.map((k) => ({ id: k.kode, label: k.nama }))}
-            nilai={kode}
-            onUbah={(id) => {
-              if (id) onUbahWilayah(id)
-            }}
-          />
-        ) : (
-          <p className="max-w-prose text-tinta-2">Angka gabungan per desa di wilayah Anda. Tidak ada data pribadi warga.</p>
-        )}
+        <p className="max-w-prose text-tinta-2">Angka gabungan per desa di wilayah Anda. Tidak ada data pribadi warga.</p>
         {d && d.kecamatan.length > 0 && (
           <Tombol ukuran="kecil" onPress={() => setTerbuka(semuaTerbuka ? new Set() : new Set(d.kecamatan.map((k) => k.kecamatan.kode)))}>
             {semuaTerbuka ? 'Tutup semua desa' : 'Buka semua desa'}
@@ -110,7 +86,7 @@ export function PemantauanWilayah({ wilayah, onUbahWilayah, sekarang = new Date(
       ) : d.kecamatan.length === 0 ? (
         <EmptyState judul="Belum ada desa pelanggan" keterangan="Kabupaten ini belum punya desa yang memakai Sinfodes." />
       ) : (
-        <div aria-busy={kueri.isPlaceholderData} className={cn('overflow-x-auto border-y border-garis bg-lembar', kueri.isPlaceholderData && 'opacity-60')}>
+        <div className="overflow-x-auto border-y border-garis bg-lembar">
           <table className="w-full min-w-[60rem] border-collapse">
             <caption className="sr-only">{`Pemantauan Kabupaten ${d.wilayah.nama} per kecamatan`}</caption>
             <thead>
@@ -162,7 +138,14 @@ export function PemantauanWilayah({ wilayah, onUbahWilayah, sekarang = new Date(
                     k.desa.map((x) => (
                       <tr key={x.id} className="text-teks-kecil">
                         <th scope="row" className={cn(sel, 'pl-9 text-left font-normal')}>
-                          {x.nama}
+                          {/* Desa Persiapan belum punya website (SPEC-V0.2 §4.1). */}
+                          {x.status === 'Persiapan' ? (
+                            x.nama
+                          ) : (
+                            <Tautan href={keAlamat({ jenis: 'desa', label: x.alamat })} nada="tinta">
+                              {x.nama}
+                            </Tautan>
+                          )}
                         </th>
                         <td className={sel}>{x.status}</td>
                         <SelAngka

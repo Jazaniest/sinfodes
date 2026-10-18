@@ -8,7 +8,7 @@ import type { Acak } from '../prng'
 
 type Opsi = { desa: Desa; penduduk: readonly Penduduk[]; keluarga: readonly Keluarga[]; mutasi: readonly Mutasi[]; acuan: Date }
 
-const PERIODE = ['Januari–Maret', 'April–Juni', 'Juli–September', 'Oktober–Desember'] as const
+const PERIODE = ['Januari-Maret', 'April-Juni', 'Juli-September', 'Oktober-Desember'] as const
 
 /** SPEC §12.6. Jadwal penyaluran tetap per tahun ("MM-DD"); BLT tahap III jatuh 30 September. */
 const PROGRAM = [

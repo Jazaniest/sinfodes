@@ -24,7 +24,7 @@ describe('Daftar keluarga (SPEC §6.5)', () => {
       contohSesi(),
     )
     expect(await screen.findByText('806 KK')).toBeInTheDocument()
-    expect(await screen.findByText('1–25 dari 806')).toBeInTheDocument()
+    expect(await screen.findByText('1-25 dari 806')).toBeInTheDocument()
     const user = userEvent.setup()
     await user.click(screen.getByRole('searchbox', { name: 'Cari keluarga' }))
     await user.paste('1405092011238004')

@@ -7,9 +7,9 @@ import type { Penduduk } from '../penduduk/schema'
 import { namaDusun } from '../wilayah/alamat'
 import type { Desa, Dusun } from '../wilayah/schema'
 
-/** Kelompok umur 5 tahunan: 0–4 … 70–74, lalu 75+ (SPEC §6.7). */
+/** Kelompok umur 5 tahunan: 0-4 … 70-74, lalu 75+ (SPEC §6.7). */
 export const KELOMPOK_UMUR: readonly { label: string; min: number; max: number | null }[] = [
-  ...Array.from({ length: 15 }, (_, i) => ({ label: `${i * 5}–${i * 5 + 4}`, min: i * 5, max: i * 5 + 4 })),
+  ...Array.from({ length: 15 }, (_, i) => ({ label: `${i * 5}-${i * 5 + 4}`, min: i * 5, max: i * 5 + 4 })),
   { label: '75+', min: 75, max: null },
 ]
 
@@ -121,8 +121,8 @@ export function hitungStatistik(penduduk: readonly Penduduk[], ctx: KonteksStati
     perDusun:
       ctx.dusunTerpilih === null
         ? [...ctx.dusun]
-            .sort((a, b) => a.nomor - b.nomor)
-            .map((d) => ({ kunci: String(d.nomor), label: namaDusun(d, ctx.istilah), jumlah: hidup.filter((p) => p.dusunId === d.id).length }))
+          .sort((a, b) => a.nomor - b.nomor)
+          .map((d) => ({ kunci: String(d.nomor), label: namaDusun(d, ctx.istilah), jumlah: hidup.filter((p) => p.dusunId === d.id).length }))
         : [],
     agama: perNilai(AGAMA, hidup.map((p) => p.agama)),
     pendidikan: perNilai(PENDIDIKAN, hidup.map((p) => p.pendidikan)),

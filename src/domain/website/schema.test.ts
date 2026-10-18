@@ -55,7 +55,7 @@ describe('Website Desa (SPEC §8, §9)', () => {
     expect(ubahTampilanSchema.safeParse({ ...t, aksen: 'jingga' }).success).toBe(false)
   })
   it('jam agenda: rentang, atau "sampai selesai" bila jam selesai kosong', () => {
-    expect(teksJamAgenda({ mulai: '09.00', selesai: '12.00' })).toBe('09.00–12.00 WIB')
+    expect(teksJamAgenda({ mulai: '09.00', selesai: '12.00' })).toBe('09.00-12.00 WIB')
     expect(teksJamAgenda({ mulai: '14.00', selesai: null })).toBe('14.00 WIB sampai selesai')
   })
   it('profil dan potensi hanya memakai foto kurasi; WhatsApp UMKM berupa nomor HP berawalan 08 (SPEC §9)', () => {

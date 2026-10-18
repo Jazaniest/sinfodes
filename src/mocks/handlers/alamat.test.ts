@@ -44,6 +44,15 @@ describe('GET /alamat: desa dibaca dari alamat (SPEC-V0.2 §4.5)', () => {
     expect(await (await ambil(url(null, '/alamat'))).json()).toEqual({ jenis: 'induk' })
     expect(await (await ambil(url('konsol', '/alamat'))).json()).toEqual({ jenis: 'konsol' })
   })
+  it('kabupaten mitra, kabupaten yang belum mitra, dan kabupaten tidak dikenal (SPEC-V0.2 §8.2)', async () => {
+    expect(await (await ambil(url('kab-pelalawan', '/alamat'))).json()).toEqual({
+      jenis: 'kabupaten', kabupaten: { label: 'kab-pelalawan', kode: '14.05', nama: 'Pelalawan', mitra: true },
+    })
+    expect(await (await ambil(url('kab-kampar', '/alamat'))).json()).toEqual({
+      jenis: 'kabupaten', kabupaten: { label: 'kab-kampar', kode: '14.01', nama: 'Kampar', mitra: false },
+    })
+    expect((await ambil(url('kab-antahberantah', '/alamat'))).status).toBe(404)
+  })
 })
 
 describe('sesi terkunci per alamat (SPEC-V0.2 §4.3)', () => {

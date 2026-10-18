@@ -59,9 +59,7 @@ describe('POST /konsol/desa/:id/sekdes (tahap 6C)', () => {
       fields: { nama: 'Nama wajib diisi', email: 'Email belum benar.' },
     })
   })
-  it('pemantau ditolak; desa contoh dan desa yang tidak ada ditolak (fokus review 4)', async () => {
-    masukKonsolSebagai(AKUN_KONSOL_UJI.pemantau)
-    expect((await galatDari(undangSekdes(ID_TANJUNG_LAMO, SEKDES))).kode).toBe('FORBIDDEN')
+  it('desa contoh dan desa yang tidak ada ditolak (fokus review 4)', async () => {
     masukKonsolSebagai(AKUN_KONSOL_UJI.tim)
     const contoh = ambilDb().rekamDesa[0].desaId
     expect((await ambilDetailDesaKonsol(contoh)).bisaUndangSekdes).toBe(false)

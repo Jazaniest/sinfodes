@@ -6,7 +6,7 @@ describe('bulanRomawi', () => {
     expect(bulanRomawi(9)).toBe('IX')
     expect(bulanRomawi(12)).toBe('XII')
   })
-  it('menolak bulan di luar 1–12', () => expect(() => bulanRomawi(13)).toThrow('Bulan tidak valid'))
+  it('menolak bulan di luar 1-12', () => expect(() => bulanRomawi(13)).toThrow('Bulan tidak valid'))
 })
 
 describe('formatNomorSurat', () => {

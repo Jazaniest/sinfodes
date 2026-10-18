@@ -67,7 +67,7 @@ describe('Akun warga (SPEC §10)', () => {
     const kolom = () => screen.getByRole('textbox', { name: 'Nomor WhatsApp baru' })
     await user.type(kolom(), '12345')
     await user.click(screen.getByRole('button', { name: 'Simpan nomor' }))
-    expect(screen.getByText('Nomor WhatsApp diawali 08 dan terdiri dari 10–13 angka.')).toBeInTheDocument()
+    expect(screen.getByText('Nomor WhatsApp diawali 08 dan terdiri dari 10-13 angka.')).toBeInTheDocument()
     await user.clear(kolom())
     await user.type(kolom(), '+62 813-1234-5678')
     await user.click(screen.getByRole('button', { name: 'Simpan nomor' }))

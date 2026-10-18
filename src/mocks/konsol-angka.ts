@@ -1,7 +1,7 @@
 import { daftarBulanTerakhir, tanggalIsoWib } from '@/domain/format/tanggal'
 import { jumlahKelompok } from '@/domain/keuangan/schema'
 import { daftarMingguTerakhir } from '@/domain/konsol/aturan'
-import { bulatJam, median } from '@/domain/konsol/pemantauan'
+import { bulatJam, median } from '@/domain/kabupaten/pemantauan'
 import { dataBelumLengkap } from '@/domain/penduduk/filter'
 import { persiapanBerurutan, type Persiapan } from '@/domain/wilayah/persiapan'
 import type { Desa } from '@/domain/wilayah/schema'

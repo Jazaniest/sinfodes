@@ -124,7 +124,7 @@ describe('Beranda (SPEC §5.3)', () => {
     expect(within(apbdes).getAllByRole('meter')).toHaveLength(5)
     const berjalan = screen.getByRole('region', { name: 'Pembangunan yang sedang berjalan' })
     expect(within(berjalan).getAllByRole('link').map((a) => a.textContent)).toEqual([
-      'Semenisasi jalan lingkungan Dusun III', 'Sumur bor air bersih Dusun IV', 'Titian kayu penghubung Dusun II–IV',
+      'Semenisasi jalan lingkungan Dusun III', 'Sumur bor air bersih Dusun IV', 'Titian kayu penghubung Dusun II-IV',
     ])
     expect(within(berjalan).getAllByRole('meter', { name: 'Progres fisik' })[0]).toHaveAttribute('aria-valuetext', '70,0%')
   })

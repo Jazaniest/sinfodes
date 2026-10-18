@@ -19,7 +19,7 @@ const APBDES: Apbdes = {
     pos('5.1', 'belanja', 'Penyelenggaraan Pemerintahan Desa', 612_400_000),
     pos('5.2', 'belanja', 'Pelaksanaan Pembangunan Desa', 748_900_000, 300_000_000),
     pos('5.2.01', 'belanja', 'Semenisasi jalan lingkungan Dusun III', 245_000_000, 151_900_000, '5.2'),
-    pos('5.2.02', 'belanja', 'Drainase RT 006–007', 98_000_000, 97_020_000, '5.2'),
+    pos('5.2.02', 'belanja', 'Drainase RT 006-007', 98_000_000, 97_020_000, '5.2'),
     pos('5.3', 'belanja', 'Pembinaan Kemasyarakatan', 132_500_000),
     pos('5.4', 'belanja', 'Pemberdayaan Masyarakat', 214_350_000),
     pos('5.5', 'belanja', 'Penanggulangan Bencana, Darurat dan Mendesak', 158_500_000),

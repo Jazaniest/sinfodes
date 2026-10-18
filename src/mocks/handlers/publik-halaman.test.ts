@@ -25,7 +25,7 @@ describe('API halaman website desa (SPEC §9, §3.4)', () => {
     expect(p.wilayah[0]).toEqual({ id: 'dsn_ss_1', nama: 'Dusun I Kampung Tengah', kepala: 'Amran', rw: 2, rt: 5 })
     expect(p.peta?.fasilitas.map((f) => f.nama)).toContain('Kantor Desa')
     expect(p.peta?.kegiatan).toHaveLength(7)
-    expect(p.perangkat[0]).toEqual({ jabatan: 'Kepala Desa', nama: 'H. Muhammad Nasir', masaBakti: '2021–2029' })
+    expect(p.perangkat[0]).toEqual({ jabatan: 'Kepala Desa', nama: 'H. Muhammad Nasir', masaBakti: '2021-2029' })
     expect(p.lembaga.map((l) => l.lembaga)).toEqual(['bpd', 'lpm', 'pkk', 'karang-taruna', 'rt-rw', 'kader-posyandu', 'linmas', 'bumdes'])
     expect(p.lembaga[0]).toMatchObject({ nama: 'Badan Permusyawaratan Desa' })
     expect(p.lembaga[0].pengurus).toHaveLength(7)

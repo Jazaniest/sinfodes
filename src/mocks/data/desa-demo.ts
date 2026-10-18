@@ -26,7 +26,7 @@ export const DESA_DEMO: Desa[] = [
     surel: 'pemdes@sungaisialang.desa.id',
     telepon: '081266031140',
     jamLayanan: [
-      { hari: 'Senin–Kamis', buka: '08.00', tutup: '15.00' },
+      { hari: 'Senin-Kamis', buka: '08.00', tutup: '15.00' },
       { hari: 'Jumat', buka: '08.00', tutup: '11.30' },
     ],
     luasKm2: 48.6,

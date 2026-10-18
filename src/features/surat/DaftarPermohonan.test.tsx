@@ -93,7 +93,7 @@ describe('Daftar permohonan (SPEC §7.4 layar 1)', () => {
     const jumlah = ambilDb().permohonan.filter(
       (p) => p.dusunId === 'dsn_ss_2' && p.status === 'selesai' && p.masukPada.slice(0, 10) >= awal,
     ).length
-    expect(await screen.findByText(`1–25 dari ${formatAngka(jumlah)}`)).toBeInTheDocument()
+    expect(await screen.findByText(`1-25 dari ${formatAngka(jumlah)}`)).toBeInTheDocument()
   })
   it('Buat surat untuk petugas; tidak untuk Kepala Desa (fokus review 5)', async () => {
     const { unmount } = pasang()

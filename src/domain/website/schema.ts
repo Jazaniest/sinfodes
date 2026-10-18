@@ -71,9 +71,9 @@ export const agendaSchema = z.object({
 })
 export type Agenda = z.infer<typeof agendaSchema>
 
-/** "09.00–12.00 WIB", atau "14.00 WIB sampai selesai" bila jam selesai kosong. */
+/** "09.00-12.00 WIB", atau "14.00 WIB sampai selesai" bila jam selesai kosong. */
 export const teksJamAgenda = (a: Pick<Agenda, 'mulai' | 'selesai'>): string =>
-  a.selesai ? `${a.mulai}–${a.selesai} WIB` : `${a.mulai} WIB sampai selesai`
+  a.selesai ? `${a.mulai}-${a.selesai} WIB` : `${a.mulai} WIB sampai selesai`
 
 export const ALBUM_GALERI = ['Sampul', 'Pemerintahan', 'Kegiatan warga', 'Pembangunan', 'Potensi desa'] as const
 

@@ -3,6 +3,7 @@ import { createRouter } from '@tanstack/react-router'
 import { describe, expect, it } from 'vitest'
 import { ID_SUNGAI_SIALANG, PENGGUNA_DEMO } from '@/mocks/data/desa-demo'
 import { PENGGUNA_KONSOL_DEMO } from '@/mocks/data/desa-konsol'
+import { PENGGUNA_KABUPATEN_DEMO } from '@/mocks/data/kabupaten-demo'
 import { AKUN_WARGA_DEMO } from '@/mocks/data/warga-demo'
 import { masukkanJalur } from '@/app/rewrite-alamat'
 import type { KonteksAlamat, TujuanAlamat } from '@/domain/alamat/alamat'
@@ -26,6 +27,8 @@ function akunAda(m: MasukSkenario): boolean {
       return AKUN_WARGA_DEMO.some((a) => a.pendudukId === m.pendudukId)
     case 'konsol':
       return PENGGUNA_KONSOL_DEMO.some((p) => p.peran === m.peran)
+    case 'kabupaten':
+      return PENGGUNA_KABUPATEN_DEMO.some((p) => p.id === m.id && p.aktif)
     case 'publik':
       return true
   }
@@ -58,6 +61,10 @@ describe('skenario terpandu (SPEC §3.6, §13.5)', () => {
     expect(kades && tautanSkenario(kades, akunUji)).toBe('http://sungaisialang.sinfodes.localhost:3000/admin/surat/tanda-tangan?demo=pgn_nasir')
     const cek = semuaTombol.find((t) => t.masuk.bagian === 'publik')
     expect(cek && tautanSkenario(cek, akunUji)).toBe('http://sungaisialang.sinfodes.localhost:3000/verifikasi')
+  })
+  it('pemantauan kabupaten dibuka Peninjau Pelalawan di dasbor kabupaten (SPEC-V0.2 §8.3)', () => {
+    const langkah1 = SKENARIO_DEMO.find((s) => s.id === 'pemantauan')?.langkah[0]?.tombol[0]
+    expect(langkah1 && tautanSkenario(langkah1, akunUji)).toBe('http://kab-pelalawan.sinfodes.localhost:3000/admin/pemantauan?demo=kab_rosnani')
   })
   it('setiap tombol memakai akun yang ada di data demo (fokus review 5)', () => {
     for (const t of semuaTombol) expect(akunAda(t.masuk), `${t.label} → ${JSON.stringify(t.masuk)}`).toBe(true)

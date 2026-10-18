@@ -130,7 +130,7 @@ export function HalamanKatalog() {
       <Bagian id="isian" judul="Isian">
         <div className="grid gap-5 sm:grid-cols-2">
           <TextField label="Nama lengkap" placeholder="Sesuai KTP" keterangan="Tulis tanpa gelar, kecuali gelar keagamaan." />
-          <TextField label="Nomor HP (WhatsApp)" defaultValue="0812-7740" galat="Nomor HP harus 10–13 angka." />
+          <TextField label="Nomor HP (WhatsApp)" defaultValue="0812-7740" galat="Nomor HP harus 10-13 angka." />
           <NikField nilai={nik} onUbah={(digit) => setNik(digit)} />
           <Select label="Dusun" pilihan={DUSUN} nilai={dusun} onUbah={setDusun} />
           <SearchField label="Cari penduduk" labelTersembunyi={false} placeholder="Nama, NIK, atau nomor KK" />

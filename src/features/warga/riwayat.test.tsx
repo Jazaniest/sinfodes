@@ -68,7 +68,7 @@ describe('Riwayat warga (SPEC §10)', () => {
     const id = idDomisiliSiti()
     await tandatanganiDomisili(id)
     masukSebagaiWarga(AKUN_WARGA_UJI.siti)
-    const cetak = vi.spyOn(window, 'print').mockImplementation(() => {})
+    const cetak = vi.spyOn(window, 'print').mockImplementation(() => { })
     renderWarga(<DetailRiwayat id={id} />)
     const nomor = ambilDb().permohonan.find((p) => p.id === id)?.terbit?.nomor ?? '?'
     await userEvent.setup().click(await screen.findByRole('button', { name: 'Unduh PDF' }))
@@ -86,7 +86,7 @@ describe('Riwayat warga (SPEC §10)', () => {
     masukSebagaiWarga(AKUN_WARGA_UJI.siti)
     renderWarga(<DetailRiwayat id={id} />)
     expect(await screen.findByText('Ambil di kantor desa, bawa KTP asli')).toBeInTheDocument()
-    expect(screen.getByText(/Senin–Kamis 08\.00–15\.00/)).toBeInTheDocument()
+    expect(screen.getByText(/Senin-Kamis 08\.00-15\.00/)).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Unduh PDF' })).not.toBeInTheDocument()
   })
   it('Ditolak: alasannya tampil', async () => {

@@ -26,7 +26,7 @@ describe('bantuan sosial demo (SPEC §12.6)', () => {
     ])
   })
   it('BLT tahap III dijadwalkan 30 September; PKH tahap III sudah disalurkan', () => {
-    expect(db.programBansos[0].tahap[2]).toEqual({ ke: 3, periode: 'Juli–September', jadwal: '2026-09-30' })
+    expect(db.programBansos[0].tahap[2]).toEqual({ ke: 3, periode: 'Juli-September', jadwal: '2026-09-30' })
     expect(penerimaDi('blt').filter((x) => !x.perluDitinjau).every((x) => x.penyaluran[2] === 'dijadwalkan')).toBe(true)
     expect(penerimaDi('pkh').every((x) => x.penyaluran[2] === 'tersalur' || x.penyaluran[2] === 'belum-diambil')).toBe(true)
   })

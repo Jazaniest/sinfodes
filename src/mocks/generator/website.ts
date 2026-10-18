@@ -59,13 +59,13 @@ const PENGUMUMAN: readonly { judul: string; isi: string; mulai: number; sampai: 
   },
   {
     judul: 'Pelayanan Surat Ditutup Saat Musyawarah Desa',
-    isi: 'Pelayanan surat di kantor desa ditutup pukul 08.00–12.00 karena seluruh perangkat mengikuti musyawarah desa.',
+    isi: 'Pelayanan surat di kantor desa ditutup pukul 08.00-12.00 karena seluruh perangkat mengikuti musyawarah desa.',
     mulai: -30, sampai: -29,
   },
 ]
 
 const AGENDA: readonly { judul: string; hari: number; mulai: string; selesai: string | null; tempat: string }[] = [
-  { judul: 'Gotong Royong Parit RT 006–007', hari: 4, mulai: '07.30', selesai: '10.00', tempat: 'Parit RT 006, Dusun II' },
+  { judul: 'Gotong Royong Parit RT 006-007', hari: 4, mulai: '07.30', selesai: '10.00', tempat: 'Parit RT 006, Dusun II' },
   // Sejalan dengan artikel "Penyaluran BLT Tahap III Dijadwalkan 30 September" pada tanggal demo 24 September.
   { judul: 'Penyaluran BLT Dana Desa Tahap III', hari: 6, mulai: '09.00', selesai: '12.00', tempat: 'Kantor Desa' },
   { judul: 'Musyawarah Desa Penyusunan RKPDes 2027', hari: 8, mulai: '09.00', selesai: '13.00', tempat: 'Balai Desa' },
@@ -159,9 +159,9 @@ export function bangkitkanWebsite(o: { desa: Desa; dusun: readonly Dusun[]; peng
         tersedia: asal !== undefined,
         kredit: asal
           ? {
-              judulAsli: asal.judulCommons, sumber: halamanCommons(asal.judulCommons), pembuat: asal.pembuat,
-              lisensi: asal.lisensi, tautanLisensi: asal.tautanLisensi,
-            }
+            judulAsli: asal.judulCommons, sumber: halamanCommons(asal.judulCommons), pembuat: asal.pembuat,
+            lisensi: asal.lisensi, tautanLisensi: asal.tautanLisensi,
+          }
           : null,
       }
     }),

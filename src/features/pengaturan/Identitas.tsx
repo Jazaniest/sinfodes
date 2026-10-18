@@ -204,7 +204,7 @@ function FormIdentitasDesa({ data, onKotor }: { data: PengaturanDesa; onKotor?: 
                 <TextField
                   label="Hari"
                   value={j.hari}
-                  placeholder="Senin–Kamis"
+                  placeholder="Senin-Kamis"
                   onChange={(v) => ubahJam(i, { hari: v })}
                   galat={galat[`jamLayanan.${i}.hari`]}
                 />

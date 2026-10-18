@@ -53,7 +53,7 @@ export function LayananPublik() {
                   <Fragment key={j.hari}>
                     <dt className="font-medium">{j.hari}</dt>
                     <dd>
-                      {j.buka}–{j.tutup} WIB
+                      {j.buka}-{j.tutup} WIB
                     </dd>
                   </Fragment>
                 ))}

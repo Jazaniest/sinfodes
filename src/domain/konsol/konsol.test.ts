@@ -43,8 +43,11 @@ describe('aturan Konsol Sinfodes (SPEC §11)', () => {
     expect(kalimatPerhatian({ jenis: 'tidak-aktif', jumlah: 3 })).toBe('3 desa tidak aktif 14 hari')
     expect(kalimatPerhatian({ jenis: 'berhenti-persiapan', jumlah: 2 })).toBe('2 desa berhenti di langkah persiapan')
     expect(kalimatPerhatian({ jenis: 'tagihan-lewat', jumlah: 1 })).toBe('1 tagihan lewat jatuh tempo')
-    expect(kalimatPlatform({ desa: { aktif: 26, ujiCoba: 5, persiapan: 7, ditangguhkan: 2 } })).toBe(
-      '26 desa aktif, 5 uji coba, 7 dalam persiapan, dan 2 ditangguhkan.',
+    expect(kalimatPlatform({ desa: { aktif: 26, ujiCoba: 5, persiapan: 7, ditangguhkan: 2 }, kabupatenMitra: 2 })).toBe(
+      '26 desa aktif, 5 uji coba, 7 dalam persiapan, dan 2 ditangguhkan. 2 kabupaten mitra.',
+    )
+    expect(kalimatPlatform({ desa: { aktif: 1, ujiCoba: 0, persiapan: 0, ditangguhkan: 0 }, kabupatenMitra: 0 })).toBe(
+      '1 desa aktif, 0 uji coba, 0 dalam persiapan, dan 0 ditangguhkan. Belum ada kabupaten mitra.',
     )
   })
   it('Senin 12 minggu terakhir, terlama dulu; minggu terakhir memuat hari ini (WIB)', () => {
@@ -59,8 +62,8 @@ describe('aturan Konsol Sinfodes (SPEC §11)', () => {
     expect(slugDesa('Sungai Sialang')).toBe('sungai-sialang')
     expect(slugDesa('  Koto Damar (Baru) ')).toBe('koto-damar-baru')
   })
-  it('hanya pemantau yang punya wilayah', () => {
-    const tim = { id: 'k', nama: 'Dina', jabatan: 'Tim Sinfodes', peran: 'tim', email: 'dina@sinfodes.id', wilayah: null }
+  it('akun Konsol hanya Tim Sinfodes: peran pemantau pindah ke kabupaten (SPEC-V0.2 §7)', () => {
+    const tim = { id: 'k', nama: 'Dina', jabatan: 'Tim Sinfodes', peran: 'tim', email: 'dina@sinfodes.id' }
     expect(penggunaKonsolSchema.safeParse(tim).success).toBe(true)
     expect(penggunaKonsolSchema.safeParse({ ...tim, peran: 'pemantau' }).success).toBe(false)
   })

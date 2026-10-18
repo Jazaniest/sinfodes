@@ -32,6 +32,13 @@ describe('masuk cepat demo lintas alamat (SPEC-V0.2 §4.6)', () => {
     expect(await terapkanMasukCepat({ jenis: 'konsol' }, '/', 'kns_dina')).toBe(true)
     expect(ambilTokenSesi('konsol')).toBe('konsol.kns_dina')
   })
+  it('akun kabupaten di alamat kabupatennya (SPEC-V0.2 §8.1)', async () => {
+    const pelalawan = { jenis: 'kabupaten', label: 'kab-pelalawan' } as const
+    expect(tautanMasukCepat(pelalawan, '/admin', 'kab_rosnani')).toBe('http://kab-pelalawan.sinfodes.localhost:3000/admin?demo=kab_rosnani')
+    expect(await terapkanMasukCepat(pelalawan, '/admin', 'kab_wahyu')).toBe(false)
+    expect(await terapkanMasukCepat(pelalawan, '/admin', 'kab_rosnani')).toBe(true)
+    expect(ambilTokenSesi('kabupaten')).toBe('kab.kab_rosnani')
+  })
   it('akun yang tidak cocok dengan alamat atau tidak dikenal tidak dipakai', async () => {
     expect(await terapkanMasukCepat(ss, '/admin', 'kns_dina')).toBe(false)
     expect(await terapkanMasukCepat(ss, '/admin', 'tidak_ada')).toBe(false)

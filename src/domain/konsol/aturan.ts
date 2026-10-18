@@ -67,11 +67,12 @@ export function kalimatPerhatian(p: Perhatian): string {
 }
 
 /** Angka platform dalam kalimat (SPEC §11). Tanpa angka surat: isi layanan desa bukan untuk Tim Sinfodes (SPEC-V0.2 §5.1). */
-export function kalimatPlatform(r: Pick<RingkasanKonsol, 'desa'>): string {
+export function kalimatPlatform(r: Pick<RingkasanKonsol, 'desa' | 'kabupatenMitra'>): string {
   const { aktif, ujiCoba, persiapan, ditangguhkan } = r.desa
+  const kabupaten = r.kabupatenMitra > 0 ? `${formatAngka(r.kabupatenMitra)} kabupaten mitra.` : 'Belum ada kabupaten mitra.'
   return (
     `${formatAngka(aktif)} desa aktif, ${formatAngka(ujiCoba)} uji coba, ${formatAngka(persiapan)} dalam persiapan, ` +
-    `dan ${formatAngka(ditangguhkan)} ditangguhkan.`
+    `dan ${formatAngka(ditangguhkan)} ditangguhkan. ${kabupaten}`
   )
 }
 

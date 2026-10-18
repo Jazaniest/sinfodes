@@ -17,7 +17,7 @@ let penduduk: Penduduk[]
 let keluarga: Keluarga[]
 let perId: Map<string, Penduduk>
 beforeAll(() => {
-  ;({ penduduk, keluarga } = bangkitkan())
+  ; ({ penduduk, keluarga } = bangkitkan())
   perId = new Map(penduduk.map((p) => [p.id, p] as const))
 })
 
@@ -35,7 +35,7 @@ describe('jumlah dan komposisi (SPEC §12.3)', () => {
   it('balita 211 orang (dipakai modul Kesehatan)', () => expect(penduduk.filter((p) => umur(p) <= 4)).toHaveLength(211))
   it('tepat 12 penduduk dengan data belum lengkap', () =>
     expect(penduduk.filter((p) => dataBelumLengkap(p, ACUAN))).toHaveLength(12))
-  it('mayoritas Islam (91–96%)', () => {
+  it('mayoritas Islam (91-96%)', () => {
     const islam = penduduk.filter((p) => p.agama === 'Islam').length / penduduk.length
     expect(islam).toBeGreaterThan(0.91)
     expect(islam).toBeLessThan(0.96)
@@ -86,7 +86,7 @@ describe('aturan konsistensi (SPEC §12.4)', () => {
       for (const id of k.anggotaIds) expect(perId.get(id)).toMatchObject({ dusunId: k.dusunId, rw: k.rw, rt: k.rt })
     }
   })
-  it('NIK unik, cocok dengan tanggal lahir dan jenis kelamin, nomor urut 8001–9999', () => {
+  it('NIK unik, cocok dengan tanggal lahir dan jenis kelamin, nomor urut 8001-9999', () => {
     const semuaNik = penduduk.flatMap((p) => (p.nik ? [p.nik] : []))
     expect(new Set(semuaNik).size).toBe(semuaNik.length)
     for (const p of penduduk) {
@@ -104,7 +104,7 @@ describe('aturan konsistensi (SPEC §12.4)', () => {
   it('hanya bayi di bawah 3 bulan yang belum punya NIK', () => {
     for (const p of penduduk) expect(p.nik === null).toBe(hitungUmur(p.tanggalLahir, ACUAN).bulan < 3)
   })
-  it('nomor KK unik dengan nomor urut 8001–9999', () => {
+  it('nomor KK unik dengan nomor urut 8001-9999', () => {
     expect(new Set(keluarga.map((k) => k.nomorKk)).size).toBe(keluarga.length)
     for (const k of keluarga) expect(Number(k.nomorKk.slice(12))).toBeGreaterThanOrEqual(8001)
   })

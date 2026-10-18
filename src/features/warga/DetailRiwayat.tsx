@@ -36,7 +36,7 @@ function IsiDetail({ d, sesi }: { d: DetailPermohonanWarga; sesi: SesiWarga }) {
     ...(p.nomor ? [{ label: 'Nomor surat', nilai: p.nomor }] : []),
     ...jenis.isian.filter((i) => p.isian[i.kunci]).map((i) => ({ label: i.label, nilai: p.isian[i.kunci] })),
   ]
-  const jam = sesi.desa.jamLayanan.map((j) => `${j.hari} ${j.buka}–${j.tutup}`).join('; ')
+  const jam = sesi.desa.jamLayanan.map((j) => `${j.hari} ${j.buka}-${j.tutup}`).join('; ')
   return (
     <article className="flex flex-col gap-6">
       <Tautan href="/warga/riwayat" className="self-start">

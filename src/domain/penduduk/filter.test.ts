@@ -72,7 +72,7 @@ describe('dataBelumLengkap', () => {
 describe('urutkanPenduduk', () => {
   const hidup = saringPenduduk(semua, f({}), ctx)
   const nomorDusun = (id: string) => (id === 'dsn_ss_2' ? 2 : 1)
-  it('nama A–Z', () =>
+  it('nama A-Z', () =>
     expect(ids(urutkanPenduduk(hidup, 'nama', { nomorDusun }))).toEqual([
       'pdk_kurang', 'pdk_datang', 'pdk_bayi', 'pdk_ktp', 'pdk_siti', 'pdk_lansia',
     ]))

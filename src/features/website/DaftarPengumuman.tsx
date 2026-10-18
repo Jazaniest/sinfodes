@@ -8,7 +8,7 @@ import { DataTable, type KolomTabel } from '@/ui/data/DataTable'
 import { EmptyState } from '@/ui/umpan-balik/EmptyState'
 import { KepalaWebsite } from './TabWebsite'
 
-const masa = (p: Pengumuman) => `${formatTanggal(p.mulai, 'pendek')} – ${formatTanggal(p.sampai, 'pendek')}`
+const masa = (p: Pengumuman) => `${formatTanggal(p.mulai, 'pendek')} - ${formatTanggal(p.sampai, 'pendek')}`
 
 /** Pengumuman desa (SPEC §8): masa berlaku dan statusnya hari ini. */
 export function DaftarPengumuman({ sekarang }: { sekarang?: Date }) {

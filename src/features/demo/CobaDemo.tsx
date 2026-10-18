@@ -5,8 +5,10 @@ import { keAlamat } from '@/app/alamat'
 import type { TujuanAlamat } from '@/domain/alamat/alamat'
 import { formatAngka } from '@/domain/format/angka'
 import { formatTanggal } from '@/domain/format/tanggal'
+import { LABEL_PERAN_KABUPATEN } from '@/domain/kabupaten/schema'
 import { LABEL_PERAN_KONSOL } from '@/domain/konsol/schema'
 import { LABEL_PERAN } from '@/domain/pengguna/schema'
+import { kelasTombol } from '@/ui/tombol/gaya-tombol'
 import { Tombol } from '@/ui/tombol/Tombol'
 import { Skeleton } from '@/ui/umpan-balik/Skeleton'
 import { tautanMasukCepat } from './masuk-cepat'
@@ -15,6 +17,7 @@ import { SkenarioDemo } from './SkenarioDemo'
 import { useKendaliDemo } from './useKendaliDemo'
 
 const SUNGAI_SIALANG: TujuanAlamat = { jenis: 'desa', label: 'sungaisialang' }
+const KAB_PELALAWAN: TujuanAlamat = { jenis: 'kabupaten', label: 'kab-pelalawan' }
 
 /**
  * Bagian Coba demo di halaman utama, hanya di build demo (SPEC §3.6, SPEC-V0.2 §4.4): akun demo per bagian aplikasi dan
@@ -64,7 +67,7 @@ export function CobaDemo() {
           <Skeleton className="mt-3 h-4 w-80 max-w-full" />
         )}
         <p className="mt-2 text-teks-kecil text-tinta-2">
-          Semua nama, NIK, dan angka di demo ini fiktif. Nomor urut NIK sengaja memakai rentang 8001–9999 agar tidak sama
+          Semua nama, NIK, dan angka di demo ini fiktif. Nomor urut NIK sengaja memakai rentang 8001-9999 agar tidak sama
           dengan NIK orang sungguhan.
         </p>
       </section>
@@ -159,8 +162,7 @@ export function CobaDemo() {
             <div>
               <p className="font-medium">Konsol Sinfodes</p>
               <p className="text-tinta-2">
-                Untuk tim Sinfodes dan pemantau wilayah: keadaan semua desa pelanggan. Pemantau hanya melihat angka gabungan desa di
-                wilayahnya.
+                Untuk Tim Sinfodes: langganan dan keaktifan semua desa pelanggan, serta kabupaten mitra, tanpa isi data desa.
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -168,14 +170,45 @@ export function CobaDemo() {
                 <Tombol
                   key={a.id}
                   ukuran="kecil"
-                  varian={a.peran === 'tim' ? 'utama' : 'sekunder'}
+                  varian="utama"
                   memuat={sedangMasuk === a.id}
                   onPress={() => buka(tautanMasukCepat({ jenis: 'konsol' }, '/', a.id), a.id)}
                 >
-                  {a.nama} · {a.wilayah ? 'Pemantau wilayah' : LABEL_PERAN_KONSOL[a.peran]}
+                  {a.nama} · {LABEL_PERAN_KONSOL[a.peran]}
                 </Tombol>
               ))}
             </div>
+          </li>
+          <li className="flex flex-col gap-3 py-4">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="max-w-2xl">
+                <p className="font-medium">Dasbor kabupaten</p>
+                <p className="text-tinta-2">
+                  Untuk pemerintah kabupaten mitra: adopsi dan angka layanan desa di wilayahnya sendiri, tanpa data pribadi warga.
+                  Pelalawan tidak bisa melihat desa Siak, dan sebaliknya.
+                </p>
+              </div>
+              <a href={keAlamat(KAB_PELALAWAN)} className={kelasTombol('sekunder', 'kecil')}>
+                Buka portal Pelalawan
+              </a>
+            </div>
+            {info.data ? (
+              <div className="flex flex-wrap gap-2">
+                {info.data.akunKabupaten.map((a) => (
+                  <Tombol
+                    key={a.id}
+                    ukuran="kecil"
+                    varian={a.peran === 'admin' ? 'utama' : 'sekunder'}
+                    memuat={sedangMasuk === a.id}
+                    onPress={() => buka(tautanMasukCepat({ jenis: 'kabupaten', label: a.label }, '/admin', a.id), a.id)}
+                  >
+                    {a.nama} · {LABEL_PERAN_KABUPATEN[a.peran]} · {a.namaKabupaten}
+                  </Tombol>
+                ))}
+              </div>
+            ) : (
+              <Skeleton className="h-8 w-96 max-w-full" />
+            )}
           </li>
           <li className="flex flex-wrap items-center justify-between gap-4 py-4">
             <div>

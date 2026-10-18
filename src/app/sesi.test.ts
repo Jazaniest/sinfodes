@@ -42,4 +42,13 @@ describe('sesi lokal', () => {
     expect(ambilTokenSesi()).toBe('demo.pgn_rosmiati')
     hapusSesi()
   })
+  it('sesi kabupaten disimpan terpisah dan ikut dipulihkan (SPEC-V0.2 §8.1)', () => {
+    simpanSesi('kab.kab_fajar', 'kabupaten')
+    aturTokenSesi(null, 'kabupaten')
+    pulihkanSesi()
+    expect(ambilTokenSesi('kabupaten')).toBe('kab.kab_fajar')
+    expect(localStorage.getItem('sinfodes.sesi.kabupaten')).toBe('kab.kab_fajar')
+    hapusSesi('kabupaten')
+    expect(ambilTokenSesi('kabupaten')).toBeNull()
+  })
 })
