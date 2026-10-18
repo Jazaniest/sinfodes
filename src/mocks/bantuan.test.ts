@@ -98,6 +98,32 @@ describe('sesi bantuan Tim Sinfodes, lihat saja (SPEC-V0.2 §5.3)', () => {
     const { riwayat } = await ambilAksesSinfodes()
     expect(riwayat[0]?.sesi[0]?.halaman.map((h) => h.jalur)).toContain('/penduduk?page=1')
   })
+  it('pencarian tetap bisa dipakai, hasilnya tersamar dan tercatat', async () => {
+    const token = await masukBantuan()
+    const r = await minta(url('sungaisialang', '/penduduk/cari'), token, 'POST', { kata: 'Siti', filter: {} })
+    expect(r.status).toBe(200)
+    const { data } = (await r.json()) as { data: { nik: string | null }[] }
+    expect(data.length).toBeGreaterThan(0)
+    for (const p of data) if (p.nik !== null) expect(p.nik).toMatch(/^\d{4}•{8}\d{4}$/)
+    expect((await minta(url('sungaisialang', '/cari'), token, 'POST', { kata: 'Siti' })).status).toBe(200)
+    masukSebagai(AKUN_UJI.sekdes)
+    const { riwayat } = await ambilAksesSinfodes()
+    expect(riwayat[0]?.sesi[0]?.halaman.map((h) => h.jalur)).toEqual(expect.arrayContaining(['/penduduk/cari', '/cari']))
+  })
+  it('selama data disamarkan, pencarian dengan angka NIK atau KK ditolak supaya NIK tidak bisa ditebak', async () => {
+    const token = await masukBantuan()
+    for (const jalur of ['/cari', '/penduduk/cari', '/keluarga/cari', '/permohonan/cari']) {
+      const r = await minta(url('sungaisialang', jalur), token, 'POST', { kata: '1405095203', filter: {} })
+      expect(r.status, jalur).toBe(403)
+      expect(((await r.json()) as { error: { message: string } }).error.message).toBe(
+        'Pencarian dengan angka NIK atau nomor KK tidak tersedia selama data pribadi warga disamarkan.',
+      )
+    }
+  })
+  it('tanpa penyamaran, pencarian dengan NIK boleh', async () => {
+    const token = await masukBantuan(false)
+    expect((await minta(url('sungaisialang', '/cari'), token, 'POST', { kata: '1405095203918002' })).status).toBe(200)
+  })
   it('tanpa penyamaran, NIK tampil utuh', async () => {
     const token = await masukBantuan(false)
     const { data } = (await (await minta(url('sungaisialang', '/penduduk?page=1'), token)).json()) as { data: { nik: string | null }[] }

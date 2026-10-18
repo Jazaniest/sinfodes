@@ -32,6 +32,35 @@ Pekerjaan v0.2.0 (tahap 7A–7H) dicatat di sini selama berjalan di branch `deve
 
 - Langkah "kenali email" di halaman masuk panel dihapus, karena desa sudah diketahui dari alamat.
 
+### Ditambahkan (7A-2: landing, batas data Konsol, akses bantuan)
+
+- **Konsol tidak lagi menampilkan isi data desa.** Jumlah penduduk, kelengkapan data, surat, dan angka layanan desa tidak muncul lagi.
+  - Pemantauan wilayah ditutup untuk Tim Sinfodes; pemantau masih memakainya sampai dasbor kabupaten tersedia.
+  - "Perlu perhatian" kini menghitung desa yang berhenti di langkah persiapan mana pun.
+- **Layar Konsol menyesuaikan.**
+  - Daftar desa menampilkan kolom Alamat, bukan Kelengkapan.
+  - Tab Penggunaan menjadi Keaktifan: terakhir dipakai, akun aktif, penyimpanan berkas, dan grafik masuk per minggu.
+  - Menu Pemantauan hanya untuk pemantau.
+- **Alamat website di Tambah desa.** Alamat diusulkan otomatis dari nama desa dan langsung diperiksa ("bisa dipakai" atau "sudah dipakai desa lain").
+- **Ubah alamat desa** dari Detail desa. Alamat lama tetap mengarah ke desa itu, tidak bisa dipakai desa lain, dan QR pada surat lama tetap berlaku.
+- **Isi alamat desa mengikuti statusnya.**
+  - Website desa Ditangguhkan tetap tayang, sehingga cek keaslian suratnya tetap jalan.
+  - Desa Persiapan menampilkan "Website Desa … sedang disiapkan", dan layanan warganya ditutup dengan pesan.
+  - Alamat yang tidak dikenal mendapat tautan ke Cari desa.
+- **Cari desa** menurut nama, di halaman utama dan di halaman pindah panel. Hanya desa yang websitenya tayang yang muncul.
+- **Halaman utama Sinfodes:**
+  - pembuka dengan tombol "Daftarkan desa Anda" lewat WhatsApp;
+  - tiga lampiran tangkapan layar (panel desa, layanan warga, website desa);
+  - jumlah desa yang sudah memakai Sinfodes, berlabel "Data contoh" di demo;
+  - tabel Paket dan harga, Cari desa, Coba demo (isi halaman demo lama), dan halaman Kebijakan privasi.
+- **Akses bantuan Sinfodes di Pengaturan,** untuk Sekretaris dan Kepala Desa.
+  - Desa memberi Tim Sinfodes izin melihat panel selama 2 jam, 24 jam, atau 3 hari, dengan pilihan menyamarkan NIK dan nomor KK.
+  - Akses bisa dicabut kapan saja, dan riwayat mencatat siapa yang membuka dan halaman apa saja.
+  - Menu Pengaturan Kepala Desa langsung membuka halaman ini.
+- **Mode bantuan lihat saja.**
+  - Tim Sinfodes membuka panel desa dari Konsol lewat tiket sekali pakai yang berlaku 60 detik.
+  - Semua perubahan ditolak, setiap halaman yang dibuka tercatat, dan pita "Mode bantuan Sinfodes · lihat saja" tampil di atas panel.
+
 ## [0.1.0] - 2026-10-16
 
 Demo tahap 1: frontend sungguhan dengan API tiruan (MSW) dan data dummy Desa Sungai Sialang, Kabupaten Pelalawan.

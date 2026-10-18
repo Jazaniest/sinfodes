@@ -48,18 +48,36 @@ export const samarkanDataPribadi = (nilai: unknown): unknown => samarkan(nilai, 
 
 const jalurApi = (url: URL): string => url.pathname.replace(/^.*?\/api\/v1/, '')
 
+/** Pencarian memakai POST supaya NIK tidak masuk URL; isinya hanya membaca, jadi boleh di sesi bantuan. */
+const JALUR_CARI: ReadonlySet<string> = new Set(['/cari', '/penduduk/cari', '/keluarga/cari', '/permohonan/cari'])
+export const PESAN_CARI_NOMOR =
+  'Pencarian dengan angka NIK atau nomor KK tidak tersedia selama data pribadi warga disamarkan.'
+/** Lima angka berurutan cukup untuk menebak bagian NIK atau nomor KK dari hasil yang cocok. */
+const ANGKA_NOMOR = /\d{5}/
+
+async function kataCari(request: Request): Promise<string> {
+  const isi: unknown = await request.clone().json().catch(() => null)
+  return isi !== null && typeof isi === 'object' && 'kata' in isi && typeof isi.kata === 'string' ? isi.kata : ''
+}
+
+const tolak = (pesan: string) => HttpResponse.json({ error: { code: 'FORBIDDEN', message: pesan } }, { status: 403 })
+
 /** Dipanggil `denganJaringan` di sekeliling setiap handler. Permintaan tanpa token bantuan diteruskan apa adanya. */
 export async function bungkusBantuan(request: Request, jalankan: () => Promise<Response>): Promise<Response> {
   const sesiId = sesiIdDariPermintaan(request)
   if (sesiId === null) return jalankan()
   const url = new URL(request.url)
   const jalur = jalurApi(url)
-  if (request.method !== 'GET') {
+  const cari = request.method === 'POST' && JALUR_CARI.has(jalur)
+  if (request.method !== 'GET' && !cari) {
     if (request.method === 'POST' && jalur === '/sesi/keluar') return jalankan()
-    return HttpResponse.json({ error: { code: 'FORBIDDEN', message: PESAN_LIHAT_SAJA } }, { status: 403 })
+    return tolak(PESAN_LIHAT_SAJA)
   }
-  const respons = await jalankan()
   const sekarang = new Date()
+  // Selama NIK disamarkan, mencocokkan angka NIK atau KK sama saja dengan membukanya sedikit demi sedikit.
+  const awal = cariSesiBantuan(ambilDb(), sesiId)
+  if (cari && awal?.akses.sembunyikanDataPribadi && ANGKA_NOMOR.test(await kataCari(request))) return tolak(PESAN_CARI_NOMOR)
+  const respons = await jalankan()
   const temu = cariSesiBantuan(ambilDb(), sesiId)
   // Token yang tidak berlaku sudah dijawab 401 oleh handler; tidak ada yang dicatat atau disamarkan.
   if (!temu || !masihBerlaku(temu.akses, sekarang) || !respons.ok) return respons
