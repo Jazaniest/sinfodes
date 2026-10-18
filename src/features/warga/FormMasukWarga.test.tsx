@@ -20,6 +20,11 @@ describe('masuk layanan warga (SPEC §10)', () => {
     render(<FormMasukWarga namaDesa="Sungai Sialang" onBerhasil={vi.fn()} />)
     expect(screen.getByText('Desa Sungai Sialang')).toBeInTheDocument()
   })
+  it('desa Persiapan: layanan warga ditutup dengan pesan, tanpa kolom NIK (SPEC-V0.2 §4.1)', () => {
+    render(<FormMasukWarga namaDesa="Tanjung Lamo" ditutup onBerhasil={vi.fn()} />)
+    expect(screen.getByText('Layanan warga Desa Tanjung Lamo belum dibuka. Desa sedang menyiapkan datanya.')).toBeInTheDocument()
+    expect(screen.queryByRole('textbox', { name: 'NIK' })).not.toBeInTheDocument()
+  })
   it('NIK dan PIN benar → onBerhasil dengan token dan sesi warga', async () => {
     const { onBerhasil, user } = pasang()
     await user.type(kolomNik(), '1405095203918002')

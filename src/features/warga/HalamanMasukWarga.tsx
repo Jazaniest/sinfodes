@@ -12,9 +12,11 @@ export function HalamanMasukWarga() {
   const router = useRouter()
   const queryClient = useQueryClient()
   const alamat = useQuery(opsiAlamat())
+  const desa = alamat.data?.jenis === 'desa' ? alamat.data.desa : null
   return (
     <FormMasukWarga
-      namaDesa={alamat.data?.jenis === 'desa' ? alamat.data.desa.nama : null}
+      namaDesa={desa?.nama ?? null}
+      ditutup={desa?.status === 'Persiapan'}
       modeDemo={import.meta.env.VITE_DEMO === 'true'}
       onBerhasil={(token, sesi) => {
         pasangSesiWarga(token, sesi, queryClient)
