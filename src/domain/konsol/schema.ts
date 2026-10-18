@@ -122,6 +122,10 @@ export const tambahDesaSchema = z.object({
 export type TambahDesa = z.infer<typeof tambahDesaSchema>
 export const hasilTambahDesaSchema = z.object({ id: z.string(), nama: z.string(), email: z.string() })
 
+/** PUT /konsol/desa/:id/alamat (SPEC-V0.2 §4.2): alamat lama disimpan sebagai alias selamanya. */
+export const ubahAlamatSchema = tambahDesaSchema.pick({ alamat: true })
+export const hasilUbahAlamatSchema = z.object({ slug: z.string(), aliasAlamat: z.array(z.string()) })
+
 /** GET /konsol/alamat-desa: alamat pertama yang masih bebas untuk nama dan kecamatan ini (SPEC-V0.2 §4.2). */
 export const usulanAlamatSchema = z.object({ usulan: z.string().nullable() })
 

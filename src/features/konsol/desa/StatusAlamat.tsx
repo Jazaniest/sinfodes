@@ -10,7 +10,8 @@ export function StatusAlamat({ label, desaId }: { label: string; desaId?: string
   const tenang = useTunda(label.trim().toLowerCase(), 300)
   const periksa = useQuery({ ...opsiPeriksaAlamat(tenang, desaId), enabled: tenang.length > 0 })
   const hasil = tenang.length > 0 ? periksa.data : undefined
-  const warna = hasil?.status === 'tersedia' || hasil?.status === 'sekarang' ? 'text-hijau' : 'text-merah'
+  // "sekarang" hanya muncul di Ubah alamat: bukan galat, tetapi juga bukan alamat baru.
+  const warna = hasil?.status === 'tersedia' ? 'text-hijau' : hasil?.status === 'sekarang' ? 'text-tinta-2' : 'text-merah'
   return (
     <p aria-live="polite" className={`min-h-5 text-teks-kecil ${hasil ? warna : ''}`}>
       {hasil?.pesan}

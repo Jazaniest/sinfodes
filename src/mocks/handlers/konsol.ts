@@ -5,7 +5,7 @@ import { tanggalIsoWib } from '@/domain/format/tanggal'
 import { hitungPerhatian, statusTagihan } from '@/domain/konsol/aturan'
 import { ringkasWilayah, type BarisPemantauanDesa, type Pemantauan } from '@/domain/konsol/pemantauan'
 import {
-  filterDesaKonsolSchema, tambahDesaSchema, undangSekdesSchema, type BarisDesaKonsol, type DetailDesaKonsol, type PenggunaKonsol,
+  filterDesaKonsolSchema, tambahDesaSchema, ubahAlamatSchema, undangSekdesSchema, type BarisDesaKonsol, type DetailDesaKonsol, type PenggunaKonsol,
   type PeriksaAlamat,
   type RingkasanKonsol, type SesiKonsol,
 } from '@/domain/konsol/schema'
@@ -243,6 +243,32 @@ export const handlerKonsol = [
         d.jenisSurat.push(...katalogDesaBaru(desa))
       })
       return HttpResponse.json({ id, nama, email }, { status: 201 })
+    }),
+  ),
+  http.put(
+    `${API}/konsol/desa/:id/alamat`,
+    denganJaringan(async ({ request, params }) => {
+      const pengguna = butuhPenggunaKonsol(request)
+      if (pengguna instanceof Response) return pengguna
+      const ditolak = tolakPemantau(pengguna)
+      if (ditolak) return ditolak
+      const db = ambilDb()
+      const desa = db.desa.find((d) => d.id === String(params.id))
+      if (!desa) return balasGalat('NOT_FOUND', 'Desa tidak ditemukan.', 404)
+      const isian = ubahAlamatSchema.safeParse(await bacaJson(request))
+      if (!isian.success) return balasIsianTidakValid(isian.error)
+      const { alamat } = isian.data
+      const periksa = periksaLabelAlamat(db, alamat, desa.id)
+      if (periksa.status === 'sekarang') return balasField('alamat', 'Alamat baru sama dengan alamat sekarang.')
+      if (periksa.status !== 'tersedia') return balasField('alamat', periksa.pesan, 'CONFLICT')
+      // Alamat lama jadi alias selamanya supaya tautan dan QR surat lama tetap sampai; alias milik sendiri yang dipakai lagi
+      // keluar dari daftar alias (SPEC-V0.2 §4.2).
+      const lama = desa.slug
+      ubahDb((d) => {
+        d.aliasAlamat = [...d.aliasAlamat.filter((a) => a.label !== alamat), { label: lama, desaId: desa.id }]
+        desa.slug = alamat
+      })
+      return HttpResponse.json({ slug: alamat, aliasAlamat: db.aliasAlamat.filter((a) => a.desaId === desa.id).map((a) => a.label) })
     }),
   ),
   http.post(

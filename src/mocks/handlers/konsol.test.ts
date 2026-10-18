@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { ambilBerandaPublik } from '@/api/publik'
-import { ambilDetailDesaKonsol, ambilRingkasanKonsol, ambilUsulanAlamat, daftarDesaKonsol, periksaAlamat, tambahDesa } from '@/api/konsol'
+import { ambilDetailDesaKonsol, ambilRingkasanKonsol, ambilUsulanAlamat, daftarDesaKonsol, periksaAlamat, tambahDesa, ubahAlamatDesa } from '@/api/konsol'
 import { masuk } from '@/api/sesi'
+import { PESAN_ALAMAT_TIDAK_SAH } from '@/domain/alamat/alamat'
 import { ambilDb } from '@/mocks/db'
 import { AKUN_KONSOL_UJI, masukKonsolSebagai, pakaiApiTiruan } from '@/test/api-tiruan'
 
@@ -104,6 +105,39 @@ describe('API Konsol (SPEC §11, §3.4)', () => {
     })
     const hasil = await tambahDesa({ ...isianBaru, alamat: 'kotobaru' })
     expect(ambilDb().desa.find((d) => d.id === hasil.id)?.slug).toBe('kotobaru')
+  })
+  it('Ubah alamat: alamat lama jadi alias dan mengarah ke alamat baru (SPEC-V0.2 §4.2)', async () => {
+    masukKonsolSebagai(AKUN_KONSOL_UJI.tim)
+    const hasil = await ubahAlamatDesa('desa_sungai_sialang', 'sialang')
+    expect(hasil.slug).toBe('sialang')
+    expect(hasil.aliasAlamat).toEqual(expect.arrayContaining(['sungai-sialang', 'sungaisialang']))
+    const r = await fetch('http://sungaisialang.sinfodes.localhost/api/v1/alamat')
+    expect(await r.json()).toEqual({ jenis: 'alias', labelBaru: 'sialang' })
+  })
+  it('Ubah alamat kembali ke alias sendiri: label itu keluar dari daftar alias', async () => {
+    masukKonsolSebagai(AKUN_KONSOL_UJI.tim)
+    const hasil = await ubahAlamatDesa('desa_sungai_sialang', 'sungai-sialang')
+    expect(hasil.slug).toBe('sungai-sialang')
+    expect(hasil.aliasAlamat).toContain('sungaisialang')
+    expect(hasil.aliasAlamat).not.toContain('sungai-sialang')
+    expect(ambilDb().aliasAlamat.filter((a) => a.label === 'sungai-sialang')).toHaveLength(0)
+  })
+  it('Ubah alamat yang dipakai desa lain, sama dengan sekarang, atau tidak sah ditolak per kolom', async () => {
+    masukKonsolSebagai(AKUN_KONSOL_UJI.tim)
+    await expect(ubahAlamatDesa('desa_tanjung_lamo', 'sungai-sialang')).rejects.toMatchObject({
+      kode: 'CONFLICT', fields: { alamat: 'Alamat ini sudah dipakai desa lain.' },
+    })
+    await expect(ubahAlamatDesa('desa_sungai_sialang', 'sungaisialang')).rejects.toMatchObject({
+      kode: 'VALIDATION', fields: { alamat: 'Alamat baru sama dengan alamat sekarang.' },
+    })
+    await expect(ubahAlamatDesa('desa_sungai_sialang', 'api')).rejects.toMatchObject({
+      kode: 'VALIDATION', fields: { alamat: PESAN_ALAMAT_TIDAK_SAH },
+    })
+    expect(ambilDb().desa.find((d) => d.id === 'desa_sungai_sialang')?.slug).toBe('sungaisialang')
+  })
+  it('pemantau tidak bisa mengubah alamat desa', async () => {
+    masukKonsolSebagai(AKUN_KONSOL_UJI.pemantau)
+    await expect(ubahAlamatDesa('desa_sungai_sialang', 'sialang')).rejects.toMatchObject({ kode: 'FORBIDDEN' })
   })
   it('Tambah desa yang bentrok atau tidak sah: galat per kolom, dan tidak ada yang tercipta setengah jadi (fokus review 3)', async () => {
     masukKonsolSebagai(AKUN_KONSOL_UJI.tim)

@@ -21,6 +21,7 @@ import { Tombol } from '@/ui/tombol/Tombol'
 import { EmptyState } from '@/ui/umpan-balik/EmptyState'
 import { ErrorState } from '@/ui/umpan-balik/ErrorState'
 import { BarisKerangka } from '@/ui/umpan-balik/Skeleton'
+import { DialogUbahAlamat } from './DialogUbahAlamat'
 import { DialogUndangSekdes } from './DialogUndangSekdes'
 import { LABEL_TAB_DETAIL_DESA, TAB_DETAIL_DESA, type TabDetailDesa } from './tab-detail'
 
@@ -31,39 +32,47 @@ const kepala = 'border-b border-garis py-1.5 text-label font-medium text-tinta-2
 
 const CAP_TAGIHAN: Readonly<Record<StatusTagihan, VarianCap>> = { lunas: 'selesai', menunggu: 'menunggu', 'lewat-jatuh-tempo': 'ditolak' }
 
-
 function TabRingkasan({ d }: { d: DetailDesaKonsol }) {
+  const [ubahAlamat, setUbahAlamat] = useState(false)
   return (
-    <DescriptionList
-      items={[
-        { label: 'Kode desa', nilai: <span className="font-mono">{d.kodeDesa}</span> },
-        { label: 'Status', nilai: d.status },
-        { label: 'Paket', nilai: d.paket },
-        { label: 'Alamat kantor', nilai: d.alamatKantor || null },
-        { label: 'Surel', nilai: d.surel || null },
-        { label: 'Telepon', nilai: d.telepon || null },
-        { label: 'Kepala desa', nilai: d.kontak.kades },
-        { label: 'Sekretaris Desa', nilai: d.kontak.sekdes && `${d.kontak.sekdes.nama} · ${d.kontak.sekdes.email}` },
-        { label: 'Operator', nilai: d.kontak.operator && `${d.kontak.operator.nama} · ${d.kontak.operator.email}` },
-        {
-          label: 'Alamat',
-          nilai: (
-            <Tautan href={keAlamat({ jenis: 'desa', label: d.slug })} className="font-mono">
-              {`${d.slug}.${DOMAIN_INDUK}`}
-            </Tautan>
-          ),
-        },
-        {
-          label: 'Alamat lama',
-          nilai:
-            d.aliasAlamat.length > 0 ? (
-              <span className="font-mono">{d.aliasAlamat.join(', ')}</span>
-            ) : (
-              <span className={redup}>Belum pernah diganti</span>
+    <>
+      <DescriptionList
+        items={[
+          { label: 'Kode desa', nilai: <span className="font-mono">{d.kodeDesa}</span> },
+          { label: 'Status', nilai: d.status },
+          { label: 'Paket', nilai: d.paket },
+          { label: 'Alamat kantor', nilai: d.alamatKantor || null },
+          { label: 'Surel', nilai: d.surel || null },
+          { label: 'Telepon', nilai: d.telepon || null },
+          { label: 'Kepala desa', nilai: d.kontak.kades },
+          { label: 'Sekretaris Desa', nilai: d.kontak.sekdes && `${d.kontak.sekdes.nama} · ${d.kontak.sekdes.email}` },
+          { label: 'Operator', nilai: d.kontak.operator && `${d.kontak.operator.nama} · ${d.kontak.operator.email}` },
+          {
+            label: 'Alamat',
+            nilai: (
+              <span className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+                <Tautan href={keAlamat({ jenis: 'desa', label: d.slug })} className="font-mono">
+                  {`${d.slug}.${DOMAIN_INDUK}`}
+                </Tautan>
+                <Tombol varian="teks" onPress={() => setUbahAlamat(true)}>
+                  Ubah alamat
+                </Tombol>
+              </span>
             ),
-        },
-      ]}
-    />
+          },
+          {
+            label: 'Alamat lama',
+            nilai:
+              d.aliasAlamat.length > 0 ? (
+                <span className="font-mono">{d.aliasAlamat.join(', ')}</span>
+              ) : (
+                <span className={redup}>Belum pernah diganti</span>
+              ),
+          },
+        ]}
+      />
+      {ubahAlamat && <DialogUbahAlamat desaId={d.id} alamatSekarang={d.slug} onTutup={() => setUbahAlamat(false)} />}
+    </>
   )
 }
 
