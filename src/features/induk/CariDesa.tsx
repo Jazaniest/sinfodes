@@ -10,9 +10,9 @@ const MIN_KATA = 3
 
 /**
  * Cari desa di alamat induk (SPEC-V0.2 §4.4): warga dan perangkat yang belum tahu alamat desanya menemukan website desa dari
- * namanya. Hanya desa yang websitenya tayang yang muncul.
+ * namanya. Hanya desa yang websitenya tayang yang muncul. `judulBesar`: judul selevel bagian lain di halaman utama.
  */
-export function CariDesa({ id = 'cari-desa' }: { id?: string }) {
+export function CariDesa({ id = 'cari-desa', judulBesar = false }: { id?: string; judulBesar?: boolean }) {
   const [kata, setKata] = useState('')
   const tenang = useTunda(kata.trim(), 300)
   const cari = useQuery({ ...opsiCariDesa(tenang), enabled: tenang.length >= MIN_KATA })
@@ -30,7 +30,7 @@ export function CariDesa({ id = 'cari-desa' }: { id?: string }) {
   return (
     <section id={id} aria-labelledby={`${id}-judul`} className="flex flex-col gap-4">
       <div>
-        <h2 id={`${id}-judul`} className="font-serif text-judul-bagian font-medium">
+        <h2 id={`${id}-judul`} className={`font-serif font-medium ${judulBesar ? 'text-judul-halaman' : 'text-judul-bagian'}`}>
           Cari desa Anda
         </h2>
         <p className="mt-1 text-tinta-2">Ketik nama desa untuk membuka website dan layanan warganya.</p>
