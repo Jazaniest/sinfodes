@@ -9,6 +9,7 @@ export type MasukSkenario =
   | { bagian: 'admin'; peran: Peran }
   | { bagian: 'warga'; pendudukId: string }
   | { bagian: 'konsol'; peran: PeranKonsol }
+  | { bagian: 'kabupaten'; id: string }
   | { bagian: 'publik' }
 /** `tujuan` + `jalur`: alamat dan path luar yang dibuka tombol (SPEC-V0.2 §4.6). */
 export type TombolSkenario = { label: string; masuk: MasukSkenario; tujuan: TujuanAlamat; jalur: string }
@@ -19,7 +20,7 @@ const SITI: MasukSkenario = { bagian: 'warga', pendudukId: 'pdk_siti_rahmah' }
 const OPERATOR: MasukSkenario = { bagian: 'admin', peran: 'operator' }
 const PUBLIK: MasukSkenario = { bagian: 'publik' }
 const SS: TujuanAlamat = { jenis: 'desa', label: 'sungaisialang' }
-const KONSOL: TujuanAlamat = { jenis: 'konsol' }
+const KAB_PELALAWAN: TujuanAlamat = { jenis: 'kabupaten', label: 'kab-pelalawan' }
 
 /** Tiga skenario terpandu = tiga alur demo kriteria selesai tahap 1 (SPEC §3.6, §13.5). */
 export const SKENARIO_DEMO: readonly Skenario[] = [
@@ -72,11 +73,13 @@ export const SKENARIO_DEMO: readonly Skenario[] = [
   {
     id: 'pemantauan',
     judul: 'Pemantauan kabupaten',
-    ringkas: 'Dinas PMD Kabupaten Pelalawan melihat Sungai Sialang di Pemantauan wilayah, dengan angka yang sama dengan panel desanya.',
+    ringkas: 'Kepala Dinas PMD Kabupaten Pelalawan melihat Sungai Sialang di dasbor kabupaten, dengan angka yang sama dengan panel desanya.',
     langkah: [
       {
-        teks: 'Pemantau Kabupaten Pelalawan membuka Pemantauan wilayah, lalu membuka Kecamatan Teluk Meranti.',
-        tombol: [{ label: 'Masuk sebagai pemantau', masuk: { bagian: 'konsol', peran: 'pemantau' }, tujuan: KONSOL, jalur: '/pemantauan' }],
+        teks: 'Peninjau Kabupaten Pelalawan membuka Pemantauan di dasbor kabupaten, lalu membuka Kecamatan Teluk Meranti.',
+        tombol: [
+          { label: 'Masuk sebagai Peninjau', masuk: { bagian: 'kabupaten', id: 'kab_rosnani' }, tujuan: KAB_PELALAWAN, jalur: '/admin/pemantauan' },
+        ],
       },
       {
         teks: 'Bandingkan dengan panel Sungai Sialang: data belum lengkap dan realisasi APBDes.',
@@ -102,6 +105,8 @@ export function tautanSkenario(
         ? akun.konsol.find((a) => a.peran === m.peran)?.id
         : m.bagian === 'warga'
           ? m.pendudukId
-          : undefined
+          : m.bagian === 'kabupaten'
+            ? m.id
+            : undefined
   return kunci ? tautanMasukCepat(t.tujuan, t.jalur, kunci) : keAlamat(t.tujuan, t.jalur)
 }

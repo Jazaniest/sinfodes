@@ -9,12 +9,14 @@ const rasio = z.number().min(0).nullable()
 const kodeNama = z.object({ kode: z.string(), nama: z.string() })
 
 /**
- * Satu desa di Pemantauan wilayah (SPEC §11 layar 5). Strict: pemantau hanya melihat angka agregat per desa, jadi field
- * di luar daftar ini (mis. data pribadi warga) membuat respons tidak sah.
+ * Satu desa di Pemantauan kabupaten (SPEC §11 layar 5, pindah ke kabupaten di SPEC-V0.2 §8.3). Strict: kabupaten hanya
+ * melihat angka agregat per desa, jadi field di luar daftar ini (mis. data pribadi warga) membuat respons tidak sah.
  */
 export const barisPemantauanDesaSchema = z.strictObject({
   id: z.string(),
   nama: z.string(),
+  /** Alamat website desa (SPEC-V0.2 §4.2), untuk tautan dari dasbor kabupaten. */
+  alamat: z.string(),
   status: z.enum(STATUS_DESA),
   /** Surat Selesai yang terbit pada bulan berjalan (WIB). */
   suratBulanIni: jumlah,
@@ -41,7 +43,7 @@ export const ringkasanWilayahSchema = z.object({
 })
 export type RingkasanWilayah = z.infer<typeof ringkasanWilayahSchema>
 
-/** GET /konsol/pemantauan?wilayah=14.05 (SPEC §3.4). Kecamatan dan desanya urut nama. */
+/** GET /kabupaten/pemantauan (SPEC-V0.2 §8.3): kabupaten dari sesi. Kecamatan dan desanya urut nama. */
 export const pemantauanSchema = z.object({
   wilayah: kodeNama,
   /** Bulan berjalan, "YYYY-MM". */
@@ -59,7 +61,7 @@ export function median(nilai: readonly number[]): number | null {
   return urut.length % 2 === 1 ? urut[tengah] : (urut[tengah - 1] + urut[tengah]) / 2
 }
 
-/** Satu desimal: median jam stabil dan mudah dibandingkan antara Konsol dan panel desa. */
+/** Satu desimal: median jam stabil dan mudah dibandingkan antara dasbor kabupaten dan panel desa. */
 export const bulatJam = (jam: number | null): number | null => (jam === null ? null : Math.round(jam * 10) / 10)
 
 const KUNCI_ADOPSI: Readonly<Record<StatusDesa, keyof RingkasanWilayah['adopsi']>> = {
@@ -73,7 +75,7 @@ const tanpaNull = (nilai: readonly (number | null)[]): number[] => nilai.flatMap
 
 /**
  * Angka gabungan kecamatan atau kabupaten. Kelengkapan ditimbang jumlah jiwa, realisasi APBDes dari jumlah realisasi dibagi
- * jumlah anggaran, dan waktu adalah median dari median desa (data per surat tidak dikirim ke Konsol). Desa tanpa angka tidak
+ * jumlah anggaran, dan waktu adalah median dari median desa (data per surat tidak dikirim ke kabupaten). Desa tanpa angka tidak
  * ikut dihitung; bila semuanya kosong, hasilnya null.
  */
 export function ringkasWilayah(desa: readonly BarisPemantauanDesa[]): RingkasanWilayah {

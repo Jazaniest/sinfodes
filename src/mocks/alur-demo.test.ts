@@ -4,7 +4,7 @@ import { ambilBeranda } from '@/api/beranda'
 import { ambilIsiBuku } from '@/api/buku'
 import { ambilKeluarga } from '@/api/keluarga'
 import { ambilApbdes } from '@/api/keuangan'
-import { ambilPemantauan } from '@/api/konsol'
+import { ambilPemantauanKabupaten } from '@/api/kabupaten'
 import { catatLahir } from '@/api/mutasi'
 import { daftarPengaduan } from '@/api/pengaduan'
 import { daftarPenduduk } from '@/api/penduduk'
@@ -15,11 +15,11 @@ import { daftarPermohonan, jalankanAksi } from '@/api/surat'
 import { ambilRiwayatWarga, kirimPermohonanWarga } from '@/api/warga'
 import { tanggalIsoWib } from '@/domain/format/tanggal'
 import { jumlahKelompok } from '@/domain/keuangan/schema'
-import { bulatJam, median } from '@/domain/konsol/pemantauan'
+import { bulatJam, median } from '@/domain/kabupaten/pemantauan'
 import type { MasukanLahir } from '@/domain/mutasi/masukan'
 import { ambilDb } from '@/mocks/db'
 import {
-  AKUN_KONSOL_UJI, AKUN_UJI, AKUN_WARGA_UJI, masukKonsolSebagai, masukSebagai, masukSebagaiWarga, pakaiApiTiruan, SEKARANG_UJI,
+  AKUN_KABUPATEN_UJI, AKUN_UJI, AKUN_WARGA_UJI, masukKabupatenSebagai, masukSebagai, masukSebagaiWarga, pakaiApiTiruan, SEKARANG_UJI,
 } from '@/test/api-tiruan'
 
 pakaiApiTiruan({ dbSegarTiapUji: true })
@@ -97,9 +97,9 @@ describe('tiga alur demo kriteria selesai tahap 1 (SPEC §13.5)', () => {
     expect((await ambilBeranda()).bukuHariIni?.map((a) => a.ringkasan)).toContain('Kelahiran dicatat · Aisyah Putri')
     expect((await ambilStatistikPublik('sungaisialang')).jiwa).toBe(jiwaWebAwal + 1)
   })
-  it('3. pemantau Pelalawan melihat Sungai Sialang dengan angka yang sama dengan panel desanya (fokus review 2)', async () => {
-    masukKonsolSebagai(AKUN_KONSOL_UJI.pemantau)
-    const ss = (await ambilPemantauan(null)).kecamatan
+  it('3. Peninjau Pelalawan melihat Sungai Sialang di dasbor kabupaten dengan angka yang sama dengan panel desanya (fokus review 2)', async () => {
+    masukKabupatenSebagai(AKUN_KABUPATEN_UJI.peninjau)
+    const ss = (await ambilPemantauanKabupaten()).kecamatan
       .find((k) => k.kecamatan.nama === 'Teluk Meranti')
       ?.desa.find((d) => d.nama === 'Sungai Sialang')
     if (!ss) throw new Error('Sungai Sialang tidak ada di Pemantauan')

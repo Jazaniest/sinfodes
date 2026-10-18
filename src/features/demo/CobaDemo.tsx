@@ -159,8 +159,7 @@ export function CobaDemo() {
             <div>
               <p className="font-medium">Konsol Sinfodes</p>
               <p className="text-tinta-2">
-                Untuk tim Sinfodes dan pemantau wilayah: keadaan semua desa pelanggan. Pemantau hanya melihat angka gabungan desa di
-                wilayahnya.
+                Untuk Tim Sinfodes: langganan dan keaktifan semua desa pelanggan, tanpa isi data desa.
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -168,11 +167,11 @@ export function CobaDemo() {
                 <Tombol
                   key={a.id}
                   ukuran="kecil"
-                  varian={a.peran === 'tim' ? 'utama' : 'sekunder'}
+                  varian="utama"
                   memuat={sedangMasuk === a.id}
                   onPress={() => buka(tautanMasukCepat({ jenis: 'konsol' }, '/', a.id), a.id)}
                 >
-                  {a.nama} · {a.wilayah ? 'Pemantau wilayah' : LABEL_PERAN_KONSOL[a.peran]}
+                  {a.nama} · {LABEL_PERAN_KONSOL[a.peran]}
                 </Tombol>
               ))}
             </div>

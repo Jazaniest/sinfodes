@@ -1,7 +1,6 @@
 import { queryOptions } from '@tanstack/react-query'
 import { z } from 'zod'
 import { daftarSchema } from '@/domain/api'
-import { pemantauanSchema } from '@/domain/konsol/pemantauan'
 import {
   barisDesaKonsolSchema, detailDesaKonsolSchema, hasilTambahDesaSchema, hasilUbahAlamatSchema, hasilUndangSekdesSchema, periksaAlamatSchema,
   ringkasanKonsolSchema,
@@ -16,7 +15,6 @@ export const kunciKonsol = {
   ringkasan: ['konsol', 'ringkasan'] as const,
   desa: (filter: FilterDesaKonsol) => ['konsol', 'desa', filter] as const,
   detail: (id: string) => ['konsol', 'desa-detail', id] as const,
-  pemantauan: (wilayah: string | null) => ['konsol', 'pemantauan', wilayah] as const,
   usulanAlamat: (nama: string, kecamatan: string) => ['konsol', 'usulan-alamat', nama, kecamatan] as const,
   periksaAlamat: (label: string, desaId: string | undefined) => ['konsol', 'periksa-alamat', label, desaId ?? null] as const,
 }
@@ -63,12 +61,6 @@ export const ambilTiketBantuan = (desaId: string) =>
 /** Ubah alamat website desa (SPEC-V0.2 §4.2); alamat lama tetap mengarah ke desa ini. */
 export const ubahAlamatDesa = (desaId: string, alamat: string) =>
   panggilApi('PUT', `/konsol/desa/${encodeURIComponent(desaId)}/alamat`, { skema: hasilUbahAlamatSchema, body: { alamat }, sesi: 'konsol' })
-
-/** `wilayah` null: pemantau memakai wilayahnya sendiri; Tim Sinfodes wajib memilih kabupaten. */
-export const ambilPemantauan = (wilayah: string | null, signal?: AbortSignal) =>
-  panggilApi('GET', '/konsol/pemantauan', { skema: pemantauanSchema, query: wilayah ? { wilayah } : {}, signal, sesi: 'konsol' })
-export const opsiPemantauan = (wilayah: string | null) =>
-  queryOptions({ queryKey: kunciKonsol.pemantauan(wilayah), queryFn: ({ signal }) => ambilPemantauan(wilayah, signal) })
 
 /** Usulan alamat website desa baru dari nama dan kode kecamatan bertitik (SPEC-V0.2 §4.2). */
 export const ambilUsulanAlamat = (nama: string, kecamatan: string, signal?: AbortSignal) =>

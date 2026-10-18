@@ -1,7 +1,6 @@
 import { screen, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { AKUN_KONSOL_UJI, masukKonsolSebagai, pakaiApiTiruan, SEKARANG_UJI } from '@/test/api-tiruan'
-import { contohSesiKonsol } from '@/test/konsol'
 import { renderKonsol } from '@/test/render'
 import { RingkasanKonsol } from './RingkasanKonsol'
 
@@ -22,17 +21,5 @@ describe('Ringkasan Konsol (SPEC §11)', () => {
     expect(platform).toHaveTextContent('26 desa aktif, 5 uji coba, 7 dalam persiapan, dan 2 ditangguhkan.')
     expect(platform).not.toHaveTextContent(/surat terbit/)
     expect(screen.queryByRole('link', { name: 'Buka Pemantauan wilayah' })).not.toBeInTheDocument()
-  })
-  it('pemantau: angka kabupatennya saja, tanpa tagihan dan tanpa tautan ke daftar desa (fokus review 1)', async () => {
-    masukKonsolSebagai(AKUN_KONSOL_UJI.pemantau)
-    renderKonsol(<RingkasanKonsol sekarang={SEKARANG_UJI} />, contohSesiKonsol('pemantau'))
-    expect(screen.getByText('Kabupaten Pelalawan · Kamis, 24 September 2026')).toBeInTheDocument()
-    const perhatian = await screen.findByRole('region', { name: 'Perlu perhatian' })
-    expect(perhatian).not.toHaveTextContent('tagihan')
-    expect(within(perhatian).queryAllByRole('link')).toHaveLength(0)
-    expect(screen.getByRole('region', { name: 'Desa di Kabupaten Pelalawan' })).toHaveTextContent(
-      '21 desa aktif, 4 uji coba, 5 dalam persiapan, dan 2 ditangguhkan.',
-    )
-    expect(screen.getByRole('link', { name: 'Buka Pemantauan wilayah' })).toHaveAttribute('href', '/konsol/pemantauan')
   })
 })

@@ -1,3 +1,4 @@
+import { masukKabupaten } from '@/api/kabupaten'
 import { masukKonsol } from '@/api/konsol'
 import { masuk } from '@/api/sesi'
 import { masukWarga } from '@/api/warga'
@@ -35,7 +36,12 @@ export async function terapkanMasukCepat(konteks: KonteksAlamat, pathname: strin
       simpanSesi((await masukKonsol(akun.email, kendali.KATA_SANDI_DEMO)).token, 'konsol')
       return true
     }
-    if (konteks.jenis !== 'desa' || akun.bagian === 'konsol' || akun.labelDesa !== konteks.label) return false
+    if (konteks.jenis === 'kabupaten') {
+      if (akun.bagian !== 'kabupaten' || akun.labelKabupaten !== konteks.label) return false
+      simpanSesi((await masukKabupaten(akun.email, kendali.KATA_SANDI_DEMO)).token, 'kabupaten')
+      return true
+    }
+    if (konteks.jenis !== 'desa' || akun.bagian === 'konsol' || akun.bagian === 'kabupaten' || akun.labelDesa !== konteks.label) return false
     const keWarga = pathname === '/warga' || pathname.startsWith('/warga/')
     if (keWarga && akun.bagian === 'warga') {
       simpanSesi((await masukWarga(akun.nik, akun.pin)).token, 'warga')

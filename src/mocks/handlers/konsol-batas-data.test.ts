@@ -31,9 +31,6 @@ describe('batas data Konsol untuk Tim Sinfodes (SPEC-V0.2 §5.1)', () => {
       expect(semuaKunci(await r.json()).filter((k) => TERLARANG.includes(k)), j).toEqual([])
     }
   })
-  it('Pemantauan wilayah tidak lagi dibuka Tim Sinfodes', async () => {
-    expect((await ambilSebagaiTim('/konsol/pemantauan?wilayah=14.05')).status).toBe(403)
-  })
   it('Detail desa: alamat lama dan pemakaian penyimpanan', async () => {
     masukKonsolSebagai(AKUN_KONSOL_UJI.tim)
     const d = await ambilDetailDesaKonsol('desa_sungai_sialang')

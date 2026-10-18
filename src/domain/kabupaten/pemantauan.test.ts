@@ -6,11 +6,11 @@ import {
 } from './pemantauan'
 
 const desa = (ubah: Partial<BarisPemantauanDesa>): BarisPemantauanDesa => ({
-  id: 'desa_x', nama: 'Desa X', status: 'Aktif', suratBulanIni: 0, waktuLayananJam: null, jiwa: 0, kelengkapan: null,
+  id: 'desa_x', nama: 'Desa X', alamat: 'desax', status: 'Aktif', suratBulanIni: 0, waktuLayananJam: null, jiwa: 0, kelengkapan: null,
   waktuTanggapanJam: null, apbdes: null, ...ubah,
 })
 
-describe('Pemantauan wilayah (SPEC §11 layar 5)', () => {
+describe('Pemantauan kabupaten (SPEC §11 layar 5, SPEC-V0.2 §8.3)', () => {
   it('median: kosong → null, ganjil → nilai tengah, genap → rata-rata dua nilai tengah', () => {
     expect(median([])).toBeNull()
     expect(median([5])).toBe(5)

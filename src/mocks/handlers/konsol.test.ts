@@ -4,7 +4,7 @@ import { ambilDetailDesaKonsol, ambilRingkasanKonsol, ambilUsulanAlamat, daftarD
 import { masuk } from '@/api/sesi'
 import { PESAN_ALAMAT_TIDAK_SAH } from '@/domain/alamat/alamat'
 import { ambilDb } from '@/mocks/db'
-import { AKUN_KONSOL_UJI, masukKonsolSebagai, pakaiApiTiruan } from '@/test/api-tiruan'
+import { AKUN_KABUPATEN_UJI, AKUN_KONSOL_UJI, masukKabupatenSebagai, masukKonsolSebagai, pakaiApiTiruan } from '@/test/api-tiruan'
 
 pakaiApiTiruan({ dbSegarTiapUji: true })
 
@@ -17,7 +17,6 @@ describe('API Konsol (SPEC §11, §3.4)', () => {
   it('Ringkasan Tim Sinfodes: semua desa; 3 tidak aktif, 3 berhenti di persiapan, 1 tagihan lewat', async () => {
     masukKonsolSebagai(AKUN_KONSOL_UJI.tim)
     const r = await ambilRingkasanKonsol()
-    expect(r.cakupan).toBe('Semua desa')
     expect(r.perhatian).toEqual([
       { jenis: 'tidak-aktif', jumlah: 3 },
       { jenis: 'berhenti-persiapan', jumlah: 3 },
@@ -26,18 +25,11 @@ describe('API Konsol (SPEC §11, §3.4)', () => {
     expect(r.desa).toEqual({ aktif: 26, ujiCoba: 5, persiapan: 7, ditangguhkan: 2 })
     expect(r).not.toHaveProperty('suratMingguIni')
   })
-  it('Ringkasan pemantau: hanya 32 desa Pelalawan dan tanpa butir tagihan (fokus review 1)', async () => {
-    masukKonsolSebagai(AKUN_KONSOL_UJI.pemantau)
-    const r = await ambilRingkasanKonsol()
-    expect(r.cakupan).toBe('Kabupaten Pelalawan')
-    expect(r.desa.aktif + r.desa.ujiCoba + r.desa.persiapan + r.desa.ditangguhkan).toBe(32)
-    expect(r.perhatian.map((p) => p.jenis)).toEqual(['tidak-aktif', 'berhenti-persiapan'])
-  })
-  it('pemantau ditolak di semua endpoint Desa (fokus review 1)', async () => {
-    masukKonsolSebagai(AKUN_KONSOL_UJI.pemantau)
-    await expect(daftarDesaKonsol({})).rejects.toMatchObject({ kode: 'FORBIDDEN' })
-    await expect(ambilDetailDesaKonsol('desa_sungai_sialang')).rejects.toMatchObject({ kode: 'FORBIDDEN' })
-    await expect(tambahDesa(isianBaru)).rejects.toMatchObject({ kode: 'FORBIDDEN' })
+  it('akun kabupaten tidak bisa memakai Konsol (SPEC-V0.2 §7)', async () => {
+    masukKabupatenSebagai(AKUN_KABUPATEN_UJI.peninjau)
+    await expect(ambilRingkasanKonsol()).rejects.toMatchObject({ kode: 'UNAUTHENTICATED' })
+    await expect(daftarDesaKonsol({})).rejects.toMatchObject({ kode: 'UNAUTHENTICATED' })
+    await expect(tambahDesa(isianBaru)).rejects.toMatchObject({ kode: 'UNAUTHENTICATED' })
     expect(ambilDb().desa).toHaveLength(40)
   })
   it('Daftar desa: 40 desa urut nama; filter provinsi, kabupaten, status, dan paket', async () => {
@@ -134,10 +126,6 @@ describe('API Konsol (SPEC §11, §3.4)', () => {
       kode: 'VALIDATION', fields: { alamat: PESAN_ALAMAT_TIDAK_SAH },
     })
     expect(ambilDb().desa.find((d) => d.id === 'desa_sungai_sialang')?.slug).toBe('sungaisialang')
-  })
-  it('pemantau tidak bisa mengubah alamat desa', async () => {
-    masukKonsolSebagai(AKUN_KONSOL_UJI.pemantau)
-    await expect(ubahAlamatDesa('desa_sungai_sialang', 'sialang')).rejects.toMatchObject({ kode: 'FORBIDDEN' })
   })
   it('Tambah desa yang bentrok atau tidak sah: galat per kolom, dan tidak ada yang tercipta setengah jadi (fokus review 3)', async () => {
     masukKonsolSebagai(AKUN_KONSOL_UJI.tim)

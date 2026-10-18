@@ -9,23 +9,20 @@ export { filterDesaKonsolSchema, HARGA_TRIWULAN, PAKET, type FilterDesaKonsol, t
 const tanggal = z.iso.date()
 const waktu = z.iso.datetime({ offset: true })
 const jumlah = z.number().int().min(0)
-const kodeNama = z.object({ kode: z.string(), nama: z.string() })
 
-export const PERAN_KONSOL = ['tim', 'pemantau'] as const
+/** Konsol hanya untuk Tim Sinfodes; peran pemantau pindah ke akun kabupaten (SPEC-V0.2 §7, §8.1). */
+export const PERAN_KONSOL = ['tim'] as const
 export type PeranKonsol = (typeof PERAN_KONSOL)[number]
-export const LABEL_PERAN_KONSOL: Readonly<Record<PeranKonsol, string>> = { tim: 'Tim Sinfodes', pemantau: 'Pemantau wilayah' }
+export const LABEL_PERAN_KONSOL: Readonly<Record<PeranKonsol, string>> = { tim: 'Tim Sinfodes' }
 
-/** Akun Konsol (SPEC §11). Pemantau dibatasi ke `wilayah` (kabupaten, kode bertitik); Tim Sinfodes melihat semua desa. */
-export const penggunaKonsolSchema = z
-  .object({
-    id: z.string(),
-    nama: z.string(),
-    jabatan: z.string(),
-    peran: z.enum(PERAN_KONSOL),
-    email: z.string(),
-    wilayah: kodeNama.nullable(),
-  })
-  .refine((p) => (p.peran === 'pemantau') === (p.wilayah !== null), { message: 'Hanya pemantau yang punya wilayah', path: ['wilayah'] })
+/** Akun Konsol (SPEC §11). */
+export const penggunaKonsolSchema = z.object({
+  id: z.string(),
+  nama: z.string(),
+  jabatan: z.string(),
+  peran: z.enum(PERAN_KONSOL),
+  email: z.string(),
+})
 export type PenggunaKonsol = z.infer<typeof penggunaKonsolSchema>
 
 export const sesiKonsolSchema = z.object({ jenis: z.literal('konsol'), pengguna: penggunaKonsolSchema })
@@ -96,10 +93,8 @@ export const perhatianSchema = z.discriminatedUnion('jenis', [
 ])
 export type Perhatian = z.infer<typeof perhatianSchema>
 
-/** GET /konsol/ringkasan. Untuk pemantau, semua angka dibatasi ke wilayahnya dan tanpa butir tagihan. */
+/** GET /konsol/ringkasan: semua desa pelanggan. */
 export const ringkasanKonsolSchema = z.object({
-  /** "Semua desa" atau "Kabupaten Pelalawan". */
-  cakupan: z.string(),
   perhatian: z.array(perhatianSchema),
   desa: z.object({ aktif: jumlah, ujiCoba: jumlah, persiapan: jumlah, ditangguhkan: jumlah }),
 })

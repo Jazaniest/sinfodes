@@ -18,6 +18,11 @@ export const hasilAlamatSchema = z.discriminatedUnion('jenis', [
   z.object({ jenis: z.literal('alias'), labelBaru: z.string() }),
   z.object({ jenis: z.literal('induk') }),
   z.object({ jenis: z.literal('konsol') }),
+  /** Alamat `kab-…` yang ada di tabel kode wilayah; `mitra` false menampilkan "belum memakai Sinfodes" (SPEC-V0.2 §8.2). */
+  z.object({
+    jenis: z.literal('kabupaten'),
+    kabupaten: z.object({ label: z.string(), kode: z.string(), nama: z.string(), mitra: z.boolean() }),
+  }),
 ])
 export type HasilAlamat = z.infer<typeof hasilAlamatSchema>
 

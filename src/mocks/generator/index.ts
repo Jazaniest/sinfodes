@@ -1,5 +1,6 @@
 import { waktuIsoWib } from '@/domain/format/tanggal'
 import { DESA_DEMO, DUSUN_DEMO, ID_SUNGAI_SIALANG, PENGGUNA_DEMO } from '../data/desa-demo'
+import { KABUPATEN_MITRA_DEMO, PENGGUNA_KABUPATEN_DEMO } from '../data/kabupaten-demo'
 import { AKUN_WARGA_DEMO } from '../data/warga-demo'
 import { buatAcak } from '../prng'
 import { VERSI_DATA, type DbDemo } from '../tipe-db'
@@ -164,5 +165,7 @@ export function bangkitkanDb(sekarang: Date): DbDemo {
     // Slug v0.1 ("sungai-sialang") tetap mengarah ke desanya lewat alias (SPEC-V0.2 §4.2).
     aliasAlamat: semuaDesa.flatMap((d) => (slugDesa(d.nama) === d.slug ? [] : [{ label: slugDesa(d.nama), desaId: d.id }])),
     aksesBantuan: contohAksesBantuan(sekarang),
+    kabupatenMitra: KABUPATEN_MITRA_DEMO.map((k) => structuredClone(k)),
+    penggunaKabupaten: PENGGUNA_KABUPATEN_DEMO.map((p) => structuredClone(p)),
   }
 }

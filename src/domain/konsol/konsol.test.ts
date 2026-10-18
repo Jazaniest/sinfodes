@@ -59,8 +59,8 @@ describe('aturan Konsol Sinfodes (SPEC §11)', () => {
     expect(slugDesa('Sungai Sialang')).toBe('sungai-sialang')
     expect(slugDesa('  Koto Damar (Baru) ')).toBe('koto-damar-baru')
   })
-  it('hanya pemantau yang punya wilayah', () => {
-    const tim = { id: 'k', nama: 'Dina', jabatan: 'Tim Sinfodes', peran: 'tim', email: 'dina@sinfodes.id', wilayah: null }
+  it('akun Konsol hanya Tim Sinfodes: peran pemantau pindah ke kabupaten (SPEC-V0.2 §7)', () => {
+    const tim = { id: 'k', nama: 'Dina', jabatan: 'Tim Sinfodes', peran: 'tim', email: 'dina@sinfodes.id' }
     expect(penggunaKonsolSchema.safeParse(tim).success).toBe(true)
     expect(penggunaKonsolSchema.safeParse({ ...tim, peran: 'pemantau' }).success).toBe(false)
   })

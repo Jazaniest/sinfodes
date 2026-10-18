@@ -4,6 +4,7 @@ import type { PenerimaBansos, ProgramBansos } from '@/domain/bansos/schema'
 import type { LaporanImpor } from '@/domain/impor/schema'
 import type { Keluarga } from '@/domain/keluarga/schema'
 import type { Apbdes } from '@/domain/keuangan/schema'
+import type { KabupatenMitra, PenggunaKabupaten } from '@/domain/kabupaten/schema'
 import type { Langganan, PenggunaKonsol } from '@/domain/konsol/schema'
 import type { Pengukuran, Posyandu, StatusGizi } from '@/domain/kesehatan/schema'
 import type { LaporanData } from '@/domain/laporan/schema'
@@ -24,7 +25,7 @@ import type { Agenda, Artikel, FotoGaleri, Pengumuman, Potensi, ProfilDesa, Tamp
 import type { Desa, Dusun } from '@/domain/wilayah/schema'
 
 /** Naikkan setiap kali seed atau struktur data berubah; data lama di IndexedDB otomatis diganti (SPEC §12). */
-export const VERSI_DATA = 19
+export const VERSI_DATA = 20
 
 /** Satu alamat lama desa, mis. slug v0.1 "sungai-sialang" untuk Sungai Sialang. */
 export type AliasAlamat = { label: string; desaId: string }
@@ -150,4 +151,7 @@ export type DbDemo = {
   aliasAlamat: AliasAlamat[]
   /** Akses bantuan Tim Sinfodes ke panel desa beserta jejaknya (SPEC-V0.2 §5.3). */
   aksesBantuan: AksesBantuan[]
+  /** Kabupaten mitra dan akunnya (SPEC-V0.2 §8). */
+  kabupatenMitra: KabupatenMitra[]
+  penggunaKabupaten: PenggunaKabupaten[]
 }
