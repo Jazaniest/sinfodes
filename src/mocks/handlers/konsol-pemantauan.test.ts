@@ -55,15 +55,11 @@ describe('GET /konsol/pemantauan (SPEC §11 layar 5, §3.4)', () => {
     expect(kk).toMatchObject({ jumlahDesa: 3, adopsi: { aktif: 1, ujiCoba: 0, persiapan: 2, ditangguhkan: 0 } })
     expect(kk?.kelengkapan).not.toBeNaN()
   })
-  it('Tim Sinfodes memilih kabupaten; kabupaten kosong atau tidak dikenal ditolak dengan pesan', async () => {
+  it('Tim Sinfodes tidak lagi membuka Pemantauan wilayah; miliknya kini kabupaten (SPEC-V0.2 §5.1)', async () => {
     masukKonsolSebagai(AKUN_KONSOL_UJI.tim)
-    const kampar = await ambilPemantauan('14.01')
-    expect(kampar.wilayah).toEqual({ kode: '14.01', nama: 'Kampar' })
-    expect(kampar.kecamatan.map((k) => [k.kecamatan.nama, k.desa.map((d) => d.nama)])).toEqual([
-      ['Kampa', ['Koto Damar']],
-      ['Tambang', ['Sungai Pinang Hilir']],
-    ])
-    await expect(ambilPemantauan(null)).rejects.toMatchObject({ kode: 'VALIDATION', fields: { wilayah: 'Pilih kabupaten.' } })
-    await expect(ambilPemantauan('14.99')).rejects.toMatchObject({ kode: 'VALIDATION', fields: { wilayah: 'Kabupaten tidak dikenal.' } })
+    await expect(ambilPemantauan('14.01')).rejects.toMatchObject({
+      kode: 'FORBIDDEN',
+      message: 'Pemantauan wilayah kini dibuka dari dasbor kabupaten.',
+    })
   })
 })

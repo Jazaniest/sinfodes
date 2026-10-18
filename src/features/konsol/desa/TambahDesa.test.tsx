@@ -36,6 +36,30 @@ async function isiWilayah(user: UserEvent, kabupaten: string, kecamatan: string)
 }
 
 describe('Tambah desa (SPEC §11)', () => {
+  it('alamat website diusulkan dari nama dan wilayah, lalu diperiksa (SPEC-V0.2 §4.2)', async () => {
+    const { user } = pasang()
+    await user.type(screen.getByRole('textbox', { name: 'Nama desa' }), 'Koto Baru Sentosa')
+    await isiWilayah(user, 'Kampar', 'Kampa')
+    expect(await screen.findByDisplayValue('kotobarusentosa')).toBeInTheDocument()
+    expect(await screen.findByText('Alamat ini bisa dipakai.')).toBeInTheDocument()
+    expect(screen.getByText('.sinfodes.localhost')).toBeInTheDocument()
+  })
+  it('alamat yang diketik sendiri tidak ditimpa usulan', async () => {
+    const { user } = pasang()
+    await user.type(screen.getByRole('textbox', { name: 'Nama desa' }), 'Koto Baru Sentosa')
+    await isiWilayah(user, 'Kampar', 'Kampa')
+    const alamat = await screen.findByDisplayValue('kotobarusentosa')
+    await user.clear(alamat)
+    await user.type(alamat, 'kotobaru')
+    await user.type(screen.getByRole('textbox', { name: 'Nama desa' }), ' Raya')
+    await new Promise((r) => setTimeout(r, 700))
+    expect(screen.getByRole('textbox', { name: /^Alamat website/ })).toHaveValue('kotobaru')
+  })
+  it('alamat yang sudah dipakai desa lain diberi tahu sebelum disimpan (fokus review 4)', async () => {
+    const { user } = pasang()
+    await user.type(screen.getByRole('textbox', { name: /^Alamat website/ }), 'sungai-sialang')
+    expect(await screen.findByText('Alamat ini sudah dipakai desa lain.')).toBeInTheDocument()
+  })
   it('wilayah bertingkat lalu simpan: desa berstatus Persiapan dan konfirmasi "Undangan terkirim"', async () => {
     const { onSelesai, user } = pasang()
     await user.type(screen.getByRole('textbox', { name: 'Nama desa' }), 'Koto Baru Sentosa')
@@ -45,6 +69,7 @@ describe('Tambah desa (SPEC §11)', () => {
     await user.click(screen.getByRole('radio', { name: /^Lengkap/ }))
     await user.type(screen.getByRole('textbox', { name: 'Email admin pertama' }), 'admin@kotobarusentosa.desa.id')
     expect(screen.getByText(/^Admin pertama berperan Sekretaris Desa/)).toBeInTheDocument()
+    expect(await screen.findByDisplayValue('kotobarusentosa')).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Simpan dan kirim undangan' }))
     await vi.waitFor(() =>
       expect(onSelesai).toHaveBeenCalledWith({ id: 'desa_kotobarusentosa', nama: 'Koto Baru Sentosa', email: 'admin@kotobarusentosa.desa.id' }),

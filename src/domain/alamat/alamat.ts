@@ -31,6 +31,9 @@ const POLA_LABEL = /^[a-z0-9]+(-[a-z0-9]+)*$/
 const AWALAN_KABUPATEN = /^(kab|kota)-[a-z0-9]+(-[a-z0-9]+)*$/
 const AWALAN_TERLARANG = ['kab-', 'kota-', 'xn--']
 
+/** Pesan bila label alamat desa tidak lolos `labelAlamatSah`. */
+export const PESAN_ALAMAT_TIDAK_SAH = 'Alamat 3–40 karakter: huruf kecil, angka, dan tanda hubung, bukan nama yang dicadangkan.'
+
 /** Label alamat desa: 3–40 karakter, huruf kecil dan angka dengan tanda hubung tunggal, bukan nama atau awalan terlarang. */
 export function labelAlamatSah(label: string): boolean {
   return (

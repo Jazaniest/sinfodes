@@ -26,7 +26,7 @@ describe('kerangka Konsol (SPEC §11, §4.7)', () => {
   it('Tim Sinfodes: sidebar tinta dengan logo di depan; menu Ringkasan dan Desa, aktif juga di halaman di bawahnya', () => {
     pasang('tim', '/konsol/desa/desa_sungai_sialang')
     const nav = screen.getByRole('navigation', { name: 'Menu konsol' })
-    expect(within(nav).getAllByRole('link').map((a) => a.textContent)).toEqual(['Ringkasan', 'Desa', 'Pemantauan'])
+    expect(within(nav).getAllByRole('link').map((a) => a.textContent)).toEqual(['Ringkasan', 'Desa'])
     expect(within(nav).getByRole('link', { name: 'Desa' })).toHaveAttribute('aria-current', 'page')
     expect(within(nav).getByRole('link', { name: 'Ringkasan' })).not.toHaveAttribute('aria-current')
     expect(nav.closest('.bg-tinta')).not.toBeNull()

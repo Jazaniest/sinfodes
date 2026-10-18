@@ -2,8 +2,9 @@ import { useQuery } from '@tanstack/react-query'
 import { useState, type ReactNode } from 'react'
 import { GalatApi, pesanGalat } from '@/api/galat'
 import { opsiDetailDesaKonsol } from '@/api/konsol'
-import { formatAngka, formatPersen, formatRupiah } from '@/domain/format/angka'
-import { BULAN_PENDEK, formatTanggal, formatWaktuLog, tanggalIsoWib } from '@/domain/format/tanggal'
+import { DOMAIN_INDUK, keAlamat } from '@/app/alamat'
+import { formatAngka, formatRupiah, formatUkuranKb } from '@/domain/format/angka'
+import { formatTanggal, formatWaktuLog, tanggalIsoWib } from '@/domain/format/tanggal'
 import { LABEL_STATUS_TAGIHAN, statusTagihan, type StatusTagihan } from '@/domain/konsol/aturan'
 import { HARGA_TRIWULAN, type DetailDesaKonsol } from '@/domain/konsol/schema'
 import { jumlahSelesai, LABEL_LANGKAH_PERSIAPAN, LANGKAH_PERSIAPAN } from '@/domain/wilayah/persiapan'
@@ -30,7 +31,6 @@ const kepala = 'border-b border-garis py-1.5 text-label font-medium text-tinta-2
 
 const CAP_TAGIHAN: Readonly<Record<StatusTagihan, VarianCap>> = { lunas: 'selesai', menunggu: 'menunggu', 'lewat-jatuh-tempo': 'ditolak' }
 
-const labelBulan = (bulan: string) => `${BULAN_PENDEK[Number(bulan.slice(5, 7)) - 1]} ${bulan.slice(0, 4)}`
 
 function TabRingkasan({ d }: { d: DetailDesaKonsol }) {
   return (
@@ -45,10 +45,23 @@ function TabRingkasan({ d }: { d: DetailDesaKonsol }) {
         { label: 'Kepala desa', nilai: d.kontak.kades },
         { label: 'Sekretaris Desa', nilai: d.kontak.sekdes && `${d.kontak.sekdes.nama} · ${d.kontak.sekdes.email}` },
         { label: 'Operator', nilai: d.kontak.operator && `${d.kontak.operator.nama} · ${d.kontak.operator.email}` },
-        { label: 'Penduduk', nilai: d.jiwa > 0 ? `${formatAngka(d.jiwa)} jiwa` : <span className={redup}>Belum ada data penduduk</span> },
-        { label: 'Kelengkapan data', nilai: d.kelengkapan === null ? <span className={redup}>—</span> : formatPersen(d.kelengkapan) },
-        { label: 'Pengguna aktif', nilai: `${formatAngka(d.penggunaAktif)} akun masuk dalam 30 hari terakhir` },
-        { label: 'Aktivitas terakhir', nilai: d.aktivitasTerakhir ? formatWaktuLog(d.aktivitasTerakhir) : <span className={redup}>Belum ada</span> },
+        {
+          label: 'Alamat',
+          nilai: (
+            <Tautan href={keAlamat({ jenis: 'desa', label: d.slug })} className="font-mono">
+              {`${d.slug}.${DOMAIN_INDUK}`}
+            </Tautan>
+          ),
+        },
+        {
+          label: 'Alamat lama',
+          nilai:
+            d.aliasAlamat.length > 0 ? (
+              <span className="font-mono">{d.aliasAlamat.join(', ')}</span>
+            ) : (
+              <span className={redup}>Belum pernah diganti</span>
+            ),
+        },
       ]}
     />
   )
@@ -128,23 +141,22 @@ function Deret(props: { id: string; judul: string; kolom: string; kosong: string
   )
 }
 
-function TabPenggunaan({ d }: { d: DetailDesaKonsol }) {
+/** Keaktifan (SPEC-V0.2 §7): tanda pemakaian Sinfodes oleh desa, bukan isi data desa. */
+function TabKeaktifan({ d }: { d: DetailDesaKonsol }) {
   const [tabel, setTabel] = useState(false)
   return (
     <div className="flex flex-col gap-6">
+      <DescriptionList
+        items={[
+          { label: 'Terakhir dipakai', nilai: d.aktivitasTerakhir ? formatWaktuLog(d.aktivitasTerakhir) : <span className={redup}>Belum ada</span> },
+          { label: 'Akun aktif', nilai: `${formatAngka(d.penggunaAktif)} akun masuk dalam 30 hari terakhir` },
+          { label: 'Penyimpanan berkas', nilai: formatUkuranKb(d.penyimpananKb) },
+        ]}
+      />
       <Checkbox isSelected={tabel} onChange={setTabel} className="self-start">
         Lihat sebagai tabel
       </Checkbox>
       <div className="grid gap-x-10 gap-y-8 xl:grid-cols-2">
-        <Deret
-          id="judul-surat-bulanan"
-          judul="Surat terbit per bulan"
-          kolom="Bulan"
-          kosong="Belum ada surat terbit dalam 12 bulan terakhir."
-          satuan="surat"
-          tabel={tabel}
-          data={d.suratPerBulan.map((b) => ({ kunci: b.bulan, label: labelBulan(b.bulan), jumlah: b.jumlah }))}
-        />
         <Deret
           id="judul-masuk-mingguan"
           judul="Masuk panel per minggu"
@@ -262,7 +274,7 @@ export function DetailDesa({ id, tab, sekarang = new Date() }: { id: string; tab
       {kueri.isError && <ErrorState pesan={pesanGalat(kueri.error)} onCobaLagi={() => void kueri.refetch()} />}
       {d && tab === 'ringkasan' && <TabRingkasan d={d} />}
       {d && tab === 'persiapan' && <TabPersiapan d={d} />}
-      {d && tab === 'penggunaan' && <TabPenggunaan d={d} />}
+      {d && tab === 'keaktifan' && <TabKeaktifan d={d} />}
       {d && tab === 'langganan' && <TabLangganan d={d} hariIni={tanggalIsoWib(sekarang)} />}
     </div>
   )

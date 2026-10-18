@@ -2,12 +2,12 @@ import type { PeranKonsol } from '@/domain/konsol/schema'
 
 export type ItemMenuKonsol = { label: string; href: string }
 
-/** Menu Konsol (SPEC §11): Ringkasan · Desa · Pemantauan; menu Desa khusus Tim Sinfodes. */
+/** Menu Konsol (SPEC §11): menu Desa khusus Tim Sinfodes; Pemantauan khusus pemantau sampai pindah ke kabupaten (SPEC-V0.2 §5.1). */
 export function menuKonsol(peran: PeranKonsol): ItemMenuKonsol[] {
   return [
     { label: 'Ringkasan', href: '/konsol' },
     ...(peran === 'tim' ? [{ label: 'Desa', href: '/konsol/desa' }] : []),
-    { label: 'Pemantauan', href: '/konsol/pemantauan' },
+    ...(peran === 'pemantau' ? [{ label: 'Pemantauan', href: '/konsol/pemantauan' }] : []),
   ]
 }
 

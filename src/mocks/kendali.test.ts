@@ -15,7 +15,7 @@ describe('akun desa Persiapan di halaman demo (tahap 6C)', () => {
   it('Sekretaris Desa undangan Tim dan admin desa dari Tambah desa ikut tampil; akun nonaktif tidak', async () => {
     masukKonsolSebagai(AKUN_KONSOL_UJI.tim)
     await undangSekdes('desa_tanjung_lamo', { nama: 'Rahmawati', email: 'sekdes@tanjunglamo.desa.id' })
-    await tambahDesa({ nama: 'Koto Baru Sentosa', kecamatan: '14.01.17', kodeDesa: '2077', paket: 'Lengkap', email: 'admin@kotobarusentosa.desa.id' })
+    await tambahDesa({ nama: 'Koto Baru Sentosa', kecamatan: '14.01.17', kodeDesa: '2077', paket: 'Lengkap', email: 'admin@kotobarusentosa.desa.id', alamat: 'kotobarusentosa' })
     ubahDb((d) => {
       const yusri = d.pengguna.find((p) => p.id === 'pgn_yusri')
       if (yusri) yusri.aktif = false

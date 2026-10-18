@@ -55,7 +55,7 @@ describe('data Konsol (SPEC §12.8, §11)', () => {
       }
     }
   })
-  it('desa tanpa data panel: Perlu perhatian 3 tidak aktif, 2 berhenti di impor; seluruh platform 1 tagihan lewat', () => {
+  it('desa tanpa data panel: Perlu perhatian 3 tidak aktif, 2 berhenti di persiapan; seluruh platform 1 tagihan lewat', () => {
     expect(db.rekamDesa).toHaveLength(38)
     const keadaan = db.rekamDesa.map((r) => ({
       status: db.desa.find((d) => d.id === r.desaId)?.status ?? 'Aktif',
@@ -65,7 +65,7 @@ describe('data Konsol (SPEC §12.8, §11)', () => {
     const lewat = db.langganan.flatMap((l) => l.tagihan).filter((t) => statusTagihan(t, '2026-09-24') === 'lewat-jatuh-tempo').length
     expect(hitungPerhatian(keadaan, lewat, SEKARANG)).toEqual([
       { jenis: 'tidak-aktif', jumlah: 3 },
-      { jenis: 'berhenti-impor', jumlah: 2 },
+      { jenis: 'berhenti-persiapan', jumlah: 2 },
       { jenis: 'tagihan-lewat', jumlah: 1 },
     ])
   })

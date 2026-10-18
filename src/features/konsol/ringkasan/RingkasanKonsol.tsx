@@ -36,7 +36,7 @@ export function RingkasanKonsol({ sekarang = new Date() }: { sekarang?: Date }) 
                 {kueri.data.perhatian.map((p) => (
                   <li key={p.jenis} className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 px-4 py-3">
                     <span className="font-medium">{kalimatPerhatian(p)}</span>
-                    {p.jenis === 'berhenti-impor' && pengguna.peran === 'tim' && (
+                    {p.jenis === 'berhenti-persiapan' && pengguna.peran === 'tim' && (
                       <Tautan href="/konsol/desa?status=Persiapan" className="text-teks-kecil">
                         Lihat desa dalam persiapan
                       </Tautan>
@@ -51,9 +51,11 @@ export function RingkasanKonsol({ sekarang = new Date() }: { sekarang?: Date }) 
               {pengguna.wilayah ? `Desa di Kabupaten ${pengguna.wilayah.nama}` : 'Angka platform'}
             </h2>
             <p className="mt-2 font-serif text-judul-bagian">{kalimatPlatform(kueri.data)}</p>
-            <Tautan href="/konsol/pemantauan" className="mt-3 inline-block">
-              Buka Pemantauan wilayah
-            </Tautan>
+            {pengguna.peran === 'pemantau' && (
+              <Tautan href="/konsol/pemantauan" className="mt-3 inline-block">
+                Buka Pemantauan wilayah
+              </Tautan>
+            )}
           </section>
         </>
       )}
