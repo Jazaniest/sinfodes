@@ -16,7 +16,7 @@ type Props = {
   className?: string
 }
 
-/** Pilihan tunggal dengan semua opsi terlihat (SPEC §4.4), untuk 2–5 pilihan. */
+/** Pilihan tunggal dengan semua opsi terlihat (SPEC §4.4), untuk 2-5 pilihan. */
 export function RadioGroup({
   label, pilihan, nilai, onUbah, galat, keterangan, arah = 'mendatar', isDisabled, isRequired, className,
 }: Props) {

@@ -33,7 +33,7 @@ describe('Buku Mutasi (SPEC §6.6)', () => {
     expect(await screen.findByText('September 2026: 3 lahir · 1 meninggal · 2 datang · 4 pindah')).toBeInTheDocument()
     const tabel = await screen.findByRole('grid', { name: 'Buku mutasi' })
     expect(within(tabel).getAllByRole('row')).toHaveLength(11)
-    expect(screen.getByText('1–10 dari 10')).toBeInTheDocument()
+    expect(screen.getByText('1-10 dari 10')).toBeInTheDocument()
   })
   it('chip jenis mengubah filter dan kembali ke halaman 1', async () => {
     const { user, onUbahFilter } = pasang()

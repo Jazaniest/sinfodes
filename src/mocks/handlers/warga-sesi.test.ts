@@ -9,7 +9,7 @@ import { AKUN_WARGA_UJI, masukSebagaiWarga, pakaiApiTiruan, SEKARANG_UJI } from 
 pakaiApiTiruan({ dbSegarTiapUji: true })
 
 const SITI = { nik: '1405095203918002', pin: '246810' }
-/** Kode wilayah Jakarta dan nomor urut di luar 8001–9999: pasti tidak terdaftar di desa demo. */
+/** Kode wilayah Jakarta dan nomor urut di luar 8001-9999: pasti tidak terdaftar di desa demo. */
 const NIK_ASING = '3171014101900001'
 
 async function galatDari(janji: Promise<unknown>): Promise<GalatApi> {
@@ -100,7 +100,7 @@ describe('akun warga (SPEC §10)', () => {
     masukSebagaiWarga(AKUN_WARGA_UJI.siti)
     expect((await ubahAkunWarga({ whatsapp: '+62 813-1234-5678' })).whatsapp).toBe('081312345678')
     expect((await galatDari(ubahAkunWarga({ whatsapp: '12345' }))).fields.whatsapp).toBe(
-      'Nomor WhatsApp diawali 08 dan terdiri dari 10–13 angka.',
+      'Nomor WhatsApp diawali 08 dan terdiri dari 10-13 angka.',
     )
     expect((await ambilSesiWarga()).whatsapp).toBe('081312345678')
   })

@@ -29,7 +29,7 @@ describe('isian formulir penduduk (SPEC §6.4)', () => {
       (buatSkemaIsian(HARI_INI, ISTILAH).safeParse(isian).error?.issues ?? []).map((i) => [String(i.path[0]), i.message]),
     )
     expect(pesan).toMatchObject({
-      dusunId: 'Pilih dusun', rw: 'Pilih RW', rt: 'Pilih RT', nik: 'NIK harus 16 angka — baru 6', telepon: 'Nomor telepon diawali 08, 10–13 angka',
+      dusunId: 'Pilih dusun', rw: 'Pilih RW', rt: 'Pilih RT', nik: 'NIK harus 16 angka — baru 6', telepon: 'Nomor telepon diawali 08, 10-13 angka',
     })
     expect(pesan.keluarga).toBeUndefined()
   })

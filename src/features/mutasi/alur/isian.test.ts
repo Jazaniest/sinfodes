@@ -16,7 +16,7 @@ describe('isian alur mutasi (SPEC §6.6)', () => {
     expect(awal).toMatchObject({ tanggalLahir: '2026-09-24', tempatLahir: 'Pelalawan', jenisKelahiran: 'Tunggal' })
     expect(pesanDari(buatSkemaLahir(HARI_INI).safeParse(awal))).toMatchObject({
       ibu: 'Pilih ibu', nama: 'Nama bayi wajib diisi', jenisKelamin: 'Pilih jenis kelamin', jam: 'Jam lahir wajib diisi',
-      beratGram: 'Berat 500–6.000 gram', panjangCm: 'Panjang 30–65 cm', pelapor: 'Nama pelapor wajib diisi',
+      beratGram: 'Berat 500-6.000 gram', panjangCm: 'Panjang 30-65 cm', pelapor: 'Nama pelapor wajib diisi',
     })
   })
   it('lahir: isian lengkap → masukan API', () => {

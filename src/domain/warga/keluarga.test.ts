@@ -17,7 +17,7 @@ describe('laporan data dari warga (SPEC §10, fokus review 5)', () => {
     expect(periksaNilaiLaporan('tanggalLahir', '2027-01-01', null, HARI_INI)).toBe('Tanggal lahir tidak boleh sesudah hari ini.')
   })
   it('field yang diketik mengikuti aturan formulir penduduk', () => {
-    expect(periksaNilaiLaporan('telepon', '12345', null, HARI_INI)).toBe('Nomor telepon diawali 08, 10–13 angka')
+    expect(periksaNilaiLaporan('telepon', '12345', null, HARI_INI)).toBe('Nomor telepon diawali 08, 10-13 angka')
     expect(periksaNilaiLaporan('namaIbu', 'Rosnah binti Ali', 'Rosnah', HARI_INI)).toBeNull()
   })
   it('kosong atau sama dengan data sekarang ditolak', () => {

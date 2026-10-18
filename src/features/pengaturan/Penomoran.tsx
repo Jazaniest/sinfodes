@@ -80,7 +80,7 @@ function FormPenomoran({ data, onKotor, sekarang }: Props & { data: DataPenomora
   const geser = (i: number, arah: -1 | 1) =>
     setForm((l) => {
       const keping = [...l.keping]
-      ;[keping[i], keping[i + arah]] = [keping[i + arah], keping[i]]
+        ;[keping[i], keping[i + arah]] = [keping[i + arah], keping[i]]
       return { ...l, keping }
     })
   const hapus = (i: number) => setForm((l) => ({ ...l, keping: l.keping.filter((_, x) => x !== i) }))
@@ -208,7 +208,7 @@ function FormPenomoran({ data, onKotor, sekarang }: Props & { data: DataPenomora
               setGalatKode(null)
             }}
             galat={galatKode ?? undefined}
-            keterangan="1–8 huruf atau angka, mis. SS. Juga dipakai di awal kode verifikasi surat."
+            keterangan="1-8 huruf atau angka, mis. SS. Juga dipakai di awal kode verifikasi surat."
             className="max-w-xs"
           />
           <div className="rounded-2 border border-garis bg-kertas-2 px-4 py-3">

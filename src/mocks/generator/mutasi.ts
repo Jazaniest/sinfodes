@@ -155,7 +155,7 @@ export function bangkitkanMutasi(acak: Acak, opsi: Opsi): HasilMutasi {
   // --- Penanda unik ---
   const idTerpakai = new Set<string>([...penduduk.map((p) => p.id), ...keluarga.map((k) => k.id)])
   const idBaru = (awalan: string): string => {
-    for (;;) {
+    for (; ;) {
       const id = acak.id(awalan)
       if (!idTerpakai.has(id)) {
         idTerpakai.add(id)
@@ -335,7 +335,7 @@ export function bangkitkanMutasi(acak: Acak, opsi: Opsi): HasilMutasi {
     catat('mutasi-meninggal', `Kematian dicatat · ${almarhum.nama}`, dicatatPada, oleh, almarhum)
   }
 
-  // 3. Pindah keluar: anak muda yang merantau (SPEC §12.3, lekukan umur 20–29).
+  // 3. Pindah keluar: anak muda yang merantau (SPEC §12.3, lekukan umur 20-29).
   for (const tanggal of jadwal(MUTASI_BULAN_INI.pindah, [[0, 30], [1, 40], [2, 20], [3, 10]])) {
     const umur = acak.bulat(19, 34)
     const calonKk = kkBiasa.filter((k) => umurTahun(perId.get(k.kepalaKeluargaId)!) >= umur + 20)

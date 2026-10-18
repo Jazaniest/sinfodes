@@ -26,7 +26,7 @@ describe('Lembaga Desa (SPEC §8)', () => {
     const [kades, sekdes] = within(tabel).getAllByRole('row').slice(1)
     expect(kades).toHaveTextContent('H. Muhammad Nasir')
     expect(kades).toHaveTextContent('Kepala Desa')
-    expect(kades).toHaveTextContent('2021–2029')
+    expect(kades).toHaveTextContent('2021-2029')
     expect(sekdes).toHaveTextContent('sejak 2017')
   })
   it('nama yang tercatat sebagai penduduk bertaut ke profilnya, hanya untuk peran yang boleh melihat penduduk', async () => {

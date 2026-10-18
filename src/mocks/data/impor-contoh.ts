@@ -5,7 +5,7 @@ import type { Desa, Dusun } from '@/domain/wilayah/schema'
 /**
  * Berkas contoh untuk impor (SPEC §6.8). API tiruan tidak membaca isi berkas yang diunggah; laporannya selalu berisi
  * data ini: 17 baris dalam 4 KK, dengan lima baris yang sengaja bermasalah dan satu peringatan. Wilayahnya mengikuti desa
- * yang mengimpor (tahap 6C); untuk Sungai Sialang hasilnya Dusun III, RW 005, RT 011–013.
+ * yang mengimpor (tahap 6C); untuk Sungai Sialang hasilnya Dusun III, RW 005, RT 011-013.
  */
 export const NAMA_BERKAS_CONTOH = 'pendataan-rt-teluk-rengas.xlsx'
 
@@ -29,7 +29,7 @@ type Baris = {
   nik: string; nama: string; jk: 'L' | 'P'; tempat: string; tgl: string; agama?: string; pendidikan: string; pekerjaan: string
   kawin: string; shdk: string; kk: string; dusun: string; rw?: string; rt: string; gol?: string; ket?: string
 }
-/** Wilayah baris contoh di berkas aslinya: Dusun III Teluk Rengas, RW 005, RT 011–013 (data Sungai Sialang). */
+/** Wilayah baris contoh di berkas aslinya: Dusun III Teluk Rengas, RW 005, RT 011-013 (data Sungai Sialang). */
 const RW_CONTOH = '005'
 const RT_CONTOH = ['011', '012', '013']
 const sel = (b: Baris): string[] => [

@@ -22,7 +22,7 @@ describe('Statistik penduduk (SPEC §6.7)', { timeout: 20_000 }, () => {
       'href',
       '/admin/kependudukan/penduduk?agama=Islam',
     )
-    expect(screen.getByRole('link', { name: /^60–64 tahun, laki-laki: / })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /^60-64 tahun, laki-laki: / })).toHaveAttribute(
       'href',
       '/admin/kependudukan/penduduk?jk=L&umurMin=60&umurMax=64',
     )

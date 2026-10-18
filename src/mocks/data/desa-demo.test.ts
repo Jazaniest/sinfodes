@@ -13,7 +13,7 @@ describe('data desa demo (SPEC §12.1, §12.2, §12.9)', () => {
     const desa = DESA_DEMO.find((d) => d.id === ID_SUNGAI_SIALANG)
     expect(desa).toMatchObject({ slug: 'sungaisialang', kodePos: '28353', kecamatan: { kode: '14.05.09' } })
   })
-  it('4 dusun, 8 RW, dan RT 001–020 berurutan tanpa ganda', () => {
+  it('4 dusun, 8 RW, dan RT 001-020 berurutan tanpa ganda', () => {
     const dusun = DUSUN_DEMO.filter((d) => d.desaId === ID_SUNGAI_SIALANG)
     expect(dusun).toHaveLength(4)
     expect(dusun.flatMap((d) => d.rw)).toHaveLength(8)

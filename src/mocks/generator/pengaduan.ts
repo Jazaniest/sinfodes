@@ -155,7 +155,7 @@ export function bangkitkanPengaduan(acak: Acak, o: Opsi): { pengaduan: Pengaduan
   const topik = () => acak.bulat(0, TEMPLAT.length - 1)
   const lalu = (jam: number) => t - jam * JAM_MS - acak.bulat(0, 50) * MENIT_MS
   // SPEC §12.7: kejadian hari ini hanya 07.30 sampai 5 menit sebelum sekarang. Bila rentang itu belum ada, pengaduan
-  // terbaru masuk kemarin malam. Pengaduan Zulkifli masuk kemarin 10.10–10.50, sekitar 22 jam sebelum demo pukul 09.00.
+  // terbaru masuk kemarin malam. Pengaduan Zulkifli masuk kemarin 10.10-10.50, sekitar 22 jam sebelum demo pukul 09.00.
   const tengahMalam = Date.parse(`${tanggalIsoWib(o.acuan)}T00:00:00+07:00`)
   const batasMenit = Math.floor((t - tengahMalam) / MENIT_MS) - 5
   const masukTerbaru =

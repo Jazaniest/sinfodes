@@ -5,7 +5,7 @@ import { desaSchema } from '../wilayah/schema'
 
 const jam = z.string().regex(/^([01]\d|2[0-3])\.[0-5]\d$/, 'Jam ditulis seperti 08.00')
 
-/** Satu baris jam layanan, mis. "Senin–Kamis 08.00–15.00" (SPEC §12.1). */
+/** Satu baris jam layanan, mis. "Senin-Kamis 08.00-15.00" (SPEC §12.1). */
 export const jamLayananSchema = z
   .object({ hari: z.string().trim().min(1, 'Hari wajib diisi').max(30, 'Paling banyak 30 karakter'), buka: jam, tutup: jam })
   .refine((j) => j.buka < j.tutup, { message: 'Jam tutup harus sesudah jam buka', path: ['tutup'] })

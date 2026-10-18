@@ -87,7 +87,7 @@ const iso = (ms: number) => waktuIsoWib(new Date(ms))
 /** Hari kerja ke-n sesudah (n > 0) atau sebelum (n < 0) `hari`. */
 function geserHariKerja(hari: number, n: number): number {
   let h = hari
-  for (let sisa = Math.abs(n); sisa > 0; ) {
+  for (let sisa = Math.abs(n); sisa > 0;) {
     h += Math.sign(n)
     if (hariKerja(h)) sisa--
   }
@@ -249,7 +249,7 @@ export function bangkitkanSurat(acak: Acak, o: Opsi): HasilSurat {
 
   const draf: Draf[] = []
 
-  /** Waktu tanda tangan: 60% di hari yang sama, 30% hari kerja berikutnya, sisanya 2–3 hari kerja (median ≈ 1 hari). */
+  /** Waktu tanda tangan: 60% di hari yang sama, 30% hari kerja berikutnya, sisanya 2-3 hari kerja (median ≈ 1 hari). */
   function waktuSelesai(masuk: number): number {
     const h = hariDari(masuk)
     const r = acak.angka()
@@ -390,7 +390,7 @@ export function bangkitkanSurat(acak: Acak, o: Opsi): HasilSurat {
     const t = batas - mundur * MENIT_MS
     return t >= pada(hariIni, AWAL_HARI_INI) ? t : pada(kemarin, cadangan)
   }
-  /** Untuk loket: hanya hari kerja 08.00–15.00; bila demo dibuka malam, jamnya ditarik ke sore tadi. */
+  /** Untuk loket: hanya hari kerja 08.00-15.00; bila demo dibuka malam, jamnya ditarik ke sore tadi. */
   const loketHariIniAtau = (mundur: number, cadangan: number) => {
     const t = Math.min(batas, pada(hariIni, 15 * 60)) - mundur * MENIT_MS
     return hariKerja(hariIni) && t >= pada(hariIni, BUKA) ? t : pada(kemarin, cadangan)

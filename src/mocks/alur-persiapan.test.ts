@@ -24,7 +24,7 @@ async function progres() {
 
 const IDENTITAS: IdentitasDesa = {
   nama: 'Tanjung Lamo', kodeDesa: '14.05.10.2010', alamatKantor: 'Jalan Lintas Kuala Kampar No. 1', kodePos: '28384',
-  surel: 'kantor@tanjunglamo.desa.id', telepon: '081234567890', jamLayanan: [{ hari: 'Senin–Jumat', buka: '08.00', tutup: '15.00' }],
+  surel: 'kantor@tanjunglamo.desa.id', telepon: '081234567890', jamLayanan: [{ hari: 'Senin-Jumat', buka: '08.00', tutup: '15.00' }],
   lambang: null,
 }
 const WILAYAH: UbahWilayah = {

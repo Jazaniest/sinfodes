@@ -4,7 +4,7 @@ import type { Berlaku } from './schema'
 
 /**
  * Rapikan kode yang diketik (fokus review 1): huruf kecil, spasi, dan tanda pisah apa pun diterima.
- * "ss 7k3m q9td", "SS–7K3M–Q9TD", dan "ss7k3mq9td" menjadi "SS-7K3M-Q9TD". Teks yang terlalu pendek dikembalikan tanpa pemisah.
+ * "ss 7k3m q9td", "SS-7K3M-Q9TD", dan "ss7k3mq9td" menjadi "SS-7K3M-Q9TD". Teks yang terlalu pendek dikembalikan tanpa pemisah.
  */
 export function rapikanKode(teks: string): string {
   const polos = teks.toUpperCase().replace(/[\s‐-―-]+/g, '')

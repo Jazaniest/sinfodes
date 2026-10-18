@@ -56,7 +56,7 @@ describe('GET /beranda (SPEC §5.3)', () => {
     expect(b.posyandu).toBeNull()
     expect(b.apbdes?.bidang.map((x) => x.kode)).toEqual(['5.1', '5.2', '5.3', '5.4', '5.5'])
     expect(b.pembangunan?.map((k) => k.nama)).toEqual([
-      'Semenisasi jalan lingkungan Dusun III', 'Sumur bor air bersih Dusun IV', 'Titian kayu penghubung Dusun II–IV',
+      'Semenisasi jalan lingkungan Dusun III', 'Sumur bor air bersih Dusun IV', 'Titian kayu penghubung Dusun II-IV',
     ])
   })
   it('Kepala Dusun II: keadaan dusunnya saja', async () => {

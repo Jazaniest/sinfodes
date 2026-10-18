@@ -18,7 +18,7 @@ describe('Layanan website desa (SPEC §9)', () => {
   it('jam layanan kantor dan jadwal posyandu setiap dusun, dengan jangkar #posyandu dari Beranda', async () => {
     renderPublik(<LayananPublik />)
     const jam = await screen.findByRole('region', { name: 'Jam layanan kantor desa' })
-    expect(within(jam).getByText('08.00–15.00 WIB')).toBeInTheDocument()
+    expect(within(jam).getByText('08.00-15.00 WIB')).toBeInTheDocument()
     expect(within(jam).getByText('Jumat')).toBeInTheDocument()
     const posyandu = screen.getByRole('region', { name: 'Jadwal posyandu' })
     expect(posyandu).toHaveAttribute('id', 'posyandu')

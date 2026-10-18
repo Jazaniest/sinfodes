@@ -10,7 +10,7 @@ import { balasIsianTidakValid, butuhKemampuan } from '../tulis'
 const butuhPembaca = (request: Request) => butuhKemampuan(request, 'kesehatan.lihat', 'Peran Anda tidak berhak membuka data Kesehatan.')
 
 /**
- * Balita dihitung saat diminta: penduduk hidup berumur 0–4 tahun dalam cakupan pengguna, digabung dengan pengukurannya.
+ * Balita dihitung saat diminta: penduduk hidup berumur 0-4 tahun dalam cakupan pengguna, digabung dengan pengukurannya.
  * Bayi yang baru dicatat langsung muncul (belum diukur); balita yang meninggal atau pindah langsung hilang.
  */
 function kesehatanMilik(pengguna: PenggunaSesi, sekarang: Date) {

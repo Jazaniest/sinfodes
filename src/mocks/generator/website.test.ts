@@ -22,7 +22,7 @@ describe('isi website demo (SPEC §12.6, §9)', () => {
     expect(new Set(db.artikel.map((a) => a.slug)).size).toBe(12)
     expect(new Set(db.artikel.map((a) => a.penulis))).toEqual(new Set(['Rosmiati', 'Hendri Saputra']))
   })
-  it('setiap artikel bernaskah 150–300 kata dengan ringkasan; foto artikel diambil dari galeri yang tersedia (SPEC §12.6)', () => {
+  it('setiap artikel bernaskah 150-300 kata dengan ringkasan; foto artikel diambil dari galeri yang tersedia (SPEC §12.6)', () => {
     const berkasGaleri = new Set(db.galeri.filter((f) => f.tersedia).map((f) => f.berkas))
     for (const a of db.artikel) {
       const kata = a.isi.join(' ').split(/\s+/).filter(Boolean).length

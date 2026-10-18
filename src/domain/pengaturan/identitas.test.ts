@@ -9,7 +9,7 @@ const IDENTITAS: IdentitasDesa = {
   surel: 'pemdes@sungaisialang.desa.id',
   telepon: '081266031140',
   jamLayanan: [
-    { hari: 'Senin–Kamis', buka: '08.00', tutup: '15.00' },
+    { hari: 'Senin-Kamis', buka: '08.00', tutup: '15.00' },
     { hari: 'Jumat', buka: '08.00', tutup: '11.30' },
   ],
   lambang: null,
@@ -19,7 +19,7 @@ describe('identitas desa (SPEC §8, §12.1)', () => {
   it('identitas demo sah; formulir dan isian API bolak-balik tanpa berubah', () => {
     expect(identitasDesaSchema.parse(IDENTITAS)).toEqual(IDENTITAS)
     const form = formDariIdentitas(IDENTITAS)
-    expect(form.jamLayanan[0]).toEqual({ hari: 'Senin–Kamis', buka: '08:00', tutup: '15:00' })
+    expect(form.jamLayanan[0]).toEqual({ hari: 'Senin-Kamis', buka: '08:00', tutup: '15:00' })
     expect(isianIdentitas(form)).toEqual(IDENTITAS)
     expect(periksaIdentitas(form)).toEqual({})
   })

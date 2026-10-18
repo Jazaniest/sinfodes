@@ -7,7 +7,7 @@ import type { Penduduk } from '@/domain/penduduk/schema'
 import type { DbDemo } from './tipe-db'
 import { catatRiwayat } from './tulis'
 
-/** Nomor KK baru: kode wilayah desa + tanggal terbit hari ini + nomor urut 8001–9999 yang belum dipakai (SPEC §12.5). */
+/** Nomor KK baru: kode wilayah desa + tanggal terbit hari ini + nomor urut 8001-9999 yang belum dipakai (SPEC §12.5). */
 export function nomorKkBaru(db: DbDemo, kodeWilayah: string, sekarang: Date): string {
   const tanggalTerbit = tanggalIsoWib(sekarang)
   const terpakai = new Set(db.keluarga.map((k) => k.nomorKk))

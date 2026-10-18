@@ -3,7 +3,7 @@ import { barisKegiatanSchema, dokumentasiSchema, statusKegiatan, type BarisKegia
 
 const KEGIATAN: BarisKegiatan = {
   id: 'kgt_a', desaId: 'desa_sungai_sialang', kodeApbdes: '5.2.01', nama: 'Semenisasi jalan lingkungan Dusun III', volume: '450 m',
-  lokasi: 'Jalan lingkungan RT 011–013', dusunId: 'dsn_ss_3', sumberDana: 'DD', pelaksana: 'TPK Desa Sungai Sialang',
+  lokasi: 'Jalan lingkungan RT 011-013', dusunId: 'dsn_ss_3', sumberDana: 'DD', pelaksana: 'TPK Desa Sungai Sialang',
   mulai: '2026-06-15', targetSelesai: '2026-11-30', progresFisik: 70, status: 'berjalan', titik: [102.69, 0.27],
   dokumentasi: [{ persen: 0, tanggal: '2026-06-15', keterangan: 'Kondisi sebelum dikerjakan', foto: null }],
   anggaran: 245_000_000, realisasi: 151_900_000,

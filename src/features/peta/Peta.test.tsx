@@ -75,8 +75,8 @@ describe('Peta Desa (SPEC §8)', () => {
     await user.click(await screen.findByRole('button', { name: 'peta gagal' }))
     expect(screen.getByText(/Peta tidak bisa ditampilkan di perangkat ini/)).toBeInTheDocument()
     expect(screen.queryByTestId('peta-tiruan')).not.toBeInTheDocument()
-    await user.click(within(screen.getByRole('list', { name: 'Kegiatan pembangunan' })).getByRole('button', { name: /Drainase RT 006–007/ }))
-    expect(within(panel()).getByRole('heading', { name: 'Drainase RT 006–007' })).toBeInTheDocument()
+    await user.click(within(screen.getByRole('list', { name: 'Kegiatan pembangunan' })).getByRole('button', { name: /Drainase RT 006-007/ }))
+    expect(within(panel()).getByRole('heading', { name: 'Drainase RT 006-007' })).toBeInTheDocument()
   })
   it('peta dan panel baru berdampingan di layar lebar (xl); di 1024 bertumpuk supaya peta tidak sempit', async () => {
     pasang()

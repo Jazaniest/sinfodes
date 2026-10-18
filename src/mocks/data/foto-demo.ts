@@ -85,7 +85,7 @@ export const FOTO_DEMO: readonly FotoDemo[] = [
   },
   {
     berkas: 'kebun-sawit',
-    judulCommons: 'Kebun kelapa sawit milik keluarga bibi·tante–mina saya di Desa Samba Danum (20260411 130456).jpg',
+    judulCommons: 'Kebun kelapa sawit milik keluarga bibi·tante-mina saya di Desa Samba Danum (20260411 130456).jpg',
     pembuat: 'Gabpzxs',
     lisensi: 'CC0',
     tautanLisensi: 'https://creativecommons.org/publicdomain/zero/1.0/',

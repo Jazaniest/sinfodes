@@ -185,7 +185,7 @@ function TabKeaktifan({ d }: { d: DetailDesaKonsol }) {
 function TabLangganan({ d, hariIni }: { d: DetailDesaKonsol; hariIni: string }) {
   const l = d.langganan
   const masa =
-    l.mulai && l.sampai ? `${formatTanggal(l.mulai)} – ${formatTanggal(l.sampai)}` : <span className={redup}>Belum ditentukan, desa masih dalam persiapan</span>
+    l.mulai && l.sampai ? `${formatTanggal(l.mulai)} - ${formatTanggal(l.sampai)}` : <span className={redup}>Belum ditentukan, desa masih dalam persiapan</span>
   return (
     <div className="flex max-w-3xl flex-col gap-6">
       <DescriptionList

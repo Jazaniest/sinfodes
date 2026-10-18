@@ -1,5 +1,5 @@
 export type Suku = 'Melayu' | 'Jawa' | 'Minang' | 'Batak' | 'Lainnya'
-/** Angkatan kelahiran: tua ≤ 1975, tengah 1976–1995, muda ≥ 1996. */
+/** Angkatan kelahiran: tua ≤ 1975, tengah 1976-1995, muda ≥ 1996. */
 export type Angkatan = 'tua' | 'tengah' | 'muda'
 
 type Kumpulan = Readonly<Record<Angkatan, { L: readonly string[]; P: readonly string[] }>>

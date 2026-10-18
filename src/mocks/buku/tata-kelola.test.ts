@@ -35,7 +35,7 @@ describe('buku administrasi keuangan dan pembangunan (SPEC Lampiran B)', () => {
     expect(kegiatan).toHaveLength(6)
     expect(kegiatan).not.toContain('Pelantar perahu nelayan')
     expect(bukuInventarisHasil(db, DESA).baris.map((b) => b[1])).toEqual([
-      'Drainase RT 006–007', 'Rehabilitasi Posyandu Kenanga', 'Lampu jalan tenaga surya',
+      'Drainase RT 006-007', 'Rehabilitasi Posyandu Kenanga', 'Lampu jalan tenaga surya',
     ])
   })
   it('Kader Pemberdayaan Masyarakat: pengurus LPM, PKK, dan kader posyandu', () => {

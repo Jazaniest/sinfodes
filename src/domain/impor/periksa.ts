@@ -184,7 +184,7 @@ function periksaBaris(nomor: number, nilai: NilaiBaris, ctx: KonteksBaris): Pick
   const statusPerkawinan = pilihan('statusPerkawinan', STATUS_PERKAWINAN)
   const golonganDarah = pilihan('golonganDarah', GOLONGAN_DARAH)
   const telepon = teks('telepon').replace(/[\s-]/g, '')
-  if (telepon !== '' && !/^08\d{8,11}$/.test(telepon)) salah('nilai-tidak-dikenal', 'telepon', 'Nomor telepon diawali 08, 10–13 angka')
+  if (telepon !== '' && !/^08\d{8,11}$/.test(telepon)) salah('nilai-tidak-dikenal', 'telepon', 'Nomor telepon diawali 08, 10-13 angka')
 
   if (masalah.length > 0 || !jenisKelamin || !tanggalLahir || !agama || !hubungan || !wilayah) {
     return { masalah, peringatan, siap: null }

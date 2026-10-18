@@ -12,7 +12,7 @@ type Props = {
   onPageSize?: (ukuran: UkuranHalaman) => void
 }
 
-/** "1–25 dari 2.812" + halaman sebelumnya/berikutnya + ukuran halaman (SPEC §4.4, §6.2). */
+/** "1-25 dari 2.812" + halaman sebelumnya/berikutnya + ukuran halaman (SPEC §4.4, §6.2). */
 export function Pagination({ page, pageSize, total, onPage, onPageSize }: Props) {
   const halamanAkhir = Math.max(1, Math.ceil(total / pageSize))
   const awal = total === 0 ? 0 : (page - 1) * pageSize + 1
@@ -20,7 +20,7 @@ export function Pagination({ page, pageSize, total, onPage, onPageSize }: Props)
   return (
     <nav aria-label="Halaman" className="flex flex-wrap items-center justify-between gap-3 py-3 text-teks-kecil text-tinta-2">
       <p aria-live="polite">
-        {formatAngka(awal)}–{formatAngka(akhir)} dari {formatAngka(total)}
+        {formatAngka(awal)}-{formatAngka(akhir)} dari {formatAngka(total)}
       </p>
       <div className="flex flex-wrap items-center gap-3">
         {onPageSize && (

@@ -11,7 +11,7 @@ const hariKerja = (nomor: number) => {
 }
 
 /**
- * Hari kerja (Senin–Jumat) yang sudah lewat sejak `mulai` sampai `sampai` (SPEC §7.1). Hari masuk tidak dihitung:
+ * Hari kerja (Senin-Jumat) yang sudah lewat sejak `mulai` sampai `sampai` (SPEC §7.1). Hari masuk tidak dihitung:
  * masuk Senin, dilihat Selasa → 1. Masuk Jumat atau Sabtu, dilihat Senin → 1.
  */
 export function hariKerjaBerlalu(mulai: string, sampai: string): number {

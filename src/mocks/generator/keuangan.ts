@@ -25,7 +25,7 @@ const BIDANG: readonly Baris[] = [
   ['5.5', 'Penanggulangan Bencana, Darurat dan Mendesak (termasuk BLT-DD)', 158_500_000, 0.75],
 ]
 
-/** Bobot musiman realisasi per bulan (Januari–Desember): pendapatan mengikuti tahap transfer, belanja lebih merata. */
+/** Bobot musiman realisasi per bulan (Januari-Desember): pendapatan mengikuti tahap transfer, belanja lebih merata. */
 const BOBOT_PENDAPATAN = [2, 10, 14, 6, 5, 16, 6, 10, 8, 4, 3, 16]
 const BOBOT_BELANJA = [1, 4, 8, 8, 9, 10, 10, 11, 12, 9, 8, 10]
 

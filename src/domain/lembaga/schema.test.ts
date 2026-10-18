@@ -16,7 +16,7 @@ describe('aturan lembaga desa (SPEC §8)', () => {
     ])
   })
   it('masa bakti: rentang tahun, atau "sejak" bila belum berakhir', () => {
-    expect(teksMasaBakti({ mulai: 2021, selesai: 2029 })).toBe('2021–2029')
+    expect(teksMasaBakti({ mulai: 2021, selesai: 2029 })).toBe('2021-2029')
     expect(teksMasaBakti({ mulai: 2018, selesai: null })).toBe('sejak 2018')
   })
 })
