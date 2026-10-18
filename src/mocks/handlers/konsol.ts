@@ -137,6 +137,7 @@ export const handlerKonsol = [
           sekarang,
         ),
         desa: { aktif: jumlah('Aktif'), ujiCoba: jumlah('Uji coba'), persiapan: jumlah('Persiapan'), ditangguhkan: jumlah('Ditangguhkan') },
+        kabupatenMitra: db.kabupatenMitra.length,
       }
       return HttpResponse.json(hasil)
     }),

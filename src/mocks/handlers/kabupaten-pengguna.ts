@@ -1,7 +1,9 @@
 import { http, HttpResponse } from 'msw'
 import type { PelanggaranPengguna } from '@/domain/pengaturan/pengguna'
-import { periksaAturanPenggunaKabupaten, tambahPenggunaKabupatenSchema, ubahPenggunaKabupatenSchema } from '@/domain/kabupaten/pengguna'
-import { LABEL_PERAN_KABUPATEN, PERAN_KABUPATEN, type PenggunaKabupaten } from '@/domain/kabupaten/schema'
+import {
+  periksaAturanPenggunaKabupaten, tambahPenggunaKabupatenSchema, ubahPenggunaKabupatenSchema, urutAkunKabupaten,
+} from '@/domain/kabupaten/pengguna'
+import { LABEL_PERAN_KABUPATEN, type PenggunaKabupaten } from '@/domain/kabupaten/schema'
 import { ambilDb, ubahDb } from '../db'
 import { API, balasGalat, denganJaringan } from '../http'
 import { butuhKemampuanKabupaten } from '../sesi-mock'
@@ -14,8 +16,6 @@ function balasPelanggaran(p: PelanggaranPengguna): Response {
   return balasGalat(p.kode, p.pesan, status, p.field ? { [p.field]: p.pesan } : undefined)
 }
 
-const urutPeran = (p: PenggunaKabupaten) => PERAN_KABUPATEN.indexOf(p.peran)
-
 /** Pengguna kabupaten (SPEC-V0.2 §8.1). Hanya Admin Kabupaten, dan hanya akun kabupatennya sendiri. */
 export const handlerPenggunaKabupaten = [
   http.get(
@@ -25,7 +25,7 @@ export const handlerPenggunaKabupaten = [
       if (pelaku instanceof Response) return pelaku
       const daftar = ambilDb()
         .penggunaKabupaten.filter((p) => p.kabupatenKode === pelaku.kabupatenKode)
-        .sort((a, b) => Number(b.aktif) - Number(a.aktif) || urutPeran(a) - urutPeran(b) || a.nama.localeCompare(b.nama, 'id'))
+        .sort(urutAkunKabupaten)
       return HttpResponse.json(daftar)
     }),
   ),

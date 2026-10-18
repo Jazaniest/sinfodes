@@ -1,6 +1,10 @@
 import { queryOptions } from '@tanstack/react-query'
 import { z } from 'zod'
 import { daftarSchema } from '@/domain/api'
+import { penggunaKabupatenSchema } from '@/domain/kabupaten/schema'
+import {
+  barisKabupatenKonsolSchema, detailKabupatenKonsolSchema, hasilTambahKabupatenSchema, type TambahKabupaten, type UbahAkunKabupatenKonsol,
+} from '@/domain/konsol/kabupaten'
 import {
   barisDesaKonsolSchema, detailDesaKonsolSchema, hasilTambahDesaSchema, hasilUbahAlamatSchema, hasilUndangSekdesSchema, periksaAlamatSchema,
   ringkasanKonsolSchema,
@@ -17,6 +21,8 @@ export const kunciKonsol = {
   detail: (id: string) => ['konsol', 'desa-detail', id] as const,
   usulanAlamat: (nama: string, kecamatan: string) => ['konsol', 'usulan-alamat', nama, kecamatan] as const,
   periksaAlamat: (label: string, desaId: string | undefined) => ['konsol', 'periksa-alamat', label, desaId ?? null] as const,
+  kabupaten: ['konsol', 'kabupaten'] as const,
+  detailKabupaten: (kode: string) => ['konsol', 'kabupaten-detail', kode] as const,
 }
 
 export const hasilMasukKonsolSchema = z.object({ token: z.string(), sesi: sesiKonsolSchema })
@@ -73,3 +79,28 @@ export const periksaAlamat = (label: string, desaId?: string, signal?: AbortSign
   panggilApi('GET', '/konsol/alamat-desa/periksa', { skema: periksaAlamatSchema, query: { label, desaId }, signal, sesi: 'konsol' })
 export const opsiPeriksaAlamat = (label: string, desaId?: string) =>
   queryOptions({ queryKey: kunciKonsol.periksaAlamat(label, desaId), queryFn: ({ signal }) => periksaAlamat(label, desaId, signal) })
+
+/** Kabupaten mitra (SPEC-V0.2 §7). */
+export const daftarKabupatenKonsol = (signal?: AbortSignal) =>
+  panggilApi('GET', '/konsol/kabupaten', { skema: z.array(barisKabupatenKonsolSchema), signal, sesi: 'konsol' })
+export const opsiDaftarKabupatenKonsol = () =>
+  queryOptions({ queryKey: kunciKonsol.kabupaten, queryFn: ({ signal }) => daftarKabupatenKonsol(signal) })
+
+export const ambilDetailKabupatenKonsol = (kode: string, signal?: AbortSignal) =>
+  panggilApi('GET', `/konsol/kabupaten/${encodeURIComponent(kode)}`, { skema: detailKabupatenKonsolSchema, signal, sesi: 'konsol' })
+export const opsiDetailKabupatenKonsol = (kode: string) =>
+  queryOptions({ queryKey: kunciKonsol.detailKabupaten(kode), queryFn: ({ signal }) => ambilDetailKabupatenKonsol(kode, signal) })
+
+/** Tambah kabupaten mitra; isian sebagai JSON `data` dan surat penunjukan (PDF) dalam FormData yang sama. */
+export function tambahKabupaten(isian: TambahKabupaten, suratPenunjukan: File | null) {
+  const isi = new FormData()
+  isi.append('data', JSON.stringify(isian))
+  if (suratPenunjukan) isi.append('suratPenunjukan', suratPenunjukan)
+  return panggilApi('POST', '/konsol/kabupaten', { skema: hasilTambahKabupatenSchema, body: isi, sesi: 'konsol' })
+}
+
+/** Nonaktifkan atau aktifkan lagi akun kabupaten; Admin aktif terakhir dijaga server (409). */
+export const ubahAkunKabupatenKonsol = (kode: string, id: string, isian: UbahAkunKabupatenKonsol) =>
+  panggilApi('PATCH', `/konsol/kabupaten/${encodeURIComponent(kode)}/pengguna/${encodeURIComponent(id)}`, {
+    skema: penggunaKabupatenSchema, body: isian, sesi: 'konsol',
+  })

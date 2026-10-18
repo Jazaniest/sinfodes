@@ -48,6 +48,14 @@ describe('halaman utama Sinfodes (SPEC-V0.2 §4.4)', () => {
     expect(await screen.findByText('31 desa sudah memakai Sinfodes.')).toBeInTheDocument()
     expect(screen.getByText('Data contoh')).toBeInTheDocument()
   })
+  it('bukti: kabupaten mitra, tiap nama bertautan ke portal kabupatennya (SPEC-V0.2 §8.2)', async () => {
+    await pasang()
+    const baris = (await screen.findByText(/^Kabupaten mitra:/)).closest('p')
+    if (!baris) throw new Error('baris kabupaten mitra tidak ada')
+    expect(baris).toHaveTextContent('Kabupaten mitra: Pelalawan · Siak')
+    expect(within(baris).getByRole('link', { name: 'Pelalawan' })).toHaveAttribute('href', 'http://kab-pelalawan.sinfodes.localhost:3000/')
+    expect(within(baris).getByRole('link', { name: 'Siak' })).toHaveAttribute('href', 'http://kab-siak.sinfodes.localhost:3000/')
+  })
   it('paket dan harga: tabel dua paket dengan harga tahunan, dan catatan triwulan', async () => {
     await pasang()
     const tabel = screen.getByRole('table', { name: 'Paket dan harga' })

@@ -5,11 +5,11 @@ import { kunciKabupaten, masukKabupaten } from '@/api/kabupaten'
 import { keAlamat } from '@/app/alamat'
 import { simpanSesi } from '@/app/sesi'
 import type { SesiKabupaten } from '@/domain/kabupaten/schema'
-import { CariDesa } from '@/features/induk/CariDesa'
 import { TextField } from '@/ui/isian/TextField'
 import { Tautan } from '@/ui/navigasi/Tautan'
 import { Tombol } from '@/ui/tombol/Tombol'
 import { Banner } from '@/ui/umpan-balik/Banner'
+import { KabupatenBelumMitra } from './KabupatenBelumMitra'
 import { LambangContoh } from './LambangContoh'
 
 type Kabupaten = { label: string; nama: string; mitra: boolean }
@@ -73,18 +73,7 @@ function FormMasukKabupaten({ onBerhasil }: { onBerhasil: (sesi: SesiKabupaten) 
  * formulir masuk.
  */
 export function MasukKabupaten({ kabupaten, onBerhasil }: { kabupaten: Kabupaten | null; onBerhasil: (sesi: SesiKabupaten) => void }) {
-  if (kabupaten && !kabupaten.mitra) {
-    return (
-      <main className="mx-auto flex min-h-screen max-w-xl flex-col justify-center gap-6 px-4 py-10">
-        <div>
-          <p className="text-label font-medium text-tinta-2 uppercase">Kabupaten {kabupaten.nama}</p>
-          <h1 className="mt-1 font-serif text-judul-halaman font-medium">Kabupaten ini belum memakai Sinfodes</h1>
-          <p className="mt-2 text-tinta-2">Dasbor kabupaten dibuka setelah kabupaten bermitra dengan Sinfodes.</p>
-        </div>
-        <CariDesa />
-      </main>
-    )
-  }
+  if (kabupaten && !kabupaten.mitra) return <KabupatenBelumMitra nama={kabupaten.nama} />
   return (
     <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-6 px-4 py-10">
       <div className="flex items-center gap-3">

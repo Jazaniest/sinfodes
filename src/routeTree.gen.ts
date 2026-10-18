@@ -18,6 +18,7 @@ import { Route as AdminPanelRouteImport } from './routes/admin/_panel'
 import { Route as AdminBantuanRouteImport } from './routes/admin/bantuan'
 import { Route as AdminMasukRouteImport } from './routes/admin/masuk'
 import { Route as DesaSlugRouteImport } from './routes/desa/$slug'
+import { Route as KabupatenIndexRouteImport } from './routes/kabupaten/index'
 import { Route as KonsolKonsolRouteImport } from './routes/konsol/_konsol'
 import { Route as KonsolMasukRouteImport } from './routes/konsol/masuk'
 import { Route as WargaAppRouteImport } from './routes/warga/_app'
@@ -76,6 +77,9 @@ import { Route as KabupatenAdminDasborPenggunaRouteImport } from './routes/kabup
 import { Route as KonsolKonsolDesaIndexRouteImport } from './routes/konsol/_konsol/desa/index'
 import { Route as KonsolKonsolDesaIdRouteImport } from './routes/konsol/_konsol/desa/$id'
 import { Route as KonsolKonsolDesaBaruRouteImport } from './routes/konsol/_konsol/desa/baru'
+import { Route as KonsolKonsolKabupatenIndexRouteImport } from './routes/konsol/_konsol/kabupaten/index'
+import { Route as KonsolKonsolKabupatenKodeRouteImport } from './routes/konsol/_konsol/kabupaten/$kode'
+import { Route as KonsolKonsolKabupatenBaruRouteImport } from './routes/konsol/_konsol/kabupaten/baru'
 import { Route as WargaAppKeluargaIndexRouteImport } from './routes/warga/_app/keluarga/index'
 import { Route as WargaAppKeluargaLaporRouteImport } from './routes/warga/_app/keluarga/lapor'
 import { Route as WargaAppPengaduanIndexRouteImport } from './routes/warga/_app/pengaduan/index'
@@ -143,6 +147,11 @@ const AdminMasukRoute = AdminMasukRouteImport.update({
 const DesaSlugRoute = DesaSlugRouteImport.update({
   id: '/desa/$slug',
   path: '/desa/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const KabupatenIndexRoute = KabupatenIndexRouteImport.update({
+  id: '/kabupaten/',
+  path: '/kabupaten/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const KonsolKonsolRoute = KonsolKonsolRouteImport.update({
@@ -450,6 +459,24 @@ const KonsolKonsolDesaBaruRoute = KonsolKonsolDesaBaruRouteImport.update({
   path: '/desa/baru',
   getParentRoute: () => KonsolKonsolRoute,
 } as any)
+const KonsolKonsolKabupatenIndexRoute =
+  KonsolKonsolKabupatenIndexRouteImport.update({
+    id: '/kabupaten/',
+    path: '/kabupaten/',
+    getParentRoute: () => KonsolKonsolRoute,
+  } as any)
+const KonsolKonsolKabupatenKodeRoute =
+  KonsolKonsolKabupatenKodeRouteImport.update({
+    id: '/kabupaten/$kode',
+    path: '/kabupaten/$kode',
+    getParentRoute: () => KonsolKonsolRoute,
+  } as any)
+const KonsolKonsolKabupatenBaruRoute =
+  KonsolKonsolKabupatenBaruRouteImport.update({
+    id: '/kabupaten/baru',
+    path: '/kabupaten/baru',
+    getParentRoute: () => KonsolKonsolRoute,
+  } as any)
 const WargaAppKeluargaIndexRoute = WargaAppKeluargaIndexRouteImport.update({
   id: '/keluarga/',
   path: '/keluarga/',
@@ -595,6 +622,7 @@ export interface FileRoutesByFullPath {
   '/konsol/masuk': typeof KonsolMasukRoute
   '/warga': typeof WargaAppRouteWithChildren
   '/warga/masuk': typeof WargaMasukRoute
+  '/kabupaten/': typeof KabupatenIndexRoute
   '/admin/aset': typeof AdminPanelAsetRoute
   '/admin/kesehatan': typeof AdminPanelKesehatanRoute
   '/admin/keuangan': typeof AdminPanelKeuanganRoute
@@ -638,6 +666,8 @@ export interface FileRoutesByFullPath {
   '/kabupaten/admin/pengguna': typeof KabupatenAdminDasborPenggunaRoute
   '/konsol/desa/$id': typeof KonsolKonsolDesaIdRoute
   '/konsol/desa/baru': typeof KonsolKonsolDesaBaruRoute
+  '/konsol/kabupaten/$kode': typeof KonsolKonsolKabupatenKodeRoute
+  '/konsol/kabupaten/baru': typeof KonsolKonsolKabupatenBaruRoute
   '/warga/keluarga/lapor': typeof WargaAppKeluargaLaporRoute
   '/warga/pengaduan/$id': typeof WargaAppPengaduanIdRoute
   '/warga/pengaduan/baru': typeof WargaAppPengaduanBaruRoute
@@ -653,6 +683,7 @@ export interface FileRoutesByFullPath {
   '/desa/$slug/kabar/': typeof DesaSlugKabarIndexRoute
   '/kabupaten/admin/': typeof KabupatenAdminDasborIndexRoute
   '/konsol/desa/': typeof KonsolKonsolDesaIndexRoute
+  '/konsol/kabupaten/': typeof KonsolKonsolKabupatenIndexRoute
   '/warga/keluarga/': typeof WargaAppKeluargaIndexRoute
   '/warga/pengaduan/': typeof WargaAppPengaduanIndexRoute
   '/warga/riwayat/': typeof WargaAppRiwayatIndexRoute
@@ -683,6 +714,7 @@ export interface FileRoutesByTo {
   '/admin/masuk': typeof AdminMasukRoute
   '/konsol/masuk': typeof KonsolMasukRoute
   '/warga/masuk': typeof WargaMasukRoute
+  '/kabupaten': typeof KabupatenIndexRoute
   '/admin/aset': typeof AdminPanelAsetRoute
   '/admin/kesehatan': typeof AdminPanelKesehatanRoute
   '/admin/keuangan': typeof AdminPanelKeuanganRoute
@@ -725,6 +757,8 @@ export interface FileRoutesByTo {
   '/kabupaten/admin/pengguna': typeof KabupatenAdminDasborPenggunaRoute
   '/konsol/desa/$id': typeof KonsolKonsolDesaIdRoute
   '/konsol/desa/baru': typeof KonsolKonsolDesaBaruRoute
+  '/konsol/kabupaten/$kode': typeof KonsolKonsolKabupatenKodeRoute
+  '/konsol/kabupaten/baru': typeof KonsolKonsolKabupatenBaruRoute
   '/warga/keluarga/lapor': typeof WargaAppKeluargaLaporRoute
   '/warga/pengaduan/$id': typeof WargaAppPengaduanIdRoute
   '/warga/pengaduan/baru': typeof WargaAppPengaduanBaruRoute
@@ -740,6 +774,7 @@ export interface FileRoutesByTo {
   '/desa/$slug/kabar': typeof DesaSlugKabarIndexRoute
   '/kabupaten/admin': typeof KabupatenAdminDasborIndexRoute
   '/konsol/desa': typeof KonsolKonsolDesaIndexRoute
+  '/konsol/kabupaten': typeof KonsolKonsolKabupatenIndexRoute
   '/warga/keluarga': typeof WargaAppKeluargaIndexRoute
   '/warga/pengaduan': typeof WargaAppPengaduanIndexRoute
   '/warga/riwayat': typeof WargaAppRiwayatIndexRoute
@@ -775,6 +810,7 @@ export interface FileRoutesById {
   '/konsol/masuk': typeof KonsolMasukRoute
   '/warga/_app': typeof WargaAppRouteWithChildren
   '/warga/masuk': typeof WargaMasukRoute
+  '/kabupaten/': typeof KabupatenIndexRoute
   '/admin/_panel/aset': typeof AdminPanelAsetRoute
   '/admin/_panel/kesehatan': typeof AdminPanelKesehatanRoute
   '/admin/_panel/keuangan': typeof AdminPanelKeuanganRoute
@@ -818,6 +854,8 @@ export interface FileRoutesById {
   '/kabupaten/admin/_dasbor/pengguna': typeof KabupatenAdminDasborPenggunaRoute
   '/konsol/_konsol/desa/$id': typeof KonsolKonsolDesaIdRoute
   '/konsol/_konsol/desa/baru': typeof KonsolKonsolDesaBaruRoute
+  '/konsol/_konsol/kabupaten/$kode': typeof KonsolKonsolKabupatenKodeRoute
+  '/konsol/_konsol/kabupaten/baru': typeof KonsolKonsolKabupatenBaruRoute
   '/warga/_app/keluarga/lapor': typeof WargaAppKeluargaLaporRoute
   '/warga/_app/pengaduan/$id': typeof WargaAppPengaduanIdRoute
   '/warga/_app/pengaduan/baru': typeof WargaAppPengaduanBaruRoute
@@ -833,6 +871,7 @@ export interface FileRoutesById {
   '/desa/$slug/kabar/': typeof DesaSlugKabarIndexRoute
   '/kabupaten/admin/_dasbor/': typeof KabupatenAdminDasborIndexRoute
   '/konsol/_konsol/desa/': typeof KonsolKonsolDesaIndexRoute
+  '/konsol/_konsol/kabupaten/': typeof KonsolKonsolKabupatenIndexRoute
   '/warga/_app/keluarga/': typeof WargaAppKeluargaIndexRoute
   '/warga/_app/pengaduan/': typeof WargaAppPengaduanIndexRoute
   '/warga/_app/riwayat/': typeof WargaAppRiwayatIndexRoute
@@ -869,6 +908,7 @@ export interface FileRouteTypes {
     | '/konsol/masuk'
     | '/warga'
     | '/warga/masuk'
+    | '/kabupaten/'
     | '/admin/aset'
     | '/admin/kesehatan'
     | '/admin/keuangan'
@@ -912,6 +952,8 @@ export interface FileRouteTypes {
     | '/kabupaten/admin/pengguna'
     | '/konsol/desa/$id'
     | '/konsol/desa/baru'
+    | '/konsol/kabupaten/$kode'
+    | '/konsol/kabupaten/baru'
     | '/warga/keluarga/lapor'
     | '/warga/pengaduan/$id'
     | '/warga/pengaduan/baru'
@@ -927,6 +969,7 @@ export interface FileRouteTypes {
     | '/desa/$slug/kabar/'
     | '/kabupaten/admin/'
     | '/konsol/desa/'
+    | '/konsol/kabupaten/'
     | '/warga/keluarga/'
     | '/warga/pengaduan/'
     | '/warga/riwayat/'
@@ -957,6 +1000,7 @@ export interface FileRouteTypes {
     | '/admin/masuk'
     | '/konsol/masuk'
     | '/warga/masuk'
+    | '/kabupaten'
     | '/admin/aset'
     | '/admin/kesehatan'
     | '/admin/keuangan'
@@ -999,6 +1043,8 @@ export interface FileRouteTypes {
     | '/kabupaten/admin/pengguna'
     | '/konsol/desa/$id'
     | '/konsol/desa/baru'
+    | '/konsol/kabupaten/$kode'
+    | '/konsol/kabupaten/baru'
     | '/warga/keluarga/lapor'
     | '/warga/pengaduan/$id'
     | '/warga/pengaduan/baru'
@@ -1014,6 +1060,7 @@ export interface FileRouteTypes {
     | '/desa/$slug/kabar'
     | '/kabupaten/admin'
     | '/konsol/desa'
+    | '/konsol/kabupaten'
     | '/warga/keluarga'
     | '/warga/pengaduan'
     | '/warga/riwayat'
@@ -1048,6 +1095,7 @@ export interface FileRouteTypes {
     | '/konsol/masuk'
     | '/warga/_app'
     | '/warga/masuk'
+    | '/kabupaten/'
     | '/admin/_panel/aset'
     | '/admin/_panel/kesehatan'
     | '/admin/_panel/keuangan'
@@ -1091,6 +1139,8 @@ export interface FileRouteTypes {
     | '/kabupaten/admin/_dasbor/pengguna'
     | '/konsol/_konsol/desa/$id'
     | '/konsol/_konsol/desa/baru'
+    | '/konsol/_konsol/kabupaten/$kode'
+    | '/konsol/_konsol/kabupaten/baru'
     | '/warga/_app/keluarga/lapor'
     | '/warga/_app/pengaduan/$id'
     | '/warga/_app/pengaduan/baru'
@@ -1106,6 +1156,7 @@ export interface FileRouteTypes {
     | '/desa/$slug/kabar/'
     | '/kabupaten/admin/_dasbor/'
     | '/konsol/_konsol/desa/'
+    | '/konsol/_konsol/kabupaten/'
     | '/warga/_app/keluarga/'
     | '/warga/_app/pengaduan/'
     | '/warga/_app/riwayat/'
@@ -1141,6 +1192,7 @@ export interface RootRouteChildren {
   KonsolMasukRoute: typeof KonsolMasukRoute
   WargaAppRoute: typeof WargaAppRouteWithChildren
   WargaMasukRoute: typeof WargaMasukRoute
+  KabupatenIndexRoute: typeof KabupatenIndexRoute
   KabupatenAdminDasborRoute: typeof KabupatenAdminDasborRouteWithChildren
   KabupatenAdminMasukRoute: typeof KabupatenAdminMasukRoute
 }
@@ -1208,6 +1260,13 @@ declare module '@tanstack/react-router' {
       path: '/desa/$slug'
       fullPath: '/desa/$slug'
       preLoaderRoute: typeof DesaSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/kabupaten/': {
+      id: '/kabupaten/'
+      path: '/kabupaten'
+      fullPath: '/kabupaten/'
+      preLoaderRoute: typeof KabupatenIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/konsol/_konsol': {
@@ -1616,6 +1675,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof KonsolKonsolDesaBaruRouteImport
       parentRoute: typeof KonsolKonsolRoute
     }
+    '/konsol/_konsol/kabupaten/': {
+      id: '/konsol/_konsol/kabupaten/'
+      path: '/kabupaten'
+      fullPath: '/konsol/kabupaten/'
+      preLoaderRoute: typeof KonsolKonsolKabupatenIndexRouteImport
+      parentRoute: typeof KonsolKonsolRoute
+    }
+    '/konsol/_konsol/kabupaten/$kode': {
+      id: '/konsol/_konsol/kabupaten/$kode'
+      path: '/kabupaten/$kode'
+      fullPath: '/konsol/kabupaten/$kode'
+      preLoaderRoute: typeof KonsolKonsolKabupatenKodeRouteImport
+      parentRoute: typeof KonsolKonsolRoute
+    }
+    '/konsol/_konsol/kabupaten/baru': {
+      id: '/konsol/_konsol/kabupaten/baru'
+      path: '/kabupaten/baru'
+      fullPath: '/konsol/kabupaten/baru'
+      preLoaderRoute: typeof KonsolKonsolKabupatenBaruRouteImport
+      parentRoute: typeof KonsolKonsolRoute
+    }
     '/warga/_app/keluarga/': {
       id: '/warga/_app/keluarga/'
       path: '/keluarga'
@@ -1930,7 +2010,10 @@ interface KonsolKonsolRouteChildren {
   KonsolKonsolIndexRoute: typeof KonsolKonsolIndexRoute
   KonsolKonsolDesaIdRoute: typeof KonsolKonsolDesaIdRoute
   KonsolKonsolDesaBaruRoute: typeof KonsolKonsolDesaBaruRoute
+  KonsolKonsolKabupatenKodeRoute: typeof KonsolKonsolKabupatenKodeRoute
+  KonsolKonsolKabupatenBaruRoute: typeof KonsolKonsolKabupatenBaruRoute
   KonsolKonsolDesaIndexRoute: typeof KonsolKonsolDesaIndexRoute
+  KonsolKonsolKabupatenIndexRoute: typeof KonsolKonsolKabupatenIndexRoute
 }
 
 const KonsolKonsolRouteChildren: KonsolKonsolRouteChildren = {
@@ -1938,7 +2021,10 @@ const KonsolKonsolRouteChildren: KonsolKonsolRouteChildren = {
   KonsolKonsolIndexRoute: KonsolKonsolIndexRoute,
   KonsolKonsolDesaIdRoute: KonsolKonsolDesaIdRoute,
   KonsolKonsolDesaBaruRoute: KonsolKonsolDesaBaruRoute,
+  KonsolKonsolKabupatenKodeRoute: KonsolKonsolKabupatenKodeRoute,
+  KonsolKonsolKabupatenBaruRoute: KonsolKonsolKabupatenBaruRoute,
   KonsolKonsolDesaIndexRoute: KonsolKonsolDesaIndexRoute,
+  KonsolKonsolKabupatenIndexRoute: KonsolKonsolKabupatenIndexRoute,
 }
 
 const KonsolKonsolRouteWithChildren = KonsolKonsolRoute._addFileChildren(
@@ -2004,6 +2090,7 @@ const rootRouteChildren: RootRouteChildren = {
   KonsolMasukRoute: KonsolMasukRoute,
   WargaAppRoute: WargaAppRouteWithChildren,
   WargaMasukRoute: WargaMasukRoute,
+  KabupatenIndexRoute: KabupatenIndexRoute,
   KabupatenAdminDasborRoute: KabupatenAdminDasborRouteWithChildren,
   KabupatenAdminMasukRoute: KabupatenAdminMasukRoute,
 }

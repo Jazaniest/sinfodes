@@ -33,5 +33,9 @@ export const hasilCariDesaSchema = z.object({
 export type HasilCariDesa = z.infer<typeof hasilCariDesaSchema>
 
 /** GET /induk/ringkasan: angka untuk halaman utama Sinfodes. `desaBergabung` = desa Aktif dan Uji coba. */
-export const ringkasanIndukSchema = z.object({ desaBergabung: z.number().int().min(0) })
+/** GET /induk/ringkasan (SPEC-V0.2 §4.4): bukti di halaman utama; kabupaten mitra urut nama, bertautan ke portalnya (§8.2). */
+export const ringkasanIndukSchema = z.object({
+  desaBergabung: z.number().int().min(0),
+  kabupatenMitra: z.array(z.object({ label: z.string(), nama: z.string() })),
+})
 export type RingkasanInduk = z.infer<typeof ringkasanIndukSchema>

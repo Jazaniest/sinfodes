@@ -27,6 +27,10 @@ export const daftarPenggunaKabupatenSchema = z.array(penggunaKabupatenSchema)
 
 const adminAktif = (p: PenggunaKabupaten) => p.aktif && p.peran === 'admin'
 
+/** Urutan daftar akun kabupaten: aktif dulu, Admin dulu, lalu nama. */
+export const urutAkunKabupaten = (a: PenggunaKabupaten, b: PenggunaKabupaten): number =>
+  Number(b.aktif) - Number(a.aktif) || PERAN_KABUPATEN.indexOf(a.peran) - PERAN_KABUPATEN.indexOf(b.peran) || a.nama.localeCompare(b.nama, 'id')
+
 /**
  * Aturan akun kabupaten (SPEC-V0.2 §8.1). `pelakuId` null berarti Tim Sinfodes dari Konsol. Akun sendiri tidak diubah dari
  * dasbor kabupaten (pola Pengguna desa), dan setiap kabupaten mitra harus selalu punya Admin aktif supaya tidak terkunci dari

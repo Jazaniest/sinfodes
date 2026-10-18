@@ -2,6 +2,7 @@ import { queryOptions } from '@tanstack/react-query'
 import { z } from 'zod'
 import { pemantauanSchema } from '@/domain/kabupaten/pemantauan'
 import { daftarPenggunaKabupatenSchema, type TambahPenggunaKabupaten, type UbahPenggunaKabupaten } from '@/domain/kabupaten/pengguna'
+import { portalKabupatenSchema } from '@/domain/kabupaten/portal'
 import { penggunaKabupatenSchema, ringkasanKabupatenSchema, sesiKabupatenSchema } from '@/domain/kabupaten/schema'
 import { panggilApi } from './client'
 
@@ -12,6 +13,7 @@ export const kunciKabupaten = {
   ringkasan: ['kabupaten', 'ringkasan'] as const,
   pemantauan: ['kabupaten', 'pemantauan'] as const,
   pengguna: ['kabupaten', 'pengguna'] as const,
+  portal: ['kabupaten', 'portal'] as const,
 }
 
 export const hasilMasukKabupatenSchema = z.object({ token: z.string(), sesi: sesiKabupatenSchema })
@@ -46,3 +48,9 @@ export const tambahPenggunaKabupaten = (isian: TambahPenggunaKabupaten) =>
   panggilApi('POST', '/kabupaten/pengguna', { skema: penggunaKabupatenSchema, body: isian, sesi: 'kabupaten' })
 export const ubahPenggunaKabupaten = (id: string, isian: UbahPenggunaKabupaten) =>
   panggilApi('PATCH', `/kabupaten/pengguna/${id}`, { skema: penggunaKabupatenSchema, body: isian, sesi: 'kabupaten' })
+
+/** Portal publik (SPEC-V0.2 §8.2): tanpa sesi, kabupaten dari alamat. */
+export const ambilPortalKabupaten = (signal?: AbortSignal) =>
+  panggilApi('GET', '/kabupaten/portal', { skema: portalKabupatenSchema, signal, sesi: null })
+export const opsiPortalKabupaten = () =>
+  queryOptions({ queryKey: kunciKabupaten.portal, queryFn: ({ signal }) => ambilPortalKabupaten(signal) })

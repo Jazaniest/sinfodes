@@ -97,6 +97,8 @@ export type Perhatian = z.infer<typeof perhatianSchema>
 export const ringkasanKonsolSchema = z.object({
   perhatian: z.array(perhatianSchema),
   desa: z.object({ aktif: jumlah, ujiCoba: jumlah, persiapan: jumlah, ditangguhkan: jumlah }),
+  /** Kabupaten mitra (SPEC-V0.2 §7). */
+  kabupatenMitra: jumlah,
 })
 export type RingkasanKonsol = z.infer<typeof ringkasanKonsolSchema>
 

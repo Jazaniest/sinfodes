@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { Fragment } from 'react'
 import { opsiRingkasanInduk } from '@/api/induk'
 import { keAlamat } from '@/app/alamat'
 import { KONTAK_SINFODES, tautanDaftarDesa } from '@/app/kontak-sinfodes'
@@ -108,6 +109,18 @@ function Bukti() {
         )}
         {MODE_DEMO && (
           <span className="border border-garis-input px-1.5 py-0.5 font-mono text-label text-tinta-2 uppercase">Data contoh</span>
+        )}
+        {ringkasan.data && ringkasan.data.kabupatenMitra.length > 0 && (
+          // Tiap kabupaten mitra punya portal desa digital di alamatnya sendiri (SPEC-V0.2 §8.2).
+          <p className="basis-full text-tinta-2">
+            Kabupaten mitra:{' '}
+            {ringkasan.data.kabupatenMitra.map((k, i) => (
+              <Fragment key={k.label}>
+                {i > 0 && ' · '}
+                <Tautan href={keAlamat({ jenis: 'kabupaten', label: k.label })}>{k.nama}</Tautan>
+              </Fragment>
+            ))}
+          </p>
         )}
       </div>
     </section>

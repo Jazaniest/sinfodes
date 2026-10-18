@@ -4,7 +4,7 @@ Semua perubahan penting Sinfodes dicatat di sini. Formatnya mengikuti [Keep a Ch
 
 ## [Belum dirilis]
 
-Pekerjaan v0.2.0 (tahap 7A–7H) dicatat di sini selama berjalan di branch `develop`.
+Pekerjaan v0.2.0 (tahap 7A-7H) dicatat di sini selama berjalan di branch `develop`.
 
 ### Ditambahkan (7A-1: alamat subdomain)
 
@@ -60,6 +60,34 @@ Pekerjaan v0.2.0 (tahap 7A–7H) dicatat di sini selama berjalan di branch `deve
 - **Mode bantuan lihat saja.**
   - Tim Sinfodes membuka panel desa dari Konsol lewat tiket sekali pakai yang berlaku 60 detik.
   - Semua perubahan ditolak, setiap halaman yang dibuka tercatat, dan pita "Mode bantuan Sinfodes · lihat saja" tampil di atas panel.
+
+### Ditambahkan (7B-1: akun, dasbor, dan portal kabupaten)
+
+- **Kabupaten mitra punya alamatnya sendiri,** mis. `kab-pelalawan.sinfodes.localhost`. Demo memuat dua mitra: Pelalawan dan Siak.
+- **Akun kabupaten dengan dua peran.**
+  - Admin Kabupaten mengelola pengguna; Peninjau (mis. Kepala Dinas atau Bupati) melihat dan mengunduh tanpa mengubah apa pun.
+  - Akun hanya bisa masuk di alamat kabupatennya. Akun kabupaten lain ditolak dengan petunjuk alamatnya, hanya setelah kata sandinya benar.
+- **Dasbor kabupaten** di `/admin`, berkerangka sendiri dengan lambang contoh kabupaten.
+  - Ringkasan: hal yang perlu perhatian dan adopsi, mis. "25 dari 104 desa di Kabupaten Pelalawan sudah memakai Sinfodes."
+  - Pemantauan: angka layanan per kecamatan dan desa di wilayah sendiri saja, tanpa data pribadi warga. Nama desa bertautan ke websitenya, dan tabelnya bisa diunduh sebagai CSV.
+- **Pengguna kabupaten:** Admin menambah pengguna, mengganti peran, serta menonaktifkan dan mengaktifkan lagi. Kabupaten selalu menyisakan paling sedikit satu Admin aktif.
+- **Portal publik kabupaten** di `/` alamat kabupaten.
+  - Desa yang sudah memakai Sinfodes per kecamatan, masing-masing bertautan ke websitenya.
+  - Ajakan untuk desa yang belum, dengan tombol "Daftarkan desa Anda".
+  - Alamat kabupaten yang belum mitra menampilkan keterangan dan Cari desa.
+- **Menu Kabupaten di Konsol.**
+  - Daftar kabupaten mitra dengan Admin, jumlah desa bergabung, dan tanggal bergabung.
+  - Tambah kabupaten dengan Admin pertama dan surat penunjukan (PDF).
+  - Detail kabupaten: surat penunjukan dan akun kabupaten, yang bisa dinonaktifkan Tim Sinfodes.
+  - Ringkasan Konsol menyebut jumlah kabupaten mitra.
+- **Halaman utama** menampilkan kabupaten mitra, masing-masing bertautan ke portalnya.
+- **Coba demo** mendapat baris Dasbor kabupaten: masuk sebagai Admin atau Peninjau Pelalawan, atau Admin Siak, dan tautan ke portal Pelalawan.
+
+### Diubah (7B-1)
+
+- **Konsol hanya untuk Tim Sinfodes.** Peran pemantau dan menu Pemantauan di Konsol dihapus; Pemantauan kini ada di dasbor kabupaten. Alamat lama `/konsol/pemantauan` membuka Ringkasan.
+- **Email unik di semua jenis akun.** Email akun desa, Konsol, dan kabupaten tidak bisa dipakai dua kali.
+- Skenario demo 3 memakai Peninjau Kabupaten Pelalawan di dasbor kabupaten.
 
 ## [0.1.0] - 2026-10-16
 

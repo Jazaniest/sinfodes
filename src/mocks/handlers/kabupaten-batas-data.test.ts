@@ -6,7 +6,7 @@ import { AKUN_KABUPATEN_UJI, pakaiApiTiruan } from '@/test/api-tiruan'
 pakaiApiTiruan()
 
 /** Semua endpoint baca dasbor kabupaten 7B-1. Endpoint baru di 7B-2 dan 7B-3 ditambahkan di sini. */
-const ENDPOINT = ['/kabupaten/sesi', '/kabupaten/ringkasan', '/kabupaten/pemantauan']
+const ENDPOINT = ['/kabupaten/sesi', '/kabupaten/ringkasan', '/kabupaten/pemantauan', '/kabupaten/pengguna']
 /** Kunci yang bukan hak kabupaten (SPEC-V0.2 §5.1). */
 const TERLARANG = ['nik', 'nomorKk', 'tagihan', 'paket', 'penyimpananKb', 'alamatKantor', 'kataSandi']
 

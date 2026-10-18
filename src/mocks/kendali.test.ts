@@ -27,6 +27,26 @@ describe('akun desa Persiapan di halaman demo (tahap 6C)', () => {
   })
 })
 
+describe('akun kabupaten di halaman demo (SPEC-V0.2 §13)', () => {
+  it('bawaan: tiga akun, urut kabupaten lalu Admin dulu, beserta alamat kabupatennya', () => {
+    expect(infoDataDemo().akunKabupaten.map((a) => [a.id, a.peran, a.namaKabupaten, a.label])).toEqual([
+      ['kab_fajar', 'admin', 'Pelalawan', 'kab-pelalawan'],
+      ['kab_rosnani', 'peninjau', 'Pelalawan', 'kab-pelalawan'],
+      ['kab_wahyu', 'admin', 'Siak', 'kab-siak'],
+    ])
+  })
+  it('akun yang ditambahkan kemudian ikut tampil; akun nonaktif tidak', () => {
+    ubahDb((d) => {
+      d.penggunaKabupaten.push({
+        id: 'kab_andi', kabupatenKode: '14.08', nama: 'Andi Lubis', jabatan: 'Peninjau', peran: 'peninjau', email: 'andi@siak.go.id', aktif: true,
+      })
+      const rosnani = d.penggunaKabupaten.find((p) => p.id === 'kab_rosnani')
+      if (rosnani) rosnani.aktif = false
+    })
+    expect(infoDataDemo().akunKabupaten.map((a) => a.id)).toEqual(['kab_fajar', 'kab_wahyu', 'kab_andi'])
+  })
+})
+
 describe('akun demo untuk masuk cepat lintas alamat (SPEC-V0.2 §4.6)', () => {
   it('cariAkunDemo mengenali akun panel, warga, dan Konsol dari kuncinya', () => {
     expect(cariAkunDemo('pgn_rosmiati')).toEqual({ bagian: 'admin', email: 'rosmiati@sungaisialang.desa.id', labelDesa: 'sungaisialang' })
