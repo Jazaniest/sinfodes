@@ -21,7 +21,7 @@ import { angkaKonsolDesa, type AngkaKonsol } from '../konsol-angka'
 import { konteksPermintaan, tanpaKonteks } from '../konteks-permintaan'
 import { butuhPenggunaKonsol, tokenKonsolUntuk } from '../sesi-mock'
 import type { DbDemo } from '../tipe-db'
-import { bacaJson, balasField, balasIsianTidakValid, idBaru } from '../tulis'
+import { bacaJson, balasField, balasIsianTidakValid, emailTerpakai, idBaru } from '../tulis'
 
 const masukSchema = z.object({ email: z.string().trim().toLowerCase().min(1), kataSandi: z.string().min(1) })
 
@@ -188,7 +188,7 @@ export const handlerKonsol = [
       const db = ambilDb()
       const kodeLengkap = `${kecamatan}.${kodeDesa}`
       if (db.desa.some((d) => d.kodeDesa === kodeLengkap)) return balasField('kodeDesa', `Kode desa ${kodeLengkap} sudah terdaftar.`, 'CONFLICT')
-      if ([...db.pengguna, ...db.penggunaKonsol].some((p) => p.email.toLowerCase() === email)) {
+      if (emailTerpakai(db, email)) {
         return balasField('email', 'Email ini sudah dipakai akun lain.', 'CONFLICT')
       }
       if (periksaLabelAlamat(db, alamat, undefined).status !== 'tersedia') return balasField('alamat', 'Alamat ini sudah dipakai desa lain.', 'CONFLICT')
@@ -279,7 +279,7 @@ export const handlerKonsol = [
       const ada = db.pengguna.find((p) => p.desaId === desa.id && p.peran === 'sekdes' && p.aktif)
       if (ada) return balasGalat('CONFLICT', `Desa ini sudah punya Sekretaris Desa aktif: ${ada.nama}.`, 409)
       const { nama, email } = isian.data
-      if ([...db.pengguna, ...db.penggunaKonsol].some((p) => p.email.toLowerCase() === email)) {
+      if (emailTerpakai(db, email)) {
         return balasField('email', 'Email ini sudah dipakai akun lain.', 'CONFLICT')
       }
       // Di demo undangan langsung aktif dengan kata sandi demo, sama dengan undangan di Pengaturan › Pengguna (tahap 6C).

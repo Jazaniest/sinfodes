@@ -9,6 +9,7 @@ import { handlerImpor } from './impor'
 import { handlerInduk } from './induk'
 import { handlerKabupaten } from './kabupaten'
 import { handlerKabupatenSesi } from './kabupaten-sesi'
+import { handlerPenggunaKabupaten } from './kabupaten-pengguna'
 import { handlerJenisSurat } from './jenis-surat'
 import { handlerKeluarga } from './keluarga'
 import { handlerKesehatan } from './kesehatan'
@@ -48,5 +49,5 @@ export const handlers = [
   ...handlerKeuangan, ...handlerPembangunan, ...handlerTataKelola,
   ...handlerPengaturan, ...handlerPenggunaDesa, ...handlerAksesSinfodes, ...handlerWebsite, ...handlerBuku,
   ...handlerWargaSesi, ...handlerWarga, ...handlerWargaAjukan, ...handlerWargaKeluarga, ...handlerWargaPengaduan,
-  ...handlerPublik, ...handlerPublikHalaman, ...handlerKonsol, ...handlerKabupatenSesi, ...handlerKabupaten,
+  ...handlerPublik, ...handlerPublikHalaman, ...handlerKonsol, ...handlerKabupatenSesi, ...handlerKabupaten, ...handlerPenggunaKabupaten,
 ]

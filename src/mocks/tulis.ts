@@ -56,6 +56,14 @@ export function idBaru(db: DbDemo, awalan: string): string {
   }
 }
 
+/**
+ * Email dipakai untuk masuk, jadi harus unik di semua jenis akun: desa, Konsol, dan kabupaten (SPEC §8, SPEC-V0.2 §8.1).
+ * `email` sudah huruf kecil (skema isian merapikannya).
+ */
+export function emailTerpakai(db: DbDemo, email: string): boolean {
+  return [...db.pengguna, ...db.penggunaKonsol, ...db.penggunaKabupaten].some((p) => p.email.toLowerCase() === email)
+}
+
 /** Pemilik NIK di seluruh data, termasuk mantan penduduk dan desa lain (NIK berlaku nasional). */
 export function pemilikNik(db: DbDemo, nik: string, kecualiId?: string): Penduduk | undefined {
   return db.penduduk.find((p) => p.nik === nik && p.id !== kecualiId)

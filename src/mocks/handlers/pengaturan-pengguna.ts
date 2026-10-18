@@ -7,7 +7,7 @@ import type { Dusun } from '@/domain/wilayah/schema'
 import { ambilDb, ubahDb } from '../db'
 import { API, balasGalat, denganJaringan } from '../http'
 import type { DbDemo } from '../tipe-db'
-import { bacaJson, balasIsianTidakValid, butuhKemampuan, idBaru } from '../tulis'
+import { bacaJson, balasField, balasIsianTidakValid, butuhKemampuan, emailTerpakai, idBaru } from '../tulis'
 
 const butuhPengelola = (request: Request) => butuhKemampuan(request, 'pengguna.kelola', 'Hanya Sekretaris Desa yang mengelola pengguna.')
 
@@ -60,6 +60,8 @@ export const handlerPenggunaDesa = [
       }
       const langgar = periksaAturanPengguna(db.pengguna, pelaku.id, null, baru)
       if (langgar) return balasPelanggaran(langgar)
+      // Sisanya akun Konsol atau kabupaten: pemiliknya di luar desa, jadi namanya tidak ditampilkan.
+      if (emailTerpakai(db, baru.email)) return balasField('email', 'Surel ini sudah dipakai akun lain.', 'CONFLICT')
       ubahDb((d) => {
         d.pengguna.push(baru)
       })
