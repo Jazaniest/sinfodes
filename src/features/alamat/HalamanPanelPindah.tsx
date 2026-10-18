@@ -1,4 +1,5 @@
 import { DOMAIN_INDUK, keAlamat } from '@/app/alamat'
+import { CariDesa } from '@/features/induk/CariDesa'
 
 /** `/admin` dan `/warga` di alamat induk (SPEC-V0.2 §4.4): panel dan layanan warga kini ada di alamat desa masing-masing. */
 export function HalamanPanelPindah() {
@@ -13,6 +14,9 @@ export function HalamanPanelPindah() {
       <a href={keAlamat({ jenis: 'induk' })} className="mt-4 inline-block text-biru underline underline-offset-4">
         Ke halaman utama Sinfodes
       </a>
+      <div className="mt-10 border-t border-garis pt-8">
+        <CariDesa />
+      </div>
     </main>
   )
 }
