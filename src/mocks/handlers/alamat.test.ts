@@ -69,10 +69,15 @@ describe('sesi terkunci per alamat (SPEC-V0.2 §4.3)', () => {
     expect((await galat(r)).fields).toBeUndefined()
   })
   it('NIK warga desa lain diperlakukan seperti NIK salah', async () => {
-    const r = await kirim(url('tanjunglamo', '/warga/masuk'), { nik: '1405095203918002', pin: '246810' })
+    const r = await kirim(url('sungaigelugur', '/warga/masuk'), { nik: '1405095203918002', pin: '246810' })
     expect(r.status).toBe(422)
     expect((await galat(r)).message).toMatch(/^NIK atau PIN salah\./)
     expect((await kirim(url('sungaisialang', '/warga/masuk'), { nik: '1405095203918002', pin: '246810' })).status).toBe(200)
+  })
+  it('layanan warga desa Persiapan belum dibuka, untuk NIK mana pun (SPEC-V0.2 §4.1)', async () => {
+    const r = await kirim(url('tanjunglamo', '/warga/masuk'), { nik: '1405095203918002', pin: '246810' })
+    expect(r.status).toBe(403)
+    expect((await galat(r)).message).toBe('Layanan warga desa ini belum dibuka.')
   })
   it('sesi dan masuk Konsol hanya di alamat Konsol', async () => {
     expect((await ambil(url('sungaisialang', '/konsol/sesi'), 'konsol.kns_dina')).status).toBe(401)

@@ -1,6 +1,7 @@
 import type { PenggunaKonsol } from '@/domain/konsol/schema'
 import type { Penduduk } from '@/domain/penduduk/schema'
-import type { Pengguna } from '@/domain/pengguna/schema'
+import type { PenggunaSesi } from '@/domain/pengguna/schema'
+import { cariSesiBantuan, masihBerlaku, sesiIdDariPermintaan } from './bantuan'
 import { ambilDb } from './db'
 import { balasGalat } from './http'
 import { desaKonteks, konteksPermintaan, tanpaKonteks } from './konteks-permintaan'
@@ -14,7 +15,24 @@ function desaSesuaiAlamat(request: Request, desaId: string): boolean {
   return tanpaKonteks(k) || desaKonteks(ambilDb(), k)?.id === desaId
 }
 
-export function penggunaDariPermintaan(request: Request): Pengguna | null {
+/**
+ * Pengguna semu sesi bantuan Tim Sinfodes (SPEC-V0.2 §5.3). Tidak berlaku lagi begitu desa mencabut akses atau waktunya habis,
+ * dan hanya di alamat desa pemberi akses.
+ */
+function penggunaBantuan(request: Request, sesiId: string): PenggunaSesi | null {
+  const db = ambilDb()
+  const temu = cariSesiBantuan(db, sesiId)
+  if (!temu || !masihBerlaku(temu.akses, new Date()) || !desaSesuaiAlamat(request, temu.akses.desaId)) return null
+  const email = db.penggunaKonsol.find((p) => p.id === temu.sesi.olehId)?.email ?? ''
+  return {
+    id: `bantuan_${sesiId}`, desaId: temu.akses.desaId, nama: temu.sesi.olehNama, jabatan: 'Tim Sinfodes', peran: 'bantuan',
+    dusunId: null, email, aktif: true,
+  }
+}
+
+export function penggunaDariPermintaan(request: Request): PenggunaSesi | null {
+  const sesiBantuan = sesiIdDariPermintaan(request)
+  if (sesiBantuan !== null) return penggunaBantuan(request, sesiBantuan)
   const cocok = /^Bearer demo\.(.+)$/.exec(request.headers.get('Authorization') ?? '')
   if (!cocok) return null
   const pengguna = ambilDb().pengguna.find((p) => p.id === cocok[1] && p.aktif)
@@ -22,7 +40,7 @@ export function penggunaDariPermintaan(request: Request): Pengguna | null {
 }
 
 /** Pengguna dari sesi, atau Response 401 yang langsung dikembalikan handler. */
-export function butuhPengguna(request: Request): Pengguna | Response {
+export function butuhPengguna(request: Request): PenggunaSesi | Response {
   return (
     penggunaDariPermintaan(request) ??
     balasGalat('UNAUTHENTICATED', 'Sesi Anda sudah berakhir. Silakan masuk lagi.', 401)

@@ -44,11 +44,11 @@ export function hitungPerhatian(daftar: readonly KeadaanDesaKonsol[], tagihanLew
     (d) => (d.status === 'Aktif' || d.status === 'Uji coba') && diamSedikitnya(d.aktivitasTerakhir, BATAS_TIDAK_AKTIF_HARI, sekarang),
   ).length
   const berhenti = daftar.filter(
-    (d) => d.status === 'Persiapan' && d.langkahBerikut === 'impor' && diamSedikitnya(d.aktivitasTerakhir, BATAS_BERHENTI_HARI, sekarang),
+    (d) => d.status === 'Persiapan' && d.langkahBerikut !== null && diamSedikitnya(d.aktivitasTerakhir, BATAS_BERHENTI_HARI, sekarang),
   ).length
   const hasil: Perhatian[] = []
   if (tidakAktif > 0) hasil.push({ jenis: 'tidak-aktif', jumlah: tidakAktif })
-  if (berhenti > 0) hasil.push({ jenis: 'berhenti-impor', jumlah: berhenti })
+  if (berhenti > 0) hasil.push({ jenis: 'berhenti-persiapan', jumlah: berhenti })
   if (tagihanLewat) hasil.push({ jenis: 'tagihan-lewat', jumlah: tagihanLewat })
   return hasil
 }
@@ -59,19 +59,19 @@ export function kalimatPerhatian(p: Perhatian): string {
   switch (p.jenis) {
     case 'tidak-aktif':
       return `${n} desa tidak aktif ${BATAS_TIDAK_AKTIF_HARI} hari`
-    case 'berhenti-impor':
-      return `${n} desa berhenti di langkah impor penduduk`
+    case 'berhenti-persiapan':
+      return `${n} desa berhenti di langkah persiapan`
     case 'tagihan-lewat':
       return `${n} tagihan lewat jatuh tempo`
   }
 }
 
-/** Angka platform dalam kalimat (SPEC §11). */
-export function kalimatPlatform(r: Pick<RingkasanKonsol, 'desa' | 'suratMingguIni'>): string {
+/** Angka platform dalam kalimat (SPEC §11). Tanpa angka surat: isi layanan desa bukan untuk Tim Sinfodes (SPEC-V0.2 §5.1). */
+export function kalimatPlatform(r: Pick<RingkasanKonsol, 'desa'>): string {
   const { aktif, ujiCoba, persiapan, ditangguhkan } = r.desa
   return (
     `${formatAngka(aktif)} desa aktif, ${formatAngka(ujiCoba)} uji coba, ${formatAngka(persiapan)} dalam persiapan, ` +
-    `dan ${formatAngka(ditangguhkan)} ditangguhkan. ${formatAngka(r.suratMingguIni)} surat terbit dalam 7 hari terakhir.`
+    `dan ${formatAngka(ditangguhkan)} ditangguhkan.`
   )
 }
 

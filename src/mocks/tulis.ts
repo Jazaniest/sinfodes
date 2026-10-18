@@ -5,24 +5,24 @@ import type { Pelaku } from '@/domain/mutasi/schema'
 import type { Perubahan } from '@/domain/penduduk/perubahan'
 import type { Penduduk } from '@/domain/penduduk/schema'
 import { boleh, type Kemampuan } from '@/domain/pengguna/hak-akses'
-import type { Pengguna } from '@/domain/pengguna/schema'
+import type { PenggunaSesi } from '@/domain/pengguna/schema'
 import type { Dusun } from '@/domain/wilayah/schema'
 import { balasGalat } from './http'
 import { butuhPengguna } from './sesi-mock'
 import type { DbDemo } from './tipe-db'
 
 /** Pengguna yang punya kemampuan tertentu, atau Response galat yang langsung dikembalikan handler. */
-export function butuhKemampuan(request: Request, kemampuan: Kemampuan, pesan: string): Pengguna | Response {
+export function butuhKemampuan(request: Request, kemampuan: Kemampuan, pesan: string): PenggunaSesi | Response {
   const pengguna = butuhPengguna(request)
   if (pengguna instanceof Response) return pengguna
   return boleh(pengguna.peran, kemampuan) ? pengguna : balasGalat('FORBIDDEN', pesan, 403)
 }
 
 /** Hanya Operator dan Sekretaris Desa yang boleh mengubah data kependudukan (SPEC §5.1). */
-export const butuhPengubah = (request: Request): Pengguna | Response =>
+export const butuhPengubah = (request: Request): PenggunaSesi | Response =>
   butuhKemampuan(request, 'penduduk.ubah', 'Peran Anda tidak berhak mengubah data kependudukan.')
 
-export const pelakuDari = (p: Pengguna): Pelaku => ({ id: p.id, nama: p.nama })
+export const pelakuDari = (p: Pick<PenggunaSesi, 'id' | 'nama'>): Pelaku => ({ id: p.id, nama: p.nama })
 
 export const bacaJson = (request: Request): Promise<unknown> => request.json().catch(() => null)
 
@@ -45,7 +45,7 @@ export function idBaru(db: DbDemo, awalan: string): string {
   const terpakai = new Set<string>()
   for (const daftar of [
     db.penduduk, db.keluarga, db.mutasi, db.riwayat, db.aktivitas, db.laporanData, db.impor, db.permohonan, db.suratMasuk, db.notifikasi,
-    db.pengaduan,
+    db.pengaduan, db.aksesBantuan,
   ]) {
     for (const x of daftar) terpakai.add(x.id)
   }

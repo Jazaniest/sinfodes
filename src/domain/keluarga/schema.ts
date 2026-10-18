@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { POLA_NOMOR16_TAMPIL } from '../penduduk/nomor16'
 import { pendudukSchema } from '../penduduk/schema'
 
 const nomor3 = z.string().regex(/^\d{3}$/)
@@ -6,7 +7,7 @@ const nomor3 = z.string().regex(/^\d{3}$/)
 export const keluargaSchema = z.object({
   id: z.string(),
   desaId: z.string(),
-  nomorKk: z.string().regex(/^\d{16}$/),
+  nomorKk: z.string().regex(POLA_NOMOR16_TAMPIL),
   kepalaKeluargaId: z.string(),
   dusunId: z.string(),
   rw: nomor3,

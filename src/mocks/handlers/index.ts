@@ -1,3 +1,4 @@
+import { handlerAksesSinfodes } from './akses-sinfodes'
 import { handlerAlamat } from './alamat'
 import { handlerArsip } from './arsip'
 import { handlerBansos } from './bansos'
@@ -5,6 +6,7 @@ import { handlerBeranda } from './beranda'
 import { handlerBuku } from './buku'
 import { handlerCari } from './cari'
 import { handlerImpor } from './impor'
+import { handlerInduk } from './induk'
 import { handlerJenisSurat } from './jenis-surat'
 import { handlerKeluarga } from './keluarga'
 import { handlerKesehatan } from './kesehatan'
@@ -36,13 +38,13 @@ import { handlerWargaSesi } from './warga-sesi'
 import { handlerWebsite } from './website'
 
 export const handlers = [
-  ...handlerAlamat, ...handlerArsip,
+  ...handlerAlamat, ...handlerInduk, ...handlerArsip,
   ...handlerSesi, ...handlerBeranda, ...handlerCari, ...handlerPenduduk, ...handlerPendudukTulis, ...handlerKeluarga,
   ...handlerKeluargaTulis, ...handlerMutasi, ...handlerStatistik, ...handlerLaporan, ...handlerImpor, ...handlerJenisSurat,
   ...handlerSuratLoket, ...handlerSurat, ...handlerSuratAksi,
   ...handlerNotifikasi, ...handlerPengaduan, ...handlerBansos, ...handlerKesehatan,
   ...handlerKeuangan, ...handlerPembangunan, ...handlerTataKelola,
-  ...handlerPengaturan, ...handlerPenggunaDesa, ...handlerWebsite, ...handlerBuku,
+  ...handlerPengaturan, ...handlerPenggunaDesa, ...handlerAksesSinfodes, ...handlerWebsite, ...handlerBuku,
   ...handlerWargaSesi, ...handlerWarga, ...handlerWargaAjukan, ...handlerWargaKeluarga, ...handlerWargaPengaduan,
   ...handlerPublik, ...handlerPublikHalaman, ...handlerKonsol,
 ]

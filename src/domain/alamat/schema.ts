@@ -20,3 +20,13 @@ export const hasilAlamatSchema = z.discriminatedUnion('jenis', [
   z.object({ jenis: z.literal('konsol') }),
 ])
 export type HasilAlamat = z.infer<typeof hasilAlamatSchema>
+
+/** GET /induk/cari-desa: desa yang websitenya tayang, cukup untuk menuju alamatnya (SPEC-V0.2 §4.4). */
+export const hasilCariDesaSchema = z.object({
+  hasil: z.array(z.object({ label: z.string(), nama: z.string(), kecamatan: z.string(), kabupaten: z.string() })),
+})
+export type HasilCariDesa = z.infer<typeof hasilCariDesaSchema>
+
+/** GET /induk/ringkasan: angka untuk halaman utama Sinfodes. `desaBergabung` = desa Aktif dan Uji coba. */
+export const ringkasanIndukSchema = z.object({ desaBergabung: z.number().int().min(0) })
+export type RingkasanInduk = z.infer<typeof ringkasanIndukSchema>

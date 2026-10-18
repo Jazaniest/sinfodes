@@ -59,10 +59,12 @@ export const handlerWargaSesi = [
       const { nik, pin } = isian.data
       const sekarang = new Date()
       const db = ambilDb()
-      if (terkunci(db, nik, sekarang)) return balasGalat('RATE_LIMITED', PESAN_TERKUNCI, 429)
-      // NIK warga desa lain di alamat ini dijawab sama dengan NIK tidak dikenal, tanpa petunjuk desa (SPEC-V0.2 §4.3).
       const k = konteksPermintaan(request)
       const desaAlamat = tanpaKonteks(k) ? null : desaKonteks(db, k)
+      // Desa Persiapan belum melayani warga (SPEC-V0.2 §4.1); dijawab sebelum NIK diperiksa, sama untuk NIK mana pun.
+      if (desaAlamat?.status === 'Persiapan') return balasGalat('FORBIDDEN', 'Layanan warga desa ini belum dibuka.', 403)
+      if (terkunci(db, nik, sekarang)) return balasGalat('RATE_LIMITED', PESAN_TERKUNCI, 429)
+      // NIK warga desa lain di alamat ini dijawab sama dengan NIK tidak dikenal, tanpa petunjuk desa (SPEC-V0.2 §4.3).
       const penduduk = db.penduduk.find(
         (p) => p.nik === nik && p.statusDasar === 'Hidup' && (tanpaKonteks(k) || p.desaId === desaAlamat?.id),
       )

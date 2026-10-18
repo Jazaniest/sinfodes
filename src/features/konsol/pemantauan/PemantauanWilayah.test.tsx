@@ -64,11 +64,8 @@ describe('Pemantauan wilayah (SPEC §11 layar 5)', () => {
     expect(baris).toContain('Kuala Kampar;Tanjung Lamo;Persiapan;0;;;;')
     expect(baris.some((b) => /^Teluk Meranti;Sungai Sialang;Aktif;\d+;\d+,\d;99,6;\d+,\d;\d+,\d$/.test(b))).toBe(true)
   })
-  it('Tim Sinfodes: bawaannya Pelalawan; memilih kabupaten lain lewat alamat halaman', async () => {
-    const { onUbahWilayah, user } = pasang('tim')
-    expect(await screen.findByText(/^Kabupaten Pelalawan · 32 desa/)).toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: /Kabupaten$/ }))
-    await user.click(await screen.findByRole('option', { name: 'Kampar' }))
-    expect(onUbahWilayah).toHaveBeenCalledWith('14.01')
+  it('Tim Sinfodes: Pemantauan ditolak dengan penjelasan, karena kini milik kabupaten (SPEC-V0.2 §5.1)', async () => {
+    pasang('tim')
+    expect(await screen.findByText('Pemantauan wilayah kini dibuka dari dasbor kabupaten.')).toBeInTheDocument()
   })
 })

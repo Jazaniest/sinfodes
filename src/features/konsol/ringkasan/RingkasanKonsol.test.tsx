@@ -15,12 +15,13 @@ describe('Ringkasan Konsol (SPEC §11)', () => {
     expect(screen.getByText('Semua desa · Kamis, 24 September 2026')).toBeInTheDocument()
     const perhatian = await screen.findByRole('region', { name: 'Perlu perhatian' })
     expect(within(perhatian).getAllByRole('listitem').map((li) => li.firstChild?.textContent)).toEqual([
-      '3 desa tidak aktif 14 hari', '2 desa berhenti di langkah impor penduduk', '1 tagihan lewat jatuh tempo',
+      '3 desa tidak aktif 14 hari', '3 desa berhenti di langkah persiapan', '1 tagihan lewat jatuh tempo',
     ])
     expect(within(perhatian).getByRole('link', { name: 'Lihat desa dalam persiapan' })).toHaveAttribute('href', '/konsol/desa?status=Persiapan')
-    expect(screen.getByRole('region', { name: 'Angka platform' })).toHaveTextContent(
-      /26 desa aktif, 5 uji coba, 7 dalam persiapan, dan 2 ditangguhkan\. [\d.]+ surat terbit dalam 7 hari terakhir\./,
-    )
+    const platform = screen.getByRole('region', { name: 'Angka platform' })
+    expect(platform).toHaveTextContent('26 desa aktif, 5 uji coba, 7 dalam persiapan, dan 2 ditangguhkan.')
+    expect(platform).not.toHaveTextContent(/surat terbit/)
+    expect(screen.queryByRole('link', { name: 'Buka Pemantauan wilayah' })).not.toBeInTheDocument()
   })
   it('pemantau: angka kabupatennya saja, tanpa tagihan dan tanpa tautan ke daftar desa (fokus review 1)', async () => {
     masukKonsolSebagai(AKUN_KONSOL_UJI.pemantau)

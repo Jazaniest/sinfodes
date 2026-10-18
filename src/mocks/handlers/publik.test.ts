@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   ambilArtikelPublik, ambilBerandaPublik, ambilIdentitasPublik, ambilKreditFotoPublik, ambilLayananPublik, daftarKabarPublik,
 } from '@/api/publik'
+import { ambilDb } from '@/mocks/db'
 import { pakaiApiTiruan } from '@/test/api-tiruan'
 
 pakaiApiTiruan()
@@ -16,6 +17,11 @@ describe('API website publik (SPEC §9, §3.4)', () => {
   it('slug asing dan desa yang belum aktif → "Website desa tidak ditemukan." (fokus review 4)', async () => {
     await expect(ambilIdentitasPublik('tanjunglamo')).rejects.toMatchObject({ kode: 'NOT_FOUND', message: 'Website desa tidak ditemukan.' })
     await expect(ambilBerandaPublik('desa-antah-berantah')).rejects.toMatchObject({ kode: 'NOT_FOUND' })
+  })
+  it('desa Ditangguhkan: website tetap tayang (SPEC-V0.2 §4.1)', async () => {
+    const desa = ambilDb().desa.find((d) => d.status === 'Ditangguhkan')
+    expect(desa).toBeDefined()
+    expect(await ambilIdentitasPublik(desa?.slug ?? '')).toMatchObject({ nama: desa?.nama })
   })
   it('beranda: berita utama terbaru yang berfoto, 4 kabar terbaru, pengumuman berlaku, agenda mendatang, angka desa, sampul', async () => {
     const b = await ambilBerandaPublik('sungaisialang')

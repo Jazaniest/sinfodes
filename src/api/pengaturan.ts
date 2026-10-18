@@ -1,4 +1,5 @@
 import { queryOptions } from '@tanstack/react-query'
+import { aksesSinfodesSchema, type BeriAkses } from '@/domain/pengaturan/akses-sinfodes'
 import { pengaturanDesaSchema, type IdentitasDesa } from '@/domain/pengaturan/identitas'
 import { daftarPenggunaDesaSchema, type UbahPengguna, type UndangPengguna } from '@/domain/pengaturan/pengguna'
 import { penomoranSchema, type UbahPenomoran } from '@/domain/pengaturan/penomoran'
@@ -12,6 +13,7 @@ export const kunciPengaturan = {
   wilayah: ['pengaturan', 'wilayah'] as const,
   penomoran: ['pengaturan', 'penomoran'] as const,
   pengguna: ['pengaturan', 'pengguna'] as const,
+  aksesSinfodes: ['pengaturan', 'akses-sinfodes'] as const,
 }
 
 export function ambilPengaturanDesa(signal?: AbortSignal) {
@@ -49,4 +51,17 @@ export function undangPengguna(isian: UndangPengguna) {
 }
 export function ubahPengguna(id: string, isian: UbahPengguna) {
   return panggilApi('PATCH', `/pengaturan/pengguna/${id}`, { skema: penggunaSchema, body: isian })
+}
+
+/** Akses bantuan Tim Sinfodes (SPEC-V0.2 §5.3): hanya Sekretaris dan Kepala Desa. */
+export function ambilAksesSinfodes(signal?: AbortSignal) {
+  return panggilApi('GET', '/pengaturan/akses-sinfodes', { skema: aksesSinfodesSchema, signal })
+}
+export const opsiAksesSinfodes = () =>
+  queryOptions({ queryKey: kunciPengaturan.aksesSinfodes, queryFn: ({ signal }) => ambilAksesSinfodes(signal) })
+export function beriAksesSinfodes(isian: BeriAkses) {
+  return panggilApi('POST', '/pengaturan/akses-sinfodes', { skema: aksesSinfodesSchema, body: isian })
+}
+export function cabutAksesSinfodes() {
+  return panggilApi('DELETE', '/pengaturan/akses-sinfodes', { skema: aksesSinfodesSchema })
 }

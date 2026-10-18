@@ -3,7 +3,9 @@ import { z } from 'zod'
 import { daftarSchema } from '@/domain/api'
 import { pemantauanSchema } from '@/domain/konsol/pemantauan'
 import {
-  barisDesaKonsolSchema, detailDesaKonsolSchema, hasilTambahDesaSchema, hasilUndangSekdesSchema, ringkasanKonsolSchema, sesiKonsolSchema,
+  barisDesaKonsolSchema, detailDesaKonsolSchema, hasilTambahDesaSchema, hasilUbahAlamatSchema, hasilUndangSekdesSchema, periksaAlamatSchema,
+  ringkasanKonsolSchema,
+  sesiKonsolSchema, tiketBantuanSchema, usulanAlamatSchema,
   type FilterDesaKonsol, type TambahDesa, type UndangSekdes,
 } from '@/domain/konsol/schema'
 import { panggilApi } from './client'
@@ -15,6 +17,8 @@ export const kunciKonsol = {
   desa: (filter: FilterDesaKonsol) => ['konsol', 'desa', filter] as const,
   detail: (id: string) => ['konsol', 'desa-detail', id] as const,
   pemantauan: (wilayah: string | null) => ['konsol', 'pemantauan', wilayah] as const,
+  usulanAlamat: (nama: string, kecamatan: string) => ['konsol', 'usulan-alamat', nama, kecamatan] as const,
+  periksaAlamat: (label: string, desaId: string | undefined) => ['konsol', 'periksa-alamat', label, desaId ?? null] as const,
 }
 
 export const hasilMasukKonsolSchema = z.object({ token: z.string(), sesi: sesiKonsolSchema })
@@ -52,8 +56,28 @@ export const tambahDesa = (isian: TambahDesa) =>
 export const undangSekdes = (desaId: string, isian: UndangSekdes) =>
   panggilApi('POST', `/konsol/desa/${encodeURIComponent(desaId)}/sekdes`, { skema: hasilUndangSekdesSchema, body: isian, sesi: 'konsol' })
 
+/** Tiket sekali pakai untuk membuka panel desa dalam mode bantuan, lihat saja (SPEC-V0.2 §5.3). */
+export const ambilTiketBantuan = (desaId: string) =>
+  panggilApi('POST', `/konsol/desa/${encodeURIComponent(desaId)}/tiket-bantuan`, { skema: tiketBantuanSchema, sesi: 'konsol' })
+
+/** Ubah alamat website desa (SPEC-V0.2 §4.2); alamat lama tetap mengarah ke desa ini. */
+export const ubahAlamatDesa = (desaId: string, alamat: string) =>
+  panggilApi('PUT', `/konsol/desa/${encodeURIComponent(desaId)}/alamat`, { skema: hasilUbahAlamatSchema, body: { alamat }, sesi: 'konsol' })
+
 /** `wilayah` null: pemantau memakai wilayahnya sendiri; Tim Sinfodes wajib memilih kabupaten. */
 export const ambilPemantauan = (wilayah: string | null, signal?: AbortSignal) =>
   panggilApi('GET', '/konsol/pemantauan', { skema: pemantauanSchema, query: wilayah ? { wilayah } : {}, signal, sesi: 'konsol' })
 export const opsiPemantauan = (wilayah: string | null) =>
   queryOptions({ queryKey: kunciKonsol.pemantauan(wilayah), queryFn: ({ signal }) => ambilPemantauan(wilayah, signal) })
+
+/** Usulan alamat website desa baru dari nama dan kode kecamatan bertitik (SPEC-V0.2 §4.2). */
+export const ambilUsulanAlamat = (nama: string, kecamatan: string, signal?: AbortSignal) =>
+  panggilApi('GET', '/konsol/alamat-desa', { skema: usulanAlamatSchema, query: { nama, kecamatan }, signal, sesi: 'konsol' })
+export const opsiUsulanAlamat = (nama: string, kecamatan: string) =>
+  queryOptions({ queryKey: kunciKonsol.usulanAlamat(nama, kecamatan), queryFn: ({ signal }) => ambilUsulanAlamat(nama, kecamatan, signal) })
+
+/** Periksa alamat; `desaId` untuk desa yang sudah ada, supaya aliasnya sendiri dianggap bisa dipakai. */
+export const periksaAlamat = (label: string, desaId?: string, signal?: AbortSignal) =>
+  panggilApi('GET', '/konsol/alamat-desa/periksa', { skema: periksaAlamatSchema, query: { label, desaId }, signal, sesi: 'konsol' })
+export const opsiPeriksaAlamat = (label: string, desaId?: string) =>
+  queryOptions({ queryKey: kunciKonsol.periksaAlamat(label, desaId), queryFn: ({ signal }) => periksaAlamat(label, desaId, signal) })

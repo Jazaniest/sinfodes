@@ -63,7 +63,8 @@ describe('alur persiapan desa baru sampai tuntas (tahap 6C)', () => {
     masukKonsolSebagai(AKUN_KONSOL_UJI.tim)
     const d = await ambilDetailDesaKonsol(ID_TANJUNG_LAMO)
     expect(d.persiapan.every((l) => l.selesai)).toBe(true)
-    expect(d).toMatchObject({ jiwa: 12, kontak: { sekdes: { nama: 'Rahmawati' } }, bisaUndangSekdes: false })
+    expect(d).toMatchObject({ kontak: { sekdes: { nama: 'Rahmawati' } }, bisaUndangSekdes: false })
+    expect(d).not.toHaveProperty('jiwa')
 
     masukSebagai(AKUN_UJI.operator)
     expect((await ambilRingkasanPenduduk()).jiwa).toBe(2812)
@@ -72,6 +73,7 @@ describe('alur persiapan desa baru sampai tuntas (tahap 6C)', () => {
     masukKonsolSebagai(AKUN_KONSOL_UJI.tim)
     const { id } = await tambahDesa({
       nama: 'Koto Baru Sentosa', kecamatan: '14.01.17', kodeDesa: '2077', paket: 'Dasar', email: 'admin@kotobarusentosa.desa.id',
+      alamat: 'kotobarusentosa',
     })
     const { sesi } = await masuk('admin@kotobarusentosa.desa.id', 'demo')
     expect(sesi).toMatchObject({ pengguna: { peran: 'sekdes' }, desa: { id, status: 'Persiapan' }, dusun: [] })

@@ -11,6 +11,7 @@ import { boleh } from '@/domain/pengguna/hak-akses'
 import { PencarianCepat } from '../cari/PencarianCepat'
 import { AdminShell } from './AdminShell'
 import { angkaPengaduan } from './navigasi'
+import { PitaBantuan } from './PitaBantuan'
 import { SesiAdminKonteks } from './sesi-konteks'
 import { hapusSemuaDraf } from './useDrafFormulir'
 
@@ -70,6 +71,7 @@ export function KerangkaPanel() {
           notifikasi: notifikasi.data?.belumDibaca,
         }}
       >
+        {sesi.bantuan && <PitaBantuan bantuan={sesi.bantuan} />}
         <Outlet />
       </AdminShell>
       <PencarianCepat isOpen={cariTerbuka} onOpenChange={setCariTerbuka} peran={sesi.pengguna.peran} />

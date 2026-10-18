@@ -1,7 +1,7 @@
 import { http, HttpResponse } from 'msw'
 import { filterPenerimaSchema, type PenerimaBansos, type ProgramBansos, type RingkasProgram } from '@/domain/bansos/schema'
 import { cakupanDusun } from '@/domain/pengguna/hak-akses'
-import type { Pengguna } from '@/domain/pengguna/schema'
+import type { PenggunaSesi } from '@/domain/pengguna/schema'
 import { ambilDb } from '../db'
 import { API, balasDaftar, balasGalat, denganJaringan } from '../http'
 import { balasIsianTidakValid, butuhKemampuan } from '../tulis'
@@ -10,7 +10,7 @@ const butuhPembaca = (request: Request) => butuhKemampuan(request, 'bansos.lihat
 const TIDAK_DITEMUKAN = 'Program bantuan tidak ditemukan.'
 
 /** Program desa dan penerimanya dalam cakupan pengguna: Kepala Dusun hanya penerima di dusunnya (SPEC §5.1). */
-function bansosMilik(pengguna: Pengguna) {
+function bansosMilik(pengguna: PenggunaSesi) {
   const db = ambilDb()
   const dusunSaja = cakupanDusun(pengguna)
   return {

@@ -2,7 +2,6 @@ import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { useState } from 'react'
 import { keAlamat } from '@/app/alamat'
-import logoMark from '@/assets/brand/sinfodes-mark.svg'
 import type { TujuanAlamat } from '@/domain/alamat/alamat'
 import { formatAngka } from '@/domain/format/angka'
 import { formatTanggal } from '@/domain/format/tanggal'
@@ -17,8 +16,11 @@ import { useKendaliDemo } from './useKendaliDemo'
 
 const SUNGAI_SIALANG: TujuanAlamat = { jenis: 'desa', label: 'sungaisialang' }
 
-/** Halaman `/`: pintu masuk demo. Hanya menampilkan bagian yang sudah dibangun (tidak ada tombol mati). */
-export function HalamanDemo() {
+/**
+ * Bagian Coba demo di halaman utama, hanya di build demo (SPEC §3.6, SPEC-V0.2 §4.4): akun demo per bagian aplikasi dan
+ * skenario terpandu. Hanya menampilkan bagian yang sudah dibangun (tidak ada tombol mati).
+ */
+export function CobaDemo() {
   const kendali = useKendaliDemo()
   const info = useQuery({
     queryKey: ['demo', 'info'],
@@ -39,19 +41,18 @@ export function HalamanDemo() {
   }
 
   return (
-    <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-14">
-      <header className="flex items-center gap-4 border-b-[1.5px] border-tinta pb-5">
-        <img src={logoMark} alt="" className="h-12 w-auto" />
-        <div>
-          <p className="text-label font-medium text-tinta-2 uppercase">Sinfodes · mode demo</p>
-          <h1 className="font-serif text-judul-halaman font-medium">Sistem Informasi Desa</h1>
-        </div>
-      </header>
+    <section id="coba-demo" aria-labelledby="judul-coba-demo">
+      <h2 id="judul-coba-demo" className="font-serif text-judul-halaman font-medium">
+        Coba demo
+      </h2>
+      <p className="mt-2 max-w-2xl text-tinta-2">
+        Masuk ke desa contoh dengan akun siap pakai, atau ikuti skenario terpandu. Data demo tersimpan di peramban ini saja.
+      </p>
 
       <section className="mt-8" aria-labelledby="judul-desa-demo">
-        <h2 id="judul-desa-demo" className="text-label font-medium text-tinta-2 uppercase">
+        <h3 id="judul-desa-demo" className="text-label font-medium text-tinta-2 uppercase">
           Desa demo
-        </h2>
+        </h3>
         <p className="mt-2 font-serif text-judul-bagian font-medium">Desa Sungai Sialang</p>
         <p className="text-tinta-2">Kecamatan Teluk Meranti · Kabupaten Pelalawan · Riau</p>
         {info.data ? (
@@ -68,10 +69,10 @@ export function HalamanDemo() {
         </p>
       </section>
 
-      <section className="mt-10" aria-labelledby="judul-bagian-aplikasi">
-        <h2 id="judul-bagian-aplikasi" className="text-label font-medium text-tinta-2 uppercase">
-          Bagian aplikasi
-        </h2>
+      <section className="mt-10" aria-labelledby="judul-akun-demo">
+        <h3 id="judul-akun-demo" className="text-label font-medium text-tinta-2 uppercase">
+          Akun demo
+        </h3>
         <ul className="mt-3 divide-y divide-garis border-y border-garis">
           <li className="flex flex-col gap-3 py-4">
             <div>
@@ -192,6 +193,6 @@ export function HalamanDemo() {
       </section>
 
       <SkenarioDemo sedang={sedangMasuk} onJalankan={jalankanSkenario} />
-    </main>
+    </section>
   )
 }

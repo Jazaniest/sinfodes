@@ -1,5 +1,5 @@
 import { boleh, type Kemampuan } from '@/domain/pengguna/hak-akses'
-import type { Peran } from '@/domain/pengguna/schema'
+import type { PeranSesi } from '@/domain/pengguna/schema'
 
 /** Kunci angka di samping menu: jumlah yang perlu ditindaklanjuti peran aktif (SPEC §5.2). */
 export type KunciHitungan = 'surat' | 'pengaduan' | 'notifikasi'
@@ -49,7 +49,7 @@ export const MENU_ADMIN: readonly KelompokMenu[] = [
 ]
 
 /** Angka menu Pengaduan: pengaduan Baru, hanya untuk peran yang bisa menanggapi. Kepala Desa melihat menu tanpa angka. */
-export const angkaPengaduan = (peran: Peran, baru: number | undefined): number | undefined =>
+export const angkaPengaduan = (peran: PeranSesi, baru: number | undefined): number | undefined =>
   boleh(peran, 'pengaduan.tanggapi') ? baru : undefined
 
 /** Menu di bawah garis (SPEC §5.2). */
@@ -58,13 +58,22 @@ export const MENU_BAWAH: readonly ItemMenu[] = [
   { label: 'Notifikasi', href: '/admin/notifikasi', kemampuan: null, awalan: '/admin/notifikasi', hitungan: 'notifikasi' },
 ]
 
-/** Menu di bawah garis yang boleh dibuka peran ini; yang tidak berhak disembunyikan (SPEC §5.1). */
-export function menuBawahUntuk(peran: Peran): ItemMenu[] {
-  return MENU_BAWAH.filter((i) => i.kemampuan === null || boleh(peran, i.kemampuan))
+/**
+ * Menu di bawah garis yang boleh dibuka peran ini; yang tidak berhak disembunyikan (SPEC §5.1). Kepala Desa tidak mengelola
+ * pengaturan, tetapi memberi akses bantuan Sinfodes: menu Pengaturannya langsung ke halaman itu (SPEC-V0.2 §5.3).
+ */
+export function menuBawahUntuk(peran: PeranSesi): ItemMenu[] {
+  return MENU_BAWAH.flatMap((i) => {
+    if (i.kemampuan === null || boleh(peran, i.kemampuan)) return [i]
+    if (i.label === 'Pengaturan' && boleh(peran, 'akses-sinfodes.kelola')) {
+      return [{ ...i, href: '/admin/pengaturan/akses-sinfodes', kemampuan: 'akses-sinfodes.kelola' as const }]
+    }
+    return []
+  })
 }
 
 /** Menu yang tidak berhak diakses disembunyikan, bukan dinonaktifkan (SPEC §5.1). */
-export function menuUntuk(peran: Peran): KelompokMenu[] {
+export function menuUntuk(peran: PeranSesi): KelompokMenu[] {
   return MENU_ADMIN.map((k) => ({ ...k, item: k.item.filter((i) => i.kemampuan === null || boleh(peran, i.kemampuan)) })).filter(
     (k) => k.item.length > 0,
   )

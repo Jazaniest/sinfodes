@@ -20,9 +20,11 @@ import { bacaJson } from '../tulis'
 import { apbdesTerbaru } from './keuangan'
 import { tampilanDesa } from './website'
 
-/** Website hanya untuk desa yang sedang berjalan; desa yang baru disiapkan atau ditangguhkan belum punya website (fokus review 4). */
-const desaPublik = (db: DbDemo, slug: string): Desa | undefined =>
-  db.desa.find((d) => d.slug === slug && (d.status === 'Aktif' || d.status === 'Uji coba'))
+/**
+ * Website tayang untuk desa yang sudah berjalan, termasuk yang Ditangguhkan, sehingga cek keaslian suratnya selalu jalan. Desa
+ * Persiapan belum punya website (SPEC-V0.2 §4.1).
+ */
+const desaPublik = (db: DbDemo, slug: string): Desa | undefined => db.desa.find((d) => d.slug === slug && d.status !== 'Persiapan')
 
 /**
  * Desa dari parameter `:slug`, atau balasan NOT_FOUND. Dipakai juga handler verifikasi. Di alamat desa, slug harus milik
