@@ -32,15 +32,15 @@ describe('halaman utama Sinfodes (SPEC-V0.2 §4.4)', () => {
       ['Coba demo', '#coba-demo'],
     ])
   })
-  it('bagian aplikasi: tiga lampiran, masing-masing dengan gambar ber-alt', async () => {
+  it('bagian aplikasi: empat lampiran, masing-masing dengan gambar ber-alt (dasbor kabupaten di 7B-3)', async () => {
     await pasang()
     const bagian = screen.getByRole('region', { name: 'Bagian aplikasi' })
-    for (const judul of ['Panel perangkat desa', 'Layanan warga dari HP', 'Website desa']) {
+    for (const judul of ['Panel perangkat desa', 'Layanan warga dari HP', 'Website desa', 'Dasbor kabupaten']) {
       expect(within(bagian).getByRole('heading', { level: 3, name: judul })).toBeInTheDocument()
     }
-    expect(within(bagian).getByText('Lampiran 3')).toBeInTheDocument()
+    expect(within(bagian).getByText('Lampiran 4')).toBeInTheDocument()
     const gambar = within(bagian).getAllByRole('img')
-    expect(gambar).toHaveLength(3)
+    expect(gambar).toHaveLength(4)
     for (const g of gambar) expect(g.getAttribute('alt')?.trim()).toBeTruthy()
   })
   it('bukti: jumlah desa bergabung dari API, berlabel Data contoh di build demo', async () => {

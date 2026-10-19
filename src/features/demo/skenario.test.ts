@@ -35,11 +35,12 @@ function akunAda(m: MasukSkenario): boolean {
 }
 
 describe('skenario terpandu (SPEC §3.6, §13.5)', () => {
-  it('tiga skenario sesuai kriteria selesai tahap 1: SKTM 5 langkah, kelahiran 3 langkah, pemantauan', () => {
+  it('skenario terpandu: SKTM 5 langkah, kelahiran 3 langkah, pemantauan, dan Siaran kabupaten 3 langkah (SPEC-V0.2 §13)', () => {
     expect(SKENARIO_DEMO.map((s) => [s.judul, s.langkah.length])).toEqual([
       ['SKTM dari HP sampai verifikasi QR', 5],
       ['Mencatat kelahiran', 3],
       ['Pemantauan kabupaten', 2],
+      ['Siaran kabupaten', 3],
     ])
     expect(SKENARIO_DEMO.every((s) => s.langkah.every((l) => l.tombol.length > 0))).toBe(true)
   })

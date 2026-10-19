@@ -12,8 +12,10 @@ describe('notifikasi demo (SPEC §5.2, §5.5)', () => {
     expect(urut.length).toBeGreaterThan(3)
     expect(urut.map((n) => n.dibaca)).toEqual(urut.map((_, i) => i >= 3))
   })
-  it('Kades dan Kaur Keuangan hanya menerima pengumuman', () => {
-    for (const id of ['pgn_nasir', 'pgn_nurhayati']) expect(milik(id).map((n) => n.jenis)).toEqual(['pengumuman'])
+  it('Kades dan Kaur Keuangan hanya menerima pengumuman (di luar siaran kabupaten, diuji di generator/siaran.test.ts)', () => {
+    for (const id of ['pgn_nasir', 'pgn_nurhayati']) {
+      expect(milik(id).filter((n) => n.jenis !== 'siaran-kabupaten').map((n) => n.jenis)).toEqual(['pengumuman'])
+    }
   })
   it('Kepala Dusun II: pengumuman dan pengaduan baru dari dusunnya saja (3A)', () => {
     const sukardi = milik('pgn_sukardi')

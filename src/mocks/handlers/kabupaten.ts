@@ -11,6 +11,7 @@ import { danaDesaKabupaten } from '../kabupaten-angka'
 import { API, balasGalat, denganJaringan } from '../http'
 import { angkaKonsolDesa, type AngkaKonsol } from '../konsol-angka'
 import { butuhKemampuanKabupaten } from '../sesi-mock'
+import { desaBelumMembacaSiaran } from '../siaran'
 import type { DbDemo } from '../tipe-db'
 
 const TIDAK_BERHAK = 'Akun ini tidak berhak membuka dasbor kabupaten.'
@@ -49,6 +50,8 @@ export const handlerKabupaten = [
       ).flatMap((p) => (p.jenis === 'tagihan-lewat' ? [] : [p]))
       const tertinggal = danaDesaKabupaten(db, kab.kode, sekarang).total.tertinggal
       if (tertinggal > 0) perhatian.push({ jenis: 'realisasi-tertinggal', jumlah: tertinggal })
+      const belumMembaca = desaBelumMembacaSiaran(db, kab.kode, sekarang)
+      if (belumMembaca > 0) perhatian.push({ jenis: 'siaran-belum-dibaca', jumlah: belumMembaca })
       const hasil: RingkasanKabupaten = {
         kabupaten: { kode: kab.kode, nama: kab.nama },
         perhatian,

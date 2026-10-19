@@ -26,6 +26,17 @@ export const pelakuDari = (p: Pick<PenggunaSesi, 'id' | 'nama'>): Pelaku => ({ i
 
 export const bacaJson = (request: Request): Promise<unknown> => request.json().catch(() => null)
 
+/** Isi `data` (JSON) dari FormData yang membawa berkas; undefined bila tidak ada atau bukan JSON. */
+export function dataJson(form: FormData | null): unknown {
+  const data = form?.get('data')
+  if (typeof data !== 'string') return undefined
+  try {
+    return JSON.parse(data) as unknown
+  } catch {
+    return undefined
+  }
+}
+
 /** Galat Zod → `fields` respons VALIDATION, mis. { "bayi.nama": "Nama bayi wajib diisi" }. Satu pesan per field. */
 export function galatIsian(galat: z.ZodError): Record<string, string> {
   return galatDariZod(galat)
@@ -45,7 +56,7 @@ export function idBaru(db: DbDemo, awalan: string): string {
   const terpakai = new Set<string>()
   for (const daftar of [
     db.penduduk, db.keluarga, db.mutasi, db.riwayat, db.aktivitas, db.laporanData, db.impor, db.permohonan, db.suratMasuk, db.notifikasi,
-    db.pengaduan, db.aksesBantuan, db.tenggatLaporan,
+    db.pengaduan, db.aksesBantuan, db.tenggatLaporan, db.siaran,
   ]) {
     for (const x of daftar) terpakai.add(x.id)
   }

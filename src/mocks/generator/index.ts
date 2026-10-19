@@ -23,6 +23,7 @@ import { bangkitkanPengaduan } from './pengaduan'
 import { bangkitkanPenduduk } from './penduduk'
 import { bangkitkanPeta } from './peta'
 import { bangkitkanSurat } from './surat'
+import { bangkitkanSiaran } from './siaran'
 import { bangkitkanTenggat } from './tenggat'
 import { bangkitkanWebsite } from './website'
 
@@ -125,6 +126,8 @@ export function bangkitkanDb(sekarang: Date): DbDemo {
   const semuaDesa = [...structuredClone(DESA_DEMO), ...konsol.desa]
   // Aliran acak keenam belas: tenggat Dana Desa contoh dan status kirim desa rekaman (SPEC-V0.2 §13).
   const tenggat = bangkitkanTenggat(buatAcak(SEED_DEMO + 15), { acuan: sekarang, desa: semuaDesa })
+  // Aliran acak ketujuh belas: siaran kabupaten contoh dan status baca desa rekaman (SPEC-V0.2 §8.4, §13).
+  const siaran = bangkitkanSiaran(buatAcak(SEED_DEMO + 16), { acuan: sekarang, desa: semuaDesa, pengguna: PENGGUNA_DEMO })
   return {
     versiData: VERSI_DATA,
     tanggalAcuan: waktuIsoWib(sekarang),
@@ -140,7 +143,7 @@ export function bangkitkanDb(sekarang: Date): DbDemo {
     permohonan: surat.permohonan,
     pengaturanSurat: DESA_DEMO.map((d) => pengaturanBawaan(d.id)),
     suratMasuk,
-    notifikasi,
+    notifikasi: [...notifikasi, ...siaran.notifikasi],
     pengaduan: pengaduan.pengaduan,
     programBansos: bansos.program,
     penerimaBansos: bansos.penerima,
@@ -175,5 +178,7 @@ export function bangkitkanDb(sekarang: Date): DbDemo {
     penggunaKabupaten: PENGGUNA_KABUPATEN_DEMO.map((p) => structuredClone(p)),
     tenggatLaporan: tenggat.tenggat,
     kirimLaporan: tenggat.kirim,
+    siaran: siaran.siaran,
+    bacaSiaran: siaran.baca,
   }
 }

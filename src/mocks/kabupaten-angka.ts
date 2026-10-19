@@ -66,8 +66,8 @@ export function danaDesaKabupaten(db: DbDemo, kabupatenKode: string, sekarang: D
   }
 }
 
-/** Desa sasaran tenggat laporan (keputusan rencana 7B-2): desa Aktif dan Uji coba di kabupaten itu. */
-export const desaSasaranTenggat = (db: DbDemo, kabupatenKode: string): Desa[] =>
+/** Desa sasaran tenggat laporan dan siaran (keputusan rencana 7B-2 dan 7B-3): desa Aktif dan Uji coba di kabupaten itu. */
+export const desaSasaranKabupaten = (db: DbDemo, kabupatenKode: string): Desa[] =>
   desaDiKabupaten(db, kabupatenKode).filter((d) => d.status === 'Aktif' || d.status === 'Uji coba')
 
 /**

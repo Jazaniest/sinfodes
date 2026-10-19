@@ -8,7 +8,7 @@ import type { KabupatenMitra } from '@/domain/kabupaten/schema'
 import { statusKirim } from '@/domain/kabupaten/tenggat'
 import { ambilDb } from '../db'
 import { API, balasGalat, denganJaringan } from '../http'
-import { apbdesDesa, bergabungPada, desaDiKabupaten, desaSasaranTenggat, realisasiSampai, suratTerbitBulan } from '../kabupaten-angka'
+import { apbdesDesa, bergabungPada, desaDiKabupaten, desaSasaranKabupaten, realisasiSampai, suratTerbitBulan } from '../kabupaten-angka'
 import { butuhKemampuanKabupaten } from '../sesi-mock'
 import type { DbDemo } from '../tipe-db'
 
@@ -49,7 +49,7 @@ function susunLaporan(db: DbDemo, kab: KabupatenMitra, bulan: string, sekarang: 
     k.realisasi += x.realisasi ?? 0
     perKecamatan.set(x.d.kecamatan.kode, k)
   }
-  const sasaran = desaSasaranTenggat(db, kab.kode)
+  const sasaran = desaSasaranKabupaten(db, kab.kode)
   const tenggat = db.tenggatLaporan
     .filter((t) => t.kabupatenKode === kab.kode && t.tanggal.startsWith(bulan))
     .sort((a, b) => a.tanggal.localeCompare(b.tanggal))

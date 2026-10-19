@@ -2,6 +2,7 @@ import type { Aktivitas } from '@/domain/aktivitas/schema'
 import type { Aset } from '@/domain/aset/schema'
 import type { PenerimaBansos, ProgramBansos } from '@/domain/bansos/schema'
 import type { BarisMentah } from '@/domain/kabupaten/data-gabungan'
+import type { LampiranSiaran, SasaranSiaran } from '@/domain/kabupaten/siaran'
 import type { LaporanImpor } from '@/domain/impor/schema'
 import type { Keluarga } from '@/domain/keluarga/schema'
 import type { Apbdes } from '@/domain/keuangan/schema'
@@ -26,7 +27,7 @@ import type { Agenda, Artikel, FotoGaleri, Pengumuman, Potensi, ProfilDesa, Tamp
 import type { Desa, Dusun } from '@/domain/wilayah/schema'
 
 /** Naikkan setiap kali seed atau struktur data berubah; data lama di IndexedDB otomatis diganti (SPEC §12). */
-export const VERSI_DATA = 22
+export const VERSI_DATA = 23
 
 /** Satu alamat lama desa, mis. slug v0.1 "sungai-sialang" untuk Sungai Sialang. */
 export type AliasAlamat = { label: string; desaId: string }
@@ -99,6 +100,32 @@ export type TenggatLaporan = {
 
 /** Tanda "Sudah dikirim" dari desa untuk satu tenggat; satu per desa per tenggat. */
 export type KirimLaporan = { tenggatId: string; desaId: string; tanggal: string; oleh: { id: string; nama: string }; dicatatPada: string }
+
+/**
+ * Siaran kabupaten ke desa (SPEC-V0.2 §8.4). `desaIds`: desa sasaran yang dibekukan saat kirim, jadi desa yang bergabung
+ * kemudian tidak menerima siaran lama. Tidak bisa diubah; `ditarik` diisi saat Admin menariknya.
+ */
+export type SiaranKabupaten = {
+  id: string
+  kabupatenKode: string
+  judul: string
+  isi: string
+  lampiran: LampiranSiaran | null
+  tindakLanjut: { tenggat: string } | null
+  sasaran: SasaranSiaran
+  desaIds: string[]
+  dikirimPada: string
+  dikirimOleh: { id: string; nama: string }
+  ditarik: { pada: string; oleh: { id: string; nama: string } } | null
+}
+
+/** Status baca satu desa untuk satu siaran: dibuat saat siapa pun di desa itu pertama kali membukanya. */
+export type BacaSiaran = {
+  siaranId: string
+  desaId: string
+  dibaca: { pada: string; oleh: { id: string; nama: string } }
+  tindakLanjut: { pada: string; oleh: { id: string; nama: string }; catatan: string } | null
+}
 
 /** Satu kali masuk panel admin: dasar "login per minggu" dan "pengguna aktif" di Konsol (SPEC §11). */
 export type MasukPanel = { penggunaId: string; desaId: string; waktu: string }
@@ -175,4 +202,7 @@ export type DbDemo = {
   /** Tenggat laporan Dana Desa dan tanda kirim dari desa (SPEC-V0.2 §8.3 butir 4). */
   tenggatLaporan: TenggatLaporan[]
   kirimLaporan: KirimLaporan[]
+  /** Siaran kabupaten dan status bacanya per desa (SPEC-V0.2 §8.4). */
+  siaran: SiaranKabupaten[]
+  bacaSiaran: BacaSiaran[]
 }

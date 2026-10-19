@@ -5,7 +5,7 @@ import {
 } from '@/domain/kabupaten/tenggat'
 import { ambilDb, ubahDb } from '../db'
 import { API, balasGalat, denganJaringan } from '../http'
-import { desaSasaranTenggat } from '../kabupaten-angka'
+import { desaSasaranKabupaten } from '../kabupaten-angka'
 import { butuhKemampuanKabupaten } from '../sesi-mock'
 import type { DbDemo, TenggatLaporan } from '../tipe-db'
 import { bacaJson, balasField, balasIsianTidakValid, idBaru } from '../tulis'
@@ -20,7 +20,7 @@ const cariTenggat = (db: DbDemo, id: string, kabupatenKode: string): TenggatLapo
   db.tenggatLaporan.find((t) => t.id === id && t.kabupatenKode === kabupatenKode)
 
 function statusDesa(db: DbDemo, t: TenggatLaporan, hariIni: string): DesaTenggat[] {
-  return desaSasaranTenggat(db, t.kabupatenKode)
+  return desaSasaranKabupaten(db, t.kabupatenKode)
     .map((d) => {
       const kirim = db.kirimLaporan.find((k) => k.tenggatId === t.id && k.desaId === d.id)?.tanggal ?? null
       return { id: d.id, nama: d.nama, kecamatan: d.kecamatan.nama, status: statusKirim(t.tanggal, kirim, hariIni), tanggalKirim: kirim }

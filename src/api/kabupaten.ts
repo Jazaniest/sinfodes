@@ -9,6 +9,9 @@ import { daftarTenggatSchema, detailTenggatSchema, ringkasTenggatSchema, type Is
 import { daftarPenggunaKabupatenSchema, type TambahPenggunaKabupaten, type UbahPenggunaKabupaten } from '@/domain/kabupaten/pengguna'
 import { portalKabupatenSchema } from '@/domain/kabupaten/portal'
 import { penggunaKabupatenSchema, ringkasanKabupatenSchema, sesiKabupatenSchema } from '@/domain/kabupaten/schema'
+import {
+  daftarSiaranKabupatenSchema, detailSiaranKabupatenSchema, ringkasSiaranSchema, sasaranTersediaSchema, type IsianSiaran,
+} from '@/domain/kabupaten/siaran'
 import { panggilApi } from './client'
 
 /** Dasbor kabupaten (SPEC-V0.2 §8). Semua panggilan memakai sesi kabupaten, kecuali portal publik. */
@@ -26,6 +29,9 @@ export const kunciKabupaten = {
   peta: ['kabupaten', 'peta'] as const,
   laporan: ['kabupaten', 'laporan'] as const,
   laporanBulan: (bulan: string) => ['kabupaten', 'laporan', bulan] as const,
+  siaran: ['kabupaten', 'siaran'] as const,
+  detailSiaran: (id: string) => ['kabupaten', 'siaran', 'detail', id] as const,
+  sasaranSiaran: ['kabupaten', 'siaran', 'sasaran'] as const,
 }
 
 export const hasilMasukKabupatenSchema = z.object({ token: z.string(), sesi: sesiKabupatenSchema })
@@ -105,3 +111,23 @@ export const ambilPortalKabupaten = (signal?: AbortSignal) =>
   panggilApi('GET', '/kabupaten/portal', { skema: portalKabupatenSchema, signal, sesi: null })
 export const opsiPortalKabupaten = () =>
   queryOptions({ queryKey: kunciKabupaten.portal, queryFn: ({ signal }) => ambilPortalKabupaten(signal) })
+
+/** Siaran ke desa (SPEC-V0.2 §8.4): semua akun melihat; Admin mengirim dan menarik. Siaran tidak bisa diubah. */
+export const daftarSiaranKabupaten = (signal?: AbortSignal) =>
+  panggilApi('GET', '/kabupaten/siaran', { skema: daftarSiaranKabupatenSchema, signal, sesi: 'kabupaten' })
+export const opsiDaftarSiaran = () => queryOptions({ queryKey: kunciKabupaten.siaran, queryFn: ({ signal }) => daftarSiaranKabupaten(signal) })
+export const ambilDetailSiaran = (id: string, signal?: AbortSignal) =>
+  panggilApi('GET', `/kabupaten/siaran/${id}`, { skema: detailSiaranKabupatenSchema, signal, sesi: 'kabupaten' })
+export const opsiDetailSiaran = (id: string) =>
+  queryOptions({ queryKey: kunciKabupaten.detailSiaran(id), queryFn: ({ signal }) => ambilDetailSiaran(id, signal) })
+export const ambilSasaranSiaran = (signal?: AbortSignal) =>
+  panggilApi('GET', '/kabupaten/siaran/sasaran', { skema: sasaranTersediaSchema, signal, sesi: 'kabupaten' })
+export const opsiSasaranSiaran = () => queryOptions({ queryKey: kunciKabupaten.sasaranSiaran, queryFn: ({ signal }) => ambilSasaranSiaran(signal) })
+/** Isian sebagai JSON `data` dan lampiran PDF (opsional) dalam FormData yang sama, pola `tambahKabupaten`. */
+export function kirimSiaran(isian: IsianSiaran, lampiran: File | null) {
+  const isi = new FormData()
+  isi.append('data', JSON.stringify(isian))
+  if (lampiran) isi.append('lampiran', lampiran)
+  return panggilApi('POST', '/kabupaten/siaran', { skema: ringkasSiaranSchema, body: isi, sesi: 'kabupaten' })
+}
+export const tarikSiaran = (id: string) => panggilApi('POST', `/kabupaten/siaran/${id}/tarik`, { skema: ringkasSiaranSchema, sesi: 'kabupaten' })

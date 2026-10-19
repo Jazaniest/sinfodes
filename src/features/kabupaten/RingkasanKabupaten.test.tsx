@@ -30,4 +30,8 @@ it('Ringkasan kabupaten: butir realisasi Dana Desa tertinggal menuju Dana Desa (
   if (!butir) throw new Error('Butir Dana Desa tidak ada')
   expect(within(butir).getByRole('link', { name: 'Buka Dana Desa' })).toHaveAttribute('href', '/kabupaten/admin/dana-desa')
   expect(within(perhatian).getAllByRole('link', { name: 'Buka Pemantauan' })).toHaveLength(2)
+  // Butir siaran (7B-3) menuju menu Siaran.
+  const siaran = within(perhatian).getByText(/desa belum membaca siaran/).closest('li')
+  if (!siaran) throw new Error('Butir siaran tidak ada')
+  expect(within(siaran).getByRole('link', { name: 'Buka Siaran' })).toHaveAttribute('href', '/kabupaten/admin/siaran')
 })

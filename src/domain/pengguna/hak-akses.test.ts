@@ -24,6 +24,19 @@ describe('hak akses (SPEC §5.1)', () => {
     ['operator', 'keuangan.lapor', false],
     ['kadus', 'keuangan.lapor', false],
     ['bantuan', 'keuangan.lapor', false],
+    // Siaran kabupaten (SPEC-V0.2 §8.4): dilihat Operator, Sekdes, Kades; tindak lanjut oleh Kades atau Sekdes (keputusan rencana 7B-3).
+    ['operator', 'siaran.lihat', true],
+    ['sekdes', 'siaran.lihat', true],
+    ['kades', 'siaran.lihat', true],
+    ['kaur-keuangan', 'siaran.lihat', false],
+    ['kadus', 'siaran.lihat', false],
+    ['bantuan', 'siaran.lihat', false],
+    ['sekdes', 'siaran.tindak', true],
+    ['kades', 'siaran.tindak', true],
+    ['operator', 'siaran.tindak', false],
+    ['kaur-keuangan', 'siaran.tindak', false],
+    ['kadus', 'siaran.tindak', false],
+    ['bantuan', 'siaran.tindak', false],
   ] as const)('%s → %s = %s', (peran, kemampuan, harap) => expect(boleh(peran, kemampuan)).toBe(harap))
 
   it('kepala dusun dibatasi ke dusunnya, peran lain tidak', () => {

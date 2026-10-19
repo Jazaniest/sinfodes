@@ -12,7 +12,7 @@ import { ambilDb, ubahDb } from '../db'
 import { API, balasGalat, denganJaringan } from '../http'
 import { butuhPenggunaKonsol } from '../sesi-mock'
 import type { DbDemo } from '../tipe-db'
-import { bacaJson, balasField, balasIsianTidakValid, emailTerpakai, idBaru } from '../tulis'
+import { bacaJson, balasField, balasIsianTidakValid, dataJson, emailTerpakai, idBaru } from '../tulis'
 
 const desaBergabung = (db: DbDemo, kode: string): number =>
   db.desa.filter((d) => d.kabupaten.kode === kode && (d.status === 'Aktif' || d.status === 'Uji coba')).length
@@ -25,17 +25,6 @@ function barisKabupaten(db: DbDemo, k: KabupatenMitra): BarisKabupatenKonsol {
   return {
     kode: k.kode, nama: k.nama, label: k.label, admin: admin ? { nama: admin.nama, email: admin.email } : null,
     desaBergabung: desaBergabung(db, k.kode), bergabung: k.bergabung,
-  }
-}
-
-/** Isi `data` (JSON) dari FormData; undefined bila tidak ada atau bukan JSON. */
-function dataJson(form: FormData | null): unknown {
-  const data = form?.get('data')
-  if (typeof data !== 'string') return undefined
-  try {
-    return JSON.parse(data) as unknown
-  } catch {
-    return undefined
   }
 }
 

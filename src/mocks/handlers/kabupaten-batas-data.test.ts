@@ -5,8 +5,8 @@ import { AKUN_KABUPATEN_UJI, pakaiApiTiruan } from '@/test/api-tiruan'
 
 pakaiApiTiruan()
 
-/** Semua endpoint baca dasbor kabupaten 7B-1 dan 7B-2. Endpoint baru di 7B-3 ditambahkan di sini. */
-const ENDPOINT = ['/kabupaten/sesi', '/kabupaten/ringkasan', '/kabupaten/pemantauan', '/kabupaten/pengguna', '/kabupaten/dana-desa', '/kabupaten/tenggat', '/kabupaten/data-gabungan', '/kabupaten/peta', '/kabupaten/laporan', '/kabupaten/laporan/2026-08']
+/** Semua endpoint baca dasbor kabupaten 7B-1, 7B-2, dan 7B-3. */
+const ENDPOINT = ['/kabupaten/sesi', '/kabupaten/ringkasan', '/kabupaten/pemantauan', '/kabupaten/pengguna', '/kabupaten/dana-desa', '/kabupaten/tenggat', '/kabupaten/data-gabungan', '/kabupaten/peta', '/kabupaten/laporan', '/kabupaten/laporan/2026-08', '/kabupaten/siaran', '/kabupaten/siaran/sasaran']
 /** Kunci yang bukan hak kabupaten (SPEC-V0.2 §5.1). */
 const TERLARANG = ['nik', 'nomorKk', 'tagihan', 'paket', 'penyimpananKb', 'alamatKantor', 'kataSandi']
 
@@ -51,6 +51,16 @@ describe('batas data kabupaten (SPEC-V0.2 §5.1, fokus review 1 dan 5)', () => {
       const isi = await ambilSebagai(id, jalur)
       const kunci = kunciDalam(isi)
       for (const t of [...TERLARANG, 'oleh', 'olehNama']) expect(kunci.has(t), `${id} ${jalur}: ${t}`).toBe(false)
+      if (id === AKUN_KABUPATEN_UJI.adminSiak) for (const nama of pelalawan) expect(JSON.stringify(isi).includes(`"${nama}"`), nama).toBe(false)
+    }
+  })
+  it('detail siaran (7B-3): baris desa hanya status, waktu, dan catatan; Siak tanpa desa Pelalawan', async () => {
+    const pelalawan = ambilDb().desa.filter((d) => d.kabupaten.kode === '14.05').map((d) => d.nama)
+    const detail = [[AKUN_KABUPATEN_UJI.admin, '/kabupaten/siaran/srn_pll_rakor'], [AKUN_KABUPATEN_UJI.adminSiak, '/kabupaten/siaran/srn_siak_rakor']] as const
+    for (const [id, jalur] of detail) {
+      const isi = (await ambilSebagai(id, jalur)) as { desa: object[] }
+      for (const t of TERLARANG) expect(kunciDalam(isi).has(t), `${id} ${jalur}: ${t}`).toBe(false)
+      for (const baris of isi.desa) expect(Object.keys(baris).sort()).toEqual(['dibacaPada', 'id', 'kecamatan', 'nama', 'status', 'tindakLanjut'])
       if (id === AKUN_KABUPATEN_UJI.adminSiak) for (const nama of pelalawan) expect(JSON.stringify(isi).includes(`"${nama}"`), nama).toBe(false)
     }
   })

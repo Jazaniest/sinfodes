@@ -21,8 +21,11 @@ const OPERATOR: MasukSkenario = { bagian: 'admin', peran: 'operator' }
 const PUBLIK: MasukSkenario = { bagian: 'publik' }
 const SS: TujuanAlamat = { jenis: 'desa', label: 'sungaisialang' }
 const KAB_PELALAWAN: TujuanAlamat = { jenis: 'kabupaten', label: 'kab-pelalawan' }
+const ADMIN_PELALAWAN: MasukSkenario = { bagian: 'kabupaten', id: 'kab_fajar' }
 
-/** Tiga skenario terpandu = tiga alur demo kriteria selesai tahap 1 (SPEC §3.6, §13.5). */
+/**
+ * Skenario terpandu: tiga alur demo kriteria selesai tahap 1 (SPEC §3.6, §13.5), ditambah Siaran kabupaten (SPEC-V0.2 §13).
+ */
 export const SKENARIO_DEMO: readonly Skenario[] = [
   {
     id: 'sktm',
@@ -87,6 +90,25 @@ export const SKENARIO_DEMO: readonly Skenario[] = [
           { label: 'Data belum lengkap', masuk: OPERATOR, tujuan: SS, jalur: '/admin/kependudukan/penduduk?preset=data-belum-lengkap' },
           { label: 'Keuangan', masuk: OPERATOR, tujuan: SS, jalur: '/admin/keuangan' },
         ],
+      },
+    ],
+  },
+  {
+    id: 'siaran',
+    judul: 'Siaran kabupaten',
+    ringkas: 'Kabupaten Pelalawan mengirim siaran ke desa. Desa membacanya dan menandai tindak lanjut, lalu kabupaten melihat status per desa.',
+    langkah: [
+      {
+        teks: 'Admin Kabupaten Pelalawan menulis siaran ke Kecamatan Teluk Meranti dengan tindak lanjut.',
+        tombol: [{ label: 'Admin Kabupaten: tulis siaran', masuk: ADMIN_PELALAWAN, tujuan: KAB_PELALAWAN, jalur: '/admin/siaran/tulis' }],
+      },
+      {
+        teks: 'Kepala Desa Sungai Sialang membuka siaran dari notifikasi, lalu menandainya sudah ditindaklanjuti dengan catatan.',
+        tombol: [{ label: 'Kades: Siaran kabupaten', masuk: { bagian: 'admin', peran: 'kades' }, tujuan: SS, jalur: '/admin/siaran' }],
+      },
+      {
+        teks: 'Dasbor kabupaten melihat Sungai Sialang dibaca dan ditindaklanjuti beserta catatannya. Siaran juga bisa ditarik.',
+        tombol: [{ label: 'Admin Kabupaten: status siaran', masuk: ADMIN_PELALAWAN, tujuan: KAB_PELALAWAN, jalur: '/admin/siaran' }],
       },
     ],
   },

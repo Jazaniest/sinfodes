@@ -4,7 +4,7 @@ import { opsiRingkasanKabupaten } from '@/api/kabupaten'
 import { formatAngka } from '@/domain/format/angka'
 import { formatTanggal, tanggalIsoWib } from '@/domain/format/tanggal'
 import type { RingkasanKabupaten as DataRingkasan } from '@/domain/kabupaten/schema'
-import { hrefPerhatianKabupaten, kalimatPerhatianKabupaten } from '@/domain/kabupaten/perhatian'
+import { hrefPerhatianKabupaten, kalimatPerhatianKabupaten, labelTautanPerhatianKabupaten } from '@/domain/kabupaten/perhatian'
 import { MiniBar } from '@/ui/grafik/MiniBar'
 import { Tautan } from '@/ui/navigasi/Tautan'
 import { PageHeader } from '@/ui/tata-letak/PageHeader'
@@ -26,7 +26,7 @@ function kalimatBelumBergabung({ persiapan, ditangguhkan }: DataRingkasan['adops
 
 /**
  * Ringkasan dasbor kabupaten (SPEC-V0.2 §8.3 butir 1): perlu perhatian (termasuk realisasi Dana Desa tertinggal), lalu adopsi
- * desa. Butir siaran menyusul di 7B-3; rata-rata Indeks dan posisi se-provinsi di 7C.
+ * desa. Rata-rata Indeks dan posisi se-provinsi menyusul di 7C.
  */
 export function RingkasanKabupaten({ sekarang = new Date() }: { sekarang?: Date }) {
   const { kabupaten } = useSesiKabupaten()
@@ -52,7 +52,7 @@ export function RingkasanKabupaten({ sekarang = new Date() }: { sekarang?: Date 
                   <li key={p.jenis} className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 px-4 py-3">
                     <span className="font-medium">{kalimatPerhatianKabupaten(p)}</span>
                     <Tautan href={hrefPerhatianKabupaten(p)} className="text-teks-kecil">
-                      {p.jenis === 'realisasi-tertinggal' ? 'Buka Dana Desa' : 'Buka Pemantauan'}
+                      {labelTautanPerhatianKabupaten(p)}
                     </Tautan>
                   </li>
                 ))}

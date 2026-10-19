@@ -3,6 +3,7 @@ import { ambilDanaDesaKabupaten, ambilPemantauanKabupaten, ambilRingkasanKabupat
 import { barisPemantauanDesaSchema } from '@/domain/kabupaten/pemantauan'
 import { ambilDb } from '@/mocks/db'
 import { angkaKonsolDesa } from '@/mocks/konsol-angka'
+import { ambilDb as dbUji } from '@/mocks/db'
 import { AKUN_KABUPATEN_UJI, masukKabupatenSebagai, pakaiApiTiruan, SEKARANG_UJI } from '@/test/api-tiruan'
 
 pakaiApiTiruan()
@@ -69,9 +70,23 @@ describe('GET /kabupaten/ringkasan (SPEC-V0.2 §8.3 butir 1)', () => {
     const r = await ambilRingkasanKabupaten()
     expect(r.kabupaten).toEqual({ kode: '14.05', nama: 'Pelalawan' })
     expect(r.adopsi).toEqual({ bergabung: 25, jumlahDesa: 104, aktif: 21, ujiCoba: 4, persiapan: 5, ditangguhkan: 2 })
-    expect(r.perhatian.map((p) => p.jenis)).toEqual(['tidak-aktif', 'berhenti-persiapan', 'realisasi-tertinggal'])
+    expect(r.perhatian.map((p) => p.jenis)).toEqual(['tidak-aktif', 'berhenti-persiapan', 'realisasi-tertinggal', 'siaran-belum-dibaca'])
     // Butir Dana Desa (7B-2) sama dengan jumlah desa tertinggal di Dana Desa.
     expect(r.perhatian.find((p) => p.jenis === 'realisasi-tertinggal')?.jumlah).toBe((await ambilDanaDesaKabupaten()).total.tertinggal)
+  })
+  it('butir siaran (7B-3): desa yang belum membuka siaran tidak ditarik dalam 30 hari; siaran A-35 dan siaran ditarik tidak dihitung', async () => {
+    masukKabupatenSebagai(AKUN_KABUPATEN_UJI.admin)
+    const db = dbUji()
+    const sudah = new Set(db.bacaSiaran.map((b) => `${b.siaranId}|${b.desaId}`))
+    const harap = new Set(
+      db.siaran
+        .filter((s) => ['srn_pll_rakor', 'srn_pll_blt'].includes(s.id))
+        .flatMap((s) => s.desaIds.filter((d) => !sudah.has(`${s.id}|${d}`))),
+    )
+    expect(harap.size).toBeGreaterThan(0)
+    expect(harap.has('desa_sungai_sialang')).toBe(true)
+    const r = await ambilRingkasanKabupaten()
+    expect(r.perhatian.find((p) => p.jenis === 'siaran-belum-dibaca')).toEqual({ jenis: 'siaran-belum-dibaca', jumlah: harap.size })
   })
   it('Siak: 2 desa bergabung dari 122', async () => {
     masukKabupatenSebagai(AKUN_KABUPATEN_UJI.adminSiak)

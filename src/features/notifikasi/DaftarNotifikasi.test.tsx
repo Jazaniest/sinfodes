@@ -41,6 +41,11 @@ describe('Notifikasi (SPEC §5.5)', () => {
     expect(await screen.findByText('2 belum dibaca')).toBeInTheDocument()
     expect(belumDibaca('pgn_rosmiati')).toHaveLength(2)
   })
+  it('siaran kabupaten (7B-3): notifikasi Kades bertautan ke detail siarannya', async () => {
+    pasang('kades')
+    const tautan = await screen.findByRole('link', { name: /Pemutakhiran data penerima BLT-DD triwulan IV/ })
+    expect(tautan).toHaveAttribute('href', '/admin/siaran/srn_pll_blt')
+  })
   it('Tandai semua sudah dibaca', async () => {
     const { user } = pasang()
     await user.click(await screen.findByRole('button', { name: 'Tandai semua sudah dibaca' }))
@@ -49,9 +54,11 @@ describe('Notifikasi (SPEC §5.5)', () => {
     expect(belumDibaca('pgn_rosmiati')).toHaveLength(0)
   })
   it('Kepala Desa: pengumuman tanpa tautan bisa ditandai dibaca sendiri', async () => {
-    // Tanpa tenggat laporan, supaya pengumuman ini satu-satunya yang belum dibaca Kades (pengingat tenggat diuji di 7B-2).
+    // Tanpa tenggat laporan dan siaran kabupaten, supaya pengumuman ini satu-satunya yang belum dibaca Kades (pengingat tenggat
+    // diuji di 7B-2, siaran di 7B-3).
     ubahDb((d) => {
       d.tenggatLaporan = []
+      d.notifikasi = d.notifikasi.filter((n) => n.jenis !== 'siaran-kabupaten')
     })
     const { user } = pasang('kades')
     const daftar = await screen.findByRole('list', { name: /^Notifikasi / })

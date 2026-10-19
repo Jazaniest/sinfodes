@@ -4,6 +4,7 @@ import { opsiRingkasanInduk } from '@/api/induk'
 import { keAlamat } from '@/app/alamat'
 import { KONTAK_SINFODES, tautanDaftarDesa } from '@/app/kontak-sinfodes'
 import logoMark from '@/assets/brand/sinfodes-mark.svg'
+import gambarKabupaten from '@/assets/landing/dasbor-kabupaten.webp'
 import gambarPanel from '@/assets/landing/panel-desa.webp'
 import gambarWarga from '@/assets/landing/layanan-warga.webp'
 import gambarWebsite from '@/assets/landing/website-desa.webp'
@@ -68,6 +69,15 @@ const LAMPIRAN: readonly Lampiran[] = [
     isi: 'Kabar, profil, transparansi APBDes, dan cek keaslian surat lewat QR, di alamat desa sendiri.',
     gambar: gambarWebsite,
     alt: 'Beranda website Desa Sungai Sialang dengan berita utama penyaluran bantuan.',
+    lebar: 1280,
+    tinggi: 860,
+  },
+  {
+    nomor: 4,
+    judul: 'Dasbor kabupaten',
+    isi: 'Kabupaten memantau desa yang sudah digital, realisasi Dana Desa, dan tenggat laporan, lalu mengirim siaran ke panel desa.',
+    gambar: gambarKabupaten,
+    alt: 'Ringkasan dasbor Kabupaten Pelalawan: desa yang perlu perhatian dan adopsi Sinfodes.',
     lebar: 1280,
     tinggi: 860,
   },
@@ -182,7 +192,7 @@ function TabelPaket() {
 
 /** `/` di alamat induk (SPEC-V0.2 §4.4): halaman utama Sinfodes untuk desa calon pelanggan dan warga yang mencari desanya. */
 export function HalamanLanding() {
-  const [panel, warga, website] = LAMPIRAN as [Lampiran, Lampiran, Lampiran]
+  const [panel, warga, website, kabupaten] = LAMPIRAN as [Lampiran, Lampiran, Lampiran, Lampiran]
   return (
     <div className="flex min-h-dvh flex-col bg-kertas text-tinta">
       <header className="border-b border-garis">
@@ -233,6 +243,7 @@ export function HalamanLanding() {
               <KartuLampiran l={panel} className="lg:col-span-3" />
               <KartuLampiran l={warga} className="lg:col-span-1" />
               <KartuLampiran l={website} className="lg:col-span-2" />
+              <KartuLampiran l={kabupaten} className="lg:col-span-3" />
             </div>
           </div>
         </section>
