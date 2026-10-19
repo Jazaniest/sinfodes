@@ -2,11 +2,12 @@ import { http, HttpResponse } from 'msw'
 import { tanggalIsoWib } from '@/domain/format/tanggal'
 import { JUMLAH_DESA_KABUPATEN } from '@/domain/kabupaten/jumlah-desa'
 import { ringkasWilayah, type BarisPemantauanDesa, type Pemantauan } from '@/domain/kabupaten/pemantauan'
-import type { PenggunaKabupaten, RingkasanKabupaten } from '@/domain/kabupaten/schema'
+import type { PenggunaKabupaten, PerhatianKabupaten, RingkasanKabupaten } from '@/domain/kabupaten/schema'
 import { hitungPerhatian } from '@/domain/konsol/aturan'
 import { langkahBerikut } from '@/domain/wilayah/persiapan'
 import type { Desa } from '@/domain/wilayah/schema'
 import { ambilDb } from '../db'
+import { danaDesaKabupaten } from '../kabupaten-angka'
 import { API, balasGalat, denganJaringan } from '../http'
 import { angkaKonsolDesa, type AngkaKonsol } from '../konsol-angka'
 import { butuhKemampuanKabupaten } from '../sesi-mock'
@@ -40,14 +41,17 @@ export const handlerKabupaten = [
       const desa = desaKabupaten(db, akun).map((d) => ({ d, a: angkaKonsolDesa(db, d, sekarang) }))
       const jumlah = (s: Desa['status']) => desa.filter(({ d }) => d.status === s).length
       const adopsi = { aktif: jumlah('Aktif'), ujiCoba: jumlah('Uji coba'), persiapan: jumlah('Persiapan'), ditangguhkan: jumlah('Ditangguhkan') }
+      // Tagihan bukan urusan kabupaten (SPEC-V0.2 §5.1): butir tagihan tidak pernah dihitung.
+      const perhatian: PerhatianKabupaten[] = hitungPerhatian(
+        desa.map(({ d, a }) => ({ status: d.status, aktivitasTerakhir: a.aktivitasTerakhir, langkahBerikut: langkahBerikut(a.persiapan) })),
+        null,
+        sekarang,
+      ).flatMap((p) => (p.jenis === 'tagihan-lewat' ? [] : [p]))
+      const tertinggal = danaDesaKabupaten(db, kab.kode, sekarang).total.tertinggal
+      if (tertinggal > 0) perhatian.push({ jenis: 'realisasi-tertinggal', jumlah: tertinggal })
       const hasil: RingkasanKabupaten = {
         kabupaten: { kode: kab.kode, nama: kab.nama },
-        // Tagihan bukan urusan kabupaten (SPEC-V0.2 §5.1): butir tagihan tidak pernah dihitung.
-        perhatian: hitungPerhatian(
-          desa.map(({ d, a }) => ({ status: d.status, aktivitasTerakhir: a.aktivitasTerakhir, langkahBerikut: langkahBerikut(a.persiapan) })),
-          null,
-          sekarang,
-        ),
+        perhatian,
         adopsi: {
           bergabung: adopsi.aktif + adopsi.ujiCoba,
           // Kabupaten mitra baru di demo memakai jumlah desa pelanggannya sampai angka resminya dicatat.

@@ -7,6 +7,7 @@ import { Tautan } from '@/ui/navigasi/Tautan'
 import { TautanTombol } from '@/ui/tombol/TautanTombol'
 import { KabupatenBelumMitra } from '../KabupatenBelumMitra'
 import { LambangContoh } from '../LambangContoh'
+import { PetaPortal } from './PetaPortal'
 
 const MODE_DEMO = import.meta.env.VITE_DEMO === 'true'
 
@@ -51,7 +52,7 @@ function DaftarDesa({ portal }: { portal: PortalMitra }) {
 
 /**
  * Portal publik kabupaten mitra (SPEC-V0.2 §8.2) di alamat kabupaten: desa yang sudah memakai Sinfodes per kecamatan, dan
- * ajakan untuk desa yang belum. Peta menyusul di 7B-2, podium Indeks di 7C.
+ * ajakan untuk desa yang belum, dengan peta desa. Podium Indeks menyusul di 7C.
  */
 export function PortalKabupaten({ portal }: { portal: DataPortal }) {
   if (!portal.mitra) return <KabupatenBelumMitra nama={portal.kabupaten.nama} />
@@ -91,6 +92,14 @@ export function PortalKabupaten({ portal }: { portal: DataPortal }) {
             className="mt-4 max-w-md"
           />
         </section>
+
+        {portal.peta.length > 0 && (
+          <div className="border-t border-garis">
+            <div className={`${lebar} py-14`}>
+              <PetaPortal peta={portal.peta} />
+            </div>
+          </div>
+        )}
 
         <div className="border-t border-garis">
           <DaftarDesa portal={portal} />

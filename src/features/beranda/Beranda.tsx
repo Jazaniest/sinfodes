@@ -18,6 +18,7 @@ import { useSesiAdmin } from '../admin/sesi-konteks'
 import { PembangunanBerjalan, RealisasiApbdes } from './BagianTataKelola'
 import { DaftarPersiapan } from './DaftarPersiapan'
 import { isiSuratSaya, isiTindakan, kalimatKeadaan } from './kalimat'
+import { PengingatTenggat } from './PengingatTenggat'
 
 const judulBagian = 'text-label font-medium text-tinta-2 uppercase'
 
@@ -111,6 +112,7 @@ export function Beranda({ sekarang = new Date() }: { sekarang?: Date }) {
       ) : (
         <>
           {kueri.data.suratSaya && <SuratSaya surat={kueri.data.suratSaya} />}
+          {kueri.data.pengingatTenggat && <PengingatTenggat daftar={kueri.data.pengingatTenggat} />}
           {kueri.data.tindakan && (
             <section aria-labelledby="judul-tindakan">
               <h2 id="judul-tindakan" className={judulBagian}>

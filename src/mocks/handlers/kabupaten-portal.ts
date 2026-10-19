@@ -1,11 +1,12 @@
 import { http, HttpResponse } from 'msw'
 import { JUMLAH_DESA_KABUPATEN } from '@/domain/kabupaten/jumlah-desa'
-import type { DesaPortal, PortalKabupaten } from '@/domain/kabupaten/portal'
+import type { DesaPortal, PortalKabupaten, TitikPortal } from '@/domain/kabupaten/portal'
 import { kabupatenDariLabel } from '@/domain/kabupaten/wilayah'
 import type { Desa } from '@/domain/wilayah/schema'
 import { ambilDb } from '../db'
 import { API, balasGalat, denganJaringan } from '../http'
 import { konteksPermintaan } from '../konteks-permintaan'
+import { titikDesa } from '../titik-desa'
 
 const urutNama = (a: { nama: string }, b: { nama: string }) => a.nama.localeCompare(b.nama, 'id')
 const bergabung = (d: Desa): d is Desa & { status: DesaPortal['status'] } => d.status === 'Aktif' || d.status === 'Uji coba'
@@ -33,6 +34,15 @@ export const handlerPortalKabupaten = [
       const kecamatan = [...perKecamatan.values()]
         .sort((a, b) => urutNama(a.kecamatan, b.kecamatan))
         .map((kec) => ({ kecamatan: { kode: kec.kecamatan.kode, nama: kec.kecamatan.nama }, desa: kec.desa.sort(urutNama) }))
+      const peta: TitikPortal[] = semua
+        .filter((d) => bergabung(d) || d.status === 'Persiapan')
+        .flatMap((d) => {
+          const titik = titikDesa(db, d)
+          if (!titik) return []
+          const ikut = bergabung(d)
+          return [{ label: ikut ? d.slug : null, nama: d.nama, kecamatan: d.kecamatan.nama, kelompok: ikut ? 'bergabung' : 'persiapan', titik }] as const
+        })
+        .sort((a, b) => a.kecamatan.localeCompare(b.kecamatan, 'id') || a.nama.localeCompare(b.nama, 'id'))
       const hasil: PortalKabupaten = {
         mitra: true,
         kabupaten,
@@ -40,6 +50,7 @@ export const handlerPortalKabupaten = [
         // Sama dengan Ringkasan dasbor: kabupaten tanpa angka resmi memakai jumlah desa pelanggannya.
         jumlahDesa: JUMLAH_DESA_KABUPATEN[wilayah.kode] ?? semua.length,
         kecamatan,
+        peta,
       }
       return HttpResponse.json(hasil)
     }),

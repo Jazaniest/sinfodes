@@ -21,3 +21,13 @@ it('Ringkasan kabupaten: perlu perhatian dengan jalan ke Pemantauan, lalu adopsi
   expect(adopsi).toHaveTextContent('25 dari 104 desa di Kabupaten Pelalawan sudah memakai Sinfodes.')
   expect(adopsi).toHaveTextContent('5 desa lain dalam persiapan dan 2 ditangguhkan.')
 })
+
+it('Ringkasan kabupaten: butir realisasi Dana Desa tertinggal menuju Dana Desa (SPEC-V0.2 §8.3 butir 1)', async () => {
+  masukKabupatenSebagai(AKUN_KABUPATEN_UJI.admin)
+  renderKabupaten(<RingkasanKabupaten sekarang={SEKARANG_UJI} />, contohSesiKabupaten('kab_fajar'))
+  const perhatian = await screen.findByRole('region', { name: 'Perlu perhatian' })
+  const butir = within(perhatian).getByText(/desa realisasi Dana Desa tertinggal/).closest('li')
+  if (!butir) throw new Error('Butir Dana Desa tidak ada')
+  expect(within(butir).getByRole('link', { name: 'Buka Dana Desa' })).toHaveAttribute('href', '/kabupaten/admin/dana-desa')
+  expect(within(perhatian).getAllByRole('link', { name: 'Buka Pemantauan' })).toHaveLength(2)
+})

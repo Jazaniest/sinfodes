@@ -12,7 +12,7 @@ import { ukuranBerkasDesa } from './ukuran-berkas'
 const HARI_MS = 86_400_000
 
 /** `suratBulanIni`: surat Selesai yang terbit pada bulan berjalan, untuk Pemantauan wilayah. */
-export type AngkaKonsol = Omit<RekamDesa, 'desaId' | 'langkahSelesai'> & { persiapan: Persiapan; suratBulanIni: number; penyimpananKb: number }
+export type AngkaKonsol = Omit<RekamDesa, 'desaId' | 'langkahSelesai' | 'belanjaBulanan' | 'komposisi'> & { persiapan: Persiapan; suratBulanIni: number; penyimpananKb: number }
 
 const jamAntara = (dari: string, sampai: string) => (Date.parse(sampai) - Date.parse(dari)) / 3_600_000
 

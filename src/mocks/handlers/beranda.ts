@@ -11,6 +11,7 @@ import { ringkasSuratTerbit } from '@/domain/surat/ringkas'
 import { hariKerjaBerlalu } from '@/domain/surat/waktu'
 import { dataMilik } from '../cakupan'
 import { API, denganJaringan } from '../http'
+import { pengingatTenggatDesa } from '../pengingat-tenggat'
 import { persiapanDesa } from '../persiapan'
 import { butuhPengguna } from '../sesi-mock'
 import { apbdesTerbaru } from './keuangan'
@@ -108,6 +109,7 @@ export const handlerBeranda = [
             }
           : null,
         pembangunan: lihatPembangunan ? pembangunan : null,
+        pengingatTenggat: boleh(pengguna.peran, 'keuangan.lihat') ? pengingatTenggatDesa(milik.db, desa, hariIni) : null,
         // Langkahnya dihitung dari data panel, sama dengan tab Persiapan di Konsol (fokus review 5).
         persiapan: desa?.status === 'Persiapan' ? persiapanDesa(milik.db, desa) : null,
         keadaan: {

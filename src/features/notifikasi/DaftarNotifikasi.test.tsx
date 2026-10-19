@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { RouterProvider } from 'react-aria-components'
 import { describe, expect, it, vi } from 'vitest'
 import type { Peran } from '@/domain/pengguna/schema'
-import { ambilDb } from '@/mocks/db'
+import { ambilDb, ubahDb } from '@/mocks/db'
 import { AKUN_UJI, masukSebagai, pakaiApiTiruan, SEKARANG_UJI } from '@/test/api-tiruan'
 import { renderPanel } from '@/test/render'
 import { contohSesi } from '@/test/sesi'
@@ -49,6 +49,10 @@ describe('Notifikasi (SPEC §5.5)', () => {
     expect(belumDibaca('pgn_rosmiati')).toHaveLength(0)
   })
   it('Kepala Desa: pengumuman tanpa tautan bisa ditandai dibaca sendiri', async () => {
+    // Tanpa tenggat laporan, supaya pengumuman ini satu-satunya yang belum dibaca Kades (pengingat tenggat diuji di 7B-2).
+    ubahDb((d) => {
+      d.tenggatLaporan = []
+    })
     const { user } = pasang('kades')
     const daftar = await screen.findByRole('list', { name: /^Notifikasi / })
     expect(within(daftar).getByText('Baru di Sinfodes: surat dari loket dan tumpukan tanda tangan')).toBeInTheDocument()
