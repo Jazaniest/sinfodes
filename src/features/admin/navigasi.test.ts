@@ -12,14 +12,14 @@ const item = (nama: string): ItemMenu => {
 describe('menu admin (SPEC §5.1, §5.2)', () => {
   it('operator: semua menu yang sudah dibangun, menurut kelompok SPEC §5.2', () =>
     expect(label('operator')).toEqual([
-      'Beranda', 'Layanan Surat', 'Pengaduan', 'Kependudukan', 'Bantuan Sosial', 'Kesehatan', 'Peta Desa', 'Keuangan', 'Pembangunan',
+      'Beranda', 'Peringkat', 'Layanan Surat', 'Pengaduan', 'Kependudukan', 'Bantuan Sosial', 'Kesehatan', 'Peta Desa', 'Keuangan', 'Pembangunan',
       'Aset Desa', 'Lembaga Desa', 'Buku Administrasi', 'Website Desa',
     ]))
   it('kelompok mengikuti SPEC: Pelayanan, Data desa, lalu Tata kelola', () =>
     expect(menuUntuk('kades').map((k) => k.judul)).toEqual([null, 'Pelayanan', 'Data desa', 'Tata kelola']))
   it('Kepala Dusun melihat Layanan Surat (dusunnya)', () => expect(label('kadus')).toContain('Layanan Surat'))
   it('Kaur Keuangan: Peta Desa dan Tata kelola; kelompok Pelayanan disembunyikan', () => {
-    expect(label('kaur-keuangan')).toEqual(['Beranda', 'Peta Desa', 'Keuangan', 'Pembangunan', 'Aset Desa', 'Lembaga Desa', 'Buku Administrasi'])
+    expect(label('kaur-keuangan')).toEqual(['Beranda', 'Peringkat', 'Peta Desa', 'Keuangan', 'Pembangunan', 'Aset Desa', 'Lembaga Desa', 'Buku Administrasi'])
     expect(menuUntuk('kaur-keuangan').map((k) => k.judul)).toEqual([null, 'Data desa', 'Tata kelola'])
   })
   it('angka menu Layanan Surat memakai kunci "surat"; menu lain tanpa angka', () => {

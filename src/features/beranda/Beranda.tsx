@@ -17,6 +17,7 @@ import { BarisKerangka } from '@/ui/umpan-balik/Skeleton'
 import { useSesiAdmin } from '../admin/sesi-konteks'
 import { PembangunanBerjalan, RealisasiApbdes } from './BagianTataKelola'
 import { DaftarPersiapan } from './DaftarPersiapan'
+import { KartuPeringkat } from '../peringkat/KartuPeringkat'
 import { isiSuratSaya, isiTindakan, kalimatKeadaan } from './kalimat'
 import { PengingatTenggat } from './PengingatTenggat'
 
@@ -182,6 +183,7 @@ export function Beranda({ sekarang = new Date() }: { sekarang?: Date }) {
           {kueri.data.apbdes && (pengguna.peran === 'kades' || pengguna.peran === 'kaur-keuangan') && (
             <RealisasiApbdes apbdes={kueri.data.apbdes} tampilan={pengguna.peran === 'kades' ? 'bidang' : 'lengkap'} />
           )}
+          {kueri.data.peringkat && <KartuPeringkat kartu={kueri.data.peringkat} />}
           {kueri.data.pengaduanTerbaru && !dusunKeadaan && (
             <PengaduanTerbaru judul={judulPengaduan} daftar={kueri.data.pengaduanTerbaru} sekarang={sekarang} />
           )}

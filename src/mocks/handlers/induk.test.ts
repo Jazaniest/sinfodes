@@ -35,4 +35,23 @@ describe('API halaman utama Sinfodes (SPEC-V0.2 §4.4)', () => {
   it('ringkasan: desa bergabung = Aktif + Uji coba', async () => {
     expect((await ambilRingkasanInduk()).desaBergabung).toBe(38)
   })
+  it('juara bulan ini (7C-2): Agustus 2026, Riau dengan dua kategori, mitra Pelalawan dan Siak, tanpa Indeks atau tingkatan', async () => {
+    const { juara } = await ambilRingkasanInduk()
+    if (!juara) throw new Error('juara seharusnya ada')
+    expect(juara.periode).toEqual({ kode: '2026-08', label: 'Agustus 2026' })
+    const riau = juara.provinsi.find((p) => p.provinsi.nama === 'Riau')
+    expect(riau?.kategori.map((k) => k.kategori)).toEqual(['umum', 'merata'])
+    expect(juara.kabupatenMitra.map((m) => m.kabupaten.nama)).toEqual(['Pelalawan', 'Siak'])
+    expect(juara.kabupatenMitra[0].juaraUmum.length).toBeGreaterThan(0)
+    const teks = JSON.stringify(juara)
+    for (const k of ['"indeks"', '"tingkatan"', '"skor"', '2026-09']) expect(teks.includes(k), k).toBe(false)
+  })
+  it('juara bulan ini: kabupaten bukan mitra punya label null, mitra punya label portalnya', async () => {
+    const { juara } = await ambilRingkasanInduk()
+    const podium = juara?.provinsi.flatMap((p) => p.kategori.flatMap((k) => k.podium)) ?? []
+    const labelMitra = new Map(ambilDb().kabupatenMitra.map((m) => [m.nama, m.label]))
+    expect(podium.length).toBeGreaterThan(0)
+    expect(podium.some((x) => x.kabupaten.label === null)).toBe(true)
+    for (const x of podium) expect(x.kabupaten.label).toBe(labelMitra.get(x.kabupaten.nama) ?? null)
+  })
 })

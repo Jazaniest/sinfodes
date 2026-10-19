@@ -40,6 +40,18 @@ describe('portal publik kabupaten (SPEC-V0.2 §8.2)', () => {
     expect(within(daftar).getByRole('link', { name: 'Sungai Sialang' })).toHaveAttribute('href', 'http://sungaisialang.sinfodes.localhost:3000/')
     expect(within(daftar).queryByRole('link', { name: 'Tanjung Lamo' })).not.toBeInTheDocument()
   })
+  it('tabel Juara Agustus 2026: sembilan kategori, tautan desa ke websitenya, dan kalimat se-provinsi (7C-2)', async () => {
+    const data = await dataPortal('kab-pelalawan')
+    pasang(data)
+    const bagian = screen.getByRole('region', { name: 'Juara Agustus 2026' })
+    const tabel = within(bagian).getByRole('table', { name: 'Juara per kategori, Agustus 2026' })
+    expect(within(tabel).getAllByRole('row')).toHaveLength(10)
+    expect(within(tabel).getAllByRole('columnheader').map((h) => h.textContent)).toEqual(['Kategori', 'Juara 1', 'Juara 2', 'Juara 3'])
+    if (!data.mitra) throw new Error('mitra')
+    const juara1 = data.podium.kategori.find((k) => k.kategori === 'umum')!.juara[0]
+    for (const tautan of within(tabel).getAllByRole('link', { name: juara1.desa.nama })) expect(tautan).toHaveAttribute('href', `http://${juara1.desa.alamat}.sinfodes.localhost:3000/`)
+    expect(within(bagian).getByText('Kabupaten Pelalawan juara 1 Paling Merata se-provinsi Riau.')).toBeInTheDocument()
+  })
   it('ajakan untuk desa yang belum bergabung, dan tautan masuk dasbor di kaki', async () => {
     pasang(await dataPortal('kab-pelalawan'))
     expect(screen.getByText('79 desa lain di Kabupaten Pelalawan belum memakai Sinfodes.')).toBeInTheDocument()

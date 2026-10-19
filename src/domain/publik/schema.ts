@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { lencanaPublikSchema } from '../indeks/lencana'
 import { jenisSuratWargaSchema } from '../warga/ajukan'
 import {
   agendaSchema, ID_AKSEN, KATEGORI_ARTIKEL, KATEGORI_POTENSI, kreditFotoSchema, MOTIF_WEBSITE, pengumumanSchema,
@@ -69,6 +70,8 @@ export const berandaPublikSchema = z.object({
   /** Cuplikan APBDes terbaru (SPEC §9: MiniBar pendapatan dan belanja); null bila desa belum mengumumkan APBDes. */
   apbdes: z.object({ tahun: z.number().int(), pendapatan: anggaranRealisasiSchema, belanja: anggaranRealisasiSchema }).nullable(),
   potensi: z.array(ringkasPotensiSchema),
+  /** Lencana juara dari periode tutup terakhir yang tidak disembunyikan desa, paling banyak 6 (SPEC-V0.2 §9.6). */
+  lencana: z.array(lencanaPublikSchema),
 })
 export type BerandaPublik = z.infer<typeof berandaPublikSchema>
 

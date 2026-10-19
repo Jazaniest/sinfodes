@@ -17,6 +17,7 @@ import { TautanTombol } from '@/ui/tombol/TautanTombol'
 import { kelasTombol } from '@/ui/tombol/gaya-tombol'
 import { Skeleton } from '@/ui/umpan-balik/Skeleton'
 import { CariDesa } from './CariDesa'
+import { JuaraBulanIni } from './JuaraBulanIni'
 
 const MODE_DEMO = import.meta.env.VITE_DEMO === 'true'
 
@@ -109,6 +110,11 @@ function Bukti() {
   const ringkasan = useQuery(opsiRingkasanInduk())
   return (
     <section aria-label="Desa yang memakai Sinfodes" className="border-y border-garis bg-lembar">
+      {ringkasan.data?.juara && (
+        <div className={`${lebar} border-b border-garis py-8`}>
+          <JuaraBulanIni juara={ringkasan.data.juara} contoh={MODE_DEMO} />
+        </div>
+      )}
       <div className={`${lebar} flex flex-wrap items-baseline gap-x-4 gap-y-2 py-8`}>
         {ringkasan.data ? (
           <p className="font-serif text-judul-bagian font-medium">

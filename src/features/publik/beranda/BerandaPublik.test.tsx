@@ -1,5 +1,6 @@
 import { screen, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
+import { keAlamat } from '@/app/alamat'
 import { ubahDb } from '@/mocks/db'
 import { pakaiApiTiruan } from '@/test/api-tiruan'
 import { renderPublik } from '@/test/render'
@@ -66,5 +67,25 @@ describe('Beranda website desa (SPEC §9)', () => {
     expect(await screen.findByRole('region', { name: 'Desa dalam angka' })).toBeInTheDocument()
     expect(screen.queryByRole('region', { name: /^APBDes/ })).not.toBeInTheDocument()
     expect(screen.queryByRole('region', { name: 'Potensi desa' })).not.toBeInTheDocument()
+  })
+  it('lencana juara: deret di atas berita utama, tautan ke bukti di alamat induk (7C-2)', async () => {
+    renderPublik(<BerandaPublik />)
+    const deret = await screen.findByRole('region', { name: 'Lencana juara' })
+    const tautan = within(deret).getAllByRole('link')
+    expect(tautan.length).toBeGreaterThan(0)
+    expect(tautan.length).toBeLessThanOrEqual(6)
+    const href = tautan[0].getAttribute('href') ?? ''
+    expect(href).toMatch(/\/lencana\/LJ-[0-9A-HJKMNP-TV-Z]{8}$/)
+    expect(href).toBe(keAlamat({ jenis: 'induk' }, `/lencana/${href.split('/').pop()}`))
+    const utama = screen.getByRole('article', { name: 'Penyaluran BLT Tahap III Dijadwalkan 30 September' })
+    expect(deret.compareDocumentPosition(utama) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+  it('tanpa lencana: deret tidak tampil', async () => {
+    ubahDb((d) => {
+      d.lencana = []
+    })
+    renderPublik(<BerandaPublik />)
+    expect(await screen.findByRole('region', { name: 'Layanan cepat' })).toBeInTheDocument()
+    expect(screen.queryByRole('region', { name: 'Lencana juara' })).not.toBeInTheDocument()
   })
 })

@@ -1,5 +1,6 @@
 import { queryOptions } from '@tanstack/react-query'
 import { daftarSchema } from '@/domain/api'
+import { lencanaAdminSchema } from '@/domain/indeks/lencana'
 import {
   agendaSchema, artikelSchema, fotoGaleriSchema, pengumumanSchema, tampilanWebsiteSchema, type UbahTampilan,
 } from '@/domain/website/schema'
@@ -17,6 +18,7 @@ export const kunciWebsite = {
   agenda: ['website', 'agenda'] as const,
   galeri: ['website', 'galeri'] as const,
   tampilan: ['website', 'tampilan'] as const,
+  lencana: ['website', 'lencana'] as const,
 }
 
 export function daftarArtikel(signal?: AbortSignal) {
@@ -45,4 +47,17 @@ export function ambilTampilan(signal?: AbortSignal) {
 export const opsiTampilan = () => queryOptions({ queryKey: kunciWebsite.tampilan, queryFn: ({ signal }) => ambilTampilan(signal) })
 export function simpanTampilan(isian: UbahTampilan) {
   return panggilApi('PUT', '/website/tampilan', { skema: tampilanWebsiteSchema, body: isian })
+}
+
+const daftarLencanaSchema = daftarSchema(lencanaAdminSchema)
+
+/** Lencana juara desa, periode tutup terbaru dulu (SPEC-V0.2 §9.6). */
+export function daftarLencana(signal?: AbortSignal) {
+  return panggilApi('GET', '/website/lencana', { skema: daftarLencanaSchema, signal })
+}
+export const opsiLencanaWebsite = () => queryOptions({ queryKey: kunciWebsite.lencana, queryFn: ({ signal }) => daftarLencana(signal) })
+
+/** Tampilkan atau sembunyikan satu lencana di website desa; halaman buktinya tetap terbuka. */
+export function ubahTampilLencana(kode: string, tampil: boolean) {
+  return panggilApi('PUT', `/website/lencana/${kode}`, { skema: lencanaAdminSchema, body: { tampil } })
 }

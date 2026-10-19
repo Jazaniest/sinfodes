@@ -1,11 +1,15 @@
 import { http, HttpResponse } from 'msw'
+import { KATEGORI_DESA, KATEGORI_KABUPATEN, formatUkuran } from '@/domain/indeks/kategori'
+import { labelPeriode, periodeTerakhirTutup } from '@/domain/indeks/periode'
 import { JUMLAH_DESA_KABUPATEN } from '@/domain/kabupaten/jumlah-desa'
-import type { DesaPortal, PortalKabupaten, TitikPortal } from '@/domain/kabupaten/portal'
+import type { DesaPortal, PodiumPortal, PortalKabupaten, PosisiProvinsiPortal, TitikPortal } from '@/domain/kabupaten/portal'
 import { kabupatenDariLabel } from '@/domain/kabupaten/wilayah'
 import type { Desa } from '@/domain/wilayah/schema'
 import { ambilDb } from '../db'
 import { API, balasGalat, denganJaringan } from '../http'
+import { kategoriProvinsi, peringkatProvinsi } from '../indeks'
 import { konteksPermintaan } from '../konteks-permintaan'
+import { pastikanLencana } from '../lencana'
 import { titikDesa } from '../titik-desa'
 
 const urutNama = (a: { nama: string }, b: { nama: string }) => a.nama.localeCompare(b.nama, 'id')
@@ -24,7 +28,32 @@ export const handlerPortalKabupaten = [
       if (!db.kabupatenMitra.some((m) => m.label === k.label)) {
         return HttpResponse.json({ mitra: false, kabupaten } satisfies PortalKabupaten)
       }
+      const sekarang = new Date()
+      pastikanLencana(sekarang)
       const semua = db.desa.filter((d) => d.kabupaten.kode === wilayah.kode)
+      // Publik hanya melihat periode tutup: podium dibaca dari lencana yang sudah terbit, tidak pernah dari klasemen sementara.
+      const periode = periodeTerakhirTutup('bulanan', sekarang)
+      const podium: PodiumPortal = {
+        periode: { kode: periode.kode, label: labelPeriode(periode) },
+        kategori: KATEGORI_DESA.map((kategori) => ({
+          kategori,
+          juara: db.lencana
+            .filter((l) => l.tingkat === 'kabupaten' && l.wilayah.kode === wilayah.kode && l.kategori === kategori && l.periode.musim === periode.musim && l.periode.kode === periode.kode)
+            .flatMap((l) => {
+              const desa = semua.find((d) => d.id === l.desaId)
+              return desa ? [{ peringkat: l.peringkat, bersama: l.bersama, desa: { nama: desa.nama, kecamatan: desa.kecamatan.nama, alamat: desa.slug }, nilai: formatUkuran(kategori, l.nilai) }] : []
+            })
+            .sort((a, b) => a.peringkat - b.peringkat || a.desa.nama.localeCompare(b.desa.nama, 'id')),
+        })),
+      }
+      const provinsi = semua[0]?.provinsi
+      const nilaiProvinsi = provinsi ? peringkatProvinsi(db, provinsi.kode, periode, sekarang) : []
+      const posisiProvinsi: PosisiProvinsiPortal = provinsi
+        ? KATEGORI_KABUPATEN.flatMap((kategori) => {
+            const posisi = kategoriProvinsi(kategori, nilaiProvinsi, wilayah.kode).posisi
+            return posisi && posisi.peringkat <= 3 ? [{ kategori, peringkat: posisi.peringkat, bersama: posisi.bersama, dari: posisi.dari, provinsi: provinsi.nama }] : []
+          })
+        : []
       const perKecamatan = new Map<string, { kecamatan: Desa['kecamatan']; desa: DesaPortal[] }>()
       for (const d of semua.filter(bergabung)) {
         const kec = perKecamatan.get(d.kecamatan.kode) ?? { kecamatan: d.kecamatan, desa: [] }
@@ -51,6 +80,8 @@ export const handlerPortalKabupaten = [
         jumlahDesa: JUMLAH_DESA_KABUPATEN[wilayah.kode] ?? semua.length,
         kecamatan,
         peta,
+        podium,
+        posisiProvinsi,
       }
       return HttpResponse.json(hasil)
     }),

@@ -5,9 +5,9 @@ import { TabNav } from '@/ui/navigasi/TabNav'
 import { PageHeader } from '@/ui/tata-letak/PageHeader'
 import { useSesiAdmin } from '../admin/sesi-konteks'
 
-type Aktif = 'artikel' | 'pengumuman' | 'agenda' | 'galeri' | 'tampilan'
+type Aktif = 'artikel' | 'pengumuman' | 'agenda' | 'galeri' | 'tampilan' | 'lencana'
 
-/** Tab Website Desa (SPEC §8): Artikel · Pengumuman · Agenda · Galeri · Tampilan. */
+/** Tab Website Desa (SPEC §8): Artikel · Pengumuman · Agenda · Galeri · Tampilan · Lencana. */
 export function TabWebsite({ aktif }: { aktif: Aktif }) {
   return (
     <TabNav
@@ -18,6 +18,7 @@ export function TabWebsite({ aktif }: { aktif: Aktif }) {
         { label: 'Agenda', href: '/admin/website/agenda', aktif: aktif === 'agenda' },
         { label: 'Galeri', href: '/admin/website/galeri', aktif: aktif === 'galeri' },
         { label: 'Tampilan', href: '/admin/website/tampilan', aktif: aktif === 'tampilan' },
+        { label: 'Lencana', href: '/admin/website/lencana', aktif: aktif === 'lencana' },
       ]}
     />
   )

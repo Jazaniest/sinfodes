@@ -4,6 +4,9 @@ import type { PenerimaBansos, ProgramBansos } from '@/domain/bansos/schema'
 import type { BarisMentah } from '@/domain/kabupaten/data-gabungan'
 import type { LampiranSiaran, SasaranSiaran } from '@/domain/kabupaten/siaran'
 import type { UkuranBulan } from '@/domain/indeks/hitung'
+import type { KategoriDesa } from '@/domain/indeks/kategori'
+import type { TingkatLencana } from '@/domain/indeks/lencana'
+import type { Periode } from '@/domain/indeks/periode'
 import type { LaporanImpor } from '@/domain/impor/schema'
 import type { Keluarga } from '@/domain/keluarga/schema'
 import type { Apbdes } from '@/domain/keuangan/schema'
@@ -28,7 +31,7 @@ import type { Agenda, Artikel, FotoGaleri, Pengumuman, Potensi, ProfilDesa, Tamp
 import type { Desa, Dusun } from '@/domain/wilayah/schema'
 
 /** Naikkan setiap kali seed atau struktur data berubah; data lama di IndexedDB otomatis diganti (SPEC §12). */
-export const VERSI_DATA = 24
+export const VERSI_DATA = 25
 
 /** Satu alamat lama desa, mis. slug v0.1 "sungai-sialang" untuk Sungai Sialang. */
 export type AliasAlamat = { label: string; desaId: string }
@@ -91,6 +94,24 @@ export type RekamDesa = {
 
 /** Jejak satu desa dalam satu bulan kalender WIB untuk Indeks dan peringkat (SPEC-V0.2 §9). Baris bulan tutup dibekukan. */
 export type UkuranBulanIndeks = UkuranBulan & { desaId: string; bulan: string }
+
+/**
+ * Lencana juara yang sudah terbit (SPEC-V0.2 §9.6): satu baris per desa di podium kecamatan atau kabupaten untuk satu kategori
+ * dan satu periode tutup. `tampil` mengatur website desa; halaman bukti selalu bisa membuka kodenya.
+ */
+export type Lencana = {
+  kode: string
+  desaId: string
+  kategori: KategoriDesa
+  peringkat: number
+  bersama: boolean
+  tingkat: TingkatLencana
+  wilayah: { kode: string; nama: string }
+  periode: Periode
+  nilai: number
+  terbitPada: string
+  tampil: boolean
+}
 
 /** Tenggat laporan yang diatur Admin Kabupaten (SPEC-V0.2 §8.3 butir 4). Tanggal "YYYY-MM-DD" WIB. */
 export type TenggatLaporan = {
@@ -211,4 +232,7 @@ export type DbDemo = {
   bacaSiaran: BacaSiaran[]
   /** Jejak bulanan per desa untuk Indeks Desa Digital (SPEC-V0.2 §9). */
   ukuranIndeks: UkuranBulanIndeks[]
+  /** Lencana juara dan kunci `musim:kode` periode tutup yang sudah diproses (SPEC-V0.2 §9.6). */
+  lencana: Lencana[]
+  periodeLencana: string[]
 }

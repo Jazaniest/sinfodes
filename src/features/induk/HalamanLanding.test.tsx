@@ -46,7 +46,8 @@ describe('halaman utama Sinfodes (SPEC-V0.2 §4.4)', () => {
   it('bukti: jumlah desa bergabung dari API, berlabel Data contoh di build demo', async () => {
     await pasang()
     expect(await screen.findByText('38 desa sudah memakai Sinfodes.')).toBeInTheDocument()
-    expect(screen.getByText('Data contoh')).toBeInTheDocument()
+    // Satu label untuk angka desa bergabung, satu lagi untuk tabel juara (7C-2).
+    expect(screen.getAllByText('Data contoh')).toHaveLength(2)
   })
   it('bukti: kabupaten mitra, tiap nama bertautan ke portal kabupatennya (SPEC-V0.2 §8.2)', async () => {
     await pasang()
@@ -55,6 +56,18 @@ describe('halaman utama Sinfodes (SPEC-V0.2 §4.4)', () => {
     expect(baris).toHaveTextContent('Kabupaten mitra: Pelalawan · Siak')
     expect(within(baris).getByRole('link', { name: 'Pelalawan' })).toHaveAttribute('href', 'http://kab-pelalawan.sinfodes.localhost:3000/')
     expect(within(baris).getByRole('link', { name: 'Siak' })).toHaveAttribute('href', 'http://kab-siak.sinfodes.localhost:3000/')
+  })
+  it('juara bulan ini: judul Juara Agustus 2026, label Data contoh, dan tautan kabupaten mitra ke portalnya (7C-2)', async () => {
+    await pasang()
+    const judul = await screen.findByRole('heading', { level: 2, name: 'Juara Agustus 2026' })
+    expect(judul).toBeInTheDocument()
+    const antar = screen.getByRole('region', { name: 'Juara antarkabupaten, Provinsi Riau' })
+    expect(within(antar).getAllByRole('row')).toHaveLength(3)
+    const mitra = screen.getByRole('region', { name: 'Juara Umum per kabupaten mitra' })
+    expect(within(mitra).getByRole('link', { name: 'Pelalawan' })).toHaveAttribute('href', 'http://kab-pelalawan.sinfodes.localhost:3000/')
+    expect(within(mitra).getAllByRole('link').length).toBeGreaterThan(2)
+    expect(screen.getAllByText('Data contoh').length).toBeGreaterThanOrEqual(2)
+    expect(screen.queryByText(/Indeks|Tingkatan|Rintisan|Mandiri/)).toBeNull()
   })
   it('paket dan harga: tabel dua paket dengan harga tahunan, dan catatan triwulan', async () => {
     await pasang()

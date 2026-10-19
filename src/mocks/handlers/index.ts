@@ -13,6 +13,7 @@ import { handlerKabupatenDataGabungan } from './kabupaten-data-gabungan'
 import { handlerKabupatenIndeks } from './kabupaten-indeks'
 import { handlerKabupatenLaporan } from './kabupaten-laporan'
 import { handlerKabupatenPeta } from './kabupaten-peta'
+import { handlerLencana } from './lencana'
 import { handlerKabupatenSiaran } from './kabupaten-siaran'
 import { handlerSiaranDesa } from './siaran-desa'
 import { handlerKabupatenTenggat } from './kabupaten-tenggat'
@@ -31,6 +32,7 @@ import { handlerLaporan } from './laporan'
 import { handlerMutasi } from './mutasi'
 import { handlerNotifikasi } from './notifikasi'
 import { handlerPembangunan } from './pembangunan'
+import { handlerPeringkat } from './peringkat'
 import { handlerPengaduan } from './pengaduan'
 import { handlerPengaturan } from './pengaturan'
 import { handlerPenggunaDesa } from './pengaturan-pengguna'
@@ -62,5 +64,5 @@ export const handlers = [
   ...handlerWargaSesi, ...handlerWarga, ...handlerWargaAjukan, ...handlerWargaKeluarga, ...handlerWargaPengaduan,
   ...handlerPublik, ...handlerPublikHalaman, ...handlerKonsol, ...handlerKabupatenSesi, ...handlerKabupaten, ...handlerPenggunaKabupaten,
   ...handlerPortalKabupaten, ...handlerKonsolKabupaten, ...handlerKabupatenDanaDesa, ...handlerKabupatenDataGabungan, ...handlerKabupatenPeta, ...handlerKabupatenIndeks,...handlerKabupatenLaporan, ...handlerKabupatenTenggat, ...handlerTenggatDesa,
-  ...handlerKabupatenSiaran, ...handlerSiaranDesa,
+  ...handlerKabupatenSiaran, ...handlerSiaranDesa, ...handlerPeringkat, ...handlerLencana,
 ]

@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { aktivitasSchema } from '../aktivitas/schema'
+import { kartuPeringkatSchema } from '../indeks/peringkat-desa'
 import { pengingatTenggatSchema } from '../kabupaten/tenggat'
 import { barisPengaduanSchema } from '../pengaduan/schema'
 import { TAHAP_TTD } from '../surat/permohonan'
@@ -57,6 +58,8 @@ export const berandaSchema = z.object({
   pengingatTenggat: z.array(pengingatTenggatSchema).nullable(),
   /** Desa berstatus Persiapan (SPEC §5.3): Beranda berganti menjadi lima langkah persiapan. Null untuk desa lain. */
   persiapan: persiapanSchema.nullable(),
+  /** Kartu Peringkat bulan terakhir tutup (SPEC-V0.2 §9.5). Null bagi desa yang belum ikut peringkat. */
+  peringkat: kartuPeringkatSchema.nullable(),
   keadaan: keadaanSchema,
 })
 export type Beranda = z.infer<typeof berandaSchema>

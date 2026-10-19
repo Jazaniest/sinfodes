@@ -21,6 +21,7 @@ import { Route as DesaSlugRouteImport } from './routes/desa/$slug'
 import { Route as KabupatenIndexRouteImport } from './routes/kabupaten/index'
 import { Route as KonsolKonsolRouteImport } from './routes/konsol/_konsol'
 import { Route as KonsolMasukRouteImport } from './routes/konsol/masuk'
+import { Route as LencanaKodeRouteImport } from './routes/lencana/$kode'
 import { Route as WargaAppRouteImport } from './routes/warga/_app'
 import { Route as WargaMasukRouteImport } from './routes/warga/masuk'
 import { Route as AdminPanelIndexRouteImport } from './routes/admin/_panel/index'
@@ -29,6 +30,7 @@ import { Route as AdminPanelKesehatanRouteImport } from './routes/admin/_panel/k
 import { Route as AdminPanelKeuanganRouteImport } from './routes/admin/_panel/keuangan'
 import { Route as AdminPanelLembagaRouteImport } from './routes/admin/_panel/lembaga'
 import { Route as AdminPanelNotifikasiRouteImport } from './routes/admin/_panel/notifikasi'
+import { Route as AdminPanelPeringkatRouteImport } from './routes/admin/_panel/peringkat'
 import { Route as AdminPanelPetaRouteImport } from './routes/admin/_panel/peta'
 import { Route as DesaSlugIndexRouteImport } from './routes/desa/$slug/index'
 import { Route as DesaSlugKreditFotoRouteImport } from './routes/desa/$slug/kredit-foto'
@@ -69,6 +71,7 @@ import { Route as AdminPanelSuratTandaTanganRouteImport } from './routes/admin/_
 import { Route as AdminPanelWebsiteIndexRouteImport } from './routes/admin/_panel/website/index'
 import { Route as AdminPanelWebsiteAgendaRouteImport } from './routes/admin/_panel/website/agenda'
 import { Route as AdminPanelWebsiteGaleriRouteImport } from './routes/admin/_panel/website/galeri'
+import { Route as AdminPanelWebsiteLencanaRouteImport } from './routes/admin/_panel/website/lencana'
 import { Route as AdminPanelWebsitePengumumanRouteImport } from './routes/admin/_panel/website/pengumuman'
 import { Route as AdminPanelWebsiteTampilanRouteImport } from './routes/admin/_panel/website/tampilan'
 import { Route as DesaSlugKabarIndexRouteImport } from './routes/desa/$slug/kabar/index'
@@ -176,6 +179,11 @@ const KonsolMasukRoute = KonsolMasukRouteImport.update({
   path: '/konsol/masuk',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LencanaKodeRoute = LencanaKodeRouteImport.update({
+  id: '/lencana/$kode',
+  path: '/lencana/$kode',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const WargaAppRoute = WargaAppRouteImport.update({
   id: '/warga/_app',
   path: '/warga',
@@ -214,6 +222,11 @@ const AdminPanelLembagaRoute = AdminPanelLembagaRouteImport.update({
 const AdminPanelNotifikasiRoute = AdminPanelNotifikasiRouteImport.update({
   id: '/notifikasi',
   path: '/notifikasi',
+  getParentRoute: () => AdminPanelRoute,
+} as any)
+const AdminPanelPeringkatRoute = AdminPanelPeringkatRouteImport.update({
+  id: '/peringkat',
+  path: '/peringkat',
   getParentRoute: () => AdminPanelRoute,
 } as any)
 const AdminPanelPetaRoute = AdminPanelPetaRouteImport.update({
@@ -427,6 +440,12 @@ const AdminPanelWebsiteGaleriRoute = AdminPanelWebsiteGaleriRouteImport.update({
   path: '/website/galeri',
   getParentRoute: () => AdminPanelRoute,
 } as any)
+const AdminPanelWebsiteLencanaRoute =
+  AdminPanelWebsiteLencanaRouteImport.update({
+    id: '/website/lencana',
+    path: '/website/lencana',
+    getParentRoute: () => AdminPanelRoute,
+  } as any)
 const AdminPanelWebsitePengumumanRoute =
   AdminPanelWebsitePengumumanRouteImport.update({
     id: '/website/pengumuman',
@@ -703,6 +722,7 @@ export interface FileRoutesByFullPath {
   '/desa/$slug': typeof DesaSlugRouteWithChildren
   '/konsol': typeof KonsolKonsolRouteWithChildren
   '/konsol/masuk': typeof KonsolMasukRoute
+  '/lencana/$kode': typeof LencanaKodeRoute
   '/warga': typeof WargaAppRouteWithChildren
   '/warga/masuk': typeof WargaMasukRoute
   '/kabupaten/': typeof KabupatenIndexRoute
@@ -711,6 +731,7 @@ export interface FileRoutesByFullPath {
   '/admin/keuangan': typeof AdminPanelKeuanganRoute
   '/admin/lembaga': typeof AdminPanelLembagaRoute
   '/admin/notifikasi': typeof AdminPanelNotifikasiRoute
+  '/admin/peringkat': typeof AdminPanelPeringkatRoute
   '/admin/peta': typeof AdminPanelPetaRoute
   '/desa/$slug/kredit-foto': typeof DesaSlugKreditFotoRoute
   '/desa/$slug/layanan': typeof DesaSlugLayananRoute
@@ -743,6 +764,7 @@ export interface FileRoutesByFullPath {
   '/admin/surat/tanda-tangan': typeof AdminPanelSuratTandaTanganRoute
   '/admin/website/agenda': typeof AdminPanelWebsiteAgendaRoute
   '/admin/website/galeri': typeof AdminPanelWebsiteGaleriRoute
+  '/admin/website/lencana': typeof AdminPanelWebsiteLencanaRoute
   '/admin/website/pengumuman': typeof AdminPanelWebsitePengumumanRoute
   '/admin/website/tampilan': typeof AdminPanelWebsiteTampilanRoute
   '/desa/$slug/kabar/$artikel': typeof DesaSlugKabarArtikelRoute
@@ -808,6 +830,7 @@ export interface FileRoutesByTo {
   '/admin/bantuan': typeof AdminBantuanRoute
   '/admin/masuk': typeof AdminMasukRoute
   '/konsol/masuk': typeof KonsolMasukRoute
+  '/lencana/$kode': typeof LencanaKodeRoute
   '/warga/masuk': typeof WargaMasukRoute
   '/kabupaten': typeof KabupatenIndexRoute
   '/admin/aset': typeof AdminPanelAsetRoute
@@ -815,6 +838,7 @@ export interface FileRoutesByTo {
   '/admin/keuangan': typeof AdminPanelKeuanganRoute
   '/admin/lembaga': typeof AdminPanelLembagaRoute
   '/admin/notifikasi': typeof AdminPanelNotifikasiRoute
+  '/admin/peringkat': typeof AdminPanelPeringkatRoute
   '/admin/peta': typeof AdminPanelPetaRoute
   '/desa/$slug/kredit-foto': typeof DesaSlugKreditFotoRoute
   '/desa/$slug/layanan': typeof DesaSlugLayananRoute
@@ -846,6 +870,7 @@ export interface FileRoutesByTo {
   '/admin/surat/tanda-tangan': typeof AdminPanelSuratTandaTanganRoute
   '/admin/website/agenda': typeof AdminPanelWebsiteAgendaRoute
   '/admin/website/galeri': typeof AdminPanelWebsiteGaleriRoute
+  '/admin/website/lencana': typeof AdminPanelWebsiteLencanaRoute
   '/admin/website/pengumuman': typeof AdminPanelWebsitePengumumanRoute
   '/admin/website/tampilan': typeof AdminPanelWebsiteTampilanRoute
   '/desa/$slug/kabar/$artikel': typeof DesaSlugKabarArtikelRoute
@@ -915,6 +940,7 @@ export interface FileRoutesById {
   '/desa/$slug': typeof DesaSlugRouteWithChildren
   '/konsol/_konsol': typeof KonsolKonsolRouteWithChildren
   '/konsol/masuk': typeof KonsolMasukRoute
+  '/lencana/$kode': typeof LencanaKodeRoute
   '/warga/_app': typeof WargaAppRouteWithChildren
   '/warga/masuk': typeof WargaMasukRoute
   '/kabupaten/': typeof KabupatenIndexRoute
@@ -923,6 +949,7 @@ export interface FileRoutesById {
   '/admin/_panel/keuangan': typeof AdminPanelKeuanganRoute
   '/admin/_panel/lembaga': typeof AdminPanelLembagaRoute
   '/admin/_panel/notifikasi': typeof AdminPanelNotifikasiRoute
+  '/admin/_panel/peringkat': typeof AdminPanelPeringkatRoute
   '/admin/_panel/peta': typeof AdminPanelPetaRoute
   '/desa/$slug/kredit-foto': typeof DesaSlugKreditFotoRoute
   '/desa/$slug/layanan': typeof DesaSlugLayananRoute
@@ -955,6 +982,7 @@ export interface FileRoutesById {
   '/admin/_panel/surat/tanda-tangan': typeof AdminPanelSuratTandaTanganRoute
   '/admin/_panel/website/agenda': typeof AdminPanelWebsiteAgendaRoute
   '/admin/_panel/website/galeri': typeof AdminPanelWebsiteGaleriRoute
+  '/admin/_panel/website/lencana': typeof AdminPanelWebsiteLencanaRoute
   '/admin/_panel/website/pengumuman': typeof AdminPanelWebsitePengumumanRoute
   '/admin/_panel/website/tampilan': typeof AdminPanelWebsiteTampilanRoute
   '/desa/$slug/kabar/$artikel': typeof DesaSlugKabarArtikelRoute
@@ -1025,6 +1053,7 @@ export interface FileRouteTypes {
     | '/desa/$slug'
     | '/konsol'
     | '/konsol/masuk'
+    | '/lencana/$kode'
     | '/warga'
     | '/warga/masuk'
     | '/kabupaten/'
@@ -1033,6 +1062,7 @@ export interface FileRouteTypes {
     | '/admin/keuangan'
     | '/admin/lembaga'
     | '/admin/notifikasi'
+    | '/admin/peringkat'
     | '/admin/peta'
     | '/desa/$slug/kredit-foto'
     | '/desa/$slug/layanan'
@@ -1065,6 +1095,7 @@ export interface FileRouteTypes {
     | '/admin/surat/tanda-tangan'
     | '/admin/website/agenda'
     | '/admin/website/galeri'
+    | '/admin/website/lencana'
     | '/admin/website/pengumuman'
     | '/admin/website/tampilan'
     | '/desa/$slug/kabar/$artikel'
@@ -1130,6 +1161,7 @@ export interface FileRouteTypes {
     | '/admin/bantuan'
     | '/admin/masuk'
     | '/konsol/masuk'
+    | '/lencana/$kode'
     | '/warga/masuk'
     | '/kabupaten'
     | '/admin/aset'
@@ -1137,6 +1169,7 @@ export interface FileRouteTypes {
     | '/admin/keuangan'
     | '/admin/lembaga'
     | '/admin/notifikasi'
+    | '/admin/peringkat'
     | '/admin/peta'
     | '/desa/$slug/kredit-foto'
     | '/desa/$slug/layanan'
@@ -1168,6 +1201,7 @@ export interface FileRouteTypes {
     | '/admin/surat/tanda-tangan'
     | '/admin/website/agenda'
     | '/admin/website/galeri'
+    | '/admin/website/lencana'
     | '/admin/website/pengumuman'
     | '/admin/website/tampilan'
     | '/desa/$slug/kabar/$artikel'
@@ -1236,6 +1270,7 @@ export interface FileRouteTypes {
     | '/desa/$slug'
     | '/konsol/_konsol'
     | '/konsol/masuk'
+    | '/lencana/$kode'
     | '/warga/_app'
     | '/warga/masuk'
     | '/kabupaten/'
@@ -1244,6 +1279,7 @@ export interface FileRouteTypes {
     | '/admin/_panel/keuangan'
     | '/admin/_panel/lembaga'
     | '/admin/_panel/notifikasi'
+    | '/admin/_panel/peringkat'
     | '/admin/_panel/peta'
     | '/desa/$slug/kredit-foto'
     | '/desa/$slug/layanan'
@@ -1276,6 +1312,7 @@ export interface FileRouteTypes {
     | '/admin/_panel/surat/tanda-tangan'
     | '/admin/_panel/website/agenda'
     | '/admin/_panel/website/galeri'
+    | '/admin/_panel/website/lencana'
     | '/admin/_panel/website/pengumuman'
     | '/admin/_panel/website/tampilan'
     | '/desa/$slug/kabar/$artikel'
@@ -1345,6 +1382,7 @@ export interface RootRouteChildren {
   DesaSlugRoute: typeof DesaSlugRouteWithChildren
   KonsolKonsolRoute: typeof KonsolKonsolRouteWithChildren
   KonsolMasukRoute: typeof KonsolMasukRoute
+  LencanaKodeRoute: typeof LencanaKodeRoute
   WargaAppRoute: typeof WargaAppRouteWithChildren
   WargaMasukRoute: typeof WargaMasukRoute
   KabupatenIndexRoute: typeof KabupatenIndexRoute
@@ -1438,6 +1476,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof KonsolMasukRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/lencana/$kode': {
+      id: '/lencana/$kode'
+      path: '/lencana/$kode'
+      fullPath: '/lencana/$kode'
+      preLoaderRoute: typeof LencanaKodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/warga/_app': {
       id: '/warga/_app'
       path: '/warga'
@@ -1492,6 +1537,13 @@ declare module '@tanstack/react-router' {
       path: '/notifikasi'
       fullPath: '/admin/notifikasi'
       preLoaderRoute: typeof AdminPanelNotifikasiRouteImport
+      parentRoute: typeof AdminPanelRoute
+    }
+    '/admin/_panel/peringkat': {
+      id: '/admin/_panel/peringkat'
+      path: '/peringkat'
+      fullPath: '/admin/peringkat'
+      preLoaderRoute: typeof AdminPanelPeringkatRouteImport
       parentRoute: typeof AdminPanelRoute
     }
     '/admin/_panel/peta': {
@@ -1772,6 +1824,13 @@ declare module '@tanstack/react-router' {
       path: '/website/galeri'
       fullPath: '/admin/website/galeri'
       preLoaderRoute: typeof AdminPanelWebsiteGaleriRouteImport
+      parentRoute: typeof AdminPanelRoute
+    }
+    '/admin/_panel/website/lencana': {
+      id: '/admin/_panel/website/lencana'
+      path: '/website/lencana'
+      fullPath: '/admin/website/lencana'
+      preLoaderRoute: typeof AdminPanelWebsiteLencanaRouteImport
       parentRoute: typeof AdminPanelRoute
     }
     '/admin/_panel/website/pengumuman': {
@@ -2105,6 +2164,7 @@ interface AdminPanelRouteChildren {
   AdminPanelKeuanganRoute: typeof AdminPanelKeuanganRoute
   AdminPanelLembagaRoute: typeof AdminPanelLembagaRoute
   AdminPanelNotifikasiRoute: typeof AdminPanelNotifikasiRoute
+  AdminPanelPeringkatRoute: typeof AdminPanelPeringkatRoute
   AdminPanelPetaRoute: typeof AdminPanelPetaRoute
   AdminPanelIndexRoute: typeof AdminPanelIndexRoute
   AdminPanelBansosIdRoute: typeof AdminPanelBansosIdRoute
@@ -2122,6 +2182,7 @@ interface AdminPanelRouteChildren {
   AdminPanelSuratTandaTanganRoute: typeof AdminPanelSuratTandaTanganRoute
   AdminPanelWebsiteAgendaRoute: typeof AdminPanelWebsiteAgendaRoute
   AdminPanelWebsiteGaleriRoute: typeof AdminPanelWebsiteGaleriRoute
+  AdminPanelWebsiteLencanaRoute: typeof AdminPanelWebsiteLencanaRoute
   AdminPanelWebsitePengumumanRoute: typeof AdminPanelWebsitePengumumanRoute
   AdminPanelWebsiteTampilanRoute: typeof AdminPanelWebsiteTampilanRoute
   AdminPanelBansosIndexRoute: typeof AdminPanelBansosIndexRoute
@@ -2157,6 +2218,7 @@ const AdminPanelRouteChildren: AdminPanelRouteChildren = {
   AdminPanelKeuanganRoute: AdminPanelKeuanganRoute,
   AdminPanelLembagaRoute: AdminPanelLembagaRoute,
   AdminPanelNotifikasiRoute: AdminPanelNotifikasiRoute,
+  AdminPanelPeringkatRoute: AdminPanelPeringkatRoute,
   AdminPanelPetaRoute: AdminPanelPetaRoute,
   AdminPanelIndexRoute: AdminPanelIndexRoute,
   AdminPanelBansosIdRoute: AdminPanelBansosIdRoute,
@@ -2175,6 +2237,7 @@ const AdminPanelRouteChildren: AdminPanelRouteChildren = {
   AdminPanelSuratTandaTanganRoute: AdminPanelSuratTandaTanganRoute,
   AdminPanelWebsiteAgendaRoute: AdminPanelWebsiteAgendaRoute,
   AdminPanelWebsiteGaleriRoute: AdminPanelWebsiteGaleriRoute,
+  AdminPanelWebsiteLencanaRoute: AdminPanelWebsiteLencanaRoute,
   AdminPanelWebsitePengumumanRoute: AdminPanelWebsitePengumumanRoute,
   AdminPanelWebsiteTampilanRoute: AdminPanelWebsiteTampilanRoute,
   AdminPanelBansosIndexRoute: AdminPanelBansosIndexRoute,
@@ -2354,6 +2417,7 @@ const rootRouteChildren: RootRouteChildren = {
   DesaSlugRoute: DesaSlugRouteWithChildren,
   KonsolKonsolRoute: KonsolKonsolRouteWithChildren,
   KonsolMasukRoute: KonsolMasukRoute,
+  LencanaKodeRoute: LencanaKodeRoute,
   WargaAppRoute: WargaAppRouteWithChildren,
   WargaMasukRoute: WargaMasukRoute,
   KabupatenIndexRoute: KabupatenIndexRoute,

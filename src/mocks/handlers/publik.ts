@@ -14,6 +14,7 @@ import type { Desa } from '@/domain/wilayah/schema'
 import { ambilDb, ubahDb } from '../db'
 import { API, balasDaftar, balasGalat, denganJaringan } from '../http'
 import { desaKonteks, konteksPermintaan, tanpaKonteks } from '../konteks-permintaan'
+import { keLencanaPublik, lencanaTampil, pastikanLencana } from '../lencana'
 import { perkiraanHariKerja } from '../surat-perkiraan'
 import type { DbDemo } from '../tipe-db'
 import { bacaJson } from '../tulis'
@@ -134,6 +135,7 @@ export const handlerPublik = [
     denganJaringan(({ request, params }) => {
       const c = cariDesaPublik(params.slug, request)
       if (c instanceof Response) return c
+      pastikanLencana(new Date())
       const { db, desa } = c
       const hariIni = tanggalIsoWib(new Date())
       const daftar = terbit(db, desa.id)
@@ -161,6 +163,7 @@ export const handlerPublik = [
           ? { tahun: apbdes.tahun, pendapatan: jumlahKelompok(apbdes, 'pendapatan'), belanja: jumlahKelompok(apbdes, 'belanja') }
           : null,
         potensi: potensiDesa(db, desa.id).map((p) => ({ id: p.id, judul: p.judul, kategori: p.kategori, foto: fotoDari(db, desa.id, p.foto) })),
+        lencana: lencanaTampil(db, desa.id).map(keLencanaPublik),
       }
       return HttpResponse.json(hasil)
     }),

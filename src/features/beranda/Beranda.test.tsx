@@ -9,6 +9,16 @@ import { Beranda } from './Beranda'
 
 pakaiApiTiruan()
 
+describe('Beranda: kartu Peringkat (rencana 7C-2 Tugas 3)', () => {
+  it('Kepala Desa Sungai Sialang: kartu Peringkat bulan terakhir tutup dengan tautan Buka Peringkat', async () => {
+    masukSebagai(AKUN_UJI.kades)
+    renderPanel(<Beranda sekarang={SEKARANG_UJI} />, contohSesi('kades'))
+    const kartu = await screen.findByRole('region', { name: 'Peringkat · Agustus 2026' })
+    expect(within(kartu).getByRole('link', { name: 'Buka Peringkat' })).toHaveAttribute('href', '/admin/peringkat')
+    expect(kartu).toHaveTextContent(/Juara Umum: (peringkat \d+( bersama)? dari \d+ di Kabupaten Pelalawan|.+)/)
+  })
+})
+
 describe('Beranda (SPEC §5.3)', () => {
   it('operator: sapaan, perlu ditindaklanjuti, buku hari ini, keadaan desa', async () => {
     masukSebagai(AKUN_UJI.operator)
@@ -90,7 +100,8 @@ describe('Beranda (SPEC §5.3)', () => {
   it('operator: pengaduan belum dibalas, dan butir pengaduan di Buku hari ini membuka pengaduannya (3A)', async () => {
     masukSebagai(AKUN_UJI.operator)
     renderPanel(<Beranda sekarang={SEKARANG_UJI} />, contohSesi('operator'))
-    expect(await screen.findByRole('link', { name: '2 pengaduan belum dibalas' })).toHaveAttribute('href', '/admin/pengaduan')
+    const tindakan = await screen.findByRole('region', { name: 'Perlu ditindaklanjuti' })
+    expect(within(tindakan).getByRole('link', { name: '2 pengaduan belum dibalas' })).toHaveAttribute('href', '/admin/pengaduan')
     const buku = screen.getByRole('region', { name: 'Buku hari ini' })
     expect(within(buku).getByRole('link', { name: /^Pengaduan masuk · Lampu jalan mati/ }).getAttribute('href')).toMatch(
       /^\/admin\/pengaduan\/adu_/,

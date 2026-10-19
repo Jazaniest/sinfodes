@@ -12,6 +12,7 @@ import { bangkitkanSuratMasuk } from './arsip'
 import { bangkitkanAset } from './aset'
 import { bangkitkanBansos } from './bansos'
 import { bekukanPanel } from '../indeks-panel'
+import { terbitkanLencana } from '../lencana-terbit'
 import { bangkitkanUkuranRekam } from './indeks'
 import { bangkitkanKesehatan } from './kesehatan'
 import { bangkitkanKonsol, bangkitkanRiwayatMasuk } from './konsol'
@@ -187,8 +188,14 @@ export function bangkitkanDb(sekarang: Date): DbDemo {
     siaran: siaran.siaran,
     bacaSiaran: siaran.baca,
     ukuranIndeks: ukuranRekam,
+    lencana: [],
+    periodeLencana: [],
   }
   // Tanpa PRNG: bulan tutup desa panel dibekukan dari datanya, jadi aliran acak lain tidak bergeser (keputusan 7C-1 butir 8).
   bekukanPanel(db, sekarang)
+  // Tanpa PRNG: lencana periode tutup terbit dari hasil Indeks, jadi tidak menggeser aliran acak mana pun (rencana 7C-2 butir 14).
+  const terbit = terbitkanLencana(db, sekarang)
+  db.lencana = terbit.lencana
+  db.periodeLencana = terbit.periode
   return db
 }
