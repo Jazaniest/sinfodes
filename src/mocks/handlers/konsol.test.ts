@@ -22,7 +22,7 @@ describe('API Konsol (SPEC §11, §3.4)', () => {
       { jenis: 'berhenti-persiapan', jumlah: 3 },
       { jenis: 'tagihan-lewat', jumlah: 1 },
     ])
-    expect(r.desa).toEqual({ aktif: 26, ujiCoba: 5, persiapan: 7, ditangguhkan: 2 })
+    expect(r.desa).toEqual({ aktif: 33, ujiCoba: 5, persiapan: 7, ditangguhkan: 2 })
     expect(r).not.toHaveProperty('suratMingguIni')
   })
   it('akun kabupaten tidak bisa memakai Konsol (SPEC-V0.2 §7)', async () => {
@@ -30,17 +30,17 @@ describe('API Konsol (SPEC §11, §3.4)', () => {
     await expect(ambilRingkasanKonsol()).rejects.toMatchObject({ kode: 'UNAUTHENTICATED' })
     await expect(daftarDesaKonsol({})).rejects.toMatchObject({ kode: 'UNAUTHENTICATED' })
     await expect(tambahDesa(isianBaru)).rejects.toMatchObject({ kode: 'UNAUTHENTICATED' })
-    expect(ambilDb().desa).toHaveLength(40)
+    expect(ambilDb().desa).toHaveLength(47)
   })
-  it('Daftar desa: 40 desa urut nama; filter provinsi, kabupaten, status, dan paket', async () => {
+  it('Daftar desa: 47 desa urut nama; filter provinsi, kabupaten, status, dan paket', async () => {
     masukKonsolSebagai(AKUN_KONSOL_UJI.tim)
     const semua = (await daftarDesaKonsol({})).data
-    expect(semua).toHaveLength(40)
+    expect(semua).toHaveLength(47)
     expect(semua.map((d) => d.nama)).toEqual([...semua.map((d) => d.nama)].sort((a, b) => a.localeCompare(b, 'id')))
     const ss = semua.find((d) => d.slug === 'sungaisialang')
     expect(ss).toMatchObject({ status: 'Aktif', paket: 'Lengkap', penggunaAktif: 5 })
     expect(ss).not.toHaveProperty('kelengkapan')
-    expect((await daftarDesaKonsol({ kabupaten: '14.08' })).data.map((d) => d.nama).sort()).toEqual(['Sungai Limau Hilir', 'Tualang Permai'])
+    expect((await daftarDesaKonsol({ kabupaten: '14.08' })).data.map((d) => d.nama).sort()).toEqual(['Perawang Jaya', 'Sungai Limau Hilir', 'Teluk Lancang Baru', 'Tualang Permai'])
     expect((await daftarDesaKonsol({ status: 'Persiapan' })).data).toHaveLength(7)
     expect((await daftarDesaKonsol({ provinsi: '14', status: 'Ditangguhkan', paket: 'Dasar' })).data).toHaveLength(2)
     expect((await daftarDesaKonsol({ provinsi: '33' })).data).toEqual([])
@@ -140,8 +140,8 @@ describe('API Konsol (SPEC §11, §3.4)', () => {
       kode: 'CONFLICT', fields: { email: 'Email ini sudah dipakai akun lain.' },
     })
     await expect(tambahDesa({ ...isianBaru, email: 'dina@sinfodes.id' })).rejects.toMatchObject({ kode: 'CONFLICT' })
-    expect(ambilDb().desa).toHaveLength(40)
-    expect(ambilDb().langganan).toHaveLength(40)
+    expect(ambilDb().desa).toHaveLength(47)
+    expect(ambilDb().langganan).toHaveLength(47)
   })
   it('nama desa yang sudah dipakai mendapat slug lain, bukan menimpa desa lama', async () => {
     masukKonsolSebagai(AKUN_KONSOL_UJI.tim)

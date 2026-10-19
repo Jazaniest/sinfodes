@@ -5,7 +5,7 @@ import { HARGA_TRIWULAN, type Langganan, type Paket, type PenggunaKonsol, type T
 import type { Pengguna } from '@/domain/pengguna/schema'
 import { bertitik, wilayahKecamatan } from '@/domain/wilayah/kode-wilayah'
 import type { Desa } from '@/domain/wilayah/schema'
-import { DESA_KONSOL, NAMA_KADES, NAMA_OPERATOR, NAMA_SEKDES, PAKET_DESA_DEMO, PENGGUNA_KONSOL_DEMO, type RencanaDesaKonsol } from '../data/desa-konsol'
+import { DESA_KONSOL, DESA_KONSOL_TAMBAHAN, NAMA_KADES, NAMA_OPERATOR, NAMA_SEKDES, PAKET_DESA_DEMO, PENGGUNA_KONSOL_DEMO, type RencanaDesaKonsol } from '../data/desa-konsol'
 import type { Acak } from '../prng'
 import type { MasukPanel, RekamDesa } from '../tipe-db'
 import { belanjaBulananFiktif, komposisiFiktif } from './rekam-kabupaten'
@@ -190,16 +190,19 @@ export function sekdesFiktif(acak: Acak, desa: Desa, langkahSelesai: number): Re
 }
 
 /**
- * Data Konsol (SPEC §11, §12.8): 38 desa fiktif dengan angka pemakaiannya, langganan dan tagihan semua desa, dan akun konsol.
+ * Data Konsol (SPEC §11, §12.8): 38 desa fiktif (45 dengan tujuh desa tambahan 7C-1) dengan angka pemakaiannya, langganan dan tagihan semua desa, dan akun konsol.
  * `desaPanel` adalah desa yang punya data panel (Sungai Sialang, Tanjung Lamo); angkanya dihitung langsung, bukan dari sini.
  */
 export function bangkitkanKonsol(
   acak: Acak,
-  o: { acuan: Date; desaPanel: readonly Desa[]; acakPemantauan: Acak; acakKontak: Acak; acakBelanja: Acak; acakKomposisi: Acak },
+  o: { acuan: Date; desaPanel: readonly Desa[]; acakPemantauan: Acak; acakKontak: Acak; acakBelanja: Acak; acakKomposisi: Acak; acakTambahan?: Acak },
 ): { desa: Desa[]; rekam: RekamDesa[]; langganan: Langganan[]; penggunaKonsol: PenggunaKonsol[] } {
   // Alamat subdomain (SPEC-V0.2 §4.2) dibagikan berurutan setelah desa panel; ID tetap dari slug v0.1 supaya stabil.
   const terpakai = new Set(o.desaPanel.map((d) => d.slug))
-  const desa = DESA_KONSOL.map((r, i) => {
+  // Desa tambahan (7C-1) diproses setelah 38 desa lama dan memakai aliran acaknya sendiri; tanpa `acakTambahan` tidak ada.
+  const rencana: readonly RencanaDesaKonsol[] = o.acakTambahan ? [...DESA_KONSOL, ...DESA_KONSOL_TAMBAHAN] : DESA_KONSOL
+  const acakDesa = (i: number, lama: Acak): Acak => (i < DESA_KONSOL.length ? lama : o.acakTambahan!)
+  const desa = rencana.map((r, i) => {
     const d = desaFiktif(r, i)
     const slug = usulanAlamatDesa({ nama: d.nama, kecamatan: d.kecamatan.nama, kabupaten: d.kabupaten.nama }, terpakai)
     if (!slug) throw new Error(`Alamat untuk desa ${d.nama} habis`)
@@ -209,22 +212,22 @@ export function bangkitkanKonsol(
   const nomor = (i: number) => String(i + 1).padStart(3, '0')
   const langganan = [
     ...o.desaPanel.map((d, i) => langgananDesa(acak, { desa: d, paket: PAKET_DESA_DEMO[d.id] ?? 'Dasar', rencana: null, acuan: o.acuan, nomorDesa: nomor(i) })),
-    ...DESA_KONSOL.map((r, i) =>
-      langgananDesa(acak, { desa: desa[i], paket: r.paket, rencana: r, acuan: o.acuan, nomorDesa: nomor(o.desaPanel.length + i) }),
+    ...rencana.map((r, i) =>
+      langgananDesa(acakDesa(i, acak), { desa: desa[i], paket: r.paket, rencana: r, acuan: o.acuan, nomorDesa: nomor(o.desaPanel.length + i) }),
     ),
   ]
   return {
     desa,
     // Aliran acak terpisah: angka Pemantauan (6B), Sekretaris Desa (6C), belanja bulanan dan komposisi (7B-2) tidak menggeser angka lain.
-    rekam: DESA_KONSOL.map((r, i) => {
-      const dasar = rekamDesa(acak, r, desa[i], o.acuan)
-      const pemantauan = angkaPemantauanFiktif(o.acakPemantauan, r)
+    rekam: rencana.map((r, i) => {
+      const dasar = rekamDesa(acakDesa(i, acak), r, desa[i], o.acuan)
+      const pemantauan = angkaPemantauanFiktif(acakDesa(i, o.acakPemantauan), r)
       return {
         ...dasar,
         ...pemantauan,
-        kontak: { ...dasar.kontak, sekdes: sekdesFiktif(o.acakKontak, desa[i], dasar.langkahSelesai) },
-        belanjaBulanan: belanjaBulananFiktif(o.acakBelanja, pemantauan.apbdes, o.acuan),
-        komposisi: komposisiFiktif(o.acakKomposisi, dasar.jiwa, r.status),
+        kontak: { ...dasar.kontak, sekdes: sekdesFiktif(acakDesa(i, o.acakKontak), desa[i], dasar.langkahSelesai) },
+        belanjaBulanan: belanjaBulananFiktif(acakDesa(i, o.acakBelanja), pemantauan.apbdes, o.acuan),
+        komposisi: komposisiFiktif(acakDesa(i, o.acakKomposisi), dasar.jiwa, r.status),
       }
     }),
     langganan,

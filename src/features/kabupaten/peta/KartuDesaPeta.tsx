@@ -1,5 +1,6 @@
 import { keAlamat } from '@/app/alamat'
 import { formatAngka, formatPersen } from '@/domain/format/angka'
+import { LABEL_TINGKATAN } from '@/domain/indeks/kategori'
 import { rasioApbdes } from '@/domain/kabupaten/pemantauan'
 import type { TitikPetaKabupaten } from '@/domain/kabupaten/peta'
 import { Rupiah } from '@/ui/domain/Rupiah'
@@ -19,6 +20,8 @@ export function KartuDesaPeta({ desa: d }: { desa: TitikPetaKabupaten }) {
         <dd className="tabular-nums">{d.jiwa > 0 ? `${formatAngka(d.jiwa)} jiwa` : '—'}</dd>
         <dt className="text-tinta-2">Surat bulan ini</dt>
         <dd className="tabular-nums">{formatAngka(d.suratBulanIni)}</dd>
+        <dt className="text-tinta-2">Tingkatan Indeks</dt>
+        <dd>{d.tingkatan ? LABEL_TINGKATAN[d.tingkatan] : 'Belum ada Indeks'}</dd>
         <dt className="text-tinta-2">Realisasi Dana Desa</dt>
         <dd className="tabular-nums">
           {d.apbdes && rasio !== null ? (

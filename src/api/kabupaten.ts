@@ -1,5 +1,6 @@
 import { queryOptions } from '@tanstack/react-query'
 import { z } from 'zod'
+import { papanIndeksSchema, type FilterPapanIndeks } from '@/domain/indeks/schema'
 import { danaDesaSchema } from '@/domain/kabupaten/dana-desa'
 import { dataGabunganSchema } from '@/domain/kabupaten/data-gabungan'
 import { daftarLaporanSchema, laporanBulananSchema } from '@/domain/kabupaten/laporan'
@@ -27,6 +28,7 @@ export const kunciKabupaten = {
   detailTenggat: (id: string) => ['kabupaten', 'tenggat', id] as const,
   dataGabungan: ['kabupaten', 'data-gabungan'] as const,
   peta: ['kabupaten', 'peta'] as const,
+  indeks: (c: FilterPapanIndeks) => ['kabupaten', 'indeks', c.musim ?? null, c.periode ?? null, c.kategori ?? null, c.kecamatan ?? null] as const,
   laporan: ['kabupaten', 'laporan'] as const,
   laporanBulan: (bulan: string) => ['kabupaten', 'laporan', bulan] as const,
   siaran: ['kabupaten', 'siaran'] as const,
@@ -71,6 +73,12 @@ export const opsiDataGabungan = () =>
 export const ambilPetaKabupaten = (signal?: AbortSignal) =>
   panggilApi('GET', '/kabupaten/peta', { skema: petaKabupatenSchema, signal, sesi: 'kabupaten' })
 export const opsiPetaKabupaten = () => queryOptions({ queryKey: kunciKabupaten.peta, queryFn: ({ signal }) => ambilPetaKabupaten(signal) })
+
+/** Papan Indeks dan peringkat (SPEC-V0.2 §9): tanpa parameter berarti bulan terakhir tutup, Juara Umum, semua kecamatan. */
+export const ambilPapanIndeks = (c: FilterPapanIndeks, signal?: AbortSignal) =>
+  panggilApi('GET', '/kabupaten/indeks', { skema: papanIndeksSchema, query: { ...c }, signal, sesi: 'kabupaten' })
+export const opsiPapanIndeks = (c: FilterPapanIndeks = {}) =>
+  queryOptions({ queryKey: kunciKabupaten.indeks(c), queryFn: ({ signal }) => ambilPapanIndeks(c, signal) })
 
 /** Laporan bulanan (SPEC-V0.2 §8.3 butir 7): bulan yang sudah tutup. */
 export const daftarLaporanBulanan = (signal?: AbortSignal) =>

@@ -82,3 +82,18 @@ export const NAMA_SEKDES: readonly string[] = [
   'Azhari', 'Bustami', 'Candra Wijaya', 'Dedi Kurniawan', 'Effendi', 'Firmansyah', 'Hamdani', 'Irawati', 'Jasmani', 'Kurniati',
   'Lukman Hakim', 'Marlina',
 ]
+
+/**
+ * Tujuh desa fiktif tambahan (SPEC-V0.2 §9.7), supaya Siak, Kampar, dan Indragiri Hilir punya cukup desa ber-Indeks untuk
+ * peringkat antarkabupaten. Diproses setelah 38 desa di atas dengan aliran acaknya sendiri, jadi angka desa lama tidak
+ * bergeser. Kuantan Singingi sengaja tetap hanya punya desa Persiapan.
+ */
+export const DESA_KONSOL_TAMBAHAN: readonly RencanaDesaKonsol[] = [
+  { nama: 'Perawang Jaya', kecamatan: '140804', status: 'Aktif', paket: 'Dasar', diam: 1 },
+  { nama: 'Teluk Lancang Baru', kecamatan: '140802', status: 'Aktif', paket: 'Lengkap', diam: 0 },
+  { nama: 'Rimbo Datar', kecamatan: '140103', status: 'Aktif', paket: 'Dasar', diam: 2 },
+  { nama: 'Pulau Gadang Jaya', kecamatan: '140117', status: 'Aktif', paket: 'Lengkap', diam: 0 },
+  { nama: 'Sungai Bela Jaya', kecamatan: '140408', status: 'Aktif', paket: 'Dasar', diam: 1 },
+  { nama: 'Tanjung Simpai', kecamatan: '140408', status: 'Aktif', paket: 'Dasar', diam: 3 },
+  { nama: 'Sungai Nyiur', kecamatan: '140407', status: 'Aktif', paket: 'Lengkap', diam: 0 },
+]

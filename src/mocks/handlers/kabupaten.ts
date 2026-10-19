@@ -7,6 +7,7 @@ import { hitungPerhatian } from '@/domain/konsol/aturan'
 import { langkahBerikut } from '@/domain/wilayah/persiapan'
 import type { Desa } from '@/domain/wilayah/schema'
 import { ambilDb } from '../db'
+import { bekukanBulanTutup, ringkasIndeksKabupaten } from '../indeks'
 import { danaDesaKabupaten } from '../kabupaten-angka'
 import { API, balasGalat, denganJaringan } from '../http'
 import { angkaKonsolDesa, type AngkaKonsol } from '../konsol-angka'
@@ -39,6 +40,7 @@ export const handlerKabupaten = [
       const sekarang = new Date()
       const kab = db.kabupatenMitra.find((k) => k.kode === akun.kabupatenKode)
       if (!kab) return balasGalat('SERVER', 'Data kabupaten tidak ditemukan.', 500)
+      bekukanBulanTutup(sekarang)
       const desa = desaKabupaten(db, akun).map((d) => ({ d, a: angkaKonsolDesa(db, d, sekarang) }))
       const jumlah = (s: Desa['status']) => desa.filter(({ d }) => d.status === s).length
       const adopsi = { aktif: jumlah('Aktif'), ujiCoba: jumlah('Uji coba'), persiapan: jumlah('Persiapan'), ditangguhkan: jumlah('Ditangguhkan') }
@@ -55,6 +57,7 @@ export const handlerKabupaten = [
       const hasil: RingkasanKabupaten = {
         kabupaten: { kode: kab.kode, nama: kab.nama },
         perhatian,
+        indeks: ringkasIndeksKabupaten(db, kab.kode, sekarang),
         adopsi: {
           bergabung: adopsi.aktif + adopsi.ujiCoba,
           // Kabupaten mitra baru di demo memakai jumlah desa pelanggannya sampai angka resminya dicatat.

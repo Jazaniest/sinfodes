@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { ringkasIndeksSchema } from '../indeks/schema'
 
 /** Peran akun kabupaten (SPEC-V0.2 §8.1). Admin pertama dibuat Tim Sinfodes dari surat penunjukan kabupaten. */
 export const PERAN_KABUPATEN = ['admin', 'peninjau'] as const
@@ -61,11 +62,12 @@ export type PerhatianKabupaten = z.infer<typeof perhatianKabupatenSchema>
 
 /**
  * GET /kabupaten/ringkasan (SPEC-V0.2 §8.3 butir 1). `bergabung` = desa Aktif dan Uji coba; `jumlahDesa` = semua desa di
- * kabupaten itu, pelanggan atau bukan. Rata-rata Indeks dan posisi se-provinsi menyusul di 7C.
+ * kabupaten itu, pelanggan atau bukan. `indeks`: rata-rata, sebaran tingkatan, dan posisi se-provinsi bulan terakhir tutup (SPEC-V0.2 §9.5).
  */
 export const ringkasanKabupatenSchema = z.object({
   kabupaten: kodeNama,
   perhatian: z.array(perhatianKabupatenSchema),
   adopsi: z.object({ bergabung: jumlah, jumlahDesa: jumlah, aktif: jumlah, ujiCoba: jumlah, persiapan: jumlah, ditangguhkan: jumlah }),
+  indeks: ringkasIndeksSchema,
 })
 export type RingkasanKabupaten = z.infer<typeof ringkasanKabupatenSchema>

@@ -139,6 +139,28 @@ Pekerjaan v0.2.0 (tahap 7A-7H) dicatat di sini selama berjalan di branch `develo
 - Menu dasbor kabupaten: Ringkasan · Pemantauan · Dana Desa · Peta · Data gabungan · Laporan · Siaran · Pengguna.
 - Data demo dibangkitkan ulang otomatis (versi data 23) dengan siaran contoh dari Kabupaten Pelalawan dan Siak.
 
+### Ditambahkan (7C-1: Indeks dan peringkat di dasbor kabupaten)
+
+- **Indeks Desa Digital dan sembilan kategori peringkat,** dihitung dari jejak sistem tiap desa.
+  - Tujuh kategori berskor: Layanan Tercepat, Paling Responsif, Data Terlengkap, Paling Transparan, Warga Paling Digital, Website Teraktif, dan Serapan Dana Desa. Skor memakai ambang tetap, bukan peringkat relatif.
+  - Dua kategori turunan: Paling Meningkat dan Juara Umum (Indeks). Indeks hanya ada bila desa memenuhi syarat di paling sedikit 5 dari 7 kategori.
+  - Musim bulanan, triwulan, dan tahunan. Periode yang sudah tutup dibekukan; periode berjalan tampil sebagai klasemen sementara.
+  - Tingkatan: Rintisan, Berkembang, Maju, Mandiri Digital. Seri memakai peringkat bersama (1, 1, 3).
+- **Menu Indeks & Peringkat** di dasbor kabupaten.
+  - Papan per kategori, periode, dan kecamatan; pilihan tinggal di URL, jadi papan bisa dibagikan lewat tautan.
+  - Desa yang belum memenuhi syarat beserta alasannya.
+  - Bagian se-provinsi: podium kabupaten (Juara Umum dan Paling Merata) dan posisi kabupaten sendiri. Kabupaten di luar podium tidak dikirim.
+- **Ringkasan** menampilkan rata-rata Indeks, sebaran tingkatan, dan posisi se-provinsi.
+- **Peta** mendapat lapisan Tingkatan Indeks (satu ramp biru, abu-abu untuk belum ber-Indeks), dan kartu desa menampilkan tingkatannya.
+- **Laporan bulanan** mendapat bagian Podium untuk sembilan kategori.
+- **API tiruan** `GET /kabupaten/indeks`, dengan batas data diuji: kabupaten hanya melihat desanya sendiri, kecamatan di luar wilayah ditolak, dan portal publik tidak memuat Indeks.
+
+### Diubah (7C-1)
+
+- Data demo: 47 desa (tujuh desa fiktif baru di Siak, Kampar, dan Indragiri Hilir), riwayat jejak bulanan sejak Januari dua tahun sebelum tahun acuan, dan versi data 24.
+- Jumlah desa resmi kabupaten ditambah: Kampar 242, Bengkalis 136, Indragiri Hilir 197, dan Kuantan Singingi 218.
+- Menu dasbor kabupaten: Ringkasan · Indeks & Peringkat · Pemantauan · Dana Desa · Peta · Data gabungan · Laporan · Siaran · Pengguna.
+
 ## [0.1.0] - 2026-10-16
 
 Demo tahap 1: frontend sungguhan dengan API tiruan (MSW) dan data dummy Desa Sungai Sialang, Kabupaten Pelalawan.

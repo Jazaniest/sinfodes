@@ -31,7 +31,7 @@ describe('siaran contoh (SPEC-V0.2 §13)', () => {
     expect(siaran('srn_pll_rakor')?.desaIds).toHaveLength(25)
     expect(siaran('srn_pll_blt')?.desaIds).toContain(ID_SUNGAI_SIALANG)
     expect(siaran('srn_pll_blt')?.desaIds).not.toContain(ID_TANJUNG_LAMO)
-    expect(siaran('srn_siak_rakor')?.desaIds).toHaveLength(2)
+    expect(siaran('srn_siak_rakor')?.desaIds).toHaveLength(4)
   })
 
   it('Sungai Sialang: rapat ditindaklanjuti Hendri, BLT belum dibaca; baca hanya dari desa sasaran dan tidak melewati acuan', () => {

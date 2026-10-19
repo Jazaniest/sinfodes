@@ -45,7 +45,7 @@ describe('halaman utama Sinfodes (SPEC-V0.2 §4.4)', () => {
   })
   it('bukti: jumlah desa bergabung dari API, berlabel Data contoh di build demo', async () => {
     await pasang()
-    expect(await screen.findByText('31 desa sudah memakai Sinfodes.')).toBeInTheDocument()
+    expect(await screen.findByText('38 desa sudah memakai Sinfodes.')).toBeInTheDocument()
     expect(screen.getByText('Data contoh')).toBeInTheDocument()
   })
   it('bukti: kabupaten mitra, tiap nama bertautan ke portal kabupatennya (SPEC-V0.2 §8.2)', async () => {

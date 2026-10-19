@@ -33,6 +33,6 @@ describe('API halaman utama Sinfodes (SPEC-V0.2 §4.4)', () => {
     expect(hasil.map((h) => h.nama)).toEqual(Array.from({ length: 10 }, (_, i) => `Kampung Uji ${String(i + 1).padStart(2, '0')}`))
   })
   it('ringkasan: desa bergabung = Aktif + Uji coba', async () => {
-    expect((await ambilRingkasanInduk()).desaBergabung).toBe(31)
+    expect((await ambilRingkasanInduk()).desaBergabung).toBe(38)
   })
 })

@@ -11,6 +11,8 @@ import { contohAksesBantuan } from './akses-bantuan'
 import { bangkitkanSuratMasuk } from './arsip'
 import { bangkitkanAset } from './aset'
 import { bangkitkanBansos } from './bansos'
+import { bekukanPanel } from '../indeks-panel'
+import { bangkitkanUkuranRekam } from './indeks'
 import { bangkitkanKesehatan } from './kesehatan'
 import { bangkitkanKonsol, bangkitkanRiwayatMasuk } from './konsol'
 import { bangkitkanKeuangan } from './keuangan'
@@ -118,6 +120,8 @@ export function bangkitkanDb(sekarang: Date): DbDemo {
     acakKontak: buatAcak(SEED_DEMO + 12),
     acakBelanja: buatAcak(SEED_DEMO + 13),
     acakKomposisi: buatAcak(SEED_DEMO + 14),
+    // Aliran acak ketujuh belas: tujuh desa tambahan peringkat (SPEC-V0.2 §9.7); desa lama tidak bergeser.
+    acakTambahan: buatAcak(SEED_DEMO + 17),
   })
   const riwayatMasuk = bangkitkanRiwayatMasuk(buatAcak(SEED_DEMO + 10), {
     pengguna: PENGGUNA_DEMO.filter((p) => p.desaId === ID_SUNGAI_SIALANG),
@@ -128,7 +132,9 @@ export function bangkitkanDb(sekarang: Date): DbDemo {
   const tenggat = bangkitkanTenggat(buatAcak(SEED_DEMO + 15), { acuan: sekarang, desa: semuaDesa })
   // Aliran acak ketujuh belas: siaran kabupaten contoh dan status baca desa rekaman (SPEC-V0.2 §8.4, §13).
   const siaran = bangkitkanSiaran(buatAcak(SEED_DEMO + 16), { acuan: sekarang, desa: semuaDesa, pengguna: PENGGUNA_DEMO })
-  return {
+  // Aliran acak kedelapan belas: riwayat jejak bulanan desa rekaman untuk Indeks dan peringkat (SPEC-V0.2 §9.7).
+  const ukuranRekam = bangkitkanUkuranRekam(buatAcak(SEED_DEMO + 18), { acuan: sekarang, desa: semuaDesa, rekam: konsol.rekam, langganan: konsol.langganan })
+  const db: DbDemo = {
     versiData: VERSI_DATA,
     tanggalAcuan: waktuIsoWib(sekarang),
     desa: semuaDesa,
@@ -180,5 +186,9 @@ export function bangkitkanDb(sekarang: Date): DbDemo {
     kirimLaporan: tenggat.kirim,
     siaran: siaran.siaran,
     bacaSiaran: siaran.baca,
+    ukuranIndeks: ukuranRekam,
   }
+  // Tanpa PRNG: bulan tutup desa panel dibekukan dari datanya, jadi aliran acak lain tidak bergeser (keputusan 7C-1 butir 8).
+  bekukanPanel(db, sekarang)
+  return db
 }

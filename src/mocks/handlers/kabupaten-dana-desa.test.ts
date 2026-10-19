@@ -8,7 +8,7 @@ import { AKUN_KABUPATEN_UJI, masukKabupatenSebagai, pakaiApiTiruan } from '@/tes
 pakaiApiTiruan()
 
 describe('GET /kabupaten/dana-desa (SPEC-V0.2 §8.3 butir 4)', () => {
-  it('Admin Pelalawan: 32 desa di 12 kecamatan; Admin Siak: 2 desa', async () => {
+  it('Admin Pelalawan: 32 desa di 12 kecamatan; Admin Siak: 4 desa', async () => {
     masukKabupatenSebagai(AKUN_KABUPATEN_UJI.admin)
     const d = await ambilDanaDesaKabupaten()
     expect(d.kabupaten).toEqual({ kode: '14.05', nama: 'Pelalawan' })
@@ -17,7 +17,7 @@ describe('GET /kabupaten/dana-desa (SPEC-V0.2 §8.3 butir 4)', () => {
     expect(d.kecamatan.flatMap((k) => k.desa)).toHaveLength(32)
     masukKabupatenSebagai(AKUN_KABUPATEN_UJI.adminSiak)
     const siak = await ambilDanaDesaKabupaten()
-    expect(siak.kecamatan.flatMap((k) => k.desa.map((x) => x.nama)).sort()).toEqual(['Sungai Limau Hilir', 'Tualang Permai'])
+    expect(siak.kecamatan.flatMap((k) => k.desa.map((x) => x.nama)).sort()).toEqual(['Perawang Jaya', 'Sungai Limau Hilir', 'Teluk Lancang Baru', 'Tualang Permai'])
   })
   it('rasio setiap desa sama dengan kolom Realisasi APBDes di Pemantauan', async () => {
     masukKabupatenSebagai(AKUN_KABUPATEN_UJI.admin)

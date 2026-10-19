@@ -18,7 +18,7 @@ describe('Ringkasan Konsol (SPEC §11)', () => {
     ])
     expect(within(perhatian).getByRole('link', { name: 'Lihat desa dalam persiapan' })).toHaveAttribute('href', '/konsol/desa?status=Persiapan')
     const platform = screen.getByRole('region', { name: 'Angka platform' })
-    expect(platform).toHaveTextContent('26 desa aktif, 5 uji coba, 7 dalam persiapan, dan 2 ditangguhkan. 2 kabupaten mitra.')
+    expect(platform).toHaveTextContent('33 desa aktif, 5 uji coba, 7 dalam persiapan, dan 2 ditangguhkan. 2 kabupaten mitra.')
     expect(platform).not.toHaveTextContent(/surat terbit/)
     expect(screen.queryByRole('link', { name: 'Buka Pemantauan wilayah' })).not.toBeInTheDocument()
   })

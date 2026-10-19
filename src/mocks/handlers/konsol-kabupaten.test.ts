@@ -27,7 +27,7 @@ describe('Kabupaten mitra di Konsol (SPEC-V0.2 §7)', () => {
       },
       {
         kode: '14.08', nama: 'Siak', label: 'kab-siak', admin: { nama: 'Wahyu Saputra', email: 'admin.siak@demo.sinfodes.id' },
-        desaBergabung: 2, bergabung: '2026-08-17',
+        desaBergabung: 4, bergabung: '2026-08-17',
       },
     ])
   })

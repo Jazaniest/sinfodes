@@ -3,6 +3,8 @@ import { hitungPerhatian, statusTagihan } from '@/domain/konsol/aturan'
 import { HARGA_TRIWULAN, langgananSchema, penggunaKonsolSchema } from '@/domain/konsol/schema'
 import { langkahBerikut, persiapanBerurutan } from '@/domain/wilayah/persiapan'
 import { desaSchema } from '@/domain/wilayah/schema'
+import { DESA_ASLI_INDRAGIRI_HILIR } from '../data/desa-asli-indragiri-hilir'
+import { DESA_ASLI_KAMPAR } from '../data/desa-asli-kampar'
 import { DESA_ASLI_PELALAWAN } from '../data/desa-asli-pelalawan'
 import { labelAlamatSah } from '@/domain/alamat/alamat'
 import { DESA_DEMO, ID_SUNGAI_SIALANG, ID_TANJUNG_LAMO } from '../data/desa-demo'
@@ -16,30 +18,30 @@ const db = bangkitkanDb(SEKARANG)
 const jumlahStatus = (s: string) => db.desa.filter((d) => d.status === s).length
 
 describe('data Konsol (SPEC §12.8, §11)', () => {
-  it('40 desa: Aktif 26, Persiapan 7, Uji coba 5, Ditangguhkan 2', () => {
-    expect(db.desa).toHaveLength(40)
-    expect([jumlahStatus('Aktif'), jumlahStatus('Persiapan'), jumlahStatus('Uji coba'), jumlahStatus('Ditangguhkan')]).toEqual([26, 7, 5, 2])
+  it('47 desa: Aktif 33, Persiapan 7, Uji coba 5, Ditangguhkan 2', () => {
+    expect(db.desa).toHaveLength(47)
+    expect([jumlahStatus('Aktif'), jumlahStatus('Persiapan'), jumlahStatus('Uji coba'), jumlahStatus('Ditangguhkan')]).toEqual([33, 7, 5, 2])
     for (const d of db.desa) expect(desaSchema.parse(d)).toEqual(d)
-    expect(new Set(db.desa.map((d) => d.id)).size).toBe(40)
-    expect(new Set(db.desa.map((d) => d.slug)).size).toBe(40)
-    expect(new Set(db.desa.map((d) => d.kodeDesa)).size).toBe(40)
+    expect(new Set(db.desa.map((d) => d.id)).size).toBe(47)
+    expect(new Set(db.desa.map((d) => d.slug)).size).toBe(47)
+    expect(new Set(db.desa.map((d) => d.kodeDesa)).size).toBe(47)
   })
-  it('32 desa di 12 kecamatan Pelalawan; 8 desa di Kampar, Siak, Indragiri Hilir, dan Kuantan Singingi', () => {
+  it('32 desa di 12 kecamatan Pelalawan; 15 desa di Kampar, Siak, Indragiri Hilir, dan Kuantan Singingi', () => {
     const pelalawan = db.desa.filter((d) => d.kabupaten.kode === '14.05')
     expect(pelalawan).toHaveLength(32)
     expect(new Set(pelalawan.map((d) => d.kecamatan.kode)).size).toBe(12)
     const luar = db.desa.filter((d) => d.kabupaten.kode !== '14.05')
     expect(new Set(luar.map((d) => d.kabupaten.nama))).toEqual(new Set(['Kampar', 'Siak', 'Indragiri Hilir', 'Kuantan Singingi']))
-    expect(luar).toHaveLength(8)
+    expect(luar).toHaveLength(15)
     expect(db.desa.every((d) => d.kodeDesa.startsWith(`${d.kecamatan.kode}.`))).toBe(true)
   })
-  it('nama desa fiktif tidak sama dengan 104 desa asli Pelalawan (Lampiran A)', () => {
+  it('nama desa fiktif tidak sama dengan 104 desa asli Pelalawan (Lampiran A) maupun desa asli Kampar dan Indragiri Hilir', () => {
     expect(new Set(DESA_ASLI_PELALAWAN).size).toBe(104)
-    const asli = new Set(DESA_ASLI_PELALAWAN.map((n) => n.toLowerCase()))
+    const asli = new Set([...DESA_ASLI_PELALAWAN, ...DESA_ASLI_KAMPAR, ...DESA_ASLI_INDRAGIRI_HILIR].map((n) => n.toLowerCase()))
     for (const d of db.desa) expect(asli.has(d.nama.toLowerCase()), d.nama).toBe(false)
   })
   it('setiap desa satu langganan; desa Persiapan dan Uji coba belum ditagih; tagihan per triwulan seharga paketnya', () => {
-    expect(db.langganan).toHaveLength(40)
+    expect(db.langganan).toHaveLength(47)
     expect(new Set(db.langganan.map((l) => l.desaId))).toEqual(new Set(db.desa.map((d) => d.id)))
     for (const l of db.langganan) {
       expect(langgananSchema.parse(l)).toEqual(l)
@@ -56,7 +58,7 @@ describe('data Konsol (SPEC §12.8, §11)', () => {
     }
   })
   it('desa tanpa data panel: Perlu perhatian 3 tidak aktif, 2 berhenti di persiapan; seluruh platform 1 tagihan lewat', () => {
-    expect(db.rekamDesa).toHaveLength(38)
+    expect(db.rekamDesa).toHaveLength(45)
     const keadaan = db.rekamDesa.map((r) => ({
       status: db.desa.find((d) => d.id === r.desaId)?.status ?? 'Aktif',
       aktivitasTerakhir: r.aktivitasTerakhir,
@@ -119,7 +121,7 @@ describe('data Konsol (SPEC §12.8, §11)', () => {
       acuan: SEKARANG, desaPanel: DESA_DEMO, acakPemantauan: buatAcak(SEED_DEMO + 11), acakKontak: buatAcak(1), acakBelanja: buatAcak(SEED_DEMO + 13), acakKomposisi: buatAcak(SEED_DEMO + 14),
     })
     const tanpaSekdes = (r: RekamDesa) => ({ ...r, kontak: { ...r.kontak, sekdes: null } })
-    expect(lain.rekam.map(tanpaSekdes)).toEqual(db.rekamDesa.map(tanpaSekdes))
+    expect(lain.rekam.map(tanpaSekdes)).toEqual(db.rekamDesa.slice(0, 38).map(tanpaSekdes))
   })
   it('alamat semua desa sah dan unik, slug v0.1 jadi alias (SPEC-V0.2 §4.2)', () => {
     expect(db.desa.every((d) => labelAlamatSah(d.slug))).toBe(true)

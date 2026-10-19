@@ -17,14 +17,14 @@ function pasang(filter: FilterDesaKonsol = {}) {
 }
 
 describe('Daftar desa Konsol (SPEC §11)', () => {
-  it('40 desa dengan kolom SPEC; baris membuka detail desa; tombol Tambah desa', async () => {
+  it('47 desa dengan kolom SPEC; baris membuka detail desa; tombol Tambah desa', async () => {
     const { onBukaDesa, user } = pasang()
     const tabel = await screen.findByRole('grid', { name: 'Daftar desa' })
     const baris = within(tabel).getAllByRole('row')
     expect(within(baris[0]).getAllByRole('columnheader').map((h) => h.textContent)).toEqual([
       'Desa', 'Alamat', 'Kecamatan · Kabupaten', 'Status', 'Paket', 'Pengguna aktif', 'Aktivitas terakhir',
     ])
-    expect(baris.slice(1)).toHaveLength(40)
+    expect(baris.slice(1)).toHaveLength(47)
     const ss = baris.find((r) => r.textContent?.includes('Sungai Sialang'))
     expect(ss).toHaveTextContent('Teluk Meranti · Pelalawan')
     expect(within(ss as HTMLElement).getByRole('link', { name: 'sungaisialang.sinfodes.localhost' })).toHaveAttribute(
@@ -36,7 +36,7 @@ describe('Daftar desa Konsol (SPEC §11)', () => {
     if (!ss) throw new Error('Baris Sungai Sialang tidak ada')
     await user.click(ss)
     expect(onBukaDesa).toHaveBeenCalledWith('desa_sungai_sialang')
-    expect(screen.getByText('40 desa pelanggan')).toBeInTheDocument()
+    expect(screen.getByText('47 desa pelanggan')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Tambah desa' })).toHaveAttribute('href', '/konsol/desa/baru')
   })
   it('filter status dan paket menyaring lewat alamat halaman; provinsi baru mengosongkan kabupaten', async () => {
