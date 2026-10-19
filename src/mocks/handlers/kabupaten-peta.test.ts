@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { ambilDanaDesaKabupaten, ambilPetaKabupaten } from '@/api/kabupaten'
 import { AKUN_KABUPATEN_UJI, masukKabupatenSebagai, pakaiApiTiruan } from '@/test/api-tiruan'
+import { ambilPapanIndeks } from '@/api/kabupaten'
 
 pakaiApiTiruan()
 
@@ -20,8 +21,17 @@ describe('GET /kabupaten/peta (SPEC-V0.2 §8.3 butir 5)', () => {
     }
     expect(p.desa.find((d) => d.nama === 'Sungai Sialang')).toMatchObject({ kecamatan: 'Teluk Meranti', titik: [102.76, 0.2475], status: 'Aktif' })
   })
-  it('Admin Siak hanya 2 desa Siak', async () => {
+  it('Admin Siak hanya 4 desa Siak', async () => {
     masukKabupatenSebagai(AKUN_KABUPATEN_UJI.adminSiak)
-    expect((await ambilPetaKabupaten()).desa.map((d) => d.nama).sort()).toEqual(['Sungai Limau Hilir', 'Tualang Permai'])
+    expect((await ambilPetaKabupaten()).desa.map((d) => d.nama).sort()).toEqual(['Perawang Jaya', 'Sungai Limau Hilir', 'Teluk Lancang Baru', 'Tualang Permai'])
+  })
+  it('Indeks (7C-1): tingkatan tiap titik sama dengan papan Agustus; desa Persiapan tanpa tingkatan', async () => {
+    masukKabupatenSebagai(AKUN_KABUPATEN_UJI.admin)
+    const p = await ambilPetaKabupaten()
+    const papan = await ambilPapanIndeks({})
+    expect(p.periodeIndeks).toEqual({ kode: '2026-08', label: 'Agustus 2026' })
+    const peta = new Map(papan.peringkat.map((b) => [b.desa.id, b.tingkatan]))
+    for (const d of p.desa) expect(d.tingkatan, d.nama).toBe(peta.get(d.id) ?? null)
+    for (const d of p.desa.filter((x) => x.status === 'Persiapan')) expect(d.tingkatan).toBeNull()
   })
 })

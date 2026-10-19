@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { tanggalIsoWib } from '../format/tanggal'
+import { podiumLaporanSchema } from '../indeks/schema'
 
 /** Paling banyak 12 bulan ke belakang: sama dengan rentang surat per bulan yang tersimpan (SPEC §11). */
 const BATAS_BULAN = 12
@@ -40,7 +41,7 @@ export const daftarLaporanSchema = z.object({ bulan: z.array(bulanLaporanSchema)
 /**
  * GET /kabupaten/laporan/:bulan (SPEC-V0.2 §8.3 butir 7). Semua angka per akhir bulan itu: desa bergabung, surat terbit
  * sepanjang bulan, dan realisasi belanja APBDes sampai akhir bulan. Dana Desa hanya untuk desa yang bergabung pada akhir bulan.
- * Podium bulan itu menyusul di 7C.
+ * `podium`: juara bulan itu per kategori desa (SPEC-V0.2 §9.5).
  */
 export const laporanBulananSchema = z.object({
   kabupaten: z.object({ kode: z.string(), nama: z.string(), label: z.string() }),
@@ -53,6 +54,7 @@ export const laporanBulananSchema = z.object({
     danaDesa: z.object({ tahun: z.number().int(), anggaran: rupiah, realisasi: rupiah, medianRealisasi: z.number().min(0).nullable(), tertinggal: jumlah }),
   }),
   kecamatan: z.array(z.object({ kecamatan: kodeNama, bergabung: jumlah, suratTerbit: jumlah, anggaran: rupiah, realisasi: rupiah })),
+  podium: podiumLaporanSchema,
   perhatian: z.object({
     /** Desa bergabung tanpa satu pun surat terbit sepanjang bulan itu. */
     tanpaSurat: z.array(desaRingkasSchema),

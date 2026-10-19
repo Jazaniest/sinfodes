@@ -1,13 +1,16 @@
 import { z } from 'zod'
+import { TINGKATAN, LABEL_TINGKATAN, type Tingkatan } from '../indeks/kategori'
+import { tingkatanSchema } from '../indeks/schema'
 import { titikSchema } from '../peta/titik'
 import { STATUS_DESA } from '../wilayah/schema'
 import { tertinggal } from './dana-desa'
 
-/** Lapisan Peta dasbor (SPEC-V0.2 §8.3 butir 5). Lapisan tingkatan Indeks dibangun di 7C. */
-export const LAPISAN_PETA_KABUPATEN = ['status', 'realisasi'] as const
+/** Lapisan Peta dasbor (SPEC-V0.2 §8.3 butir 5). */
+export const LAPISAN_PETA_KABUPATEN = ['status', 'tingkatan', 'realisasi'] as const
 export type LapisanPetaKabupaten = (typeof LAPISAN_PETA_KABUPATEN)[number]
 export const LABEL_LAPISAN_PETA_KABUPATEN: Readonly<Record<LapisanPetaKabupaten, string>> = {
   status: 'Status bergabung',
+  tingkatan: 'Tingkatan Indeks',
   realisasi: 'Realisasi Dana Desa',
 }
 
@@ -27,6 +30,11 @@ export function kelasRealisasi(rasio: number | null, median: number | null): Kel
   return median !== null && rasio < median ? 'bawah' : 'atas'
 }
 
+export const KELAS_TINGKATAN = [...TINGKATAN, 'kosong'] as const
+export type KelasTingkatan = (typeof KELAS_TINGKATAN)[number]
+export const LABEL_KELAS_TINGKATAN: Readonly<Record<KelasTingkatan, string>> = { ...LABEL_TINGKATAN, kosong: 'Belum ada Indeks' }
+export const kelasTingkatan = (t: Tingkatan | null): KelasTingkatan => t ?? 'kosong'
+
 /** Satu titik desa di Peta dasbor: hanya angka agregat yang juga tampil di Pemantauan dan Dana Desa. */
 export const titikPetaKabupatenSchema = z.strictObject({
   id: z.string(),
@@ -39,6 +47,8 @@ export const titikPetaKabupatenSchema = z.strictObject({
   suratBulanIni: z.number().int().min(0),
   apbdes: z.object({ anggaran: z.number().min(0), realisasi: z.number().min(0) }).nullable(),
   tertinggal: z.boolean(),
+  /** Tingkatan Indeks bulan terakhir tutup; null bila belum ber-Indeks. */
+  tingkatan: tingkatanSchema.nullable(),
 })
 export type TitikPetaKabupaten = z.infer<typeof titikPetaKabupatenSchema>
 
@@ -46,6 +56,7 @@ export type TitikPetaKabupaten = z.infer<typeof titikPetaKabupatenSchema>
 export const petaKabupatenSchema = z.object({
   kabupaten: z.object({ kode: z.string(), nama: z.string() }),
   medianRealisasi: z.number().min(0).nullable(),
+  periodeIndeks: z.object({ kode: z.string(), label: z.string() }),
   desa: z.array(titikPetaKabupatenSchema),
   tanpaTitik: z.number().int().min(0),
 })

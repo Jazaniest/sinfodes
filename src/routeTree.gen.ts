@@ -75,6 +75,7 @@ import { Route as DesaSlugKabarIndexRouteImport } from './routes/desa/$slug/kaba
 import { Route as DesaSlugKabarArtikelRouteImport } from './routes/desa/$slug/kabar/$artikel'
 import { Route as KabupatenAdminDasborIndexRouteImport } from './routes/kabupaten/admin/_dasbor/index'
 import { Route as KabupatenAdminDasborDataGabunganRouteImport } from './routes/kabupaten/admin/_dasbor/data-gabungan'
+import { Route as KabupatenAdminDasborIndeksRouteImport } from './routes/kabupaten/admin/_dasbor/indeks'
 import { Route as KabupatenAdminDasborPemantauanRouteImport } from './routes/kabupaten/admin/_dasbor/pemantauan'
 import { Route as KabupatenAdminDasborPenggunaRouteImport } from './routes/kabupaten/admin/_dasbor/pengguna'
 import { Route as KabupatenAdminDasborPetaRouteImport } from './routes/kabupaten/admin/_dasbor/peta'
@@ -460,6 +461,12 @@ const KabupatenAdminDasborDataGabunganRoute =
     path: '/data-gabungan',
     getParentRoute: () => KabupatenAdminDasborRoute,
   } as any)
+const KabupatenAdminDasborIndeksRoute =
+  KabupatenAdminDasborIndeksRouteImport.update({
+    id: '/indeks',
+    path: '/indeks',
+    getParentRoute: () => KabupatenAdminDasborRoute,
+  } as any)
 const KabupatenAdminDasborPemantauanRoute =
   KabupatenAdminDasborPemantauanRouteImport.update({
     id: '/pemantauan',
@@ -740,6 +747,7 @@ export interface FileRoutesByFullPath {
   '/admin/website/tampilan': typeof AdminPanelWebsiteTampilanRoute
   '/desa/$slug/kabar/$artikel': typeof DesaSlugKabarArtikelRoute
   '/kabupaten/admin/data-gabungan': typeof KabupatenAdminDasborDataGabunganRoute
+  '/kabupaten/admin/indeks': typeof KabupatenAdminDasborIndeksRoute
   '/kabupaten/admin/pemantauan': typeof KabupatenAdminDasborPemantauanRoute
   '/kabupaten/admin/pengguna': typeof KabupatenAdminDasborPenggunaRoute
   '/kabupaten/admin/peta': typeof KabupatenAdminDasborPetaRoute
@@ -842,6 +850,7 @@ export interface FileRoutesByTo {
   '/admin/website/tampilan': typeof AdminPanelWebsiteTampilanRoute
   '/desa/$slug/kabar/$artikel': typeof DesaSlugKabarArtikelRoute
   '/kabupaten/admin/data-gabungan': typeof KabupatenAdminDasborDataGabunganRoute
+  '/kabupaten/admin/indeks': typeof KabupatenAdminDasborIndeksRoute
   '/kabupaten/admin/pemantauan': typeof KabupatenAdminDasborPemantauanRoute
   '/kabupaten/admin/pengguna': typeof KabupatenAdminDasborPenggunaRoute
   '/kabupaten/admin/peta': typeof KabupatenAdminDasborPetaRoute
@@ -950,6 +959,7 @@ export interface FileRoutesById {
   '/admin/_panel/website/tampilan': typeof AdminPanelWebsiteTampilanRoute
   '/desa/$slug/kabar/$artikel': typeof DesaSlugKabarArtikelRoute
   '/kabupaten/admin/_dasbor/data-gabungan': typeof KabupatenAdminDasborDataGabunganRoute
+  '/kabupaten/admin/_dasbor/indeks': typeof KabupatenAdminDasborIndeksRoute
   '/kabupaten/admin/_dasbor/pemantauan': typeof KabupatenAdminDasborPemantauanRoute
   '/kabupaten/admin/_dasbor/pengguna': typeof KabupatenAdminDasborPenggunaRoute
   '/kabupaten/admin/_dasbor/peta': typeof KabupatenAdminDasborPetaRoute
@@ -1059,6 +1069,7 @@ export interface FileRouteTypes {
     | '/admin/website/tampilan'
     | '/desa/$slug/kabar/$artikel'
     | '/kabupaten/admin/data-gabungan'
+    | '/kabupaten/admin/indeks'
     | '/kabupaten/admin/pemantauan'
     | '/kabupaten/admin/pengguna'
     | '/kabupaten/admin/peta'
@@ -1161,6 +1172,7 @@ export interface FileRouteTypes {
     | '/admin/website/tampilan'
     | '/desa/$slug/kabar/$artikel'
     | '/kabupaten/admin/data-gabungan'
+    | '/kabupaten/admin/indeks'
     | '/kabupaten/admin/pemantauan'
     | '/kabupaten/admin/pengguna'
     | '/kabupaten/admin/peta'
@@ -1268,6 +1280,7 @@ export interface FileRouteTypes {
     | '/admin/_panel/website/tampilan'
     | '/desa/$slug/kabar/$artikel'
     | '/kabupaten/admin/_dasbor/data-gabungan'
+    | '/kabupaten/admin/_dasbor/indeks'
     | '/kabupaten/admin/_dasbor/pemantauan'
     | '/kabupaten/admin/_dasbor/pengguna'
     | '/kabupaten/admin/_dasbor/peta'
@@ -1803,6 +1816,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof KabupatenAdminDasborDataGabunganRouteImport
       parentRoute: typeof KabupatenAdminDasborRoute
     }
+    '/kabupaten/admin/_dasbor/indeks': {
+      id: '/kabupaten/admin/_dasbor/indeks'
+      path: '/indeks'
+      fullPath: '/kabupaten/admin/indeks'
+      preLoaderRoute: typeof KabupatenAdminDasborIndeksRouteImport
+      parentRoute: typeof KabupatenAdminDasborRoute
+    }
     '/kabupaten/admin/_dasbor/pemantauan': {
       id: '/kabupaten/admin/_dasbor/pemantauan'
       path: '/pemantauan'
@@ -2286,6 +2306,7 @@ const WargaAppRouteWithChildren = WargaAppRoute._addFileChildren(
 
 interface KabupatenAdminDasborRouteChildren {
   KabupatenAdminDasborDataGabunganRoute: typeof KabupatenAdminDasborDataGabunganRoute
+  KabupatenAdminDasborIndeksRoute: typeof KabupatenAdminDasborIndeksRoute
   KabupatenAdminDasborPemantauanRoute: typeof KabupatenAdminDasborPemantauanRoute
   KabupatenAdminDasborPenggunaRoute: typeof KabupatenAdminDasborPenggunaRoute
   KabupatenAdminDasborPetaRoute: typeof KabupatenAdminDasborPetaRoute
@@ -2301,6 +2322,7 @@ interface KabupatenAdminDasborRouteChildren {
 
 const KabupatenAdminDasborRouteChildren: KabupatenAdminDasborRouteChildren = {
   KabupatenAdminDasborDataGabunganRoute: KabupatenAdminDasborDataGabunganRoute,
+  KabupatenAdminDasborIndeksRoute: KabupatenAdminDasborIndeksRoute,
   KabupatenAdminDasborPemantauanRoute: KabupatenAdminDasborPemantauanRoute,
   KabupatenAdminDasborPenggunaRoute: KabupatenAdminDasborPenggunaRoute,
   KabupatenAdminDasborPetaRoute: KabupatenAdminDasborPetaRoute,

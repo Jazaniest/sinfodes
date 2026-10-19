@@ -58,9 +58,9 @@ describe('GET /kabupaten/data-gabungan (SPEC-V0.2 §8.3 butir 6)', () => {
       }
     }
   })
-  it('Admin Siak hanya menerima 2 desa Siak', async () => {
+  it('Admin Siak hanya menerima 4 desa Siak', async () => {
     masukKabupatenSebagai(AKUN_KABUPATEN_UJI.adminSiak)
     const d = await ambilDataGabungan()
-    expect(d.kecamatan.flatMap((k) => k.desa.map((x) => x.nama)).sort()).toEqual(['Sungai Limau Hilir', 'Tualang Permai'])
+    expect(d.kecamatan.flatMap((k) => k.desa.map((x) => x.nama)).sort()).toEqual(['Perawang Jaya', 'Sungai Limau Hilir', 'Teluk Lancang Baru', 'Tualang Permai'])
   })
 })

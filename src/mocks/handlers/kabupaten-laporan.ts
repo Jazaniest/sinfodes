@@ -7,6 +7,7 @@ import { median } from '@/domain/kabupaten/pemantauan'
 import type { KabupatenMitra } from '@/domain/kabupaten/schema'
 import { statusKirim } from '@/domain/kabupaten/tenggat'
 import { ambilDb } from '../db'
+import { bekukanBulanTutup, podiumKabupaten } from '../indeks'
 import { API, balasGalat, denganJaringan } from '../http'
 import { apbdesDesa, bergabungPada, desaDiKabupaten, desaSasaranKabupaten, realisasiSampai, suratTerbitBulan } from '../kabupaten-angka'
 import { butuhKemampuanKabupaten } from '../sesi-mock'
@@ -17,6 +18,7 @@ const urut = (a: DesaRingkas, b: DesaRingkas) => a.kecamatan.localeCompare(b.kec
 
 /** Laporan satu bulan yang sudah tutup, dihitung saat diminta dari data demo (SPEC-V0.2 §8.3 butir 7). */
 function susunLaporan(db: DbDemo, kab: KabupatenMitra, bulan: string, sekarang: Date): LaporanBulanan {
+  bekukanBulanTutup(sekarang)
   const akhir = akhirBulan(bulan)
   const tahun = Number(bulan.slice(0, 4))
   const semua = desaDiKabupaten(db, kab.kode).map((d) => {
@@ -82,6 +84,7 @@ function susunLaporan(db: DbDemo, kab: KabupatenMitra, bulan: string, sekarang: 
         tertinggal: desa.filter((x) => x.tertinggal).length,
       },
     },
+    podium: podiumKabupaten(db, kab.kode, { musim: 'bulanan', kode: bulan }, sekarang),
     kecamatan: [...perKecamatan.values()].sort((a, b) => a.kecamatan.nama.localeCompare(b.kecamatan.nama, 'id')),
     perhatian: {
       tanpaSurat: desa.filter((x) => x.bergabung && x.suratTerbit === 0).map(ringkas),

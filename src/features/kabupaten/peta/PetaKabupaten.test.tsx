@@ -68,4 +68,18 @@ describe('Peta di dasbor kabupaten (SPEC-V0.2 §8.3 butir 5)', () => {
     expect(screen.getByText('Peta tidak bisa ditampilkan di perangkat ini. Daftar desa di bawah tetap bisa dipakai.')).toBeInTheDocument()
     expect(screen.getByRole('table', { name: 'Daftar desa di peta' })).toBeInTheDocument()
   })
+  it('lapisan Tingkatan Indeks: lima kelas, periodenya tertulis, desa Persiapan di kelas kosong (7C-1)', async () => {
+    const user = pasang()
+    await screen.findByText(/^32 titik/)
+    await user.click(screen.getByRole('radio', { name: 'Tingkatan Indeks' }))
+    const legenda = screen.getByRole('list', { name: 'Keterangan warna' })
+    expect(within(legenda).getAllByRole('listitem').map((l) => l.textContent?.replace(/\s\(\d+\)$/, ''))).toEqual([
+      'Rintisan', 'Berkembang', 'Maju', 'Mandiri Digital', 'Belum ada Indeks',
+    ])
+    expect(screen.getByText('Tingkatan Indeks · Agustus 2026')).toBeInTheDocument()
+    const daftar = screen.getByRole('table', { name: 'Daftar desa di peta' })
+    const persiapan = within(daftar).getAllByRole('row').filter((r) => /Panduk Baru|Tanjung Lamo|Ogung Jaya/.test(r.textContent ?? ''))
+    expect(persiapan.length).toBeGreaterThan(0)
+    for (const r of persiapan) expect(r).toHaveTextContent('Belum ada Indeks')
+  })
 })

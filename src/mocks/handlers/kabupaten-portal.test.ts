@@ -42,9 +42,9 @@ describe('GET /kabupaten/portal (SPEC-V0.2 §8.2)', () => {
       label: 'sungaisialang', nama: 'Sungai Sialang', status: 'Aktif',
     })
   })
-  it('Siak: 2 desa dari 122', async () => {
+  it('Siak: 4 desa dari 122', async () => {
     const p = await portal('kab-siak')
-    expect(p).toMatchObject({ mitra: true, bergabung: 2, jumlahDesa: 122 })
+    expect(p).toMatchObject({ mitra: true, bergabung: 4, jumlahDesa: 122 })
   })
   it('kabupaten yang belum mitra: hanya identitasnya', async () => {
     expect(await portal('kab-kampar')).toEqual({ mitra: false, kabupaten: { kode: '14.01', nama: 'Kampar', label: 'kab-kampar' } })
@@ -65,5 +65,9 @@ describe('GET /kabupaten/portal (SPEC-V0.2 §8.2)', () => {
     })
     const kunci = new Set(p.peta.flatMap((d) => Object.keys(d)))
     for (const t of ['status', 'jiwa', 'apbdes', 'alamatKantor']) expect(kunci.has(t), t).toBe(false)
+  })
+  it('Indeks (7C-1) tidak pernah bocor ke portal publik', async () => {
+    const teks = JSON.stringify(await (await ambil('kab-pelalawan')).json())
+    for (const kunci of ['tingkatan', 'indeks', 'periodeIndeks']) expect(teks.includes(`"${kunci}"`), kunci).toBe(false)
   })
 })

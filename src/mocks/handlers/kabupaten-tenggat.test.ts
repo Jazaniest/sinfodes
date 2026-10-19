@@ -54,7 +54,7 @@ describe('tenggat laporan di dasbor kabupaten (SPEC-V0.2 §8.3 butir 4)', () => 
     masukKabupatenSebagai(AKUN_KABUPATEN_UJI.adminSiak)
     const siak = await daftarTenggatKabupaten()
     expect([...siak.akanDatang, ...siak.sudahLewat].map((t) => t.id)).toEqual(['tgt_siak_dd2'])
-    expect(siak.akanDatang[0].sasaran).toBe(2)
+    expect(siak.akanDatang[0].sasaran).toBe(4)
     await expect(ambilDetailTenggat('tgt_pll_dd2')).rejects.toMatchObject(TIDAK_ADA)
     await expect(ubahTenggat('tgt_pll_dd2', { nama: 'Ganti', tanggal: '2026-10-30' })).rejects.toMatchObject(TIDAK_ADA)
     await expect(hapusTenggat('tgt_pll_dd2')).rejects.toMatchObject(TIDAK_ADA)

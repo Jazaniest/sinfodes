@@ -5,6 +5,7 @@ import { ambilDb } from '@/mocks/db'
 import { angkaKonsolDesa } from '@/mocks/konsol-angka'
 import { ambilDb as dbUji } from '@/mocks/db'
 import { AKUN_KABUPATEN_UJI, masukKabupatenSebagai, pakaiApiTiruan, SEKARANG_UJI } from '@/test/api-tiruan'
+import { ambilPapanIndeks } from '@/api/kabupaten'
 
 pakaiApiTiruan()
 
@@ -25,13 +26,13 @@ describe('GET /kabupaten/pemantauan (SPEC-V0.2 §8.3 butir 3, dipindah dari Kons
       'Kuala Rengas', 'Sungai Sialang', 'Teluk Pauh',
     ])
   })
-  it('Peninjau melihat angka yang sama; Admin Siak hanya 2 desa Siak (fokus review 1)', async () => {
+  it('Peninjau melihat angka yang sama; Admin Siak hanya 4 desa Siak (fokus review 1)', async () => {
     masukKabupatenSebagai(AKUN_KABUPATEN_UJI.peninjau)
     expect((await ambilPemantauanKabupaten()).total.jumlahDesa).toBe(32)
     masukKabupatenSebagai(AKUN_KABUPATEN_UJI.adminSiak)
     const siak = await ambilPemantauanKabupaten()
     expect(siak.wilayah).toEqual({ kode: '14.08', nama: 'Siak' })
-    expect(siak.kecamatan.flatMap((k) => k.desa.map((d) => d.nama)).sort()).toEqual(['Sungai Limau Hilir', 'Tualang Permai'])
+    expect(siak.kecamatan.flatMap((k) => k.desa.map((d) => d.nama)).sort()).toEqual(['Perawang Jaya', 'Sungai Limau Hilir', 'Teluk Lancang Baru', 'Tualang Permai'])
   })
   it('hanya angka agregat: key setiap baris desa persis sesuai skema, tanpa data pribadi', async () => {
     masukKabupatenSebagai(AKUN_KABUPATEN_UJI.admin)
@@ -88,8 +89,21 @@ describe('GET /kabupaten/ringkasan (SPEC-V0.2 §8.3 butir 1)', () => {
     const r = await ambilRingkasanKabupaten()
     expect(r.perhatian.find((p) => p.jenis === 'siaran-belum-dibaca')).toEqual({ jenis: 'siaran-belum-dibaca', jumlah: harap.size })
   })
-  it('Siak: 2 desa bergabung dari 122', async () => {
+  it('Siak: 4 desa bergabung dari 122', async () => {
     masukKabupatenSebagai(AKUN_KABUPATEN_UJI.adminSiak)
-    expect((await ambilRingkasanKabupaten()).adopsi).toMatchObject({ bergabung: 2, jumlahDesa: 122 })
+    expect((await ambilRingkasanKabupaten()).adopsi).toMatchObject({ bergabung: 4, jumlahDesa: 122 })
+  })
+  it('Indeks (7C-1): Agustus 2026, rata-rata dan sebaran sama dengan papan Juara Umum; Siak punya posisi se-provinsi', async () => {
+    masukKabupatenSebagai(AKUN_KABUPATEN_UJI.admin)
+    const { indeks } = await ambilRingkasanKabupaten()
+    const papan = await ambilPapanIndeks({})
+    expect(indeks.periode.kode).toBe('2026-08')
+    const nilai = papan.peringkat.map((b) => b.ukuran)
+    expect(indeks.rataRata).toBe(Math.round((nilai.reduce((n, x) => n + x, 0) / nilai.length) * 10) / 10)
+    expect(Object.values(indeks.sebaran).reduce((n, x) => n + x, 0)).toBe(papan.peringkat.length)
+    masukKabupatenSebagai(AKUN_KABUPATEN_UJI.adminSiak)
+    const siak = (await ambilRingkasanKabupaten()).indeks
+    expect(siak.posisiProvinsi?.dari).toBeGreaterThanOrEqual(4)
+    expect(siak.posisiProvinsi?.provinsi).toBe('Riau')
   })
 })

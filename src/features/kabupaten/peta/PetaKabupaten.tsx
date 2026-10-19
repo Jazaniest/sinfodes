@@ -6,7 +6,7 @@ import { opsiPetaKabupaten } from '@/api/kabupaten'
 import { formatAngka, formatPersen } from '@/domain/format/angka'
 import { rasioApbdes } from '@/domain/kabupaten/pemantauan'
 import {
-  kelasRealisasi, KELAS_REALISASI, LABEL_KELAS_REALISASI, LABEL_LAPISAN_PETA_KABUPATEN, LAPISAN_PETA_KABUPATEN,
+  kelasRealisasi, kelasTingkatan, KELAS_REALISASI, KELAS_TINGKATAN, LABEL_KELAS_REALISASI, LABEL_KELAS_TINGKATAN, LABEL_LAPISAN_PETA_KABUPATEN, LAPISAN_PETA_KABUPATEN,
   type LapisanPetaKabupaten, type PetaKabupaten as DataPeta, type TitikPetaKabupaten,
 } from '@/domain/kabupaten/peta'
 import type { StatusDesa } from '@/domain/wilayah/schema'
@@ -38,6 +38,9 @@ function kelasLapisan(lapisan: LapisanPetaKabupaten, d: DataPeta): { kelas: Kela
   if (lapisan === 'status') {
     return { kelas: URUTAN_STATUS.map((s) => ({ id: s, label: s, warna: WARNA_TITIK.status[s] })), kelasDesa: (x) => x.status }
   }
+  if (lapisan === 'tingkatan') {
+    return { kelas: KELAS_TINGKATAN.map((k) => ({ id: k, label: LABEL_KELAS_TINGKATAN[k], warna: WARNA_TITIK.tingkatan[k] })), kelasDesa: (x) => kelasTingkatan(x.tingkatan) }
+  }
   return {
     kelas: KELAS_REALISASI.map((k) => ({ id: k, label: LABEL_KELAS_REALISASI[k], warna: WARNA_TITIK.realisasi[k] })),
     kelasDesa: (x) => kelasRealisasi(rasioApbdes(x.apbdes), d.medianRealisasi),
@@ -46,7 +49,7 @@ function kelasLapisan(lapisan: LapisanPetaKabupaten, d: DataPeta): { kelas: Kela
 
 /**
  * Peta di dasbor kabupaten (SPEC-V0.2 §8.3 butir 5): titik desa diwarnai menurut lapisan yang dipilih, kartu desa untuk titik
- * terpilih, dan daftar desa sebagai jalan lain bila peta tidak bisa dipakai. Lapisan tingkatan Indeks menyusul di 7C.
+ * terpilih, dan daftar desa sebagai jalan lain bila peta tidak bisa dipakai.
  */
 export function PetaKabupaten() {
   const kueri = useQuery(opsiPetaKabupaten())
@@ -82,14 +85,17 @@ export function PetaKabupaten() {
               nilai={lapisan}
               onUbah={(v) => setLapisan(v as LapisanPetaKabupaten)}
             />
-            <ul aria-label="Keterangan warna" className="flex flex-wrap gap-x-4 gap-y-1 text-teks-kecil">
-              {warna.kelas.map((k) => (
-                <li key={k.id} className="inline-flex items-center gap-1.5">
-                  <span aria-hidden className="size-3 rounded-penuh border border-kertas" style={{ backgroundColor: k.warna }} />
-                  {`${k.label} (${formatAngka(k.jumlah)})`}
-                </li>
-              ))}
-            </ul>
+            <div className="flex flex-col gap-1">
+              {lapisan === 'tingkatan' && <p className="text-teks-kecil font-medium">{`Tingkatan Indeks · ${d.periodeIndeks.label}`}</p>}
+              <ul aria-label="Keterangan warna" className="flex flex-wrap gap-x-4 gap-y-1 text-teks-kecil">
+                {warna.kelas.map((k) => (
+                  <li key={k.id} className="inline-flex items-center gap-1.5">
+                    <span aria-hidden className="size-3 rounded-penuh border border-kertas" style={{ backgroundColor: k.warna }} />
+                    {`${k.label} (${formatAngka(k.jumlah)})`}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
           <div className="grid gap-4 lg:grid-cols-[1fr_20rem]">
             <div className="h-80 overflow-hidden rounded-2 border border-garis bg-kertas-2 sm:h-[28rem]">

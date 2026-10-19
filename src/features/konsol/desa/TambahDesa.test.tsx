@@ -85,7 +85,7 @@ describe('Tambah desa (SPEC §11)', () => {
     expect(screen.getByText('Kode desa 4 angka berawalan 2, mis. 2015.')).toBeInTheDocument()
     expect(screen.getByText('Email admin belum benar.')).toBeInTheDocument()
     expect(onSelesai).not.toHaveBeenCalled()
-    expect(ambilDb().desa).toHaveLength(40)
+    expect(ambilDb().desa).toHaveLength(47)
   })
   it('kode desa yang sudah terdaftar: galat dari server tampil di kolomnya (fokus review 3)', async () => {
     const { onSelesai, user } = pasang()

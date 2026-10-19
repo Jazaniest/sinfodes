@@ -16,7 +16,7 @@ describe('titik desa di peta kabupaten (SPEC-V0.2 §8.3 butir 5)', () => {
   })
   it('desa lain: titik perkiraan 0,02-0,07 derajat dari pusat kecamatannya, sama di setiap pemanggilan', () => {
     const desa = db.desa.filter((d) => (d.kabupaten.kode === '14.05' || d.kabupaten.kode === '14.08') && d.id !== ID_SUNGAI_SIALANG)
-    expect(desa.length).toBe(33)
+    expect(desa.length).toBe(35)
     for (const d of desa) {
       const t = titikDesa(db, d)
       const pusat = PUSAT_KECAMATAN[d.kecamatan.kode.replaceAll('.', '')]

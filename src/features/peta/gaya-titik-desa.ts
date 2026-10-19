@@ -1,4 +1,4 @@
-import type { KelasRealisasi } from '@/domain/kabupaten/peta'
+import type { KelasRealisasi, KelasTingkatan } from '@/domain/kabupaten/peta'
 import type { Titik } from '@/domain/peta/titik'
 import type { StatusDesa } from '@/domain/wilayah/schema'
 import { lapisanDasar, saringId, sumberDasar, WARNA_PETA, type StyleSpecification } from './gaya-peta'
@@ -10,6 +10,8 @@ export type TitikBerwarna = { id: string; titik: Titik; warna: string }
 export const WARNA_TITIK = {
   status: { Aktif: '#28704F', 'Uji coba': '#1F4E79', Persiapan: '#8A6212', Ditangguhkan: '#5A636C' } satisfies Record<StatusDesa, string>,
   realisasi: { tertinggal: '#A03A2C', bawah: '#8A6212', atas: '#28704F', kosong: '#5A636C' } satisfies Record<KelasRealisasi, string>,
+  // Satu ramp biru dari terang (Rintisan) ke pekat (Mandiri Digital), abu-abu untuk belum ber-Indeks; tanpa merah supaya tidak terasa menghukum.
+  tingkatan: { rintisan: '#A9C4DB', berkembang: '#6A93B8', maju: '#2F6A9B', mandiri: '#123F66', kosong: '#8A9097' } satisfies Record<KelasTingkatan, string>,
   portal: { bergabung: '#28704F', persiapan: '#8A6212' },
   sorotan: WARNA_PETA.fasilitas,
 } as const

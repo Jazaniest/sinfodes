@@ -5,6 +5,8 @@ import { GalatApi, pesanGalat } from '@/api/galat'
 import { opsiLaporanBulanan } from '@/api/kabupaten'
 import { formatAngka, formatPersen, formatRupiah } from '@/domain/format/angka'
 import { formatBulan, formatTanggal, tanggalIsoWib } from '@/domain/format/tanggal'
+import { LABEL_KATEGORI_DESA, formatUkuran } from '@/domain/indeks/kategori'
+import type { PodiumLaporan } from '@/domain/indeks/schema'
 import type { DesaRingkas, LaporanBulanan as Laporan } from '@/domain/kabupaten/laporan'
 import { cn } from '@/ui/cn'
 import { Tautan } from '@/ui/navigasi/Tautan'
@@ -67,6 +69,13 @@ function DaftarDesa({ judul, desa }: { judul: string; desa: readonly DesaRingkas
   )
 }
 
+/** Sel juara satu peringkat: nama (kecamatan) · nilai; seri tertulis bersama dalam sel yang sama. */
+function selJuara(juara: PodiumLaporan[number]['juara'], peringkat: number, kategori: PodiumLaporan[number]['kategori']) {
+  const di = juara.filter((j) => j.peringkat === peringkat)
+  if (di.length === 0) return '—'
+  return di.map((j) => `${j.nama} (${j.kecamatan}) · ${formatUkuran(kategori, j.nilai)}${j.bersama ? ' · bersama' : ''}`).join('; ')
+}
+
 function Lembar({ l, sekarang }: { l: Laporan; sekarang: Date }) {
   const nama = formatBulan(l.bulan)
   const dd = l.ringkasan.danaDesa
@@ -99,6 +108,29 @@ function Lembar({ l, sekarang }: { l: Laporan; sekarang: Date }) {
               <td className={sel}>{k.kecamatan.nama}</td>
               <td className={angka}>{formatAngka(k.bergabung)}</td>
               <td className={angka}>{formatAngka(k.suratTerbit)}</td>
+            </tr>
+          ))}
+        </Tabel>
+      </Bagian>
+
+      <Bagian judul={`Podium ${nama}`}>
+        <Tabel judul={`Podium ${nama}`} kepala={[{ label: 'Kategori' }, { label: 'Juara 1' }, { label: 'Juara 2' }, { label: 'Juara 3' }]}>
+          {l.podium.map((k) => (
+            <tr key={k.kategori} className="break-inside-avoid">
+              <th scope="row" className={cn(sel, 'text-left font-medium')}>
+                {LABEL_KATEGORI_DESA[k.kategori]}
+              </th>
+              {k.juara.length === 0 ? (
+                <td colSpan={3} className={cn(sel, 'text-tinta-2')}>
+                  Belum ada desa yang memenuhi syarat.
+                </td>
+              ) : (
+                [1, 2, 3].map((p) => (
+                  <td key={p} className={sel}>
+                    {selJuara(k.juara, p, k.kategori)}
+                  </td>
+                ))
+              )}
             </tr>
           ))}
         </Tabel>

@@ -5,12 +5,35 @@ import { formatAngka } from '@/domain/format/angka'
 import { formatTanggal, tanggalIsoWib } from '@/domain/format/tanggal'
 import type { RingkasanKabupaten as DataRingkasan } from '@/domain/kabupaten/schema'
 import { hrefPerhatianKabupaten, kalimatPerhatianKabupaten, labelTautanPerhatianKabupaten } from '@/domain/kabupaten/perhatian'
+import { LABEL_TINGKATAN, TINGKATAN } from '@/domain/indeks/kategori'
+import { WARNA_TITIK } from '@/features/peta/gaya-titik-desa'
 import { MiniBar } from '@/ui/grafik/MiniBar'
 import { Tautan } from '@/ui/navigasi/Tautan'
 import { PageHeader } from '@/ui/tata-letak/PageHeader'
 import { ErrorState } from '@/ui/umpan-balik/ErrorState'
 import { BarisKerangka } from '@/ui/umpan-balik/Skeleton'
 import { useSesiKabupaten } from './sesi-konteks'
+
+/** Sebaran tingkatan sebagai batang bertumpuk; jumlah tiap tingkatan selalu tertulis di legendanya. */
+function SebaranTingkatan({ sebaran }: { sebaran: DataRingkasan['indeks']['sebaran'] }) {
+  const total = TINGKATAN.reduce((n, t) => n + sebaran[t], 0)
+  return (
+    <div className="flex max-w-md flex-col gap-2">
+      <div aria-hidden className="flex h-2 overflow-hidden rounded-1 bg-garis/50">
+        {total > 0 &&
+          TINGKATAN.map((t) => <div key={t} style={{ width: `${(sebaran[t] / total) * 100}%`, backgroundColor: WARNA_TITIK.tingkatan[t] }} />)}
+      </div>
+      <ul aria-label="Sebaran tingkatan" className="flex flex-wrap gap-x-4 gap-y-1 text-teks-kecil">
+        {TINGKATAN.map((t) => (
+          <li key={t} className="inline-flex items-center gap-1.5">
+            <span aria-hidden className="size-3 rounded-penuh" style={{ backgroundColor: WARNA_TITIK.tingkatan[t] }} />
+            {`${LABEL_TINGKATAN[t]} (${formatAngka(sebaran[t])})`}
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
 
 const judulBagian = 'text-label font-medium text-tinta-2 uppercase'
 
@@ -26,7 +49,7 @@ function kalimatBelumBergabung({ persiapan, ditangguhkan }: DataRingkasan['adops
 
 /**
  * Ringkasan dasbor kabupaten (SPEC-V0.2 §8.3 butir 1): perlu perhatian (termasuk realisasi Dana Desa tertinggal), lalu adopsi
- * desa. Rata-rata Indeks dan posisi se-provinsi menyusul di 7C.
+ * desa, lalu Indeks Desa Digital bulan terakhir tutup (SPEC-V0.2 §9.5).
  */
 export function RingkasanKabupaten({ sekarang = new Date() }: { sekarang?: Date }) {
   const { kabupaten } = useSesiKabupaten()
@@ -76,6 +99,26 @@ export function RingkasanKabupaten({ sekarang = new Date() }: { sekarang?: Date 
               keterangan={`${formatAngka(kueri.data.adopsi.bergabung)} dari ${formatAngka(kueri.data.adopsi.jumlahDesa)} desa`}
               className="max-w-md"
             />
+          </section>
+          <section aria-labelledby="judul-indeks" className="flex flex-col gap-3">
+            <h2 id="judul-indeks" className={judulBagian}>
+              {`Indeks Desa Digital · ${kueri.data.indeks.periode.label}`}
+            </h2>
+            <p className="font-serif text-judul-bagian">
+              {kueri.data.indeks.rataRata === null ? 'Belum ada Indeks' : `Rata-rata Indeks ${formatAngka(kueri.data.indeks.rataRata, 1)}`}
+            </p>
+            <SebaranTingkatan sebaran={kueri.data.indeks.sebaran} />
+            {kueri.data.indeks.tanpaIndeks > 0 && (
+              <p className="text-tinta-2">{`${formatAngka(kueri.data.indeks.tanpaIndeks)} desa bergabung belum ber-Indeks.`}</p>
+            )}
+            <p>
+              {kueri.data.indeks.posisiProvinsi
+                ? `Peringkat ${kueri.data.indeks.posisiProvinsi.peringkat} dari ${kueri.data.indeks.posisiProvinsi.dari} kabupaten di ${kueri.data.indeks.posisiProvinsi.provinsi}`
+                : 'Belum masuk peringkat se-provinsi'}
+            </p>
+            <Tautan href="/kabupaten/admin/indeks" className="self-start text-teks-kecil">
+              Buka Indeks &amp; Peringkat
+            </Tautan>
           </section>
         </>
       )}

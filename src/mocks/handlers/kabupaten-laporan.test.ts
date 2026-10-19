@@ -4,6 +4,7 @@ import { ambilDanaDesaKabupaten, ambilLaporanBulanan, daftarLaporanBulanan } fro
 import { ambilDb } from '@/mocks/db'
 import { suratTerbitBulan } from '@/mocks/kabupaten-angka'
 import { AKUN_KABUPATEN_UJI, masukKabupatenSebagai, pakaiApiTiruan } from '@/test/api-tiruan'
+import { ambilPapanIndeks } from '@/api/kabupaten'
 
 pakaiApiTiruan()
 
@@ -62,5 +63,14 @@ describe('laporan bulanan kabupaten (SPEC-V0.2 §8.3 butir 7)', () => {
     masukKabupatenSebagai(AKUN_KABUPATEN_UJI.adminSiak)
     const teks = JSON.stringify(await ambilLaporanBulanan('2026-08'))
     for (const d of ambilDb().desa.filter((x) => x.kabupaten.kode === '14.05')) expect(teks.includes(`"${d.nama}"`), d.nama).toBe(false)
+  })
+  it('podium (7C-1): sembilan kategori, juara Umum sama dengan papan; bulan paling awal tidak error', async () => {
+    masukKabupatenSebagai(AKUN_KABUPATEN_UJI.admin)
+    const l = await ambilLaporanBulanan('2026-08')
+    expect(l.podium).toHaveLength(9)
+    const papan = await ambilPapanIndeks({})
+    expect(l.podium.find((k) => k.kategori === 'umum')?.juara[0].nama).toBe(papan.peringkat[0].desa.nama)
+    const bulan = (await daftarLaporanBulanan()).bulan
+    expect((await ambilLaporanBulanan(bulan.at(-1)!)).podium).toHaveLength(9)
   })
 })
