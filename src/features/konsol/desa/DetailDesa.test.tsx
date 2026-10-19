@@ -52,14 +52,16 @@ describe('Detail desa Konsol (SPEC §11)', () => {
     pasang('desa_tanjung_lamo', 'keaktifan')
     expect(await screen.findByText('Belum ada yang masuk panel dalam 12 minggu terakhir.')).toBeInTheDocument()
   })
-  it('Langganan: paket dan harga per triwulan, masa aktif, dan tagihan terbaru dulu beserta statusnya', async () => {
+  it('Langganan: paket dan harga per triwulan, masa aktif, dan tagihan terbaru dulu beserta statusnya (Triwulan IV sudah terbit H-14)', async () => {
     pasang('desa_sungai_rambai', 'langganan')
     expect(await screen.findByText('Lengkap · Rp3.000.000 per triwulan')).toBeInTheDocument()
     const tagihan = within(screen.getByRole('table', { name: 'Tagihan' })).getAllByRole('row').slice(1)
     expect(tagihan.length).toBeGreaterThan(0)
-    expect(tagihan[0]).toHaveTextContent('Triwulan III 2026')
-    expect(tagihan[0]).toHaveTextContent('Lewat jatuh tempo')
-    expect(tagihan.slice(1).every((t) => t.textContent?.includes('Lunas'))).toBe(true)
+    expect(tagihan[0]).toHaveTextContent('Triwulan IV 2026')
+    expect(tagihan[0]).toHaveTextContent('Belum dibayar')
+    expect(tagihan[1]).toHaveTextContent('Triwulan III 2026')
+    expect(tagihan[1]).toHaveTextContent('Lewat jatuh tempo')
+    expect(tagihan.slice(2).every((t) => t.textContent?.includes('Lunas'))).toBe(true)
   })
   it('Langganan desa Persiapan: masa aktif belum ditentukan, belum ada tagihan (fokus review 4)', async () => {
     pasang('desa_tanjung_lamo', 'langganan')

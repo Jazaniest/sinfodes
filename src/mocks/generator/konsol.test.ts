@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { hitungPerhatian, statusTagihan } from '@/domain/konsol/aturan'
+import { hitungPerhatian } from '@/domain/konsol/aturan'
+import { lewatJatuhTempo } from '@/domain/langganan/tagihan'
 import { HARGA_TRIWULAN, langgananSchema, penggunaKonsolSchema } from '@/domain/konsol/schema'
 import { langkahBerikut, persiapanBerurutan } from '@/domain/wilayah/persiapan'
 import { desaSchema } from '@/domain/wilayah/schema'
@@ -40,18 +41,20 @@ describe('data Konsol (SPEC §12.8, §11)', () => {
     const asli = new Set([...DESA_ASLI_PELALAWAN, ...DESA_ASLI_KAMPAR, ...DESA_ASLI_INDRAGIRI_HILIR].map((n) => n.toLowerCase()))
     for (const d of db.desa) expect(asli.has(d.nama.toLowerCase()), d.nama).toBe(false)
   })
-  it('setiap desa satu langganan; desa Persiapan dan Uji coba belum ditagih; tagihan per triwulan seharga paketnya', () => {
+  it('setiap desa satu langganan per triwulan; desa Persiapan dan Uji coba belum ditagih; tagihan seharga paketnya', () => {
     expect(db.langganan).toHaveLength(47)
     expect(new Set(db.langganan.map((l) => l.desaId))).toEqual(new Set(db.desa.map((d) => d.id)))
     for (const l of db.langganan) {
       expect(langgananSchema.parse(l)).toEqual(l)
+      expect(l.periodeTagihan).toBe('triwulan')
       const desa = db.desa.find((d) => d.id === l.desaId)
-      if (desa?.status === 'Persiapan') expect(l).toMatchObject({ mulai: null, sampai: null, tagihan: [] })
-      if (desa?.status === 'Uji coba') expect(l.tagihan).toEqual([])
-      if (desa?.status === 'Aktif') expect(l.tagihan.length).toBeGreaterThan(0)
-      for (const t of l.tagihan) {
-        expect(t.jumlah).toBe(HARGA_TRIWULAN[l.paket])
-        expect(t.periode).toMatch(/^Triwulan (I|II|III|IV) \d{4}$/)
+      if (desa?.status === 'Persiapan') expect(l).toMatchObject({ mulai: null, sampai: null })
+      const tagihan = db.tagihan.filter((t) => t.desaId === l.desaId)
+      if (desa?.status === 'Persiapan' || desa?.status === 'Uji coba') expect(tagihan).toEqual([])
+      if (desa?.status === 'Aktif') expect(tagihan.length).toBeGreaterThan(0)
+      for (const t of tagihan.filter((x) => x.status !== 'dibatalkan')) {
+        expect(t.harga).toBe(HARGA_TRIWULAN[l.paket])
+        expect(t.periode.label).toMatch(/^Triwulan (I|II|III|IV) \d{4}$/)
         expect(t.terbit < t.jatuhTempo).toBe(true)
         expect(t.terbit <= '2026-09-24').toBe(true)
       }
@@ -64,7 +67,7 @@ describe('data Konsol (SPEC §12.8, §11)', () => {
       aktivitasTerakhir: r.aktivitasTerakhir,
       langkahBerikut: langkahBerikut(persiapanBerurutan(r.langkahSelesai)),
     }))
-    const lewat = db.langganan.flatMap((l) => l.tagihan).filter((t) => statusTagihan(t, '2026-09-24') === 'lewat-jatuh-tempo').length
+    const lewat = db.tagihan.filter((t) => lewatJatuhTempo(t, '2026-09-24')).length
     expect(hitungPerhatian(keadaan, lewat, SEKARANG)).toEqual([
       { jenis: 'tidak-aktif', jumlah: 3 },
       { jenis: 'berhenti-persiapan', jumlah: 2 },

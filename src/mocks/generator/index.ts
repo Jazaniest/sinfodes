@@ -16,6 +16,7 @@ import { terbitkanLencana } from '../lencana-terbit'
 import { bangkitkanUkuranRekam } from './indeks'
 import { bangkitkanKesehatan } from './kesehatan'
 import { bangkitkanKonsol, bangkitkanRiwayatMasuk } from './konsol'
+import { konversiTagihanLama, tambahTagihanContoh } from './tagihan'
 import { bangkitkanKeuangan } from './keuangan'
 import { bangkitkanLaporan } from './laporan'
 import { bangkitkanLembaga } from './lembaga'
@@ -176,6 +177,7 @@ export function bangkitkanDb(sekarang: Date): DbDemo {
     percobaanVerifikasi: [],
     penggunaKonsol: konsol.penggunaKonsol,
     langganan: konsol.langganan,
+    tagihan: [],
     rekamDesa: konsol.rekam,
     riwayatMasuk,
     // Slug v0.1 ("sungai-sialang") tetap mengarah ke desanya lewat alias (SPEC-V0.2 §4.2).
@@ -191,6 +193,9 @@ export function bangkitkanDb(sekarang: Date): DbDemo {
     lencana: [],
     periodeLencana: [],
   }
+  // Tanpa PRNG: tagihan v0.1 dikonversi apa adanya, lalu tagihan contoh ditambahkan (rencana 7D-1 Tugas 2).
+  db.tagihan = konversiTagihanLama(konsol.tagihanLama, db)
+  tambahTagihanContoh(db, sekarang)
   // Tanpa PRNG: bulan tutup desa panel dibekukan dari datanya, jadi aliran acak lain tidak bergeser (keputusan 7C-1 butir 8).
   bekukanPanel(db, sekarang)
   // Tanpa PRNG: lencana periode tutup terbit dari hasil Indeks, jadi tidak menggeser aliran acak mana pun (rencana 7C-2 butir 14).

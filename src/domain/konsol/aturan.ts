@@ -3,27 +3,13 @@ import { angkaRomawi } from '../format/romawi'
 import { tanggalIsoWib } from '../format/tanggal'
 import type { LangkahPersiapan } from '../wilayah/persiapan'
 import type { StatusDesa } from '../wilayah/schema'
-import type { Perhatian, RingkasanKonsol, Tagihan } from './schema'
+import type { Perhatian, RingkasanKonsol } from './schema'
 
 const HARI_MS = 86_400_000
 /** SPEC §11: desa Aktif atau Uji coba tanpa aktivitas selama ini dianggap tidak aktif. */
 export const BATAS_TIDAK_AKTIF_HARI = 14
 /** Desa Persiapan yang diam selama ini di langkah impor penduduk dianggap berhenti. */
 export const BATAS_BERHENTI_HARI = 7
-
-export const STATUS_TAGIHAN = ['lunas', 'menunggu', 'lewat-jatuh-tempo'] as const
-export type StatusTagihan = (typeof STATUS_TAGIHAN)[number]
-export const LABEL_STATUS_TAGIHAN: Readonly<Record<StatusTagihan, string>> = {
-  lunas: 'Lunas',
-  menunggu: 'Menunggu pembayaran',
-  'lewat-jatuh-tempo': 'Lewat jatuh tempo',
-}
-
-/** Status tagihan pada `hariIni` (YYYY-MM-DD, WIB). */
-export function statusTagihan(t: Pick<Tagihan, 'jatuhTempo' | 'dibayar'>, hariIni: string): StatusTagihan {
-  if (t.dibayar !== null) return 'lunas'
-  return hariIni > t.jatuhTempo ? 'lewat-jatuh-tempo' : 'menunggu'
-}
 
 /** "2026-09-24" → "Triwulan III 2026". */
 export function labelTriwulan(tanggal: string): string {

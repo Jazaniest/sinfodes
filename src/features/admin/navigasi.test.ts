@@ -53,7 +53,7 @@ describe('menu admin (SPEC §5.1, §5.2)', () => {
       expect(label(peran)).toEqual(expect.arrayContaining(['Peta Desa', 'Pembangunan', 'Lembaga Desa']))
     }
   })
-  it('kelompok Publikasi dan menu Pengaturan hanya untuk Operator dan Sekdes; Kepala Dusun tanpa Buku Administrasi (3C, fokus review 1)', () => {
+  it('kelompok Publikasi hanya untuk Operator dan Sekdes; menu Pengaturan juga untuk Kepala Desa dan Kaur Keuangan (Langganan, 7D-1); Kepala Dusun tanpa Buku Administrasi (3C, fokus review 1)', () => {
     expect(menuUntuk('operator').map((k) => k.judul)).toEqual([null, 'Pelayanan', 'Data desa', 'Tata kelola', 'Publikasi'])
     expect(label('sekdes')).toEqual(expect.arrayContaining(['Buku Administrasi', 'Website Desa']))
     for (const peran of ['kades', 'kaur-keuangan', 'kadus'] as const) expect(label(peran)).not.toContain('Website Desa')
@@ -64,17 +64,21 @@ describe('menu admin (SPEC §5.1, §5.2)', () => {
     expect(bawah('sekdes')).toEqual(['Pengaturan', 'Siaran kabupaten', 'Notifikasi'])
     expect(bawah('kades')).toEqual(['Pengaturan', 'Siaran kabupaten', 'Notifikasi'])
     expect(menuBawahUntuk('operator').find((i) => i.label === 'Siaran kabupaten')?.href).toBe('/admin/siaran')
-    for (const peran of ['kaur-keuangan', 'kadus'] as const) expect(bawah(peran)).toEqual(['Notifikasi'])
+    expect(bawah('kaur-keuangan')).toEqual(['Pengaturan', 'Notifikasi'])
+    expect(bawah('kadus')).toEqual(['Notifikasi'])
   })
   it('sesi bantuan Tim Sinfodes: menu lihat saja, tanpa Website Desa dan Pengaturan (SPEC-V0.2 §5.3)', () => {
     expect(label('bantuan')).not.toContain('Website Desa')
     expect(label('bantuan')).toEqual(expect.arrayContaining(['Kependudukan', 'Layanan Surat', 'Keuangan']))
     expect(menuBawahUntuk('bantuan').map((i) => i.label)).toEqual(['Notifikasi'])
   })
-  it('Kepala Desa: menu Pengaturan langsung ke Akses Sinfodes; peran lain tetap ke Pengaturan (SPEC-V0.2 §5.3)', () => {
+  it('menu Pengaturan: Kepala Desa dan Kaur Keuangan langsung ke Langganan; Operator dan Sekdes ke Pengaturan (SPEC-V0.2 §10)', () => {
     const pengaturan = (peran: Peran) => menuBawahUntuk(peran).find((i) => i.label === 'Pengaturan')
-    expect(pengaturan('kades')?.href).toBe('/admin/pengaturan/akses-sinfodes')
+    expect(pengaturan('kades')?.href).toBe('/admin/pengaturan/langganan')
+    expect(pengaturan('kaur-keuangan')?.href).toBe('/admin/pengaturan/langganan')
     expect(pengaturan('operator')?.href).toBe('/admin/pengaturan')
     expect(pengaturan('sekdes')?.href).toBe('/admin/pengaturan')
+    expect(pengaturan('kadus')).toBeUndefined()
+    expect(pengaturan('bantuan')).toBeUndefined()
   })
 })

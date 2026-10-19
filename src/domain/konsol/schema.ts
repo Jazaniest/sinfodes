@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { labelAlamatSah, PESAN_ALAMAT_TIDAK_SAH } from '../alamat/alamat'
 import { persiapanSchema } from '../wilayah/persiapan'
 import { desaSchema } from '../wilayah/schema'
+import { PERIODE_TAGIHAN, tagihanSchema } from '../langganan/tagihan'
 import { PAKET } from './filter'
 
 export { filterDesaKonsolSchema, HARGA_TRIWULAN, PAKET, type FilterDesaKonsol, type Paket } from './filter'
@@ -28,24 +29,14 @@ export type PenggunaKonsol = z.infer<typeof penggunaKonsolSchema>
 export const sesiKonsolSchema = z.object({ jenis: z.literal('konsol'), pengguna: penggunaKonsolSchema })
 export type SesiKonsol = z.infer<typeof sesiKonsolSchema>
 
-/** Tagihan langganan per triwulan (dummy; tanpa pembayaran). */
-export const tagihanSchema = z.object({
-  nomor: z.string(),
-  periode: z.string(),
-  jumlah: z.number().int().positive(),
-  terbit: tanggal,
-  jatuhTempo: tanggal,
-  dibayar: tanggal.nullable(),
-})
-export type Tagihan = z.infer<typeof tagihanSchema>
-
 export const langgananSchema = z.object({
   desaId: z.string(),
   paket: z.enum(PAKET),
   /** Masa aktif; keduanya null selama desa belum berlangganan (Persiapan). */
   mulai: tanggal.nullable(),
   sampai: tanggal.nullable(),
-  tagihan: z.array(tagihanSchema),
+  /** Tagihan ada di `db.tagihan` (7D-1); di sini hanya cara menagihnya. */
+  periodeTagihan: z.enum(PERIODE_TAGIHAN),
 })
 export type Langganan = z.infer<typeof langgananSchema>
 
@@ -82,6 +73,8 @@ export const detailDesaKonsolSchema = barisDesaKonsolSchema.extend({
   /** 12 minggu terakhir, terlama dulu; `mulai` adalah Senin minggu itu. */
   masukPerMinggu: z.array(z.object({ mulai: tanggal, jumlah })),
   langganan: langgananSchema.omit({ desaId: true }),
+  /** Semua tagihan desa ini, termasuk yang dibatalkan; urut menurut periode (SPEC-V0.2 §10). */
+  tagihan: z.array(tagihanSchema),
 })
 export type DetailDesaKonsol = z.infer<typeof detailDesaKonsolSchema>
 

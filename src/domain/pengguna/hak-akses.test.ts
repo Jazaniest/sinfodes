@@ -37,6 +37,15 @@ describe('hak akses (SPEC §5.1)', () => {
     ['kaur-keuangan', 'siaran.tindak', false],
     ['kadus', 'siaran.tindak', false],
     ['bantuan', 'siaran.tindak', false],
+    // Langganan (SPEC-V0.2 §10, keputusan rencana 7D-1 butir 10): hanya pimpinan dan bendahara desa.
+    ...(['langganan.lihat', 'langganan.bayar'] as const).flatMap((k) => [
+      ['kades', k, true],
+      ['sekdes', k, true],
+      ['kaur-keuangan', k, true],
+      ['operator', k, false],
+      ['kadus', k, false],
+      ['bantuan', k, false],
+    ] as const),
   ] as const)('%s → %s = %s', (peran, kemampuan, harap) => expect(boleh(peran, kemampuan)).toBe(harap))
 
   it('kepala dusun dibatasi ke dusunnya, peran lain tidak', () => {

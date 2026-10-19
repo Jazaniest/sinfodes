@@ -5,11 +5,11 @@ import { opsiDetailDesaKonsol } from '@/api/konsol'
 import { DOMAIN_INDUK, keAlamat } from '@/app/alamat'
 import { formatAngka, formatRupiah, formatUkuranKb } from '@/domain/format/angka'
 import { formatTanggal, formatWaktuLog, tanggalIsoWib } from '@/domain/format/tanggal'
-import { LABEL_STATUS_TAGIHAN, statusTagihan, type StatusTagihan } from '@/domain/konsol/aturan'
 import { HARGA_TRIWULAN, type DetailDesaKonsol } from '@/domain/konsol/schema'
+import { LABEL_PERIODE_TAGIHAN } from '@/domain/langganan/tagihan'
+import { CapTagihan } from '@/features/langganan/CapTagihan'
 import { jumlahSelesai, LABEL_LANGKAH_PERSIAPAN, LANGKAH_PERSIAPAN } from '@/domain/wilayah/persiapan'
 import { Cap } from '@/ui/cap/Cap'
-import type { VarianCap } from '@/ui/cap/varian'
 import { DescriptionList } from '@/ui/data/DescriptionList'
 import { BarChart } from '@/ui/grafik/BarChart'
 import { MiniBar } from '@/ui/grafik/MiniBar'
@@ -30,8 +30,6 @@ const judulBagian = 'text-label font-medium text-tinta-2 uppercase'
 const redup = 'text-tinta-2'
 const sel = 'border-b border-garis py-1.5'
 const kepala = 'border-b border-garis py-1.5 text-label font-medium text-tinta-2 uppercase'
-
-const CAP_TAGIHAN: Readonly<Record<StatusTagihan, VarianCap>> = { lunas: 'selesai', menunggu: 'menunggu', 'lewat-jatuh-tempo': 'ditolak' }
 
 function TabRingkasan({ d }: { d: DetailDesaKonsol }) {
   const [ubahAlamat, setUbahAlamat] = useState(false)
@@ -191,6 +189,7 @@ function TabLangganan({ d, hariIni }: { d: DetailDesaKonsol; hariIni: string }) 
       <DescriptionList
         items={[
           { label: 'Paket', nilai: `${l.paket} · ${formatRupiah(HARGA_TRIWULAN[l.paket])} per triwulan` },
+          { label: 'Penagihan', nilai: LABEL_PERIODE_TAGIHAN[l.periodeTagihan] },
           { label: d.status === 'Uji coba' ? 'Masa uji coba' : 'Masa aktif', nilai: masa },
         ]}
       />
@@ -198,7 +197,7 @@ function TabLangganan({ d, hariIni }: { d: DetailDesaKonsol; hariIni: string }) 
         <h2 id="judul-tagihan" className={judulBagian}>
           Tagihan
         </h2>
-        {l.tagihan.length === 0 ? (
+        {d.tagihan.length === 0 ? (
           <p className={redup}>Belum ada tagihan.</p>
         ) : (
           <div className="overflow-x-auto">
@@ -213,7 +212,7 @@ function TabLangganan({ d, hariIni }: { d: DetailDesaKonsol; hariIni: string }) 
                     Periode
                   </th>
                   <th scope="col" className={`${kepala} text-right`}>
-                    Jumlah
+                    Nominal
                   </th>
                   <th scope="col" className={`${kepala} text-left`}>
                     Jatuh tempo
@@ -224,18 +223,17 @@ function TabLangganan({ d, hariIni }: { d: DetailDesaKonsol; hariIni: string }) 
                 </tr>
               </thead>
               <tbody>
-                {[...l.tagihan].reverse().map((t) => {
-                  const status = statusTagihan(t, hariIni)
+                {[...d.tagihan].reverse().map((t) => {
                   return (
-                    <tr key={t.nomor}>
+                    <tr key={t.id}>
                       <th scope="row" className={`${sel} text-left font-mono font-normal`}>
                         {t.nomor}
                       </th>
-                      <td className={sel}>{t.periode}</td>
-                      <td className={`${sel} text-right tabular-nums`}>{formatRupiah(t.jumlah)}</td>
+                      <td className={sel}>{t.periode.label}</td>
+                      <td className={`${sel} text-right tabular-nums`}>{formatRupiah(t.nominal)}</td>
                       <td className={sel}>{formatTanggal(t.jatuhTempo, 'pendek')}</td>
                       <td className={sel}>
-                        <Cap varian={CAP_TAGIHAN[status]} label={LABEL_STATUS_TAGIHAN[status]} />
+                        <CapTagihan tagihan={t} hariIni={hariIni} />
                       </td>
                     </tr>
                   )

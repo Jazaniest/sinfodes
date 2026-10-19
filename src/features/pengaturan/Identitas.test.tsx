@@ -34,10 +34,10 @@ describe('Pengaturan › Identitas (SPEC §8)', () => {
     expect(screen.getByText('H. Muhammad Nasir')).toBeInTheDocument()
     expect(tab()).toEqual(['Identitas', 'Wilayah', 'Penomoran'])
   })
-  it('Sekretaris Desa melihat tab Pengguna dan Akses Sinfodes (SPEC-V0.2 §5.3)', async () => {
+  it('Sekretaris Desa melihat tab Pengguna, Langganan, dan Akses Sinfodes (SPEC-V0.2 §5.3, §10)', async () => {
     pasang('sekdes')
     await screen.findByRole('textbox', { name: /Nama desa/ })
-    expect(tab()).toEqual(['Identitas', 'Wilayah', 'Pengguna', 'Penomoran', 'Akses Sinfodes'])
+    expect(tab()).toEqual(['Identitas', 'Wilayah', 'Pengguna', 'Penomoran', 'Langganan', 'Akses Sinfodes'])
   })
   it('pratinjau kop mengikuti alamat yang diketik; Simpan menyimpan dan memberi toast (fokus review 5)', async () => {
     const user = pasang()

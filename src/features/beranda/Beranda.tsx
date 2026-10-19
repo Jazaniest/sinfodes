@@ -19,6 +19,7 @@ import { PembangunanBerjalan, RealisasiApbdes } from './BagianTataKelola'
 import { DaftarPersiapan } from './DaftarPersiapan'
 import { KartuPeringkat } from '../peringkat/KartuPeringkat'
 import { isiSuratSaya, isiTindakan, kalimatKeadaan } from './kalimat'
+import { PengingatTagihan } from './PengingatTagihan'
 import { PengingatTenggat } from './PengingatTenggat'
 
 const judulBagian = 'text-label font-medium text-tinta-2 uppercase'
@@ -113,6 +114,7 @@ export function Beranda({ sekarang = new Date() }: { sekarang?: Date }) {
       ) : (
         <>
           {kueri.data.suratSaya && <SuratSaya surat={kueri.data.suratSaya} />}
+          {kueri.data.pengingatTagihan && <PengingatTagihan pengingat={kueri.data.pengingatTagihan} />}
           {kueri.data.pengingatTenggat && <PengingatTenggat daftar={kueri.data.pengingatTenggat} />}
           {kueri.data.tindakan && (
             <section aria-labelledby="judul-tindakan">

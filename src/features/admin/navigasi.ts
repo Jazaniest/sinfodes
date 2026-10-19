@@ -66,12 +66,15 @@ export const MENU_BAWAH: readonly ItemMenu[] = [
 ]
 
 /**
- * Menu di bawah garis yang boleh dibuka peran ini; yang tidak berhak disembunyikan (SPEC §5.1). Kepala Desa tidak mengelola
- * pengaturan, tetapi memberi akses bantuan Sinfodes: menu Pengaturannya langsung ke halaman itu (SPEC-V0.2 §5.3).
+ * Menu di bawah garis yang boleh dibuka peran ini; yang tidak berhak disembunyikan (SPEC §5.1). Kepala Desa dan Kaur Keuangan
+ * tidak mengelola pengaturan, tetapi membuka Langganan (SPEC-V0.2 §10): menu Pengaturannya langsung ke halaman itu.
  */
 export function menuBawahUntuk(peran: PeranSesi): ItemMenu[] {
   return MENU_BAWAH.flatMap((i) => {
     if (i.kemampuan === null || boleh(peran, i.kemampuan)) return [i]
+    if (i.label === 'Pengaturan' && boleh(peran, 'langganan.lihat')) {
+      return [{ ...i, href: '/admin/pengaturan/langganan', kemampuan: 'langganan.lihat' as const }]
+    }
     if (i.label === 'Pengaturan' && boleh(peran, 'akses-sinfodes.kelola')) {
       return [{ ...i, href: '/admin/pengaturan/akses-sinfodes', kemampuan: 'akses-sinfodes.kelola' as const }]
     }
