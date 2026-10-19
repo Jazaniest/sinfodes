@@ -15,6 +15,7 @@ import { FotoWarta } from '@/ui/website/FotoWarta'
 import { Rubrik } from '@/ui/website/Rubrik'
 import { KartuKabar } from '../kabar/KartuKabar'
 import { usePublik } from '../publik-konteks'
+import { DeretLencana } from './DeretLencana'
 
 // Cuplikan APBDes dan potensi ada di bawah layar: dimuat terpisah supaya JS awal Beranda tetap ≤ 200 KB (SPEC §13.4).
 const BerandaLanjut = lazy(() => import('./BerandaLanjut'))
@@ -135,6 +136,7 @@ export function BerandaPublik() {
       {kueri.isError && <ErrorState pesan={pesanGalat(kueri.error)} onCobaLagi={() => void kueri.refetch()} />}
       {kueri.isSuccess && (
         <>
+          {kueri.data.lencana.length > 0 && <DeretLencana lencana={kueri.data.lencana} />}
           {kueri.data.utama && <BeritaUtama a={kueri.data.utama} dasar={dasar} />}
           <LayananCepat dasar={dasar} />
           <div className="grid gap-10 lg:grid-cols-[2fr_1fr]">

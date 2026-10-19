@@ -15,7 +15,13 @@ export type KelompokMenu = { judul: string | null; item: ItemMenu[] }
 
 /** SPEC §5.2. Hanya modul yang sudah dibangun; modul lain ditambahkan di tahapnya masing-masing. */
 export const MENU_ADMIN: readonly KelompokMenu[] = [
-  { judul: null, item: [{ label: 'Beranda', href: '/admin', kemampuan: null, awalan: '/admin', hitungan: null }] },
+  {
+    judul: null,
+    item: [
+      { label: 'Beranda', href: '/admin', kemampuan: null, awalan: '/admin', hitungan: null },
+      { label: 'Peringkat', href: '/admin/peringkat', kemampuan: null, awalan: '/admin/peringkat', hitungan: null },
+    ],
+  },
   {
     judul: 'Pelayanan',
     item: [

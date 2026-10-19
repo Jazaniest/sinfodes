@@ -5,6 +5,7 @@ import { rasioKontras } from '../kontras'
 import { warna } from '../tokens'
 import { gayaAksen, turunanAksen } from './aksen'
 import { FotoWarta } from './FotoWarta'
+import { CapLencana } from './Lencana'
 import { Rubrik } from './Rubrik'
 
 describe('komponen website desa (SPEC §9)', () => {
@@ -42,6 +43,28 @@ describe('komponen website desa (SPEC §9)', () => {
       </Rubrik>,
     )
     expect(screen.getByRole('region', { name: 'Jadwal posyandu' })).toHaveAttribute('id', 'posyandu')
+  })
+  it('CapLencana: tautan ke bukti dengan aria-label lengkap, angka peringkat, kategori, wilayah, dan periode', () => {
+    render(
+      <CapLencana
+        lencana={{
+          kode: 'LJ-ABCDEFGH',
+          kalimat: 'Juara 1 bersama Layanan Tercepat · Kabupaten Pelalawan · Agustus 2026',
+          peringkat: 1,
+          bersama: true,
+          kategori: 'layanan',
+          tingkat: 'kabupaten',
+          periode: { musim: 'bulanan', kode: '2026-08', label: 'Agustus 2026' },
+        }}
+        href="http://sinfodes.localhost/lencana/LJ-ABCDEFGH"
+        varian="bukti"
+      />,
+    )
+    const cap = screen.getByRole('link', { name: 'Juara 1 bersama Layanan Tercepat · Kabupaten Pelalawan · Agustus 2026, buka bukti lencana' })
+    expect(cap).toHaveAttribute('href', 'http://sinfodes.localhost/lencana/LJ-ABCDEFGH')
+    expect(cap).toHaveTextContent('Layanan Tercepat')
+    expect(cap).toHaveTextContent('Kabupaten Pelalawan · Agustus 2026')
+    expect(cap).toHaveClass('text-stempel')
   })
   it('aksen: turunan gelap dan pucat setiap aksen tetap lolos kontras 4,5:1 (fokus review 5)', () => {
     for (const { hex } of Object.values(AKSEN_WEBSITE)) {

@@ -1,6 +1,7 @@
 import { keAlamat } from '@/app/alamat'
 import { tautanDaftarDesa } from '@/app/kontak-sinfodes'
 import { formatAngka } from '@/domain/format/angka'
+import { LABEL_KATEGORI_DESA, LABEL_KATEGORI_KABUPATEN } from '@/domain/indeks/kategori'
 import type { PortalKabupaten as DataPortal } from '@/domain/kabupaten/portal'
 import { MiniBar } from '@/ui/grafik/MiniBar'
 import { Tautan } from '@/ui/navigasi/Tautan'
@@ -14,6 +15,78 @@ const MODE_DEMO = import.meta.env.VITE_DEMO === 'true'
 const lebar = 'mx-auto w-full max-w-5xl px-4 sm:px-6'
 
 type PortalMitra = Extract<DataPortal, { mitra: true }>
+
+const kepalaTabel = 'border-b border-garis px-3 py-2 text-left text-label font-medium whitespace-nowrap text-tinta-2 uppercase'
+
+/**
+ * Juara bulan terakhir tutup per kategori, tingkat kabupaten (SPEC-V0.2 §9.5): tabel register dengan nama desa bertautan ke
+ * websitenya. Hanya nama, kecamatan, dan nilai; Indeks dan tingkatan desa tidak pernah keluar ke publik.
+ */
+function JuaraBulan({ portal }: { portal: PortalMitra }) {
+  const { podium } = portal
+  const adaJuara = podium.kategori.some((k) => k.juara.length > 0)
+  if (!adaJuara) return null
+  return (
+    <div className="border-t border-garis">
+    <section aria-labelledby="judul-juara" className={`${lebar} py-14`}>
+      <h2 id="judul-juara" className="font-serif text-judul-halaman font-medium">{`Juara ${podium.periode.label}`}</h2>
+      {portal.posisiProvinsi.length > 0 && (
+        <ul className="mt-2 flex flex-col gap-1">
+          {portal.posisiProvinsi.map((p) => (
+            <li key={p.kategori} className="text-tinta-2">
+              {`Kabupaten ${portal.kabupaten.nama} juara ${p.peringkat}${p.bersama ? ' bersama' : ''} ${LABEL_KATEGORI_KABUPATEN[p.kategori]} se-provinsi ${p.provinsi}.`}
+            </li>
+          ))}
+        </ul>
+      )}
+      <div className="mt-6 overflow-x-auto border-t-[1.5px] border-tinta">
+        <table className="w-full min-w-[40rem] border-collapse">
+          <caption className="sr-only">{`Juara per kategori, ${podium.periode.label}`}</caption>
+          <thead>
+            <tr>
+              <th scope="col" className={kepalaTabel}>
+                Kategori
+              </th>
+              {[1, 2, 3].map((p) => (
+                <th key={p} scope="col" className={kepalaTabel}>{`Juara ${p}`}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {podium.kategori.map((k) => (
+              <tr key={k.kategori} className="border-b border-garis align-top">
+                <th scope="row" className="px-3 py-2.5 text-left font-medium">
+                  {LABEL_KATEGORI_DESA[k.kategori]}
+                </th>
+                {[1, 2, 3].map((p) => {
+                  const juara = k.juara.filter((j) => j.peringkat === p)
+                  return (
+                    <td key={p} className="px-3 py-2.5">
+                      {juara.length === 0 ? (
+                        <span className="text-tinta-2">-</span>
+                      ) : (
+                        <ul className="flex flex-col gap-2">
+                          {juara.map((j) => (
+                            <li key={j.desa.alamat} className="flex flex-col">
+                              <Tautan href={keAlamat({ jenis: 'desa', label: j.desa.alamat })}>{j.desa.nama}</Tautan>
+                              <span className="text-teks-kecil text-tinta-2">{`Kec. ${j.desa.kecamatan} · ${j.nilai}`}</span>
+                              {j.bersama && <span className="text-teks-kecil text-tinta-2">{`Juara ${j.peringkat} bersama`}</span>}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </td>
+                  )
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+    </div>
+  )
+}
 
 function DaftarDesa({ portal }: { portal: PortalMitra }) {
   return (
@@ -52,7 +125,7 @@ function DaftarDesa({ portal }: { portal: PortalMitra }) {
 
 /**
  * Portal publik kabupaten mitra (SPEC-V0.2 §8.2) di alamat kabupaten: desa yang sudah memakai Sinfodes per kecamatan, dan
- * ajakan untuk desa yang belum, dengan peta desa. Podium Indeks menyusul di 7C.
+ * ajakan untuk desa yang belum, peta desa, dan juara bulan terakhir tutup per kategori.
  */
 export function PortalKabupaten({ portal }: { portal: DataPortal }) {
   if (!portal.mitra) return <KabupatenBelumMitra nama={portal.kabupaten.nama} />
@@ -92,6 +165,8 @@ export function PortalKabupaten({ portal }: { portal: DataPortal }) {
             className="mt-4 max-w-md"
           />
         </section>
+
+        <JuaraBulan portal={portal} />
 
         {portal.peta.length > 0 && (
           <div className="border-t border-garis">

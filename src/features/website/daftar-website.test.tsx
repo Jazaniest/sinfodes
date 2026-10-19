@@ -31,7 +31,7 @@ describe('Website Desa (SPEC §8)', () => {
     expect(screen.getByText('12 artikel · 10 terbit, 2 draf')).toBeInTheDocument()
     const tab = screen.getByRole('navigation', { name: 'Bagian website desa' })
     expect(within(tab).getByRole('link', { name: 'Artikel' })).toHaveAttribute('aria-current', 'page')
-    expect(within(tab).getAllByRole('link').map((a) => a.textContent)).toEqual(['Artikel', 'Pengumuman', 'Agenda', 'Galeri', 'Tampilan'])
+    expect(within(tab).getAllByRole('link').map((a) => a.textContent)).toEqual(['Artikel', 'Pengumuman', 'Agenda', 'Galeri', 'Tampilan', 'Lencana'])
   })
   it('pengumuman: masa berlaku dan statusnya, terbaru dulu', async () => {
     pasang(<DaftarPengumuman />)

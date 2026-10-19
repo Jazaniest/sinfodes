@@ -161,6 +161,26 @@ Pekerjaan v0.2.0 (tahap 7A-7H) dicatat di sini selama berjalan di branch `develo
 - Jumlah desa resmi kabupaten ditambah: Kampar 242, Bengkalis 136, Indragiri Hilir 197, dan Kuantan Singingi 218.
 - Menu dasbor kabupaten: Ringkasan · Indeks & Peringkat · Pemantauan · Dana Desa · Peta · Data gabungan · Laporan · Siaran · Pengguna.
 
+### Ditambahkan (7C-2: peringkat desa, lencana, podium publik)
+
+- **Halaman Peringkat di panel desa.**
+  - Menu *Peringkat* di bawah Beranda untuk semua peran, di `/admin/peringkat`.
+  - Isinya: Indeks dan tingkatan desa, posisi di kecamatan dan kabupaten untuk sembilan kategori beserta ambang juara 3 (angkanya saja, tanpa nama desa lain), tren enam periode, dan saran naik dari data desa sendiri.
+  - Musim dan periode bisa dipilih. Klasemen sementara hanya dilihat desa itu sendiri.
+  - Desa yang belum Aktif membaca penjelasan, bukan tabel kosong.
+- **Kartu Peringkat di Beranda:** Indeks bulan terakhir tutup, posisi Juara Umum di kabupaten, dan satu saran teratas.
+- **Lencana juara.**
+  - Terbit otomatis untuk juara 1-3 tingkat kabupaten, dan tingkat kecamatan bila paling sedikit tiga desa memenuhi syarat, untuk bulanan, triwulan, dan tahunan. Seri sama-sama mendapat lencana.
+  - Tampil di atas beranda website desa (paling banyak 6, dari periode tutup terakhir).
+  - Tab baru *Website Desa → Lencana* untuk menyembunyikan lencana dari website.
+  - Setiap lencana punya halaman bukti di `sinfodes.localhost/lencana/{kode}` yang tetap terbuka walau lencana disembunyikan.
+- **Podium publik:** tabel *Juara {bulan}* di portal kabupaten (beserta posisi se-provinsi bila masuk podium), dan *Juara bulan ini* di halaman utama Sinfodes.
+
+### Diubah (7C-2)
+
+- Data demo naik ke versi 25 (lencana dan periode yang sudah diproses). Tidak ada aliran acak baru.
+- Perhitungan Indeks dipisah menjadi `src/mocks/indeks-hitung.ts` (murni) dan `src/mocks/indeks.ts` (akses data), supaya pembangkit data bisa menerbitkan lencana tanpa impor melingkar.
+
 ## [0.1.0] - 2026-10-16
 
 Demo tahap 1: frontend sungguhan dengan API tiruan (MSW) dan data dummy Desa Sungai Sialang, Kabupaten Pelalawan.
