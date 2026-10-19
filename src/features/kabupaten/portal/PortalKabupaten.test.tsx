@@ -1,9 +1,12 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, within } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { portalKabupatenSchema, type PortalKabupaten as DataPortal } from '@/domain/kabupaten/portal'
 import { pakaiApiTiruan } from '@/test/api-tiruan'
 import { PortalKabupaten } from './PortalKabupaten'
+
+// jsdom tidak punya WebGL; peta portal diuji di PetaPortal.test.tsx.
+vi.mock('@/features/peta/PetaTitikDesa', () => ({ default: () => <div data-testid="peta-tiruan" /> }))
 
 pakaiApiTiruan()
 
@@ -26,6 +29,7 @@ describe('portal publik kabupaten (SPEC-V0.2 §8.2)', () => {
     expect(screen.getAllByRole('img', { name: 'Lambang contoh' }).length).toBeGreaterThan(0)
     expect(screen.getByText('25 desa di Kabupaten Pelalawan sudah memakai Sinfodes.')).toBeInTheDocument()
     expect(screen.getByText('Data contoh')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 2, name: 'Peta desa' })).toBeInTheDocument()
   })
   it('daftar per kecamatan; setiap desa bertautan ke websitenya', async () => {
     pasang(await dataPortal('kab-pelalawan'))

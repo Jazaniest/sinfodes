@@ -17,6 +17,13 @@ describe('hak akses (SPEC §5.1)', () => {
     ['kadus', 'pengaduan.tanggapi', true],
     ['kadus', 'penduduk.ubah', false],
     ['kadus', 'keuangan.lihat', false],
+    // Tandai laporan ke kabupaten sudah dikirim (SPEC-V0.2 §8.3 butir 4, keputusan rencana 7B-2).
+    ['sekdes', 'keuangan.lapor', true],
+    ['kades', 'keuangan.lapor', true],
+    ['kaur-keuangan', 'keuangan.lapor', true],
+    ['operator', 'keuangan.lapor', false],
+    ['kadus', 'keuangan.lapor', false],
+    ['bantuan', 'keuangan.lapor', false],
   ] as const)('%s → %s = %s', (peran, kemampuan, harap) => expect(boleh(peran, kemampuan)).toBe(harap))
 
   it('kepala dusun dibatasi ke dusunnya, peran lain tidak', () => {

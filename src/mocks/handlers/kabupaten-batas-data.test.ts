@@ -5,8 +5,8 @@ import { AKUN_KABUPATEN_UJI, pakaiApiTiruan } from '@/test/api-tiruan'
 
 pakaiApiTiruan()
 
-/** Semua endpoint baca dasbor kabupaten 7B-1. Endpoint baru di 7B-2 dan 7B-3 ditambahkan di sini. */
-const ENDPOINT = ['/kabupaten/sesi', '/kabupaten/ringkasan', '/kabupaten/pemantauan', '/kabupaten/pengguna']
+/** Semua endpoint baca dasbor kabupaten 7B-1 dan 7B-2. Endpoint baru di 7B-3 ditambahkan di sini. */
+const ENDPOINT = ['/kabupaten/sesi', '/kabupaten/ringkasan', '/kabupaten/pemantauan', '/kabupaten/pengguna', '/kabupaten/dana-desa', '/kabupaten/tenggat', '/kabupaten/data-gabungan', '/kabupaten/peta', '/kabupaten/laporan', '/kabupaten/laporan/2026-08']
 /** Kunci yang bukan hak kabupaten (SPEC-V0.2 §5.1). */
 const TERLARANG = ['nik', 'nomorKk', 'tagihan', 'paket', 'penyimpananKb', 'alamatKantor', 'kataSandi']
 
@@ -42,6 +42,16 @@ describe('batas data kabupaten (SPEC-V0.2 §5.1, fokus review 1 dan 5)', () => {
     for (const jalur of ENDPOINT) {
       const teks = JSON.stringify(await ambilSebagai(AKUN_KABUPATEN_UJI.adminSiak, jalur))
       for (const nama of pelalawan) expect(teks.includes(`"${nama}"`), `${jalur}: ${nama}`).toBe(false)
+    }
+  })
+  it('detail per kabupaten (7B-2): tenggat sendiri tanpa kunci terlarang, dan Siak tanpa desa Pelalawan', async () => {
+    const pelalawan = ambilDb().desa.filter((d) => d.kabupaten.kode === '14.05').map((d) => d.nama)
+    const detail = [[AKUN_KABUPATEN_UJI.admin, '/kabupaten/tenggat/tgt_pll_dd2'], [AKUN_KABUPATEN_UJI.adminSiak, '/kabupaten/tenggat/tgt_siak_dd2']] as const
+    for (const [id, jalur] of detail) {
+      const isi = await ambilSebagai(id, jalur)
+      const kunci = kunciDalam(isi)
+      for (const t of [...TERLARANG, 'oleh', 'olehNama']) expect(kunci.has(t), `${id} ${jalur}: ${t}`).toBe(false)
+      if (id === AKUN_KABUPATEN_UJI.adminSiak) for (const nama of pelalawan) expect(JSON.stringify(isi).includes(`"${nama}"`), nama).toBe(false)
     }
   })
 })

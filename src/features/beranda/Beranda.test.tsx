@@ -177,3 +177,19 @@ describe('Beranda desa berstatus Persiapan (SPEC §5.3)', () => {
     expect(opsiBeranda().staleTime).toBe(0)
   })
 })
+
+describe('Beranda: pengingat tenggat laporan (SPEC-V0.2 §8.3 butir 4)', () => {
+  it('pengingat tenggat laporan ke kabupaten untuk pemegang keuangan.lihat (SPEC-V0.2 §8.3 butir 4)', async () => {
+    masukSebagai(AKUN_UJI.kades)
+    renderPanel(<Beranda sekarang={SEKARANG_UJI} />, contohSesi('kades'))
+    const kotak = await screen.findByRole('region', { name: 'Tenggat laporan ke Kabupaten Pelalawan' })
+    const tautan = within(kotak).getByRole('link', { name: 'Laporan realisasi Dana Desa tahap II 2026 · 30 September 2026 · 6 hari lagi' })
+    expect(tautan).toHaveAttribute('href', '/admin/keuangan#laporan-kabupaten')
+  })
+  it('Kepala Dusun tidak mendapat pengingat tenggat', async () => {
+    masukSebagai(AKUN_UJI.kadus)
+    renderPanel(<Beranda sekarang={SEKARANG_UJI} />, contohSesi('kadus'))
+    await screen.findByRole('heading', { name: 'Keadaan Dusun II Sialang Jaya' })
+    expect(screen.queryByRole('region', { name: /Tenggat laporan/ })).not.toBeInTheDocument()
+  })
+})

@@ -4,7 +4,7 @@ import { opsiRingkasanKabupaten } from '@/api/kabupaten'
 import { formatAngka } from '@/domain/format/angka'
 import { formatTanggal, tanggalIsoWib } from '@/domain/format/tanggal'
 import type { RingkasanKabupaten as DataRingkasan } from '@/domain/kabupaten/schema'
-import { kalimatPerhatian } from '@/domain/konsol/aturan'
+import { hrefPerhatianKabupaten, kalimatPerhatianKabupaten } from '@/domain/kabupaten/perhatian'
 import { MiniBar } from '@/ui/grafik/MiniBar'
 import { Tautan } from '@/ui/navigasi/Tautan'
 import { PageHeader } from '@/ui/tata-letak/PageHeader'
@@ -25,8 +25,8 @@ function kalimatBelumBergabung({ persiapan, ditangguhkan }: DataRingkasan['adops
 }
 
 /**
- * Ringkasan dasbor kabupaten (SPEC-V0.2 §8.3 butir 1): perlu perhatian, lalu adopsi desa. Butir Dana Desa dan siaran menyusul
- * di 7B-2 dan 7B-3; rata-rata Indeks dan posisi se-provinsi di 7C.
+ * Ringkasan dasbor kabupaten (SPEC-V0.2 §8.3 butir 1): perlu perhatian (termasuk realisasi Dana Desa tertinggal), lalu adopsi
+ * desa. Butir siaran menyusul di 7B-3; rata-rata Indeks dan posisi se-provinsi di 7C.
  */
 export function RingkasanKabupaten({ sekarang = new Date() }: { sekarang?: Date }) {
   const { kabupaten } = useSesiKabupaten()
@@ -50,9 +50,9 @@ export function RingkasanKabupaten({ sekarang = new Date() }: { sekarang?: Date 
               <ul className="mt-2 divide-y divide-garis border-y border-garis bg-lembar">
                 {kueri.data.perhatian.map((p) => (
                   <li key={p.jenis} className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 px-4 py-3">
-                    <span className="font-medium">{kalimatPerhatian(p)}</span>
-                    <Tautan href="/kabupaten/admin/pemantauan" className="text-teks-kecil">
-                      Buka Pemantauan
+                    <span className="font-medium">{kalimatPerhatianKabupaten(p)}</span>
+                    <Tautan href={hrefPerhatianKabupaten(p)} className="text-teks-kecil">
+                      {p.jenis === 'realisasi-tertinggal' ? 'Buka Dana Desa' : 'Buka Pemantauan'}
                     </Tautan>
                   </li>
                 ))}

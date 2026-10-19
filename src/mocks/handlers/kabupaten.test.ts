@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ambilPemantauanKabupaten, ambilRingkasanKabupaten } from '@/api/kabupaten'
+import { ambilDanaDesaKabupaten, ambilPemantauanKabupaten, ambilRingkasanKabupaten } from '@/api/kabupaten'
 import { barisPemantauanDesaSchema } from '@/domain/kabupaten/pemantauan'
 import { ambilDb } from '@/mocks/db'
 import { angkaKonsolDesa } from '@/mocks/konsol-angka'
@@ -69,7 +69,9 @@ describe('GET /kabupaten/ringkasan (SPEC-V0.2 §8.3 butir 1)', () => {
     const r = await ambilRingkasanKabupaten()
     expect(r.kabupaten).toEqual({ kode: '14.05', nama: 'Pelalawan' })
     expect(r.adopsi).toEqual({ bergabung: 25, jumlahDesa: 104, aktif: 21, ujiCoba: 4, persiapan: 5, ditangguhkan: 2 })
-    expect(r.perhatian.map((p) => p.jenis)).toEqual(['tidak-aktif', 'berhenti-persiapan'])
+    expect(r.perhatian.map((p) => p.jenis)).toEqual(['tidak-aktif', 'berhenti-persiapan', 'realisasi-tertinggal'])
+    // Butir Dana Desa (7B-2) sama dengan jumlah desa tertinggal di Dana Desa.
+    expect(r.perhatian.find((p) => p.jenis === 'realisasi-tertinggal')?.jumlah).toBe((await ambilDanaDesaKabupaten()).total.tertinggal)
   })
   it('Siak: 2 desa bergabung dari 122', async () => {
     masukKabupatenSebagai(AKUN_KABUPATEN_UJI.adminSiak)

@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { aktivitasSchema } from '../aktivitas/schema'
+import { pengingatTenggatSchema } from '../kabupaten/tenggat'
 import { barisPengaduanSchema } from '../pengaduan/schema'
 import { TAHAP_TTD } from '../surat/permohonan'
 import { persiapanSchema } from '../wilayah/persiapan'
@@ -49,6 +50,11 @@ export const berandaSchema = z.object({
     .nullable(),
   /** Kades dan Kaur Keuangan: kegiatan pembangunan yang sedang berjalan. */
   pembangunan: z.array(uang.extend({ id: z.string(), nama: z.string(), progresFisik: z.number().int().min(0).max(100) })).nullable(),
+  /**
+   * Tenggat laporan ke kabupaten yang belum dikirim, mulai H-14 (SPEC-V0.2 §8.3 butir 4). Null untuk pengguna tanpa
+   * `keuangan.lihat`; kosong bila desa bukan sasaran tenggat atau semuanya sudah dikirim.
+   */
+  pengingatTenggat: z.array(pengingatTenggatSchema).nullable(),
   /** Desa berstatus Persiapan (SPEC §5.3): Beranda berganti menjadi lima langkah persiapan. Null untuk desa lain. */
   persiapan: persiapanSchema.nullable(),
   keadaan: keadaanSchema,

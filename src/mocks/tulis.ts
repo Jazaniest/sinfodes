@@ -45,7 +45,7 @@ export function idBaru(db: DbDemo, awalan: string): string {
   const terpakai = new Set<string>()
   for (const daftar of [
     db.penduduk, db.keluarga, db.mutasi, db.riwayat, db.aktivitas, db.laporanData, db.impor, db.permohonan, db.suratMasuk, db.notifikasi,
-    db.pengaduan, db.aksesBantuan,
+    db.pengaduan, db.aksesBantuan, db.tenggatLaporan,
   ]) {
     for (const x of daftar) terpakai.add(x.id)
   }

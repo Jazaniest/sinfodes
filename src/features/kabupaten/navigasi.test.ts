@@ -1,17 +1,22 @@
 import { expect, it } from 'vitest'
 import { menuKabupaten, menuKabupatenAktif } from './navigasi'
 
-it('menu dasbor 7B-1: Pengguna hanya untuk Admin (SPEC-V0.2 §8.1, §8.3)', () => {
+it('menu dasbor 7B-2: Pengguna hanya untuk Admin (SPEC-V0.2 §8.1, §8.3)', () => {
   expect(menuKabupaten('admin').map((m) => [m.label, m.href])).toEqual([
     ['Ringkasan', '/kabupaten/admin'],
     ['Pemantauan', '/kabupaten/admin/pemantauan'],
+    ['Dana Desa', '/kabupaten/admin/dana-desa'],
+    ['Peta', '/kabupaten/admin/peta'],
+    ['Data gabungan', '/kabupaten/admin/data-gabungan'],
+    ['Laporan', '/kabupaten/admin/laporan'],
     ['Pengguna', '/kabupaten/admin/pengguna'],
   ])
-  expect(menuKabupaten('peninjau').map((m) => m.label)).toEqual(['Ringkasan', 'Pemantauan'])
+  expect(menuKabupaten('peninjau').map((m) => m.label)).toEqual(['Ringkasan', 'Pemantauan', 'Dana Desa', 'Peta', 'Data gabungan', 'Laporan'])
 })
 
 it('Ringkasan aktif hanya di akar dasbor; menu lain juga di bawahnya', () => {
   expect(menuKabupatenAktif('/kabupaten/admin', '/kabupaten/admin/')).toBe(true)
   expect(menuKabupatenAktif('/kabupaten/admin', '/kabupaten/admin/pemantauan')).toBe(false)
   expect(menuKabupatenAktif('/kabupaten/admin/pemantauan', '/kabupaten/admin/pemantauan')).toBe(true)
+  expect(menuKabupatenAktif('/kabupaten/admin/dana-desa', '/kabupaten/admin/dana-desa/tenggat/tgt_pll_dd2')).toBe(true)
 })

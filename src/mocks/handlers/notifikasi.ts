@@ -3,6 +3,7 @@ import { tandaiDibacaSchema, type KotakNotifikasi } from '@/domain/notifikasi/sc
 import type { PenggunaSesi } from '@/domain/pengguna/schema'
 import { ambilDb, ubahDb } from '../db'
 import { API, denganJaringan } from '../http'
+import { notifikasiTenggatBaru } from '../pengingat-tenggat'
 import { butuhPengguna } from '../sesi-mock'
 import { bacaJson, balasIsianTidakValid } from '../tulis'
 
@@ -21,6 +22,13 @@ export const handlerNotifikasi = [
     denganJaringan(({ request }) => {
       const pengguna = butuhPengguna(request)
       if (pengguna instanceof Response) return pengguna
+      // Pengingat tenggat laporan ke kabupaten yang ambangnya sudah tercapai (SPEC-V0.2 §8.3 butir 4).
+      const baru = notifikasiTenggatBaru(ambilDb(), pengguna, new Date())
+      if (baru.length > 0) {
+        ubahDb((d) => {
+          d.notifikasi.push(...baru)
+        })
+      }
       return HttpResponse.json(kotakMilik(pengguna))
     }),
   ),

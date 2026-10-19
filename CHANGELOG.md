@@ -89,6 +89,35 @@ Pekerjaan v0.2.0 (tahap 7A-7H) dicatat di sini selama berjalan di branch `develo
 - **Email unik di semua jenis akun.** Email akun desa, Konsol, dan kabupaten tidak bisa dipakai dua kali.
 - Skenario demo 3 memakai Peninjau Kabupaten Pelalawan di dasbor kabupaten.
 
+### Ditambahkan (7B-2: Dana Desa, data gabungan, peta, dan laporan kabupaten)
+
+- **Dana Desa di dasbor kabupaten.**
+  - Pagu dan realisasi belanja APBDes per kecamatan dan per desa, dalam rupiah dan persen, dengan Unduh CSV.
+  - Desa yang realisasinya lebih dari 15 poin di bawah median kabupaten ditandai "Tertinggal" dan muncul di Perlu perhatian di Ringkasan.
+- **Tenggat laporan ke kabupaten.**
+  - Admin Kabupaten menambah, mengubah, dan menghapus tenggat (nama laporan dan tanggalnya).
+  - Detail tenggat menampilkan status setiap desa: belum dikirim, lewat tenggat, sudah dikirim, atau dikirim terlambat, beserta tanggalnya. Tersedia filter status dan Unduh CSV.
+  - Peninjau melihat semuanya tanpa bisa mengubah.
+- **Pengingat tenggat di panel desa.**
+  - Beranda menampilkan tenggat yang tinggal 14 hari atau kurang sampai desa menandainya terkirim.
+  - Sekdes, Kades, dan Kaur Keuangan mendapat notifikasi 14, 7, dan 1 hari sebelum tenggat.
+  - Halaman Keuangan punya bagian "Laporan ke Kabupaten …". Sekdes, Kades, dan Kaur Keuangan menandai "Sudah dikirim" beserta tanggalnya, dan bisa membatalkannya; kabupaten langsung melihat tandanya.
+- **Data gabungan:** penduduk laki-laki dan perempuan, KK, kelompok umur, dan penerima bansos per program, per kecamatan dan per desa.
+  - Angka 1-4 tampil sebagai "<5".
+  - Angka lain ikut disamarkan dengan "*" bila angka kecilnya bisa dihitung dari jumlah baris atau kolomnya.
+  - Angka sudah disamarkan sebelum keluar dari server, dan Unduh CSV memakai angka yang sama.
+- **Peta kabupaten.**
+  - Dasbor: titik desa dengan lapisan Status bergabung dan Realisasi Dana Desa, kartu desa, dan daftar desa sebagai jalan lain bila peta tidak bisa dipakai.
+  - Portal publik: titik desa yang sudah bergabung dan yang sedang bersiap, tanpa angka apa pun, dengan tautan ke website desa.
+- **Laporan bulanan** untuk setiap bulan yang sudah tutup sejak kabupaten bergabung.
+  - Isinya sampul, ringkasan kabupaten, rincian per kecamatan, desa yang perlu perhatian, Dana Desa, dan lampiran tabel per desa.
+  - Tampil sebagai lembar siap cetak; tombol "Cetak atau simpan PDF" membuka dialog cetak peramban.
+
+### Diubah (7B-2)
+
+- Menu dasbor kabupaten: Ringkasan · Pemantauan · Dana Desa · Peta · Data gabungan · Laporan · Pengguna.
+- Data demo dibangkitkan ulang otomatis (versi data 22) dengan tenggat Dana Desa contoh.
+
 ## [0.1.0] - 2026-10-16
 
 Demo tahap 1: frontend sungguhan dengan API tiruan (MSW) dan data dummy Desa Sungai Sialang, Kabupaten Pelalawan.

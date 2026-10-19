@@ -116,7 +116,7 @@ describe('data Konsol (SPEC §12.8, §11)', () => {
     }
     expect(db.rekamDesa.some((r) => r.kontak.sekdes === null)).toBe(true)
     const lain = bangkitkanKonsol(buatAcak(SEED_DEMO + 9), {
-      acuan: SEKARANG, desaPanel: DESA_DEMO, acakPemantauan: buatAcak(SEED_DEMO + 11), acakKontak: buatAcak(1),
+      acuan: SEKARANG, desaPanel: DESA_DEMO, acakPemantauan: buatAcak(SEED_DEMO + 11), acakKontak: buatAcak(1), acakBelanja: buatAcak(SEED_DEMO + 13), acakKomposisi: buatAcak(SEED_DEMO + 14),
     })
     const tanpaSekdes = (r: RekamDesa) => ({ ...r, kontak: { ...r.kontak, sekdes: null } })
     expect(lain.rekam.map(tanpaSekdes)).toEqual(db.rekamDesa.map(tanpaSekdes))

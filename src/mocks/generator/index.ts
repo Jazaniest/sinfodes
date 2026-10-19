@@ -23,6 +23,7 @@ import { bangkitkanPengaduan } from './pengaduan'
 import { bangkitkanPenduduk } from './penduduk'
 import { bangkitkanPeta } from './peta'
 import { bangkitkanSurat } from './surat'
+import { bangkitkanTenggat } from './tenggat'
 import { bangkitkanWebsite } from './website'
 
 export const SEED_DEMO = 20260924
@@ -107,18 +108,23 @@ export function bangkitkanDb(sekarang: Date): DbDemo {
   })
   // Tanpa PRNG: isi website tetap (SPEC §12.6).
   const website = bangkitkanWebsite({ desa: desaDemo, dusun: DUSUN_DEMO, pengguna: PENGGUNA_DEMO, acuan: sekarang })
-  // Aliran acak kesepuluh sampai ketiga belas: data Konsol, riwayat masuk panel, angka Pemantauan, dan Sekretaris Desa desa fiktif (SPEC §11).
+  // Aliran acak kesepuluh sampai kelima belas: data Konsol, riwayat masuk panel, angka Pemantauan, Sekretaris Desa, belanja
+  // bulanan, dan komposisi penduduk desa fiktif (SPEC §11, SPEC-V0.2 §8.3).
   const konsol = bangkitkanKonsol(buatAcak(SEED_DEMO + 9), {
     acuan: sekarang,
     desaPanel: DESA_DEMO,
     acakPemantauan: buatAcak(SEED_DEMO + 11),
     acakKontak: buatAcak(SEED_DEMO + 12),
+    acakBelanja: buatAcak(SEED_DEMO + 13),
+    acakKomposisi: buatAcak(SEED_DEMO + 14),
   })
   const riwayatMasuk = bangkitkanRiwayatMasuk(buatAcak(SEED_DEMO + 10), {
     pengguna: PENGGUNA_DEMO.filter((p) => p.desaId === ID_SUNGAI_SIALANG),
     acuan: sekarang,
   })
   const semuaDesa = [...structuredClone(DESA_DEMO), ...konsol.desa]
+  // Aliran acak keenam belas: tenggat Dana Desa contoh dan status kirim desa rekaman (SPEC-V0.2 §13).
+  const tenggat = bangkitkanTenggat(buatAcak(SEED_DEMO + 15), { acuan: sekarang, desa: semuaDesa })
   return {
     versiData: VERSI_DATA,
     tanggalAcuan: waktuIsoWib(sekarang),
@@ -167,5 +173,7 @@ export function bangkitkanDb(sekarang: Date): DbDemo {
     aksesBantuan: contohAksesBantuan(sekarang),
     kabupatenMitra: KABUPATEN_MITRA_DEMO.map((k) => structuredClone(k)),
     penggunaKabupaten: PENGGUNA_KABUPATEN_DEMO.map((p) => structuredClone(p)),
+    tenggatLaporan: tenggat.tenggat,
+    kirimLaporan: tenggat.kirim,
   }
 }

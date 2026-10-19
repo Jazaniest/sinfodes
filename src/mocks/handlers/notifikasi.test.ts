@@ -16,12 +16,14 @@ describe('notifikasi (SPEC §5.5)', () => {
   })
   it('tandai satu lalu semua; ID milik orang lain diabaikan (fokus review 4)', async () => {
     masukSebagai(AKUN_UJI.sekdes)
-    const milikSekdes = (await ambilNotifikasi()).data.find((n) => !n.dibaca)
+    const kotakSekdes = await ambilNotifikasi()
+    const milikSekdes = kotakSekdes.data.find((n) => !n.dibaca)
     masukSebagai(AKUN_UJI.operator)
     const [belum] = (await ambilNotifikasi()).data.filter((n) => !n.dibaca)
     expect((await tandaiDibaca([belum.id, milikSekdes?.id ?? '-'])).belumDibaca).toBe(2)
+    // Sekdes juga menerima pengingat tenggat laporan (7B-2); angkanya tidak berubah oleh tindakan Operator.
     masukSebagai(AKUN_UJI.sekdes)
-    expect((await ambilNotifikasi()).belumDibaca).toBe(2)
+    expect((await ambilNotifikasi()).belumDibaca).toBe(kotakSekdes.belumDibaca)
     masukSebagai(AKUN_UJI.operator)
     expect((await tandaiDibaca(null)).belumDibaca).toBe(0)
   })

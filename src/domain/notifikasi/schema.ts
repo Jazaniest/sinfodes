@@ -3,7 +3,7 @@ import { formatTanggal, tanggalIsoWib } from '../format/tanggal'
 
 /** SPEC §5.5. */
 export const JENIS_NOTIFIKASI = [
-  'permohonan-baru', 'surat-ditandatangani', 'surat-dikembalikan', 'pengaduan-baru', 'laporan-data', 'pengumuman',
+  'permohonan-baru', 'surat-ditandatangani', 'surat-dikembalikan', 'pengaduan-baru', 'laporan-data', 'pengumuman', 'tenggat-laporan',
 ] as const
 export type JenisNotifikasi = (typeof JENIS_NOTIFIKASI)[number]
 
@@ -18,7 +18,7 @@ export const notifikasiSchema = z.object({
   waktu: z.iso.datetime({ offset: true }),
   dibaca: z.boolean(),
   /** Laporan kelahiran membuka alur Lahir dengan laporannya; laporan perbaikan merujuk penduduknya. */
-  rujukan: z.object({ jenis: z.enum(['permohonan', 'penduduk', 'laporan-kelahiran', 'pengaduan']), id: z.string() }).nullable(),
+  rujukan: z.object({ jenis: z.enum(['permohonan', 'penduduk', 'laporan-kelahiran', 'pengaduan', 'tenggat-laporan']), id: z.string() }).nullable(),
 })
 export type Notifikasi = z.infer<typeof notifikasiSchema>
 
@@ -34,6 +34,8 @@ export function hrefNotifikasi(n: Pick<Notifikasi, 'rujukan'>): string | null {
   if (n.rujukan?.jenis === 'penduduk') return `/admin/kependudukan/penduduk/${n.rujukan.id}`
   if (n.rujukan?.jenis === 'laporan-kelahiran') return `/admin/kependudukan/mutasi/lahir?laporan=${n.rujukan.id}`
   if (n.rujukan?.jenis === 'pengaduan') return `/admin/pengaduan/${n.rujukan.id}`
+  // Pengingat tenggat laporan ke kabupaten (SPEC-V0.2 §8.3 butir 4) membuka bagiannya di halaman Keuangan.
+  if (n.rujukan?.jenis === 'tenggat-laporan') return '/admin/keuangan#laporan-kabupaten'
   return null
 }
 

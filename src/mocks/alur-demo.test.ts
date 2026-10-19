@@ -4,7 +4,7 @@ import { ambilBeranda } from '@/api/beranda'
 import { ambilIsiBuku } from '@/api/buku'
 import { ambilKeluarga } from '@/api/keluarga'
 import { ambilApbdes } from '@/api/keuangan'
-import { ambilPemantauanKabupaten } from '@/api/kabupaten'
+import { ambilDetailTenggat, ambilPemantauanKabupaten } from '@/api/kabupaten'
 import { catatLahir } from '@/api/mutasi'
 import { daftarPengaduan } from '@/api/pengaduan'
 import { daftarPenduduk } from '@/api/penduduk'
@@ -12,6 +12,7 @@ import { verifikasiSurat } from '@/api/publik'
 import { ambilStatistikPublik } from '@/api/publik-halaman'
 import { ambilStatistikPenduduk } from '@/api/statistik'
 import { daftarPermohonan, jalankanAksi } from '@/api/surat'
+import { tandaiDikirim } from '@/api/tenggat'
 import { ambilRiwayatWarga, kirimPermohonanWarga } from '@/api/warga'
 import { tanggalIsoWib } from '@/domain/format/tanggal'
 import { jumlahKelompok } from '@/domain/keuangan/schema'
@@ -129,5 +130,12 @@ describe('tiga alur demo kriteria selesai tahap 1 (SPEC §13.5)', () => {
     expect(ss.waktuTanggapanJam).toBe(bulatJam(median(tanggapan)))
     // APBDes: halaman Keuangan, tahun berjalan.
     expect(ss.apbdes).toEqual(jumlahKelompok(await ambilApbdes(), 'belanja'))
+  })
+  it('alur 7B-2: Kaur Keuangan menandai laporan tahap II, lalu dasbor Pelalawan melihat Sungai Sialang sudah mengirim', async () => {
+    masukSebagai(AKUN_UJI.kaurKeuangan)
+    await tandaiDikirim('tgt_pll_dd2', tanggalIsoWib(SEKARANG_UJI))
+    masukKabupatenSebagai(AKUN_KABUPATEN_UJI.admin)
+    const detail = await ambilDetailTenggat('tgt_pll_dd2')
+    expect(detail.desa.find((d) => d.id === 'desa_sungai_sialang')).toMatchObject({ status: 'dikirim', tanggalKirim: '2026-09-24' })
   })
 })

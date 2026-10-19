@@ -53,4 +53,17 @@ describe('GET /kabupaten/portal (SPEC-V0.2 §8.2)', () => {
     expect((await ambil('kab-antah-berantah')).status).toBe(404)
     expect((await ambil('sungaisialang')).status).toBe(404)
   })
+  it('peta Pelalawan (7B-2): desa bergabung dan Persiapan saja; Persiapan tanpa alamat; tanpa angka apa pun', async () => {
+    const p = await portal('kab-pelalawan')
+    if (!p.mitra) throw new Error('Pelalawan harus mitra')
+    expect(p.peta).toHaveLength(30)
+    expect(p.peta.filter((d) => d.kelompok === 'bergabung')).toHaveLength(25)
+    expect(p.peta.filter((d) => d.kelompok === 'persiapan').every((d) => d.label === null)).toBe(true)
+    expect(p.peta.some((d) => d.nama === 'Segati Hilir' || d.nama === 'Air Tawar Jaya')).toBe(false)
+    expect(p.peta.find((d) => d.nama === 'Sungai Sialang')).toEqual({
+      label: 'sungaisialang', nama: 'Sungai Sialang', kecamatan: 'Teluk Meranti', kelompok: 'bergabung', titik: [102.76, 0.2475],
+    })
+    const kunci = new Set(p.peta.flatMap((d) => Object.keys(d)))
+    for (const t of ['status', 'jiwa', 'apbdes', 'alamatKantor']) expect(kunci.has(t), t).toBe(false)
+  })
 })

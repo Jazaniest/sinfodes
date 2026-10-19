@@ -1,5 +1,4 @@
 import { z } from 'zod'
-import { perhatianSchema } from '../konsol/schema'
 
 /** Peran akun kabupaten (SPEC-V0.2 §8.1). Admin pertama dibuat Tim Sinfodes dari surat penunjukan kabupaten. */
 export const PERAN_KABUPATEN = ['admin', 'peninjau'] as const
@@ -46,14 +45,26 @@ export const sesiKabupatenSchema = z.object({
 export type SesiKabupaten = z.infer<typeof sesiKabupatenSchema>
 
 const jumlah = z.number().int().min(0)
+const positif = z.number().int().min(1)
+
+/**
+ * Butir "Perlu perhatian" kabupaten (SPEC-V0.2 §8.3 butir 1). Tanpa butir tagihan: tagihan bukan urusan kabupaten (§5.1).
+ * Butir siaran menyusul di 7B-3. Butir bernilai nol tidak dikirim.
+ */
+export const perhatianKabupatenSchema = z.discriminatedUnion('jenis', [
+  z.object({ jenis: z.literal('tidak-aktif'), jumlah: positif }),
+  z.object({ jenis: z.literal('berhenti-persiapan'), jumlah: positif }),
+  z.object({ jenis: z.literal('realisasi-tertinggal'), jumlah: positif }),
+])
+export type PerhatianKabupaten = z.infer<typeof perhatianKabupatenSchema>
 
 /**
  * GET /kabupaten/ringkasan (SPEC-V0.2 §8.3 butir 1). `bergabung` = desa Aktif dan Uji coba; `jumlahDesa` = semua desa di
- * kabupaten itu, pelanggan atau bukan. Butir Dana Desa, siaran, dan Indeks menyusul di 7B-2, 7B-3, dan 7C.
+ * kabupaten itu, pelanggan atau bukan. Butir siaran dan Indeks menyusul di 7B-3 dan 7C.
  */
 export const ringkasanKabupatenSchema = z.object({
   kabupaten: kodeNama,
-  perhatian: z.array(perhatianSchema),
+  perhatian: z.array(perhatianKabupatenSchema),
   adopsi: z.object({ bergabung: jumlah, jumlahDesa: jumlah, aktif: jumlah, ujiCoba: jumlah, persiapan: jumlah, ditangguhkan: jumlah }),
 })
 export type RingkasanKabupaten = z.infer<typeof ringkasanKabupatenSchema>

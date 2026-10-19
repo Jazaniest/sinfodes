@@ -4,13 +4,17 @@ import type { PeranKabupaten } from '@/domain/kabupaten/schema'
 export type ItemMenuKabupaten = { label: string; href: string }
 
 /**
- * Menu dasbor kabupaten (SPEC-V0.2 §8.3). Hanya menu yang sudah dibangun: Dana Desa, Peta, Data gabungan, dan Laporan menyusul
- * di 7B-2, Siaran di 7B-3, Indeks & Peringkat di 7C. Pengguna hanya untuk Admin.
+ * Menu dasbor kabupaten (SPEC-V0.2 §8.3). Hanya menu yang sudah dibangun: Siaran menyusul di 7B-3, Indeks & Peringkat di 7C.
+ * Pengguna hanya untuk Admin.
  */
 export function menuKabupaten(peran: PeranKabupaten): ItemMenuKabupaten[] {
   return [
     { label: 'Ringkasan', href: '/kabupaten/admin' },
     { label: 'Pemantauan', href: '/kabupaten/admin/pemantauan' },
+    { label: 'Dana Desa', href: '/kabupaten/admin/dana-desa' },
+    { label: 'Peta', href: '/kabupaten/admin/peta' },
+    { label: 'Data gabungan', href: '/kabupaten/admin/data-gabungan' },
+    { label: 'Laporan', href: '/kabupaten/admin/laporan' },
     ...(bolehKabupaten(peran, 'kab.pengguna') ? [{ label: 'Pengguna', href: '/kabupaten/admin/pengguna' }] : []),
   ]
 }

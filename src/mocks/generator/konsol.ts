@@ -8,6 +8,7 @@ import type { Desa } from '@/domain/wilayah/schema'
 import { DESA_KONSOL, NAMA_KADES, NAMA_OPERATOR, NAMA_SEKDES, PAKET_DESA_DEMO, PENGGUNA_KONSOL_DEMO, type RencanaDesaKonsol } from '../data/desa-konsol'
 import type { Acak } from '../prng'
 import type { MasukPanel, RekamDesa } from '../tipe-db'
+import { belanjaBulananFiktif, komposisiFiktif } from './rekam-kabupaten'
 
 const HARI_MS = 86_400_000
 const JAM_LAYANAN = [
@@ -85,7 +86,7 @@ function rentangPakai(acak: Acak, r: RencanaDesaKonsol, acuan: Date): { mulai: n
 
 type AngkaPemantauanRekam = Pick<RekamDesa, 'waktuLayananJam' | 'waktuTanggapanJam' | 'apbdes'>
 /** Rekaman tanpa angka Pemantauan dan tanpa Sekretaris Desa; keduanya dari aliran acaknya sendiri (tahap 6B dan 6C). */
-type RekamDasar = Omit<RekamDesa, keyof AngkaPemantauanRekam | 'kontak'> & { kontak: Omit<RekamDesa['kontak'], 'sekdes'> }
+type RekamDasar = Omit<RekamDesa, keyof AngkaPemantauanRekam | 'kontak' | 'belanjaBulanan' | 'komposisi'> & { kontak: Omit<RekamDesa['kontak'], 'sekdes'> }
 
 function rekamDesa(acak: Acak, r: RencanaDesaKonsol, desa: Desa, acuan: Date): RekamDasar {
   const hariIni = tanggalIsoWib(acuan)
@@ -194,7 +195,7 @@ export function sekdesFiktif(acak: Acak, desa: Desa, langkahSelesai: number): Re
  */
 export function bangkitkanKonsol(
   acak: Acak,
-  o: { acuan: Date; desaPanel: readonly Desa[]; acakPemantauan: Acak; acakKontak: Acak },
+  o: { acuan: Date; desaPanel: readonly Desa[]; acakPemantauan: Acak; acakKontak: Acak; acakBelanja: Acak; acakKomposisi: Acak },
 ): { desa: Desa[]; rekam: RekamDesa[]; langganan: Langganan[]; penggunaKonsol: PenggunaKonsol[] } {
   // Alamat subdomain (SPEC-V0.2 §4.2) dibagikan berurutan setelah desa panel; ID tetap dari slug v0.1 supaya stabil.
   const terpakai = new Set(o.desaPanel.map((d) => d.slug))
@@ -214,13 +215,16 @@ export function bangkitkanKonsol(
   ]
   return {
     desa,
-    // Aliran acak terpisah: angka Pemantauan (6B) dan Sekretaris Desa (6C) tidak menggeser angka rekaman lain.
+    // Aliran acak terpisah: angka Pemantauan (6B), Sekretaris Desa (6C), belanja bulanan dan komposisi (7B-2) tidak menggeser angka lain.
     rekam: DESA_KONSOL.map((r, i) => {
       const dasar = rekamDesa(acak, r, desa[i], o.acuan)
+      const pemantauan = angkaPemantauanFiktif(o.acakPemantauan, r)
       return {
         ...dasar,
-        ...angkaPemantauanFiktif(o.acakPemantauan, r),
+        ...pemantauan,
         kontak: { ...dasar.kontak, sekdes: sekdesFiktif(o.acakKontak, desa[i], dasar.langkahSelesai) },
+        belanjaBulanan: belanjaBulananFiktif(o.acakBelanja, pemantauan.apbdes, o.acuan),
+        komposisi: komposisiFiktif(o.acakKomposisi, dasar.jiwa, r.status),
       }
     }),
     langganan,
