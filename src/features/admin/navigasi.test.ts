@@ -59,8 +59,11 @@ describe('menu admin (SPEC §5.1, §5.2)', () => {
     for (const peran of ['kades', 'kaur-keuangan', 'kadus'] as const) expect(label(peran)).not.toContain('Website Desa')
     expect(label('kadus')).not.toContain('Buku Administrasi')
     const bawah = (peran: Peran) => menuBawahUntuk(peran).map((i) => i.label)
-    expect(bawah('operator')).toEqual(['Pengaturan', 'Notifikasi'])
-    expect(bawah('sekdes')).toEqual(['Pengaturan', 'Notifikasi'])
+    // Siaran kabupaten (7B-3) untuk Operator, Sekdes, dan Kades, di antara Pengaturan dan Notifikasi.
+    expect(bawah('operator')).toEqual(['Pengaturan', 'Siaran kabupaten', 'Notifikasi'])
+    expect(bawah('sekdes')).toEqual(['Pengaturan', 'Siaran kabupaten', 'Notifikasi'])
+    expect(bawah('kades')).toEqual(['Pengaturan', 'Siaran kabupaten', 'Notifikasi'])
+    expect(menuBawahUntuk('operator').find((i) => i.label === 'Siaran kabupaten')?.href).toBe('/admin/siaran')
     for (const peran of ['kaur-keuangan', 'kadus'] as const) expect(bawah(peran)).toEqual(['Notifikasi'])
   })
   it('sesi bantuan Tim Sinfodes: menu lihat saja, tanpa Website Desa dan Pengaturan (SPEC-V0.2 §5.3)', () => {

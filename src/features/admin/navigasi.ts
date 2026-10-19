@@ -52,9 +52,10 @@ export const MENU_ADMIN: readonly KelompokMenu[] = [
 export const angkaPengaduan = (peran: PeranSesi, baru: number | undefined): number | undefined =>
   boleh(peran, 'pengaduan.tanggapi') ? baru : undefined
 
-/** Menu di bawah garis (SPEC §5.2). */
+/** Menu di bawah garis (SPEC §5.2). Siaran kabupaten (SPEC-V0.2 §8.4) di antara Pengaturan dan Notifikasi, tanpa angka. */
 export const MENU_BAWAH: readonly ItemMenu[] = [
   { label: 'Pengaturan', href: '/admin/pengaturan', kemampuan: 'pengaturan.kelola', awalan: '/admin/pengaturan', hitungan: null },
+  { label: 'Siaran kabupaten', href: '/admin/siaran', kemampuan: 'siaran.lihat', awalan: '/admin/siaran', hitungan: null },
   { label: 'Notifikasi', href: '/admin/notifikasi', kemampuan: null, awalan: '/admin/notifikasi', hitungan: 'notifikasi' },
 ]
 

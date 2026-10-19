@@ -12,6 +12,8 @@ import { handlerKabupatenDanaDesa } from './kabupaten-dana-desa'
 import { handlerKabupatenDataGabungan } from './kabupaten-data-gabungan'
 import { handlerKabupatenLaporan } from './kabupaten-laporan'
 import { handlerKabupatenPeta } from './kabupaten-peta'
+import { handlerKabupatenSiaran } from './kabupaten-siaran'
+import { handlerSiaranDesa } from './siaran-desa'
 import { handlerKabupatenTenggat } from './kabupaten-tenggat'
 import { handlerTenggatDesa } from './tenggat-desa'
 import { handlerKabupatenSesi } from './kabupaten-sesi'
@@ -59,4 +61,5 @@ export const handlers = [
   ...handlerWargaSesi, ...handlerWarga, ...handlerWargaAjukan, ...handlerWargaKeluarga, ...handlerWargaPengaduan,
   ...handlerPublik, ...handlerPublikHalaman, ...handlerKonsol, ...handlerKabupatenSesi, ...handlerKabupaten, ...handlerPenggunaKabupaten,
   ...handlerPortalKabupaten, ...handlerKonsolKabupaten, ...handlerKabupatenDanaDesa, ...handlerKabupatenDataGabungan, ...handlerKabupatenPeta, ...handlerKabupatenLaporan, ...handlerKabupatenTenggat, ...handlerTenggatDesa,
+  ...handlerKabupatenSiaran, ...handlerSiaranDesa,
 ]

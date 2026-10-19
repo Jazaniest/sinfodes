@@ -118,6 +118,27 @@ Pekerjaan v0.2.0 (tahap 7A-7H) dicatat di sini selama berjalan di branch `develo
 - Menu dasbor kabupaten: Ringkasan · Pemantauan · Dana Desa · Peta · Data gabungan · Laporan · Pengguna.
 - Data demo dibangkitkan ulang otomatis (versi data 22) dengan tenggat Dana Desa contoh.
 
+### Ditambahkan (7B-3: Siaran kabupaten ke desa)
+
+- **Menulis siaran.** Admin Kabupaten mengirim siaran berisi judul, isi teks biasa, dan lampiran PDF opsional (paling besar 5 MB).
+  - Siaran bisa ditandai "Perlu tindak lanjut" beserta tenggatnya.
+  - Sasarannya semua desa, kecamatan tertentu, atau desa tertentu; yang menerima hanya desa Aktif dan Uji coba pada saat kirim.
+  - Sebelum terkirim, dialog menyebut jumlah desa penerima, karena siaran tidak bisa diubah setelah terkirim.
+- **Siaran di panel desa.**
+  - Kades, Sekdes, dan Operator menerima notifikasi dan melihat halaman "Siaran kabupaten" di menu bawah.
+  - Siaran tercatat dibaca begitu dibuka siapa pun di desa itu.
+  - Kades atau Sekdes menandai "Sudah ditindaklanjuti" dengan catatan opsional yang dilihat kabupaten.
+- **Status per desa di dasbor kabupaten:** belum dibaca, dibaca beserta waktunya, atau ditindaklanjuti beserta catatannya, dengan filter status dan Unduh CSV.
+- **Tarik siaran.** Admin bisa menarik siaran yang sudah terkirim; desa lalu hanya melihat keterangan "Ditarik oleh kabupaten" tanpa isinya.
+- **Butir Ringkasan:** jumlah desa yang belum membaca siaran 30 hari terakhir, bertautan ke menu Siaran.
+- **Landing:** lampiran keempat berisi screenshot dasbor kabupaten.
+- **Coba demo:** skenario terpandu "Siaran kabupaten", dari menulis siaran sampai status tindak lanjut.
+
+### Diubah (7B-3)
+
+- Menu dasbor kabupaten: Ringkasan · Pemantauan · Dana Desa · Peta · Data gabungan · Laporan · Siaran · Pengguna.
+- Data demo dibangkitkan ulang otomatis (versi data 23) dengan siaran contoh dari Kabupaten Pelalawan dan Siak.
+
 ## [0.1.0] - 2026-10-16
 
 Demo tahap 1: frontend sungguhan dengan API tiruan (MSW) dan data dummy Desa Sungai Sialang, Kabupaten Pelalawan.

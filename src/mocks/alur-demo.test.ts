@@ -4,11 +4,13 @@ import { ambilBeranda } from '@/api/beranda'
 import { ambilIsiBuku } from '@/api/buku'
 import { ambilKeluarga } from '@/api/keluarga'
 import { ambilApbdes } from '@/api/keuangan'
-import { ambilDetailTenggat, ambilPemantauanKabupaten } from '@/api/kabupaten'
+import { ambilDetailSiaran, ambilDetailTenggat, ambilPemantauanKabupaten, kirimSiaran, tarikSiaran } from '@/api/kabupaten'
 import { catatLahir } from '@/api/mutasi'
+import { ambilNotifikasi } from '@/api/notifikasi'
 import { daftarPengaduan } from '@/api/pengaduan'
 import { daftarPenduduk } from '@/api/penduduk'
 import { verifikasiSurat } from '@/api/publik'
+import { ambilDetailSiaranDesa, tandaiSiaranDibaca, tandaiTindakLanjut } from '@/api/siaran'
 import { ambilStatistikPublik } from '@/api/publik-halaman'
 import { ambilStatistikPenduduk } from '@/api/statistik'
 import { daftarPermohonan, jalankanAksi } from '@/api/surat'
@@ -137,5 +139,25 @@ describe('tiga alur demo kriteria selesai tahap 1 (SPEC §13.5)', () => {
     masukKabupatenSebagai(AKUN_KABUPATEN_UJI.admin)
     const detail = await ambilDetailTenggat('tgt_pll_dd2')
     expect(detail.desa.find((d) => d.id === 'desa_sungai_sialang')).toMatchObject({ status: 'dikirim', tanggalKirim: '2026-09-24' })
+  })
+  it('alur 7B-3: siaran Pelalawan sampai tindak lanjut, lalu ditarik', async () => {
+    masukKabupatenSebagai(AKUN_KABUPATEN_UJI.admin)
+    const baru = await kirimSiaran(
+      { judul: 'Rapat evaluasi BLT-DD', isi: 'Mohon hadir.', tindakLanjut: { tenggat: '2026-10-01' }, sasaran: { jenis: 'kecamatan', kode: ['14.05.09'] } },
+      null,
+    )
+    masukSebagai(AKUN_UJI.kades)
+    const kotak = await ambilNotifikasi()
+    expect(kotak.data[0]).toMatchObject({ jenis: 'siaran-kabupaten', rujukan: { jenis: 'siaran', id: baru.id } })
+    await tandaiSiaranDibaca(baru.id)
+    await tandaiTindakLanjut(baru.id, 'Sudah dibahas dalam musyawarah dusun.')
+    masukKabupatenSebagai(AKUN_KABUPATEN_UJI.admin)
+    const detail = await ambilDetailSiaran(baru.id)
+    expect(detail.desa.find((d) => d.id === 'desa_sungai_sialang')).toMatchObject({
+      status: 'ditindaklanjuti', tindakLanjut: { catatan: 'Sudah dibahas dalam musyawarah dusun.' },
+    })
+    await tarikSiaran(baru.id)
+    masukSebagai(AKUN_UJI.kades)
+    expect(await ambilDetailSiaranDesa(baru.id)).toMatchObject({ ditarik: { pada: '2026-09-24T09:00:00+07:00' }, isi: null })
   })
 })
