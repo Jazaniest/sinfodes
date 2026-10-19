@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { galatDariZod } from '../format/galat-isian'
 import {
-  daftarMingguTerakhir, hitungPerhatian, kalimatPerhatian, kalimatPlatform, labelTriwulan, slugDesa, statusTagihan,
+  daftarMingguTerakhir, hitungPerhatian, kalimatPerhatian, kalimatPlatform, labelTriwulan, slugDesa,
   type KeadaanDesaKonsol,
 } from './aturan'
 import { PESAN_ALAMAT_TIDAK_SAH } from '../alamat/alamat'
@@ -11,11 +11,6 @@ const SEKARANG = new Date('2026-09-24T02:00:00Z')
 const lalu = (hari: number) => new Date(SEKARANG.getTime() - hari * 86_400_000).toISOString()
 
 describe('aturan Konsol Sinfodes (SPEC §11)', () => {
-  it('status tagihan: lunas bila dibayar; selain itu lewat jatuh tempo sesudah tanggalnya', () => {
-    expect(statusTagihan({ jatuhTempo: '2026-07-31', dibayar: '2026-07-20' }, '2026-09-24')).toBe('lunas')
-    expect(statusTagihan({ jatuhTempo: '2026-09-24', dibayar: null }, '2026-09-24')).toBe('menunggu')
-    expect(statusTagihan({ jatuhTempo: '2026-09-23', dibayar: null }, '2026-09-24')).toBe('lewat-jatuh-tempo')
-  })
   it('periode tagihan per triwulan', () => {
     expect(labelTriwulan('2026-09-24')).toBe('Triwulan III 2026')
     expect(labelTriwulan('2026-10-01')).toBe('Triwulan IV 2026')

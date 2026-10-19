@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { aktivitasSchema } from '../aktivitas/schema'
 import { kartuPeringkatSchema } from '../indeks/peringkat-desa'
 import { pengingatTenggatSchema } from '../kabupaten/tenggat'
+import { pengingatTagihanSchema } from '../langganan/pengingat'
 import { barisPengaduanSchema } from '../pengaduan/schema'
 import { TAHAP_TTD } from '../surat/permohonan'
 import { persiapanSchema } from '../wilayah/persiapan'
@@ -56,6 +57,8 @@ export const berandaSchema = z.object({
    * `keuangan.lihat`; kosong bila desa bukan sasaran tenggat atau semuanya sudah dikirim.
    */
   pengingatTenggat: z.array(pengingatTenggatSchema).nullable(),
+  /** Pita tagihan langganan mulai H-14 (SPEC-V0.2 §10). Null bagi peran tanpa `langganan.lihat` dan bila tidak ada yang perlu diingatkan. */
+  pengingatTagihan: pengingatTagihanSchema.nullable(),
   /** Desa berstatus Persiapan (SPEC §5.3): Beranda berganti menjadi lima langkah persiapan. Null untuk desa lain. */
   persiapan: persiapanSchema.nullable(),
   /** Kartu Peringkat bulan terakhir tutup (SPEC-V0.2 §9.5). Null bagi desa yang belum ikut peringkat. */

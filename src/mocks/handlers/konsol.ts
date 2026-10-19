@@ -2,7 +2,8 @@ import { http, HttpResponse } from 'msw'
 import { z } from 'zod'
 import { labelAlamatSah, PESAN_ALAMAT_TIDAK_SAH, usulanAlamatDesa } from '@/domain/alamat/alamat'
 import { tanggalIsoWib, waktuIsoWib } from '@/domain/format/tanggal'
-import { hitungPerhatian, statusTagihan } from '@/domain/konsol/aturan'
+import { hitungPerhatian } from '@/domain/konsol/aturan'
+import { lewatJatuhTempo } from '@/domain/langganan/tagihan'
 import {
   filterDesaKonsolSchema, tambahDesaSchema, ubahAlamatSchema, undangSekdesSchema, type BarisDesaKonsol, type DetailDesaKonsol,
   type PeriksaAlamat,
@@ -45,7 +46,8 @@ function detailDesa(db: DbDemo, desa: Desa, sekarang: Date): DetailDesaKonsol {
     aliasAlamat: db.aliasAlamat.filter((x) => x.desaId === desa.id).map((x) => x.label),
     penyimpananKb: a.penyimpananKb, masukPerMinggu: a.masukPerMinggu,
     aksesBantuan: bantuan ? { sampai: bantuan.sampai, sembunyikanDataPribadi: bantuan.sembunyikanDataPribadi } : null,
-    langganan: l ? { paket: l.paket, mulai: l.mulai, sampai: l.sampai, tagihan: l.tagihan } : { paket: 'Dasar', mulai: null, sampai: null, tagihan: [] },
+    langganan: l ? { paket: l.paket, periodeTagihan: l.periodeTagihan, mulai: l.mulai, sampai: l.sampai } : { paket: 'Dasar', periodeTagihan: 'triwulan', mulai: null, sampai: null },
+    tagihan: db.tagihan.filter((t) => t.desaId === desa.id).sort((a, b) => a.periode.mulai.localeCompare(b.periode.mulai) || a.id.localeCompare(b.id)),
   }
 }
 
@@ -128,7 +130,7 @@ export const handlerKonsol = [
       const sekarang = new Date()
       const desa = db.desa.map((d) => ({ d, a: angkaKonsolDesa(db, d, sekarang) }))
       const hariIni = tanggalIsoWib(sekarang)
-      const tagihanLewat = db.langganan.flatMap((l) => l.tagihan).filter((t) => statusTagihan(t, hariIni) === 'lewat-jatuh-tempo').length
+      const tagihanLewat = db.tagihan.filter((t) => lewatJatuhTempo(t, hariIni)).length
       const jumlah = (s: Desa['status']) => desa.filter(({ d }) => d.status === s).length
       const hasil: RingkasanKonsol = {
         perhatian: hitungPerhatian(
@@ -212,7 +214,7 @@ export const handlerKonsol = [
       ubahDb((d) => {
         d.desa.push(desa)
         d.pengguna.push(admin)
-        d.langganan.push({ desaId: id, paket, mulai: null, sampai: null, tagihan: [] })
+        d.langganan.push({ desaId: id, paket, periodeTagihan: 'triwulan', mulai: null, sampai: null })
         // Katalog bawaan, semuanya belum dilayani: desa memilihnya di langkah persiapan terakhir (tahap 6C).
         d.jenisSurat.push(...katalogDesaBaru(desa))
       })

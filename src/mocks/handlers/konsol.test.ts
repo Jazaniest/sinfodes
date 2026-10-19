@@ -54,9 +54,10 @@ describe('API Konsol (SPEC §11, §3.4)', () => {
     expect(d).not.toHaveProperty('suratPerBulan')
     expect(d.masukPerMinggu).toHaveLength(12)
     expect(d.langganan.paket).toBe('Lengkap')
-    expect(d.langganan.tagihan.length).toBeGreaterThan(0)
+    expect(d.langganan).toMatchObject({ paket: 'Lengkap', periodeTagihan: 'triwulan' })
+    expect(d.tagihan.length).toBeGreaterThan(0)
     const tl = await ambilDetailDesaKonsol('desa_tanjung_lamo')
-    expect(tl).toMatchObject({ status: 'Persiapan', aktivitasTerakhir: null, aliasAlamat: ['tanjung-lamo'], langganan: { mulai: null, tagihan: [] } })
+    expect(tl).toMatchObject({ status: 'Persiapan', aktivitasTerakhir: null, aliasAlamat: ['tanjung-lamo'], langganan: { mulai: null }, tagihan: [] })
     await expect(ambilDetailDesaKonsol('desa_tidak_ada')).rejects.toMatchObject({ kode: 'NOT_FOUND' })
   })
   it('Tambah desa: tercipta berstatus Persiapan beserta admin Sekretaris Desa yang langsung aktif, langganan, dan katalog', async () => {

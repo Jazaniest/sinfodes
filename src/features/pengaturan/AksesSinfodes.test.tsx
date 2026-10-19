@@ -39,12 +39,12 @@ describe('Akses bantuan Sinfodes (SPEC-V0.2 §5.3)', () => {
     expect(await screen.findByRole('button', { name: 'Beri akses' })).toBeInTheDocument()
     expect(screen.queryByText(/^Akses aktif sampai /)).not.toBeInTheDocument()
   })
-  it('Kepala Desa hanya melihat tab Akses Sinfodes di Pengaturan', async () => {
+  it('Kepala Desa hanya melihat tab Langganan dan Akses Sinfodes di Pengaturan', async () => {
     masukSebagai(AKUN_UJI.kades)
     renderPanel(<AksesSinfodes />, contohSesi('kades'))
     expect(await screen.findByRole('button', { name: 'Beri akses' })).toBeInTheDocument()
     const tab = within(screen.getByRole('navigation', { name: 'Bagian pengaturan' })).getAllByRole('link')
-    expect(tab.map((a) => a.textContent)).toEqual(['Akses Sinfodes'])
+    expect(tab.map((a) => a.textContent)).toEqual(['Langganan', 'Akses Sinfodes'])
   })
   it('riwayat: siapa yang membuka dan ringkasan halamannya', async () => {
     pasang()

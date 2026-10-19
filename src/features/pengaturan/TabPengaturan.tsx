@@ -4,11 +4,12 @@ import { TabNav } from '@/ui/navigasi/TabNav'
 import { PageHeader } from '@/ui/tata-letak/PageHeader'
 import { useSesiAdmin } from '../admin/sesi-konteks'
 
-type Aktif = 'identitas' | 'wilayah' | 'pengguna' | 'penomoran' | 'akses-sinfodes'
+type Aktif = 'identitas' | 'wilayah' | 'pengguna' | 'penomoran' | 'langganan' | 'akses-sinfodes'
 
 /**
- * Tab Pengaturan (SPEC §8): Identitas · Wilayah · Pengguna (khusus Sekretaris Desa) · Penomoran · Akses Sinfodes (Sekretaris
- * dan Kepala Desa, SPEC-V0.2 §5.3). Kepala Desa hanya melihat tab Akses Sinfodes.
+ * Tab Pengaturan (SPEC §8): Identitas · Wilayah · Pengguna (khusus Sekretaris Desa) · Penomoran · Langganan (Sekretaris, Kepala
+ * Desa, dan Kaur Keuangan, SPEC-V0.2 §10) · Akses Sinfodes (Sekretaris dan Kepala Desa, SPEC-V0.2 §5.3). Kepala Desa hanya
+ * melihat Langganan dan Akses Sinfodes; Kaur Keuangan hanya Langganan.
  */
 export function TabPengaturan({ aktif }: { aktif: Aktif }) {
   const { pengguna } = useSesiAdmin()
@@ -24,6 +25,9 @@ export function TabPengaturan({ aktif }: { aktif: Aktif }) {
       ? [{ label: 'Pengguna', href: '/admin/pengaturan/pengguna', aktif: aktif === 'pengguna' }]
       : []),
     ...(kelola ? [{ label: 'Penomoran', href: '/admin/pengaturan/penomoran', aktif: aktif === 'penomoran' }] : []),
+    ...(boleh(pengguna.peran, 'langganan.lihat')
+      ? [{ label: 'Langganan', href: '/admin/pengaturan/langganan', aktif: aktif === 'langganan' }]
+      : []),
     ...(boleh(pengguna.peran, 'akses-sinfodes.kelola')
       ? [{ label: 'Akses Sinfodes', href: '/admin/pengaturan/akses-sinfodes', aktif: aktif === 'akses-sinfodes' }]
       : []),

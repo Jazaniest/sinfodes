@@ -1,5 +1,5 @@
 import { screen, within } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { opsiBeranda } from '@/api/beranda'
 import { aturModeJaringan } from '@/mocks/jaringan'
 import { AKUN_DESA_BARU_UJI, AKUN_UJI, masukSebagai, pakaiApiTiruan, SEKARANG_UJI } from '@/test/api-tiruan'
@@ -202,5 +202,50 @@ describe('Beranda: pengingat tenggat laporan (SPEC-V0.2 §8.3 butir 4)', () => {
     renderPanel(<Beranda sekarang={SEKARANG_UJI} />, contohSesi('kadus'))
     await screen.findByRole('heading', { name: 'Keadaan Dusun II Sialang Jaya' })
     expect(screen.queryByRole('region', { name: /Tenggat laporan/ })).not.toBeInTheDocument()
+  })
+})
+
+describe('Beranda: pita tagihan langganan (rencana 7D-1 Tugas 4)', () => {
+  const pada = (tanggal: string) => vi.setSystemTime(new Date(`${tanggal}T03:00:00Z`))
+
+  it('H-14: kalimat persis dengan nominal dan tautan Buka Langganan', async () => {
+    masukSebagai(AKUN_UJI.kades)
+    pada('2026-10-01')
+    try {
+      renderPanel(<Beranda sekarang={new Date('2026-10-01T03:00:00Z')} />, contohSesi('kades'))
+      const pita = await screen.findByRole('region', { name: 'Tagihan langganan' })
+      expect(pita).toHaveTextContent(/^Tagihan Triwulan IV 2026 sebesar Rp3\.000\.\d{3} jatuh tempo 14 hari lagi, 15 Oktober 2026\.Buka Langganan$/)
+      expect(within(pita).getByRole('link', { name: 'Buka Langganan' })).toHaveAttribute('href', '/admin/pengaturan/langganan')
+    } finally {
+      vi.setSystemTime(SEKARANG_UJI)
+    }
+  })
+  it('lewat jatuh tempo: kalimat lewat, nada peringatan', async () => {
+    masukSebagai(AKUN_UJI.kaurKeuangan)
+    pada('2026-10-20')
+    try {
+      renderPanel(<Beranda sekarang={new Date('2026-10-20T03:00:00Z')} />, contohSesi('kaur-keuangan'))
+      const pita = await screen.findByRole('region', { name: 'Tagihan langganan' })
+      expect(pita).toHaveTextContent(/lewat jatuh tempo sejak 15 Oktober 2026\./)
+    } finally {
+      vi.setSystemTime(SEKARANG_UJI)
+    }
+  })
+  it('tanggal uji (21 hari sebelum jatuh tempo) dan Operator: tanpa pita', async () => {
+    masukSebagai(AKUN_UJI.kades)
+    const { unmount } = renderPanel(<Beranda sekarang={SEKARANG_UJI} />, contohSesi('kades'))
+    await screen.findByRole('region', { name: 'Tenggat laporan ke Kabupaten Pelalawan' })
+    expect(screen.queryByRole('region', { name: 'Tagihan langganan' })).not.toBeInTheDocument()
+    unmount()
+    pada('2026-10-10')
+    try {
+      masukSebagai(AKUN_UJI.operator)
+      renderPanel(<Beranda sekarang={new Date('2026-10-10T03:00:00Z')} />, contohSesi('operator'))
+      await screen.findByRole('heading', { name: /Selamat/ })
+      await screen.findByRole('link', { name: /penduduk datanya belum lengkap/ })
+      expect(screen.queryByRole('region', { name: 'Tagihan langganan' })).not.toBeInTheDocument()
+    } finally {
+      vi.setSystemTime(SEKARANG_UJI)
+    }
   })
 })

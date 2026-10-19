@@ -181,6 +181,27 @@ Pekerjaan v0.2.0 (tahap 7A-7H) dicatat di sini selama berjalan di branch `develo
 - Data demo naik ke versi 25 (lencana dan periode yang sudah diproses). Tidak ada aliran acak baru.
 - Perhitungan Indeks dipisah menjadi `src/mocks/indeks-hitung.ts` (murni) dan `src/mocks/indeks.ts` (akses data), supaya pembangkit data bisa menerbitkan lencana tanpa impor melingkar.
 
+### Ditambahkan (7D-1: tagihan di panel desa)
+
+- **Model tagihan baru.**
+  - Status `Belum dibayar`, `Menunggu verifikasi`, `Lunas`, dan `Dibatalkan`; `Lewat jatuh tempo` dihitung dari tanggal, tidak disimpan.
+  - Nominal unik = harga paket + kode 1-999, tidak bentrok di antara tagihan yang masih terbuka.
+  - Periode kalender per triwulan atau per tahun (tahunan = 4 x triwulan), nomor `SFD/{tahun}/{T1-T4|TH}/{nomor desa}`, dan riwayat perubahan status yang siap diisi gateway pembayaran.
+- **Terbit otomatis.** Tagihan periode berikutnya terbit 14 hari sebelum periode mulai untuk desa Aktif, jatuh tempo 14 hari sesudah periode mulai. Desa Persiapan, Uji coba, dan Ditangguhkan tidak mendapat tagihan baru. Masa aktif mengikuti periode tagihan terakhir.
+- **Pengaturan → Langganan** untuk Kepala Desa, Sekretaris Desa, dan Kaur Keuangan.
+  - Paket, masa aktif, tagihan berjalan dengan nominal besar, tombol *Salin nominal*, rekening tujuan, dan *Unduh tagihan* (lembar A4 siap cetak atau simpan PDF).
+  - Unggah bukti transfer (PNG, JPG, WebP, atau PDF sampai 2 MB) dengan tanggal, nama pengirim, dan nominal. Nominal yang berbeda hanya diberi peringatan.
+  - Bukti yang ditolak Tim tampil sebagai banner beserta alasannya. Riwayat tagihan di bawahnya.
+- **Pengingat.** Pita tagihan di Beranda mulai H-14 sebelum jatuh tempo (dan keterangan bahwa bukti sedang diperiksa), serta notifikasi pada H-14, H-7, H-1, dan hari jatuh tempo.
+- **Konsol:** tab *Langganan* di Detail desa menampilkan tagihan dengan status baru.
+
+### Diubah (7D-1)
+
+- Jatuh tempo tagihan menjadi 14 hari (sebelumnya 30 hari). Tagihan v0.1 yang sudah dibayar menjadi `Lunas`; yang belum dibayar menjadi `Belum dibayar`.
+- Menu *Pengaturan* Kepala Desa langsung membuka Langganan (sebelumnya Akses Sinfodes), dan Kaur Keuangan kini punya menu Pengaturan yang membuka Langganan. Tab Pengaturan: Identitas · Wilayah · Pengguna · Penomoran · Langganan · Akses Sinfodes.
+- Data demo naik ke versi 26: tagihan dipindah dari `langganan.tagihan` ke `db.tagihan`, ditambah tagihan contoh (dua menunggu verifikasi dengan bukti bergambar "CONTOH", satu dibatalkan beserta penggantinya) tanpa aliran acak baru.
+- Rekening tujuan demo (`Bank Contoh Nusantara`) sengaja jelas palsu.
+
 ## [0.1.0] - 2026-10-16
 
 Demo tahap 1: frontend sungguhan dengan API tiruan (MSW) dan data dummy Desa Sungai Sialang, Kabupaten Pelalawan.
