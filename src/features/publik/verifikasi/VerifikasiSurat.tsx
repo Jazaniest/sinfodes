@@ -107,7 +107,7 @@ export function VerifikasiSurat({ kode, onPeriksa }: Props) {
   const galatTampil = galat ?? (kodeRapi !== null && !sah ? PESAN_FORMAT : undefined)
 
   return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-6">
+    <div data-bagian="cek-keaslian" className="mx-auto flex max-w-2xl flex-col gap-6">
       <div className="flex flex-col gap-2">
         <h1 className="font-serif text-judul-halaman font-medium">Cek keaslian surat</h1>
         <p className="text-tinta-2">Pindai kode QR di surat dengan kamera HP, atau ketik kode verifikasi yang tercetak di sebelahnya.</p>

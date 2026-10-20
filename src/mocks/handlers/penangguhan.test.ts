@@ -35,7 +35,7 @@ const TULIS: readonly (readonly [string, string, string, string])[] = [
   ['ubah isian surat', 'PATCH', '/permohonan/prm_x', AKUN_UJI.sekdes],
   ['balas pengaduan', 'POST', '/pengaduan/pgd_x/balasan', AKUN_UJI.sekdes],
   ['ubah status pengaduan', 'POST', '/pengaduan/pgd_x/status', AKUN_UJI.sekdes],
-  ['simpan tampilan website', 'PUT', '/website/tampilan', AKUN_UJI.sekdes],
+  ['simpan tampilan website', 'PUT', '/website/situs/tema', AKUN_UJI.sekdes],
   ['simpan identitas', 'PUT', '/pengaturan/desa', AKUN_UJI.sekdes],
   ['undang pengguna', 'POST', '/pengaturan/pengguna', AKUN_UJI.sekdes],
   ['tandai laporan kabupaten terkirim', 'POST', '/tenggat-laporan/tgt_x/kirim', AKUN_UJI.sekdes],
@@ -74,7 +74,7 @@ describe('penangguhan desa: panel hanya bisa dilihat (rencana 7D-2 Tugas 4)', ()
   })
   it('semua GET tetap 200 untuk desa Ditangguhkan', async () => {
     tangguhkan()
-    for (const jalur of ['/penduduk', '/permohonan', '/beranda', '/website/tampilan', '/website/artikel', '/langganan', '/pengaduan']) {
+    for (const jalur of ['/penduduk', '/permohonan', '/beranda', '/website/situs', '/website/artikel', '/langganan', '/pengaduan']) {
       const r = await panggil('GET', jalur, sebagai(AKUN_UJI.sekdes))
       expect(r.status, jalur).toBe(200)
     }

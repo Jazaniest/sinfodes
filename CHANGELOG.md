@@ -220,6 +220,23 @@ Pekerjaan v0.2.0 (tahap 7A-7H) dicatat di sini selama berjalan di branch `develo
 - Menu Konsol: Ringkasan · Desa · Kabupaten · Tagihan.
 - Data demo naik ke versi 27: riwayat status untuk dua desa Ditangguhkan.
 
+### Ditambahkan (7E-1: tampilan Dasar website desa)
+
+- **Website Desa › Tampilan › Dasar:** desa mengatur warna utama dan aksen (delapan preset, pemilih warna, atau kode `#RRGGBB`), latar (putih atau kertas), pasangan huruf (Plex, Source, Literata, Fraunces, Bitter, Archivo), sudut (tajam, sedikit melengkung, bulat), kepadatan (lega atau rapat), motif pita, logo, foto sampul, serta foto latar dan kalimat sambutan halaman masuk warga. Pratinjau langsung HP (390 px) dan desktop (1280 px).
+- **Pemeriksa kontras** di formulir dan di API: warna utama di atas latar dan teks putih di atas warna utama minimal 4,5 : 1, warna aksen di atas latar minimal 3 : 1. *Pakai versi lebih gelap* menurunkan kecerahan warna (OKLCH) sampai lolos. API menolak tema yang gagal dengan 422 walau layar dilewati.
+- **Sebelas motif** pita: tiga lama ditambah itik pulang petang, awan larat, tumpal, mega mendung, truntum, gigi haruan, tampuk manggis, dan sisik ikan. Asal daerah tiap motif tertera di formulir dan di `src/domain/website/motif.ts`.
+- **Kontrak tema v1:** variabel `--desa-*` dan nama bagian (`data-bagian`) ditetapkan sebagai satu konstanta (`src/domain/website/kontrak-tema.ts`) sebagai dasar galeri tema, editor susunan, dan CSS kustom di tahap berikutnya. Halaman Cek keaslian ikut tema dan diberi `data-bagian="cek-keaslian"`.
+- **Halaman masuk dan layanan warga** memakai warna utama, logo, dan huruf judul desa; halaman masuk juga menampilkan sambutan dan foto latar (panel kiri di layar lebar, pita atas di HP, teks selalu di atas lembar putih).
+- **Panel admin:** garis aksen 3 px di tepi atas sidebar dan bilah atas HP, serta favicon lambang desa (atau monogram inisial desa). Warna lain di panel tetap Register.
+- Huruf website dimuat sesuai pilihan saja (`@fontsource`, subset latin), tidak ikut JS awal.
+
+### Diubah (7E-1)
+
+- Tampilan website kini disimpan di dokumen `situs` per desa (`GET /website/situs`, `PUT /website/situs/tema`), menggantikan `/website/tampilan`. Bentuk dokumen sudah menyediakan `draf` dan `riwayat` untuk alur draf → terbit di tahap 7F.
+- `GET /publik/:slug` membawa `tema` dan `favicon` (menggantikan `aksen`, `motif`, `logo`); `GET /alamat` membawa `tampilanWarga`; sesi panel membawa `tampilanPanel`.
+- Data tampilan v0.1 dipindah: aksen lama menjadi warna utama dan aksen. Desa tanpa pengaturan tampil dengan tema Warta bawaan.
+- Data demo naik ke versi 28.
+
 ## [0.1.0] - 2026-10-16
 
 Demo tahap 1: frontend sungguhan dengan API tiruan (MSW) dan data dummy Desa Sungai Sialang, Kabupaten Pelalawan.

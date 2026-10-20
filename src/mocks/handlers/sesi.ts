@@ -9,6 +9,7 @@ import { API, balasGalat, denganJaringan } from '../http'
 import { desaKonteks, konteksPermintaan, tanpaKonteks } from '../konteks-permintaan'
 import { butuhPengguna, penggunaDariPermintaan, tokenUntuk } from '../sesi-mock'
 import { idBaru } from '../tulis'
+import { versiTerbit } from './website'
 
 const masukSchema = z.object({ email: z.string().min(1), kataSandi: z.string().min(1) })
 const tiketSchema = z.object({ tiket: z.string().min(1) })
@@ -21,7 +22,8 @@ function sesiUntuk(pengguna: PenggunaSesi) {
   const db = ambilDb()
   const desa = db.desa.find((d) => d.id === pengguna.desaId)
   if (!desa) return null
-  const sesi = { jenis: 'admin' as const, pengguna, desa, dusun: db.dusun.filter((d) => d.desaId === desa.id) }
+  const tampilanPanel = { warnaAksen: versiTerbit(db, desa.id).tema.warnaAksen, favicon: desa.lambang ?? null }
+  const sesi = { jenis: 'admin' as const, pengguna, desa, dusun: db.dusun.filter((d) => d.desaId === desa.id), tampilanPanel }
   if (pengguna.peran !== 'bantuan') return sesi
   const akses = cariSesiBantuan(db, pengguna.id.replace(/^bantuan_/, ''))?.akses
   return akses ? { ...sesi, bantuan: { sampai: akses.sampai, sembunyikanDataPribadi: akses.sembunyikanDataPribadi } } : null

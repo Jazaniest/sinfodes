@@ -74,6 +74,75 @@ describe('AdminShell (SPEC §5.2, §5.7)', () => {
   })
 })
 
+describe('identitas desa di panel (rencana 7E-1 Tugas 6)', () => {
+  const sesiDenganAksen = (warnaAksen: string, favicon: string | null = null) => ({ ...contohSesi('operator'), tampilanPanel: { warnaAksen, favicon } })
+  const garis = (c: HTMLElement) => c.querySelector<HTMLElement>('[data-garis-aksen]')
+
+  it('sidebar: garis 3 px warna aksen desa di tepi atas, dekoratif', () => {
+    const { container } = render(
+      <AdminShell sesi={sesiDenganAksen('#4A6B2F')} jalur="/admin" onCari={vi.fn()} onKeluar={vi.fn()}>
+        <p>isi</p>
+      </AdminShell>,
+    )
+    const g = garis(container)!
+    expect(g).toHaveAttribute('aria-hidden', 'true')
+    expect(g).toHaveStyle({ backgroundColor: '#4A6B2F' })
+    expect(g.className).toContain('h-[3px]')
+    expect(g.closest('aside')).not.toBeNull()
+  })
+  it('HP: garis aksen ada di bilah atas', () => {
+    aturLebarLayar(390)
+    const { container } = render(
+      <AdminShell sesi={sesiDenganAksen('#9A3B2A')} jalur="/admin" onCari={vi.fn()} onKeluar={vi.fn()}>
+        <p>isi</p>
+      </AdminShell>,
+    )
+    expect(garis(container)).toHaveStyle({ backgroundColor: '#9A3B2A' })
+    expect(garis(container)!.closest('header')).not.toBeNull()
+  })
+  it('tanpa data tampilan panel tidak ada garis', () => {
+    const { container } = render(
+      <AdminShell sesi={{ ...contohSesi('operator'), tampilanPanel: undefined }} jalur="/admin" onCari={vi.fn()} onKeluar={vi.fn()}>
+        <p>isi</p>
+      </AdminShell>,
+    )
+    expect(garis(container)).toBeNull()
+  })
+  it('favicon lambang desa dipasang saat panel dimuat dan favicon Sinfodes kembali setelah dilepas', () => {
+    document.head.innerHTML = '<link rel="icon" type="image/svg+xml" href="/favicon.svg">'
+    const lambang = `data:image/png;base64,${'A'.repeat(64)}`
+    const { unmount } = render(
+      <AdminShell sesi={sesiDenganAksen('#1F4E79', lambang)} jalur="/admin" onCari={vi.fn()} onKeluar={vi.fn()}>
+        <p>isi</p>
+      </AdminShell>,
+    )
+    expect(document.head.querySelector('link[rel="icon"]')).toHaveAttribute('href', lambang)
+    unmount()
+    expect(document.head.querySelector('link[rel="icon"]')).toHaveAttribute('href', '/favicon.svg')
+    document.head.innerHTML = ''
+  })
+  it('tanpa lambang favicon berupa monogram dari inisial desa', () => {
+    document.head.innerHTML = '<link rel="icon" href="/favicon.svg">'
+    render(
+      <AdminShell sesi={sesiDenganAksen('#1F4E79')} jalur="/admin" onCari={vi.fn()} onKeluar={vi.fn()}>
+        <p>isi</p>
+      </AdminShell>,
+    )
+    const href = document.head.querySelector('link[rel="icon"]')?.getAttribute('href') ?? ''
+    expect(decodeURIComponent(href)).toContain('>SS<')
+    document.head.innerHTML = ''
+  })
+  it('panel tidak memasang variabel desa lain: tombol tetap biru Register (fokus review 5)', () => {
+    const { container } = render(
+      <AdminShell sesi={sesiDenganAksen('#4A6B2F')} jalur="/admin" onCari={vi.fn()} onKeluar={vi.fn()}>
+        <p>isi</p>
+      </AdminShell>,
+    )
+    expect(container.innerHTML).not.toContain('--desa-')
+    expect(container.innerHTML).not.toContain('--color-biru')
+  })
+})
+
 describe('ButuhAkses (SPEC §3.5)', () => {
   it('peran tidak berhak → "Tidak punya akses" dengan tautan kembali', () => {
     render(

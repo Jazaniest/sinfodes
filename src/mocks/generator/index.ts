@@ -30,7 +30,7 @@ import { bangkitkanPeta } from './peta'
 import { bangkitkanSurat } from './surat'
 import { bangkitkanSiaran } from './siaran'
 import { bangkitkanTenggat } from './tenggat'
-import { bangkitkanWebsite } from './website'
+import { bangkitkanWebsite, situsBawaan } from './website'
 
 export const SEED_DEMO = 20260924
 
@@ -167,7 +167,7 @@ export function bangkitkanDb(sekarang: Date): DbDemo {
     pengumuman: website.pengumuman,
     agenda: website.agenda,
     galeri: website.galeri,
-    tampilanWebsite: [website.tampilan],
+    situs: semuaDesa.map((d) => (d.id === ID_SUNGAI_SIALANG ? website.situs : situsBawaan(d.id, website.situs.terbit.diperbarui))),
     profilDesa: [website.profil],
     potensi: website.potensi,
     umkm: website.umkm,

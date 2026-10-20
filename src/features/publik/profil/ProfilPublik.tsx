@@ -140,7 +140,7 @@ export function ProfilPublik() {
   const identitas = usePublik()
   const kueri = useQuery(opsiProfilPublik(identitas.slug))
   return (
-    <div className="flex flex-col gap-10">
+    <div className="flex flex-col gap-[var(--desa-jarak,2.5rem)]">
       <h1 className="font-serif text-judul-halaman font-medium sm:text-judul-warta">Profil Desa {identitas.nama}</h1>
       {kueri.isPending && <BarisKerangka jumlah={8} label="Memuat profil desa…" />}
       {kueri.isError && <ErrorState pesan={pesanGalat(kueri.error)} onCobaLagi={() => void kueri.refetch()} />}

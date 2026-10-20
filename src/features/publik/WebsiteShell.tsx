@@ -1,11 +1,12 @@
-import type { CSSProperties, ReactNode } from 'react'
+import { useEffect, type CSSProperties, type ReactNode } from 'react'
 import { Link } from 'react-aria-components'
 import { tautanWhatsapp } from '@/domain/format/whatsapp'
 import type { IdentitasPublik } from '@/domain/publik/schema'
 import { formatWhatsapp } from '@/domain/warga/akun'
-import { AKSEN_WEBSITE } from '@/domain/website/schema'
+import { pemetaanRegister, variabelTema } from '@/domain/website/tema'
 import { Tautan } from '@/ui/navigasi/Tautan'
-import { gayaAksen } from '@/ui/website/aksen'
+import { pasangFavicon } from '@/ui/website/favicon'
+import { muatPasanganHuruf } from '@/ui/website/huruf'
 import { Nameplate } from '@/ui/website/Nameplate'
 import { menuPublik, menuPublikAktif } from './navigasi'
 
@@ -19,12 +20,18 @@ type Props = {
 
 /**
  * Kerangka website desa bergaya warta desa (SPEC §9): nameplate berpita motif, menu, isi, dan kaki halaman.
- * Aksen desa menimpa token biru Register, sehingga tautan, tombol, dan cincin fokus ikut berwarna desa.
+ * Wadah memasang variabel kontrak tema v1 (--desa-*) lalu memetakan token Register yang dipakai komponen website ke
+ * variabel itu, sehingga tautan, tombol, huruf, sudut, dan cincin fokus ikut tema desa tanpa komponen ditulis ulang.
  */
 export function WebsiteShell({ identitas: d, jalur, tanggal, children }: Props) {
-  const aksen = AKSEN_WEBSITE[d.aksen].hex
+  const { tema } = d
+  useEffect(() => {
+    void muatPasanganHuruf(tema.huruf)
+  }, [tema.huruf])
+  useEffect(() => pasangFavicon(d.favicon, d.nama, tema.warnaUtama), [d.favicon, d.nama, tema.warnaUtama])
+  const gaya = { ...variabelTema(tema), ...pemetaanRegister() } as CSSProperties
   return (
-    <div className="skala-publik min-h-dvh bg-kertas text-teks text-tinta" style={gayaAksen(aksen) as CSSProperties}>
+    <div data-situs className="skala-publik min-h-dvh bg-kertas font-sans text-teks text-tinta" style={gaya}>
       <a
         href="#isi"
         className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-1 focus:bg-lembar focus:px-3 focus:py-2"
@@ -36,12 +43,11 @@ export function WebsiteShell({ identitas: d, jalur, tanggal, children }: Props) 
           nama={d.nama}
           kecamatan={d.kecamatan.nama}
           kabupaten={d.kabupaten.nama}
-          aksen={aksen}
-          motif={d.motif}
-          logo={d.logo}
+          motif={tema.motif}
+          logo={tema.logo ?? d.favicon}
           tanggal={tanggal}
         />
-        <nav aria-label="Menu website desa">
+        <nav data-bagian="menu" aria-label="Menu website desa">
           <ul className="flex gap-1 overflow-x-auto px-3 sm:px-4">
             {menuPublik(d.slug).map((m) => (
               <li key={m.href} className="shrink-0">
@@ -57,7 +63,7 @@ export function WebsiteShell({ identitas: d, jalur, tanggal, children }: Props) 
           </ul>
         </nav>
       </div>
-      <main id="isi" tabIndex={-1} className="mx-auto max-w-5xl px-4 py-6 outline-none sm:px-5 print:p-0">
+      <main id="isi" data-bagian="isi" tabIndex={-1} className="mx-auto max-w-5xl px-4 py-6 outline-none sm:px-5 print:p-0">
         {children}
       </main>
       <KakiWebsite d={d} />
@@ -68,7 +74,7 @@ export function WebsiteShell({ identitas: d, jalur, tanggal, children }: Props) 
 /** Kaki halaman (SPEC §9): identitas dan alamat kantor, jam layanan, kontak WhatsApp kantor, pengelola, dan Kredit foto. */
 function KakiWebsite({ d }: { d: IdentitasPublik }) {
   return (
-    <footer className="mt-12 border-t-[3px] border-tinta bg-lembar print:hidden">
+    <footer data-bagian="kaki" className="mt-12 border-t-[3px] border-tinta bg-lembar print:hidden">
       <div className="mx-auto grid max-w-5xl gap-6 px-4 py-8 sm:grid-cols-3 sm:px-5">
         <div className="flex flex-col gap-1">
           <p className="font-serif text-judul-bagian font-medium">Desa {d.nama}</p>

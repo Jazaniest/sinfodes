@@ -5,7 +5,7 @@ import { DaftarAgenda } from './DaftarAgenda'
 import { DaftarArtikel } from './DaftarArtikel'
 import { DaftarPengumuman } from './DaftarPengumuman'
 import { Galeri } from './Galeri'
-import { Tampilan } from './Tampilan'
+import { TabTampilan } from './tampilan/TabTampilan'
 
 /** Website Desa dikelola Operator dan Sekretaris Desa (SPEC §5.1). */
 export function HalamanArtikel() {
@@ -44,7 +44,7 @@ export function HalamanTampilan() {
   const [kotor, setKotor] = useState(false)
   return (
     <ButuhAkses kemampuan="website.kelola">
-      <Tampilan onKotor={setKotor} />
+      <TabTampilan onKotor={setKotor} />
       <PenjagaKeluar aktif={kotor} keterangan="Perubahan tampilan website belum disimpan dan akan hilang." />
     </ButuhAkses>
   )

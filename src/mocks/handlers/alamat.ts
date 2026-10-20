@@ -1,9 +1,17 @@
 import { http, HttpResponse } from 'msw'
 import type { HasilAlamat } from '@/domain/alamat/schema'
 import { kabupatenDariLabel } from '@/domain/kabupaten/wilayah'
+import type { Desa } from '@/domain/wilayah/schema'
 import { ambilDb } from '../db'
 import { API, balasGalat, denganJaringan } from '../http'
 import { konteksPermintaan } from '../konteks-permintaan'
+import type { DbDemo } from '../tipe-db'
+import { versiTerbit } from './website'
+
+function tampilanWarga(db: DbDemo, desa: Desa) {
+  const t = versiTerbit(db, desa.id).tema
+  return { warnaUtama: t.warnaUtama, logo: t.logo ?? desa.lambang ?? null, fotoLatar: t.warga.fotoLatar, sambutan: t.warga.sambutan, huruf: t.huruf }
+}
 
 /** GET /alamat (SPEC-V0.2 §4.5): desa pemilik alamat, alias alamat lama, atau induk/Konsol. */
 export const handlerAlamat = [
@@ -27,6 +35,7 @@ export const handlerAlamat = [
           desa: {
             label: desa.slug, nama: desa.nama, kecamatan: desa.kecamatan.nama, kabupaten: desa.kabupaten.nama, status: desa.status,
             lambang: desa.lambang ?? null,
+            tampilanWarga: desa.status === 'Persiapan' ? null : tampilanWarga(db, desa),
           },
         } satisfies HasilAlamat)
       }

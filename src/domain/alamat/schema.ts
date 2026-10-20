@@ -1,6 +1,17 @@
 import { z } from 'zod'
 import { kategoriKabupatenSchema } from '../indeks/schema'
+import { ID_PASANGAN_HURUF } from '../website/pasangan-huruf'
 import { STATUS_DESA } from '../wilayah/schema'
+
+/** Tema halaman masuk dan layanan warga: warna utama, logo (atau lambang desa), foto latar, sambutan, dan huruf judul. */
+export const tampilanWargaSchema = z.object({
+  warnaUtama: z.string(),
+  logo: z.string().nullable(),
+  fotoLatar: z.string().nullable(),
+  sambutan: z.string().nullable(),
+  huruf: z.enum(ID_PASANGAN_HURUF),
+})
+export type TampilanWarga = z.infer<typeof tampilanWargaSchema>
 
 /** Desa pemilik alamat: cukup untuk kepala halaman masuk, berlaku untuk status apa pun (SPEC-V0.2 §4.3). */
 export const desaAlamatSchema = z.object({
@@ -10,6 +21,8 @@ export const desaAlamatSchema = z.object({
   kabupaten: z.string(),
   status: z.enum(STATUS_DESA),
   lambang: z.string().nullable(),
+  /** Tema halaman masuk dan layanan warga (rencana 7E-1); null untuk desa Persiapan yang belum punya website. */
+  tampilanWarga: tampilanWargaSchema.nullable(),
 })
 export type DesaAlamat = z.infer<typeof desaAlamatSchema>
 

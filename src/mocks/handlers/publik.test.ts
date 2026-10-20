@@ -11,8 +11,10 @@ describe('API website publik (SPEC §9, §3.4)', () => {
   it('identitas dan tampilan desa, tanpa sesi', async () => {
     expect(await ambilIdentitasPublik('sungaisialang')).toMatchObject({
       slug: 'sungaisialang', nama: 'Sungai Sialang', kecamatan: { nama: 'Teluk Meranti' }, kabupaten: { nama: 'Pelalawan' },
-      telepon: '081266031140', aksen: 'biru-tinta', motif: 'pucuk-rebung', logo: null,
+      telepon: '081266031140', favicon: null,
+      tema: { warnaUtama: '#1F4E79', motif: 'pucuk-rebung', huruf: 'plex', logo: null },
     })
+    expect(await ambilIdentitasPublik('sungaisialang')).not.toHaveProperty('tema.warga')
   })
   it('slug asing dan desa yang belum aktif → "Website desa tidak ditemukan." (fokus review 4)', async () => {
     await expect(ambilIdentitasPublik('tanjunglamo')).rejects.toMatchObject({ kode: 'NOT_FOUND', message: 'Website desa tidak ditemukan.' })

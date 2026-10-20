@@ -1,11 +1,9 @@
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
-import { AKSEN_WEBSITE } from '@/domain/website/schema'
-import { rasioKontras } from '../kontras'
-import { warna } from '../tokens'
-import { gayaAksen, turunanAksen } from './aksen'
+import { ID_MOTIF } from '@/domain/website/motif'
 import { FotoWarta } from './FotoWarta'
 import { CapLencana } from './Lencana'
+import { POLA_MOTIF } from './motif'
 import { Rubrik } from './Rubrik'
 
 describe('komponen website desa (SPEC §9)', () => {
@@ -66,13 +64,13 @@ describe('komponen website desa (SPEC §9)', () => {
     expect(cap).toHaveTextContent('Kabupaten Pelalawan · Agustus 2026')
     expect(cap).toHaveClass('text-stempel')
   })
-  it('aksen: turunan gelap dan pucat setiap aksen tetap lolos kontras 4,5:1 (fokus review 5)', () => {
-    for (const { hex } of Object.values(AKSEN_WEBSITE)) {
-      const t = turunanAksen(hex)
-      expect(rasioKontras(t.tua, '#FFFFFF')).toBeGreaterThanOrEqual(4.5)
-      expect(rasioKontras(t.utama, t.muda)).toBeGreaterThanOrEqual(4.5)
-      expect(rasioKontras(warna.tinta, t.muda)).toBeGreaterThanOrEqual(4.5)
+  it('setiap motif punya ubin dengan ukuran dan jalur tidak kosong', () => {
+    expect(Object.keys(POLA_MOTIF).sort()).toEqual([...ID_MOTIF].sort())
+    for (const m of ID_MOTIF) {
+      const pola = POLA_MOTIF[m]
+      expect(pola.lebar, m).toBeGreaterThan(0)
+      expect(pola.tinggi, m).toBeGreaterThan(0)
+      expect(pola.jalur, m).toMatch(/^M.+Z$/)
     }
-    expect(gayaAksen('#2F5D3A')).toMatchObject({ '--color-biru': '#2F5D3A' })
   })
 })

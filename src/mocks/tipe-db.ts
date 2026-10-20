@@ -28,11 +28,12 @@ import type { SuratMasuk } from '@/domain/surat/arsip'
 import type { JenisSurat } from '@/domain/surat/jenis'
 import type { PengaturanSurat } from '@/domain/surat/pengaturan'
 import type { Permohonan } from '@/domain/surat/permohonan'
-import type { Agenda, Artikel, FotoGaleri, Pengumuman, Potensi, ProfilDesa, TampilanWebsite, Umkm } from '@/domain/website/schema'
+import type { Agenda, Artikel, FotoGaleri, Pengumuman, Potensi, ProfilDesa, Umkm } from '@/domain/website/schema'
+import type { SitusDesa } from '@/domain/website/situs'
 import type { Desa, Dusun, StatusDesa } from '@/domain/wilayah/schema'
 
 /** Naikkan setiap kali seed atau struktur data berubah; data lama di IndexedDB otomatis diganti (SPEC §12). */
-export const VERSI_DATA = 27
+export const VERSI_DATA = 28
 
 /** Satu perubahan status desa oleh Tim Sinfodes (SPEC-V0.2 §7, §10.5), dengan alasannya. */
 export type RiwayatStatusDesa = {
@@ -213,7 +214,8 @@ export type DbDemo = {
   pengumuman: Pengumuman[]
   agenda: Agenda[]
   galeri: FotoGaleri[]
-  tampilanWebsite: TampilanWebsite[]
+  /** Tema dan (kelak) susunan website per desa (SPEC-V0.2 §11.6); menggantikan `tampilanWebsite` v0.1. */
+  situs: SitusDesa[]
   /** Isi halaman Profil dan Potensi website (SPEC §9, §12.6): satu profil per desa, potensi, dan UMKM warga. */
   profilDesa: ProfilDesa[]
   potensi: Potensi[]

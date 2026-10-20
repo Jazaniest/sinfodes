@@ -32,7 +32,7 @@ describe('website desa gagal dibuka (fokus review 4)', () => {
       http.get('*/api/v1/alamat', () =>
         HttpResponse.json({
           jenis: 'desa',
-          desa: { label: 'tanjunglamo', nama: 'Tanjung Lamo', kecamatan: 'Kuala Kampar', kabupaten: 'Pelalawan', status: 'Persiapan', lambang: null },
+          desa: { label: 'tanjunglamo', nama: 'Tanjung Lamo', kecamatan: 'Kuala Kampar', kabupaten: 'Pelalawan', status: 'Persiapan', lambang: null, tampilanWarga: null },
         }),
       ),
     )

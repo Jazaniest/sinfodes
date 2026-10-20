@@ -15,6 +15,7 @@ function CuplikanApbdes({ a, dasar }: { a: NonNullable<DataBeranda['apbdes']>; d
   return (
     <Rubrik
       id="apbdes-desa"
+      bagian="blok-apbdes"
       judul={`APBDes ${a.tahun}`}
       aksi={
         <Tautan href={`${dasar}/transparansi`} className="text-teks-kecil">
@@ -35,6 +36,7 @@ function PotensiDesa({ potensi, dasar }: { potensi: readonly RingkasPotensi[]; d
   return (
     <Rubrik
       id="potensi-desa"
+      bagian="blok-potensi"
       judul="Potensi desa"
       aksi={
         <Tautan href={`${dasar}/potensi`} className="text-teks-kecil">
@@ -72,7 +74,7 @@ function PotensiDesa({ potensi, dasar }: { potensi: readonly RingkasPotensi[]; d
 export default function BerandaLanjut({ b, dasar }: { b: DataBeranda; dasar: string }) {
   if (!b.apbdes && b.potensi.length === 0) return null
   return (
-    <div className="grid gap-10 lg:grid-cols-[1fr_2fr]">
+    <div className="grid gap-[var(--desa-jarak,2.5rem)] lg:grid-cols-[1fr_2fr]">
       {b.apbdes && <CuplikanApbdes a={b.apbdes} dasar={dasar} />}
       {b.potensi.length > 0 && <PotensiDesa potensi={b.potensi} dasar={dasar} />}
     </div>
