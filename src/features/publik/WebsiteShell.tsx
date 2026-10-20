@@ -48,7 +48,7 @@ export function WebsiteShell({ identitas: d, jalur, tanggal, children }: Props) 
                 <Link
                   href={m.href}
                   aria-current={menuPublikAktif(m.href, jalur, d.slug) ? 'page' : undefined}
-                  className="inline-flex min-h-tombol items-center px-2 font-medium underline-offset-8 outline-none hover:text-biru aria-[current=page]:text-biru aria-[current=page]:underline aria-[current=page]:decoration-2 data-[focus-visible]:outline-2 data-[focus-visible]:outline-solid data-[focus-visible]:-outline-offset-2 data-[focus-visible]:outline-biru"
+                  className="inline-flex min-h-tombol items-center px-2 font-medium underline-offset-8 outline-none hover:text-biru aria-[current=page]:text-biru aria-[current=page]:underline aria-[current=page]:decoration-2 data-focus-visible:outline-2 data-focus-visible:outline-solid data-focus-visible:-outline-offset-2 data-focus-visible:outline-biru"
                 >
                   {m.label}
                 </Link>
@@ -83,7 +83,7 @@ function KakiWebsite({ d }: { d: IdentitasPublik }) {
           <ul className="text-tinta-2">
             {d.jamLayanan.map((j) => (
               <li key={j.hari}>
-                {j.hari} {j.buka}–{j.tutup} WIB
+                {j.hari} {j.buka}-{j.tutup} WIB
               </li>
             ))}
           </ul>
