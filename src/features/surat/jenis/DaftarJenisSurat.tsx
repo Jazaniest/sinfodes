@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { pesanGalat } from '@/api/galat'
 import { kunciSurat, opsiJenisSurat, ubahJenisSurat } from '@/api/surat'
 import { formatAngka } from '@/domain/format/angka'
-import { boleh } from '@/domain/pengguna/hak-akses'
+import { useBoleh } from '@/features/admin/useBoleh'
 import type { JenisDenganPakai } from '@/domain/surat/jenis'
 import { Saklar } from '@/ui/isian/Saklar'
 import { Tautan } from '@/ui/navigasi/Tautan'
@@ -10,7 +10,6 @@ import { PageHeader } from '@/ui/tata-letak/PageHeader'
 import { tampilkanToast } from '@/ui/toast/antrean'
 import { ErrorState } from '@/ui/umpan-balik/ErrorState'
 import { BarisKerangka, Skeleton } from '@/ui/umpan-balik/Skeleton'
-import { useSesiAdmin } from '../../admin/sesi-konteks'
 import { TabSurat } from '../TabSurat'
 
 type UbahSaklar = { aktif?: boolean; online?: boolean }
@@ -40,11 +39,11 @@ function pesanSaklar(j: JenisDenganPakai, ubah: UbahSaklar): string {
  * penyimpanan gagal. Peran tanpa hak pengaturan melihat statusnya sebagai teks.
  */
 export function DaftarJenisSurat() {
-  const { pengguna } = useSesiAdmin()
+  const boleh = useBoleh()
   const queryClient = useQueryClient()
   const opsi = opsiJenisSurat()
   const daftar = useQuery(opsi)
-  const bolehUbah = boleh(pengguna.peran, 'pengaturan.kelola')
+  const bolehUbah = boleh('pengaturan.kelola')
 
   const saklar = useMutation({
     mutationFn: ({ jenis, ubah }: { jenis: JenisDenganPakai; ubah: UbahSaklar }) => ubahJenisSurat(jenis.id, ubah),

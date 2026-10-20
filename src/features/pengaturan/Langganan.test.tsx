@@ -77,6 +77,15 @@ describe('Pengaturan › Langganan (rencana 7D-1 Tugas 5)', { timeout: 30_000 },
     expect(baris[1]).toHaveTextContent('Lunas')
     expect(within(baris[0]).getByRole('link', { name: `Tagihan ${tagihanTerbit().nomor}` })).toBeInTheDocument()
   })
+  it('tagihan lunas punya tautan Kwitansi ke halaman cetaknya; tagihan terbit tidak', async () => {
+    pasang()
+    const tabel = await screen.findByRole('table', { name: 'Riwayat tagihan' })
+    const baris = within(tabel).getAllByRole('row').slice(1)
+    const lunas = ambilDb().tagihan.find((t) => t.desaId === ID_SUNGAI_SIALANG && t.status === 'lunas' && t.periode.label === 'Triwulan III 2026')!
+    const tautan = within(baris[1]).getByRole('link', { name: `Kwitansi ${lunas.kwitansi!.nomor}` })
+    expect(tautan).toHaveAttribute('href', `/admin/pengaturan/langganan/kwitansi/${lunas.id}`)
+    expect(within(baris[0]).queryByRole('link', { name: /^Kwitansi/ })).not.toBeInTheDocument()
+  })
   it('nominal berbeda menampilkan peringatan persis, dan nominal sama tidak', async () => {
     const user = pasang()
     const t = tagihanTerbit()

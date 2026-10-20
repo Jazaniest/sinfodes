@@ -29,10 +29,20 @@ import type { JenisSurat } from '@/domain/surat/jenis'
 import type { PengaturanSurat } from '@/domain/surat/pengaturan'
 import type { Permohonan } from '@/domain/surat/permohonan'
 import type { Agenda, Artikel, FotoGaleri, Pengumuman, Potensi, ProfilDesa, TampilanWebsite, Umkm } from '@/domain/website/schema'
-import type { Desa, Dusun } from '@/domain/wilayah/schema'
+import type { Desa, Dusun, StatusDesa } from '@/domain/wilayah/schema'
 
 /** Naikkan setiap kali seed atau struktur data berubah; data lama di IndexedDB otomatis diganti (SPEC §12). */
-export const VERSI_DATA = 26
+export const VERSI_DATA = 27
+
+/** Satu perubahan status desa oleh Tim Sinfodes (SPEC-V0.2 §7, §10.5), dengan alasannya. */
+export type RiwayatStatusDesa = {
+  desaId: string
+  dari: StatusDesa
+  ke: StatusDesa
+  alasan: string
+  pada: string
+  oleh: { id: string; nama: string }
+}
 
 /** Satu alamat lama desa, mis. slug v0.1 "sungai-sialang" untuk Sungai Sialang. */
 export type AliasAlamat = { label: string; desaId: string }
@@ -218,6 +228,8 @@ export type DbDemo = {
   langganan: Langganan[]
   /** Tagihan langganan semua desa (SPEC-V0.2 §10). */
   tagihan: Tagihan[]
+  /** Riwayat perubahan status desa, terlama dulu; dipakai Detail desa dan penentuan peserta peringkat (7D-2). */
+  riwayatStatusDesa: RiwayatStatusDesa[]
   rekamDesa: RekamDesa[]
   riwayatMasuk: MasukPanel[]
   /** Alamat lama desa (SPEC-V0.2 §4.2): tetap mengarah ke desanya selamanya dan tidak boleh dipakai desa lain. */

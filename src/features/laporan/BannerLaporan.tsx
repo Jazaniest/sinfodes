@@ -8,16 +8,15 @@ import { kalimatPerbaikan, type LaporanData } from '@/domain/laporan/schema'
 import { teksNilaiRiwayat } from '@/domain/penduduk/perubahan'
 import { LABEL_FIELD } from '@/domain/penduduk/riwayat'
 import type { Penduduk } from '@/domain/penduduk/schema'
-import { boleh } from '@/domain/pengguna/hak-akses'
+import { useBoleh } from '@/features/admin/useBoleh'
 import { tampilkanToast } from '@/ui/toast/antrean'
 import { Tombol } from '@/ui/tombol/Tombol'
 import { Banner } from '@/ui/umpan-balik/Banner'
-import { useSesiAdmin } from '../admin/sesi-konteks'
 import { DialogTolakLaporan } from './DialogTolakLaporan'
 
 /** Laporan perbaikan dari warga, sebagai banner di atas lembar profil penduduk (SPEC §6.3). */
 export function BannerLaporan({ penduduk, hariIni }: { penduduk: Penduduk; hariIni: Date }) {
-  const { pengguna } = useSesiAdmin()
+  const boleh = useBoleh()
   const queryClient = useQueryClient()
   const kueri = useQuery(opsiLaporanPerbaikan(penduduk.id))
   const [ditolak, setDitolak] = useState<LaporanData | null>(null)
@@ -35,7 +34,7 @@ export function BannerLaporan({ penduduk, hariIni }: { penduduk: Penduduk; hariI
       tampilkanToast({ pesan: pesanGalat(galat), nada: 'galat' })
     },
   })
-  const bolehUbah = boleh(pengguna.peran, 'penduduk.ubah')
+  const bolehUbah = boleh('penduduk.ubah')
   const daftar = kueri.data?.data ?? []
   if (daftar.length === 0) return null
   return (

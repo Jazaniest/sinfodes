@@ -203,3 +203,59 @@ describe('papan dan provinsi', () => {
     expect(bulanPeriode(AGUSTUS)).toEqual(['2026-08'])
   })
 })
+
+describe('penangguhan dan peringkat (rencana 7D-2 Tugas 5, Review Focus 4)', () => {
+  const NOVEMBER: Periode = { musim: 'bulanan', kode: '2026-11' }
+  const T4: Periode = { musim: 'triwulan', kode: '2026-T4' }
+  const SEKARANG_NOVEMBER = new Date('2026-11-20T02:00:00Z')
+  const catat = (...riwayat: [string, 'Aktif' | 'Ditangguhkan', 'Aktif' | 'Ditangguhkan'][]) =>
+    ubahDb((db) => {
+      for (const [tanggal, dari, ke] of riwayat) {
+        db.riwayatStatusDesa.push({ desaId: ID_SUNGAI_SIALANG, dari, ke, alasan: 'Uji penangguhan.', pada: `${tanggal}T09:00:00+07:00`, oleh: { id: 'kns_dina', nama: 'Dina' } })
+      }
+    })
+
+  it('ditangguhkan 5-12 Oktober: bukan peserta Oktober dan Triwulan IV, peserta lagi November', () => {
+    catat(['2026-10-05', 'Aktif', 'Ditangguhkan'], ['2026-10-12', 'Ditangguhkan', 'Aktif'])
+    const db = ambilDb()
+    const bulan = ['2026-10', '2026-11'].map((b) => ukuranBulanPanel(db, desaSialang(), b, SEKARANG_NOVEMBER))
+    expect(bulan.map((b) => b.aktif)).toEqual([false, true])
+    expect(hitungHasilDesa([bulan[0]], null, { musim: 'bulanan', kode: '2026-10' }).peserta).toBe(false)
+    expect(hitungHasilDesa(bulan, null, T4).peserta).toBe(false)
+    expect(hitungHasilDesa([bulan[1]], null, NOVEMBER).peserta).toBe(true)
+  })
+  it('tanpa riwayat penangguhan hasilnya sama seperti sebelumnya', () => {
+    const db = ambilDb()
+    expect(ukuranBulanPanel(db, desaSialang(), '2026-10', SEKARANG_NOVEMBER).aktif).toBe(true)
+  })
+  it('hari cabut sudah aktif: ditangguhkan 5 Oktober dan dicabut 1 November, November penuh peserta', () => {
+    catat(['2026-10-05', 'Aktif', 'Ditangguhkan'], ['2026-11-01', 'Ditangguhkan', 'Aktif'])
+    const b = ukuranBulanPanel(ambilDb(), desaSialang(), '2026-11', SEKARANG_NOVEMBER)
+    expect(b.aktif).toBe(true)
+  })
+  it('ditangguhkan hari ini: hilang dari klasemen sementara bulan ini, hasil Agustus (beku) tidak berubah', () => {
+    const sebelumSept = papanKabupaten(ambilDb(), '14.05', { musim: 'bulanan', periode: SEPTEMBER, kategori: 'umum', kecamatan: null }, SEKARANG_UJI)
+    const sebelumAgustus = papanKabupaten(ambilDb(), '14.05', { musim: 'bulanan', periode: AGUSTUS, kategori: 'umum', kecamatan: null }, SEKARANG_UJI)
+    expect(sebelumSept.peringkat.some((b) => b.desa.id === ID_SUNGAI_SIALANG)).toBe(true)
+    ubahDb((db) => {
+      db.desa.find((d) => d.id === ID_SUNGAI_SIALANG)!.status = 'Ditangguhkan'
+    })
+    catat(['2026-09-24', 'Aktif', 'Ditangguhkan'])
+    const sesudahSept = papanKabupaten(ambilDb(), '14.05', { musim: 'bulanan', periode: SEPTEMBER, kategori: 'umum', kecamatan: null }, SEKARANG_UJI)
+    const sesudahAgustus = papanKabupaten(ambilDb(), '14.05', { musim: 'bulanan', periode: AGUSTUS, kategori: 'umum', kecamatan: null }, SEKARANG_UJI)
+    expect(sesudahSept.peringkat.some((b) => b.desa.id === ID_SUNGAI_SIALANG)).toBe(false)
+    expect(sesudahAgustus.peringkat).toEqual(sebelumAgustus.peringkat)
+  })
+  it('desa rekaman yang ditangguhkan bulan ini: baris bulan berjalan tidak lagi aktif, bulan lalu tetap', () => {
+    const db = ambilDb()
+    const desa = db.desa.find((d) => d.status === 'Aktif' && db.rekamDesa.some((r) => r.desaId === d.id))!
+    const sebelum = barisUkuran(db, desa, ['2026-08', '2026-09'], SEKARANG_UJI)
+    expect(sebelum.map((b) => b.aktif)).toEqual([true, true])
+    ubahDb((d) => {
+      d.riwayatStatusDesa.push({ desaId: desa.id, dari: 'Aktif', ke: 'Ditangguhkan', alasan: 'Uji penangguhan.', pada: '2026-09-24T09:00:00+07:00', oleh: { id: 'kns_dina', nama: 'Dina' } })
+    })
+    const sesudah = barisUkuran(ambilDb(), desa, ['2026-08', '2026-09'], SEKARANG_UJI)
+    expect(sesudah.map((b) => b.aktif)).toEqual([true, false])
+    expect(sesudah[0]).toEqual(sebelum[0])
+  })
+})

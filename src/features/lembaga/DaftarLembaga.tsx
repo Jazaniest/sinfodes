@@ -4,7 +4,7 @@ import { pesanGalat } from '@/api/galat'
 import { opsiLembaga } from '@/api/tata-kelola'
 import { formatAngka } from '@/domain/format/angka'
 import { kelompokLembaga, LABEL_LEMBAGA, NAMA_LENGKAP_LEMBAGA, teksMasaBakti, type Pengurus } from '@/domain/lembaga/schema'
-import { boleh } from '@/domain/pengguna/hak-akses'
+import { useBoleh } from '@/features/admin/useBoleh'
 import { namaDusunPendek } from '@/domain/wilayah/alamat'
 import { Tautan } from '@/ui/navigasi/Tautan'
 import { Tabs } from '@/ui/navigasi/Tabs'
@@ -17,8 +17,9 @@ import { useSesiAdmin } from '../admin/sesi-konteks'
 const sel = 'px-3 py-2.5 align-top'
 
 function TabelPengurus({ judul, anggota, denganDusun }: { judul: string; anggota: readonly Pengurus[]; denganDusun: boolean }) {
-  const { pengguna, desa, dusun } = useSesiAdmin()
-  const bolehProfil = boleh(pengguna.peran, 'penduduk.lihat')
+  const { desa, dusun } = useSesiAdmin()
+  const boleh = useBoleh()
+  const bolehProfil = boleh('penduduk.lihat')
   return (
     <table className="w-full border-y border-garis bg-lembar text-left">
       <caption className="sr-only">{judul}</caption>

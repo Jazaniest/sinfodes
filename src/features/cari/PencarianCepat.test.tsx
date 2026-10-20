@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { RouterProvider } from 'react-aria-components'
 import { describe, expect, it, vi } from 'vitest'
+import { bolehDi } from '@/domain/pengguna/hak-akses'
 import type { Peran } from '@/domain/pengguna/schema'
 import { ambilDb } from '@/mocks/db'
 import { AKUN_UJI, masukSebagai, pakaiApiTiruan } from '@/test/api-tiruan'
@@ -18,7 +19,7 @@ function pasang(peran: Peran) {
   render(
     <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
       <RouterProvider navigate={navigate}>
-        <PencarianCepat isOpen onOpenChange={onOpenChange} peran={peran} />
+        <PencarianCepat isOpen onOpenChange={onOpenChange} boleh={(k) => bolehDi(peran, 'Aktif', k)} />
       </RouterProvider>
     </QueryClientProvider>,
   )

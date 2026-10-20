@@ -10,7 +10,7 @@ import { barisBukuInduk, KOLOM_BUKU_INDUK } from '@/domain/penduduk/buku-induk'
 import { URUTAN_PENDUDUK, type FilterPenduduk as Filter } from '@/domain/penduduk/filter'
 import { penandaPenduduk } from '@/domain/penduduk/penanda'
 import type { BarisPenduduk } from '@/domain/penduduk/schema'
-import { boleh } from '@/domain/pengguna/hak-akses'
+import { useBoleh } from '@/features/admin/useBoleh'
 import { kodeWilayahNik } from '@/domain/wilayah/alamat'
 import { AturKolom } from '@/ui/data/AturKolom'
 import { DataTable } from '@/ui/data/DataTable'
@@ -48,6 +48,7 @@ type FormatUnduh = 'csv' | 'cetak'
 /** Daftar penduduk (SPEC §6.2). Filter terstruktur di URL; kata cari hanya di memori dan dikirim lewat POST. */
 export function DaftarPenduduk({ filter, onUbahFilter, onBukaProfil, sekarang }: Props) {
   const { pengguna, desa, dusun } = useSesiAdmin()
+  const boleh = useBoleh()
   const queryClient = useQueryClient()
   const hariIni = useMemo(() => sekarang ?? new Date(), [sekarang])
   const [kata, setKata] = useState('')
@@ -130,7 +131,7 @@ export function DaftarPenduduk({ filter, onUbahFilter, onBukaProfil, sekarang }:
       judul="Belum ada data penduduk"
       keterangan="Data penduduk desa ini masih kosong."
       aksi={
-        boleh(pengguna.peran, 'penduduk.ubah') && (
+        boleh('penduduk.ubah') && (
           <div className="flex flex-wrap gap-2">
             <TautanTombol href="/admin/kependudukan/penduduk/impor" varian="utama">
               Impor dari Excel
@@ -160,7 +161,7 @@ export function DaftarPenduduk({ filter, onUbahFilter, onBukaProfil, sekarang }:
           meta={meta}
           aksi={
             <>
-              {boleh(pengguna.peran, 'penduduk.ubah') && (
+              {boleh('penduduk.ubah') && (
                 <>
                   <TautanTombol href="/admin/kependudukan/penduduk/tambah" varian="utama" ikon={<Plus aria-hidden size={16} />}>
                     Tambah penduduk

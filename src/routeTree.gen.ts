@@ -89,6 +89,8 @@ import { Route as KonsolKonsolDesaBaruRouteImport } from './routes/konsol/_konso
 import { Route as KonsolKonsolKabupatenIndexRouteImport } from './routes/konsol/_konsol/kabupaten/index'
 import { Route as KonsolKonsolKabupatenKodeRouteImport } from './routes/konsol/_konsol/kabupaten/$kode'
 import { Route as KonsolKonsolKabupatenBaruRouteImport } from './routes/konsol/_konsol/kabupaten/baru'
+import { Route as KonsolKonsolTagihanIndexRouteImport } from './routes/konsol/_konsol/tagihan/index'
+import { Route as KonsolKonsolTagihanIdRouteImport } from './routes/konsol/_konsol/tagihan/$id'
 import { Route as WargaAppKeluargaIndexRouteImport } from './routes/warga/_app/keluarga/index'
 import { Route as WargaAppKeluargaLaporRouteImport } from './routes/warga/_app/keluarga/lapor'
 import { Route as WargaAppPengaduanIndexRouteImport } from './routes/warga/_app/pengaduan/index'
@@ -117,7 +119,10 @@ import { Route as KabupatenAdminDasborLaporanBulanRouteImport } from './routes/k
 import { Route as KabupatenAdminDasborSiaranIndexRouteImport } from './routes/kabupaten/admin/_dasbor/siaran/index'
 import { Route as KabupatenAdminDasborSiaranSiaranIdRouteImport } from './routes/kabupaten/admin/_dasbor/siaran/$siaranId'
 import { Route as KabupatenAdminDasborSiaranTulisRouteImport } from './routes/kabupaten/admin/_dasbor/siaran/tulis'
+import { Route as KonsolKonsolTagihanIdKwitansiRouteImport } from './routes/konsol/_konsol/tagihan/$id_.kwitansi'
+import { Route as KonsolKonsolTagihanIdTagihanRouteImport } from './routes/konsol/_konsol/tagihan/$id_.tagihan'
 import { Route as AdminPanelKependudukanPendudukIdUbahRouteImport } from './routes/admin/_panel/kependudukan/penduduk/$id_.ubah'
+import { Route as AdminPanelPengaturanLanggananKwitansiIdRouteImport } from './routes/admin/_panel/pengaturan/langganan_.kwitansi.$id'
 import { Route as AdminPanelPengaturanLanggananTagihanIdRouteImport } from './routes/admin/_panel/pengaturan/langganan_.tagihan.$id'
 import { Route as KabupatenAdminDasborDanaDesaTenggatTenggatIdRouteImport } from './routes/kabupaten/admin/_dasbor/dana-desa/tenggat/$tenggatId'
 
@@ -545,6 +550,17 @@ const KonsolKonsolKabupatenBaruRoute =
     path: '/kabupaten/baru',
     getParentRoute: () => KonsolKonsolRoute,
   } as any)
+const KonsolKonsolTagihanIndexRoute =
+  KonsolKonsolTagihanIndexRouteImport.update({
+    id: '/tagihan/',
+    path: '/tagihan/',
+    getParentRoute: () => KonsolKonsolRoute,
+  } as any)
+const KonsolKonsolTagihanIdRoute = KonsolKonsolTagihanIdRouteImport.update({
+  id: '/tagihan/$id',
+  path: '/tagihan/$id',
+  getParentRoute: () => KonsolKonsolRoute,
+} as any)
 const WargaAppKeluargaIndexRoute = WargaAppKeluargaIndexRouteImport.update({
   id: '/keluarga/',
   path: '/keluarga/',
@@ -705,10 +721,28 @@ const KabupatenAdminDasborSiaranTulisRoute =
     path: '/siaran/tulis',
     getParentRoute: () => KabupatenAdminDasborRoute,
   } as any)
+const KonsolKonsolTagihanIdKwitansiRoute =
+  KonsolKonsolTagihanIdKwitansiRouteImport.update({
+    id: '/tagihan/$id_/kwitansi',
+    path: '/tagihan/$id/kwitansi',
+    getParentRoute: () => KonsolKonsolRoute,
+  } as any)
+const KonsolKonsolTagihanIdTagihanRoute =
+  KonsolKonsolTagihanIdTagihanRouteImport.update({
+    id: '/tagihan/$id_/tagihan',
+    path: '/tagihan/$id/tagihan',
+    getParentRoute: () => KonsolKonsolRoute,
+  } as any)
 const AdminPanelKependudukanPendudukIdUbahRoute =
   AdminPanelKependudukanPendudukIdUbahRouteImport.update({
     id: '/kependudukan/penduduk/$id_/ubah',
     path: '/kependudukan/penduduk/$id/ubah',
+    getParentRoute: () => AdminPanelRoute,
+  } as any)
+const AdminPanelPengaturanLanggananKwitansiIdRoute =
+  AdminPanelPengaturanLanggananKwitansiIdRouteImport.update({
+    id: '/pengaturan/langganan_/kwitansi/$id',
+    path: '/pengaturan/langganan/kwitansi/$id',
     getParentRoute: () => AdminPanelRoute,
   } as any)
 const AdminPanelPengaturanLanggananTagihanIdRoute =
@@ -792,6 +826,7 @@ export interface FileRoutesByFullPath {
   '/konsol/desa/baru': typeof KonsolKonsolDesaBaruRoute
   '/konsol/kabupaten/$kode': typeof KonsolKonsolKabupatenKodeRoute
   '/konsol/kabupaten/baru': typeof KonsolKonsolKabupatenBaruRoute
+  '/konsol/tagihan/$id': typeof KonsolKonsolTagihanIdRoute
   '/warga/keluarga/lapor': typeof WargaAppKeluargaLaporRoute
   '/warga/pengaduan/$id': typeof WargaAppPengaduanIdRoute
   '/warga/pengaduan/baru': typeof WargaAppPengaduanBaruRoute
@@ -809,6 +844,7 @@ export interface FileRoutesByFullPath {
   '/kabupaten/admin/': typeof KabupatenAdminDasborIndexRoute
   '/konsol/desa/': typeof KonsolKonsolDesaIndexRoute
   '/konsol/kabupaten/': typeof KonsolKonsolKabupatenIndexRoute
+  '/konsol/tagihan/': typeof KonsolKonsolTagihanIndexRoute
   '/warga/keluarga/': typeof WargaAppKeluargaIndexRoute
   '/warga/pengaduan/': typeof WargaAppPengaduanIndexRoute
   '/warga/riwayat/': typeof WargaAppRiwayatIndexRoute
@@ -825,6 +861,8 @@ export interface FileRoutesByFullPath {
   '/kabupaten/admin/laporan/$bulan': typeof KabupatenAdminDasborLaporanBulanRoute
   '/kabupaten/admin/siaran/$siaranId': typeof KabupatenAdminDasborSiaranSiaranIdRoute
   '/kabupaten/admin/siaran/tulis': typeof KabupatenAdminDasborSiaranTulisRoute
+  '/konsol/tagihan/$id/kwitansi': typeof KonsolKonsolTagihanIdKwitansiRoute
+  '/konsol/tagihan/$id/tagihan': typeof KonsolKonsolTagihanIdTagihanRoute
   '/admin/kependudukan/keluarga/': typeof AdminPanelKependudukanKeluargaIndexRoute
   '/admin/kependudukan/mutasi/': typeof AdminPanelKependudukanMutasiIndexRoute
   '/admin/kependudukan/penduduk/': typeof AdminPanelKependudukanPendudukIndexRoute
@@ -834,6 +872,7 @@ export interface FileRoutesByFullPath {
   '/kabupaten/admin/laporan/': typeof KabupatenAdminDasborLaporanIndexRoute
   '/kabupaten/admin/siaran/': typeof KabupatenAdminDasborSiaranIndexRoute
   '/admin/kependudukan/penduduk/$id/ubah': typeof AdminPanelKependudukanPendudukIdUbahRoute
+  '/admin/pengaturan/langganan/kwitansi/$id': typeof AdminPanelPengaturanLanggananKwitansiIdRoute
   '/admin/pengaturan/langganan/tagihan/$id': typeof AdminPanelPengaturanLanggananTagihanIdRoute
   '/kabupaten/admin/dana-desa/tenggat/$tenggatId': typeof KabupatenAdminDasborDanaDesaTenggatTenggatIdRoute
 }
@@ -900,6 +939,7 @@ export interface FileRoutesByTo {
   '/konsol/desa/baru': typeof KonsolKonsolDesaBaruRoute
   '/konsol/kabupaten/$kode': typeof KonsolKonsolKabupatenKodeRoute
   '/konsol/kabupaten/baru': typeof KonsolKonsolKabupatenBaruRoute
+  '/konsol/tagihan/$id': typeof KonsolKonsolTagihanIdRoute
   '/warga/keluarga/lapor': typeof WargaAppKeluargaLaporRoute
   '/warga/pengaduan/$id': typeof WargaAppPengaduanIdRoute
   '/warga/pengaduan/baru': typeof WargaAppPengaduanBaruRoute
@@ -917,6 +957,7 @@ export interface FileRoutesByTo {
   '/kabupaten/admin': typeof KabupatenAdminDasborIndexRoute
   '/konsol/desa': typeof KonsolKonsolDesaIndexRoute
   '/konsol/kabupaten': typeof KonsolKonsolKabupatenIndexRoute
+  '/konsol/tagihan': typeof KonsolKonsolTagihanIndexRoute
   '/warga/keluarga': typeof WargaAppKeluargaIndexRoute
   '/warga/pengaduan': typeof WargaAppPengaduanIndexRoute
   '/warga/riwayat': typeof WargaAppRiwayatIndexRoute
@@ -933,6 +974,8 @@ export interface FileRoutesByTo {
   '/kabupaten/admin/laporan/$bulan': typeof KabupatenAdminDasborLaporanBulanRoute
   '/kabupaten/admin/siaran/$siaranId': typeof KabupatenAdminDasborSiaranSiaranIdRoute
   '/kabupaten/admin/siaran/tulis': typeof KabupatenAdminDasborSiaranTulisRoute
+  '/konsol/tagihan/$id/kwitansi': typeof KonsolKonsolTagihanIdKwitansiRoute
+  '/konsol/tagihan/$id/tagihan': typeof KonsolKonsolTagihanIdTagihanRoute
   '/admin/kependudukan/keluarga': typeof AdminPanelKependudukanKeluargaIndexRoute
   '/admin/kependudukan/mutasi': typeof AdminPanelKependudukanMutasiIndexRoute
   '/admin/kependudukan/penduduk': typeof AdminPanelKependudukanPendudukIndexRoute
@@ -942,6 +985,7 @@ export interface FileRoutesByTo {
   '/kabupaten/admin/laporan': typeof KabupatenAdminDasborLaporanIndexRoute
   '/kabupaten/admin/siaran': typeof KabupatenAdminDasborSiaranIndexRoute
   '/admin/kependudukan/penduduk/$id/ubah': typeof AdminPanelKependudukanPendudukIdUbahRoute
+  '/admin/pengaturan/langganan/kwitansi/$id': typeof AdminPanelPengaturanLanggananKwitansiIdRoute
   '/admin/pengaturan/langganan/tagihan/$id': typeof AdminPanelPengaturanLanggananTagihanIdRoute
   '/kabupaten/admin/dana-desa/tenggat/$tenggatId': typeof KabupatenAdminDasborDanaDesaTenggatTenggatIdRoute
 }
@@ -1014,6 +1058,7 @@ export interface FileRoutesById {
   '/konsol/_konsol/desa/baru': typeof KonsolKonsolDesaBaruRoute
   '/konsol/_konsol/kabupaten/$kode': typeof KonsolKonsolKabupatenKodeRoute
   '/konsol/_konsol/kabupaten/baru': typeof KonsolKonsolKabupatenBaruRoute
+  '/konsol/_konsol/tagihan/$id': typeof KonsolKonsolTagihanIdRoute
   '/warga/_app/keluarga/lapor': typeof WargaAppKeluargaLaporRoute
   '/warga/_app/pengaduan/$id': typeof WargaAppPengaduanIdRoute
   '/warga/_app/pengaduan/baru': typeof WargaAppPengaduanBaruRoute
@@ -1031,6 +1076,7 @@ export interface FileRoutesById {
   '/kabupaten/admin/_dasbor/': typeof KabupatenAdminDasborIndexRoute
   '/konsol/_konsol/desa/': typeof KonsolKonsolDesaIndexRoute
   '/konsol/_konsol/kabupaten/': typeof KonsolKonsolKabupatenIndexRoute
+  '/konsol/_konsol/tagihan/': typeof KonsolKonsolTagihanIndexRoute
   '/warga/_app/keluarga/': typeof WargaAppKeluargaIndexRoute
   '/warga/_app/pengaduan/': typeof WargaAppPengaduanIndexRoute
   '/warga/_app/riwayat/': typeof WargaAppRiwayatIndexRoute
@@ -1047,6 +1093,8 @@ export interface FileRoutesById {
   '/kabupaten/admin/_dasbor/laporan/$bulan': typeof KabupatenAdminDasborLaporanBulanRoute
   '/kabupaten/admin/_dasbor/siaran/$siaranId': typeof KabupatenAdminDasborSiaranSiaranIdRoute
   '/kabupaten/admin/_dasbor/siaran/tulis': typeof KabupatenAdminDasborSiaranTulisRoute
+  '/konsol/_konsol/tagihan/$id_/kwitansi': typeof KonsolKonsolTagihanIdKwitansiRoute
+  '/konsol/_konsol/tagihan/$id_/tagihan': typeof KonsolKonsolTagihanIdTagihanRoute
   '/admin/_panel/kependudukan/keluarga/': typeof AdminPanelKependudukanKeluargaIndexRoute
   '/admin/_panel/kependudukan/mutasi/': typeof AdminPanelKependudukanMutasiIndexRoute
   '/admin/_panel/kependudukan/penduduk/': typeof AdminPanelKependudukanPendudukIndexRoute
@@ -1056,6 +1104,7 @@ export interface FileRoutesById {
   '/kabupaten/admin/_dasbor/laporan/': typeof KabupatenAdminDasborLaporanIndexRoute
   '/kabupaten/admin/_dasbor/siaran/': typeof KabupatenAdminDasborSiaranIndexRoute
   '/admin/_panel/kependudukan/penduduk/$id_/ubah': typeof AdminPanelKependudukanPendudukIdUbahRoute
+  '/admin/_panel/pengaturan/langganan_/kwitansi/$id': typeof AdminPanelPengaturanLanggananKwitansiIdRoute
   '/admin/_panel/pengaturan/langganan_/tagihan/$id': typeof AdminPanelPengaturanLanggananTagihanIdRoute
   '/kabupaten/admin/_dasbor/dana-desa/tenggat/$tenggatId': typeof KabupatenAdminDasborDanaDesaTenggatTenggatIdRoute
 }
@@ -1129,6 +1178,7 @@ export interface FileRouteTypes {
     | '/konsol/desa/baru'
     | '/konsol/kabupaten/$kode'
     | '/konsol/kabupaten/baru'
+    | '/konsol/tagihan/$id'
     | '/warga/keluarga/lapor'
     | '/warga/pengaduan/$id'
     | '/warga/pengaduan/baru'
@@ -1146,6 +1196,7 @@ export interface FileRouteTypes {
     | '/kabupaten/admin/'
     | '/konsol/desa/'
     | '/konsol/kabupaten/'
+    | '/konsol/tagihan/'
     | '/warga/keluarga/'
     | '/warga/pengaduan/'
     | '/warga/riwayat/'
@@ -1162,6 +1213,8 @@ export interface FileRouteTypes {
     | '/kabupaten/admin/laporan/$bulan'
     | '/kabupaten/admin/siaran/$siaranId'
     | '/kabupaten/admin/siaran/tulis'
+    | '/konsol/tagihan/$id/kwitansi'
+    | '/konsol/tagihan/$id/tagihan'
     | '/admin/kependudukan/keluarga/'
     | '/admin/kependudukan/mutasi/'
     | '/admin/kependudukan/penduduk/'
@@ -1171,6 +1224,7 @@ export interface FileRouteTypes {
     | '/kabupaten/admin/laporan/'
     | '/kabupaten/admin/siaran/'
     | '/admin/kependudukan/penduduk/$id/ubah'
+    | '/admin/pengaturan/langganan/kwitansi/$id'
     | '/admin/pengaturan/langganan/tagihan/$id'
     | '/kabupaten/admin/dana-desa/tenggat/$tenggatId'
   fileRoutesByTo: FileRoutesByTo
@@ -1237,6 +1291,7 @@ export interface FileRouteTypes {
     | '/konsol/desa/baru'
     | '/konsol/kabupaten/$kode'
     | '/konsol/kabupaten/baru'
+    | '/konsol/tagihan/$id'
     | '/warga/keluarga/lapor'
     | '/warga/pengaduan/$id'
     | '/warga/pengaduan/baru'
@@ -1254,6 +1309,7 @@ export interface FileRouteTypes {
     | '/kabupaten/admin'
     | '/konsol/desa'
     | '/konsol/kabupaten'
+    | '/konsol/tagihan'
     | '/warga/keluarga'
     | '/warga/pengaduan'
     | '/warga/riwayat'
@@ -1270,6 +1326,8 @@ export interface FileRouteTypes {
     | '/kabupaten/admin/laporan/$bulan'
     | '/kabupaten/admin/siaran/$siaranId'
     | '/kabupaten/admin/siaran/tulis'
+    | '/konsol/tagihan/$id/kwitansi'
+    | '/konsol/tagihan/$id/tagihan'
     | '/admin/kependudukan/keluarga'
     | '/admin/kependudukan/mutasi'
     | '/admin/kependudukan/penduduk'
@@ -1279,6 +1337,7 @@ export interface FileRouteTypes {
     | '/kabupaten/admin/laporan'
     | '/kabupaten/admin/siaran'
     | '/admin/kependudukan/penduduk/$id/ubah'
+    | '/admin/pengaturan/langganan/kwitansi/$id'
     | '/admin/pengaturan/langganan/tagihan/$id'
     | '/kabupaten/admin/dana-desa/tenggat/$tenggatId'
   id:
@@ -1350,6 +1409,7 @@ export interface FileRouteTypes {
     | '/konsol/_konsol/desa/baru'
     | '/konsol/_konsol/kabupaten/$kode'
     | '/konsol/_konsol/kabupaten/baru'
+    | '/konsol/_konsol/tagihan/$id'
     | '/warga/_app/keluarga/lapor'
     | '/warga/_app/pengaduan/$id'
     | '/warga/_app/pengaduan/baru'
@@ -1367,6 +1427,7 @@ export interface FileRouteTypes {
     | '/kabupaten/admin/_dasbor/'
     | '/konsol/_konsol/desa/'
     | '/konsol/_konsol/kabupaten/'
+    | '/konsol/_konsol/tagihan/'
     | '/warga/_app/keluarga/'
     | '/warga/_app/pengaduan/'
     | '/warga/_app/riwayat/'
@@ -1383,6 +1444,8 @@ export interface FileRouteTypes {
     | '/kabupaten/admin/_dasbor/laporan/$bulan'
     | '/kabupaten/admin/_dasbor/siaran/$siaranId'
     | '/kabupaten/admin/_dasbor/siaran/tulis'
+    | '/konsol/_konsol/tagihan/$id_/kwitansi'
+    | '/konsol/_konsol/tagihan/$id_/tagihan'
     | '/admin/_panel/kependudukan/keluarga/'
     | '/admin/_panel/kependudukan/mutasi/'
     | '/admin/_panel/kependudukan/penduduk/'
@@ -1392,6 +1455,7 @@ export interface FileRouteTypes {
     | '/kabupaten/admin/_dasbor/laporan/'
     | '/kabupaten/admin/_dasbor/siaran/'
     | '/admin/_panel/kependudukan/penduduk/$id_/ubah'
+    | '/admin/_panel/pengaturan/langganan_/kwitansi/$id'
     | '/admin/_panel/pengaturan/langganan_/tagihan/$id'
     | '/kabupaten/admin/_dasbor/dana-desa/tenggat/$tenggatId'
   fileRoutesById: FileRoutesById
@@ -1978,6 +2042,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof KonsolKonsolKabupatenBaruRouteImport
       parentRoute: typeof KonsolKonsolRoute
     }
+    '/konsol/_konsol/tagihan/': {
+      id: '/konsol/_konsol/tagihan/'
+      path: '/tagihan'
+      fullPath: '/konsol/tagihan/'
+      preLoaderRoute: typeof KonsolKonsolTagihanIndexRouteImport
+      parentRoute: typeof KonsolKonsolRoute
+    }
+    '/konsol/_konsol/tagihan/$id': {
+      id: '/konsol/_konsol/tagihan/$id'
+      path: '/tagihan/$id'
+      fullPath: '/konsol/tagihan/$id'
+      preLoaderRoute: typeof KonsolKonsolTagihanIdRouteImport
+      parentRoute: typeof KonsolKonsolRoute
+    }
     '/warga/_app/keluarga/': {
       id: '/warga/_app/keluarga/'
       path: '/keluarga'
@@ -2174,11 +2252,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof KabupatenAdminDasborSiaranTulisRouteImport
       parentRoute: typeof KabupatenAdminDasborRoute
     }
+    '/konsol/_konsol/tagihan/$id_/kwitansi': {
+      id: '/konsol/_konsol/tagihan/$id_/kwitansi'
+      path: '/tagihan/$id/kwitansi'
+      fullPath: '/konsol/tagihan/$id/kwitansi'
+      preLoaderRoute: typeof KonsolKonsolTagihanIdKwitansiRouteImport
+      parentRoute: typeof KonsolKonsolRoute
+    }
+    '/konsol/_konsol/tagihan/$id_/tagihan': {
+      id: '/konsol/_konsol/tagihan/$id_/tagihan'
+      path: '/tagihan/$id/tagihan'
+      fullPath: '/konsol/tagihan/$id/tagihan'
+      preLoaderRoute: typeof KonsolKonsolTagihanIdTagihanRouteImport
+      parentRoute: typeof KonsolKonsolRoute
+    }
     '/admin/_panel/kependudukan/penduduk/$id_/ubah': {
       id: '/admin/_panel/kependudukan/penduduk/$id_/ubah'
       path: '/kependudukan/penduduk/$id/ubah'
       fullPath: '/admin/kependudukan/penduduk/$id/ubah'
       preLoaderRoute: typeof AdminPanelKependudukanPendudukIdUbahRouteImport
+      parentRoute: typeof AdminPanelRoute
+    }
+    '/admin/_panel/pengaturan/langganan_/kwitansi/$id': {
+      id: '/admin/_panel/pengaturan/langganan_/kwitansi/$id'
+      path: '/pengaturan/langganan/kwitansi/$id'
+      fullPath: '/admin/pengaturan/langganan/kwitansi/$id'
+      preLoaderRoute: typeof AdminPanelPengaturanLanggananKwitansiIdRouteImport
       parentRoute: typeof AdminPanelRoute
     }
     '/admin/_panel/pengaturan/langganan_/tagihan/$id': {
@@ -2251,6 +2350,7 @@ interface AdminPanelRouteChildren {
   AdminPanelSuratArsipIndexRoute: typeof AdminPanelSuratArsipIndexRoute
   AdminPanelSuratJenisIndexRoute: typeof AdminPanelSuratJenisIndexRoute
   AdminPanelKependudukanPendudukIdUbahRoute: typeof AdminPanelKependudukanPendudukIdUbahRoute
+  AdminPanelPengaturanLanggananKwitansiIdRoute: typeof AdminPanelPengaturanLanggananKwitansiIdRoute
   AdminPanelPengaturanLanggananTagihanIdRoute: typeof AdminPanelPengaturanLanggananTagihanIdRoute
 }
 
@@ -2318,6 +2418,8 @@ const AdminPanelRouteChildren: AdminPanelRouteChildren = {
   AdminPanelSuratJenisIndexRoute: AdminPanelSuratJenisIndexRoute,
   AdminPanelKependudukanPendudukIdUbahRoute:
     AdminPanelKependudukanPendudukIdUbahRoute,
+  AdminPanelPengaturanLanggananKwitansiIdRoute:
+    AdminPanelPengaturanLanggananKwitansiIdRoute,
   AdminPanelPengaturanLanggananTagihanIdRoute:
     AdminPanelPengaturanLanggananTagihanIdRoute,
 }
@@ -2363,8 +2465,12 @@ interface KonsolKonsolRouteChildren {
   KonsolKonsolDesaBaruRoute: typeof KonsolKonsolDesaBaruRoute
   KonsolKonsolKabupatenKodeRoute: typeof KonsolKonsolKabupatenKodeRoute
   KonsolKonsolKabupatenBaruRoute: typeof KonsolKonsolKabupatenBaruRoute
+  KonsolKonsolTagihanIdRoute: typeof KonsolKonsolTagihanIdRoute
   KonsolKonsolDesaIndexRoute: typeof KonsolKonsolDesaIndexRoute
   KonsolKonsolKabupatenIndexRoute: typeof KonsolKonsolKabupatenIndexRoute
+  KonsolKonsolTagihanIndexRoute: typeof KonsolKonsolTagihanIndexRoute
+  KonsolKonsolTagihanIdKwitansiRoute: typeof KonsolKonsolTagihanIdKwitansiRoute
+  KonsolKonsolTagihanIdTagihanRoute: typeof KonsolKonsolTagihanIdTagihanRoute
 }
 
 const KonsolKonsolRouteChildren: KonsolKonsolRouteChildren = {
@@ -2374,8 +2480,12 @@ const KonsolKonsolRouteChildren: KonsolKonsolRouteChildren = {
   KonsolKonsolDesaBaruRoute: KonsolKonsolDesaBaruRoute,
   KonsolKonsolKabupatenKodeRoute: KonsolKonsolKabupatenKodeRoute,
   KonsolKonsolKabupatenBaruRoute: KonsolKonsolKabupatenBaruRoute,
+  KonsolKonsolTagihanIdRoute: KonsolKonsolTagihanIdRoute,
   KonsolKonsolDesaIndexRoute: KonsolKonsolDesaIndexRoute,
   KonsolKonsolKabupatenIndexRoute: KonsolKonsolKabupatenIndexRoute,
+  KonsolKonsolTagihanIndexRoute: KonsolKonsolTagihanIndexRoute,
+  KonsolKonsolTagihanIdKwitansiRoute: KonsolKonsolTagihanIdKwitansiRoute,
+  KonsolKonsolTagihanIdTagihanRoute: KonsolKonsolTagihanIdTagihanRoute,
 }
 
 const KonsolKonsolRouteWithChildren = KonsolKonsolRoute._addFileChildren(

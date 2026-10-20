@@ -1,6 +1,8 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest'
 import { ambilBeranda } from '@/api/beranda'
+import { ambilKwitansiKonsol, cariTagihanKonsol, tandaiLunas } from '@/api/konsol'
+import { ambilKwitansiDesa, ambilLangganan, kirimBukti } from '@/api/langganan'
 import { ambilIsiBuku } from '@/api/buku'
 import { ambilKeluarga } from '@/api/keluarga'
 import { ambilApbdes } from '@/api/keuangan'
@@ -22,7 +24,8 @@ import { bulatJam, median } from '@/domain/kabupaten/pemantauan'
 import type { MasukanLahir } from '@/domain/mutasi/masukan'
 import { ambilDb } from '@/mocks/db'
 import {
-  AKUN_KABUPATEN_UJI, AKUN_UJI, AKUN_WARGA_UJI, masukKabupatenSebagai, masukSebagai, masukSebagaiWarga, pakaiApiTiruan, SEKARANG_UJI,
+  AKUN_KABUPATEN_UJI, AKUN_KONSOL_UJI, AKUN_UJI, AKUN_WARGA_UJI, masukKabupatenSebagai, masukKonsolSebagai, masukSebagai, masukSebagaiWarga, pakaiApiTiruan,
+  SEKARANG_UJI,
 } from '@/test/api-tiruan'
 
 pakaiApiTiruan({ dbSegarTiapUji: true })
@@ -159,5 +162,31 @@ describe('tiga alur demo kriteria selesai tahap 1 (SPEC §13.5)', () => {
     await tarikSiaran(baru.id)
     masukSebagai(AKUN_UJI.kades)
     expect(await ambilDetailSiaranDesa(baru.id)).toMatchObject({ ditarik: { pada: '2026-09-24T09:00:00+07:00' }, isi: null })
+  })
+  it('alur 7D: Kaur Keuangan unggah bukti, Dina menemukannya lewat nominal dan menandai lunas, lalu kwitansi tersedia di desa beserta notifikasi', async () => {
+    masukSebagai(AKUN_UJI.kaurKeuangan)
+    const awal = await ambilLangganan()
+    const tagihan = awal.berjalan!
+    expect(tagihan.status).toBe('terbit')
+    await expect(ambilKwitansiDesa(tagihan.id)).rejects.toMatchObject({ status: 404 })
+    await kirimBukti(
+      tagihan.id,
+      { tanggalTransfer: '2026-09-23', namaPengirim: 'Pemdes Sungai Sialang', nominalTransfer: tagihan.nominal },
+      new File([new Uint8Array(2048)], 'bukti.png', { type: 'image/png' }),
+    )
+    masukKonsolSebagai(AKUN_KONSOL_UJI.tim)
+    const ditemukan = await cariTagihanKonsol(String(tagihan.nominal))
+    expect(ditemukan.data.map((t) => t.id)).toEqual([tagihan.id])
+    expect(ditemukan.data[0].status).toBe('menunggu-verifikasi')
+    const lunas = await tandaiLunas(tagihan.id, { diterimaPada: '2026-09-24', nominalDiterima: tagihan.nominal })
+    expect(lunas.status).toBe('lunas')
+    expect((await ambilKwitansiKonsol(tagihan.id)).nomor).toBe(lunas.kwitansi!.nomor)
+
+    masukSebagai(AKUN_UJI.kaurKeuangan)
+    const kwitansi = await ambilKwitansiDesa(tagihan.id)
+    expect(kwitansi).toMatchObject({ nomor: lunas.kwitansi!.nomor, nominal: tagihan.nominal, periode: 'Triwulan IV 2026', desa: { nama: 'Sungai Sialang' } })
+    const kotak = await ambilNotifikasi()
+    expect(kotak.data.find((n) => n.judul === 'Pembayaran diterima')).toMatchObject({ jenis: 'tagihan', isi: `Kwitansi ${kwitansi.nomor} sudah bisa diunduh.`, rujukan: { jenis: 'tagihan', id: tagihan.id } })
+    expect((await ambilLangganan()).berjalan).toBeNull()
   })
 })

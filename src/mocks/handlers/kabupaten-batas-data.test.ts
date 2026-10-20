@@ -9,7 +9,7 @@ pakaiApiTiruan()
 /** Semua endpoint baca dasbor kabupaten 7B-1, 7B-2, dan 7B-3. */
 const ENDPOINT = ['/kabupaten/sesi', '/kabupaten/ringkasan', '/kabupaten/pemantauan', '/kabupaten/pengguna', '/kabupaten/dana-desa', '/kabupaten/tenggat', '/kabupaten/data-gabungan', '/kabupaten/peta', '/kabupaten/laporan', '/kabupaten/laporan/2026-08', '/kabupaten/siaran', '/kabupaten/siaran/sasaran', '/kabupaten/indeks', '/kabupaten/indeks?kategori=layanan&musim=triwulan']
 /** Kunci yang bukan hak kabupaten (SPEC-V0.2 §5.1). */
-const TERLARANG = ['nik', 'nomorKk', 'tagihan', 'nominal', 'kodeUnik', 'paket', 'penyimpananKb', 'alamatKantor', 'kataSandi']
+const TERLARANG = ['nik', 'nomorKk', 'tagihan', 'riwayatStatus', 'nominal', 'kodeUnik', 'paket', 'penyimpananKb', 'alamatKantor', 'kataSandi']
 
 function kunciDalam(nilai: unknown, kumpul = new Set<string>()): Set<string> {
   if (Array.isArray(nilai)) for (const x of nilai) kunciDalam(x, kumpul)

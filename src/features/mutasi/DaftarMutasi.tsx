@@ -7,7 +7,7 @@ import { formatAngka } from '@/domain/format/angka'
 import { daftarBulanTerakhir, formatBulan, formatTanggal, tanggalIsoWib } from '@/domain/format/tanggal'
 import { kalimatRingkasanMutasi, rincianMutasi, type BarisMutasi, type FilterMutasi } from '@/domain/mutasi/buku'
 import { JENIS_MUTASI, LABEL_MUTASI } from '@/domain/mutasi/schema'
-import { boleh } from '@/domain/pengguna/hak-akses'
+import { useBoleh } from '@/features/admin/useBoleh'
 import { ChipFilter } from '@/ui/data/ChipFilter'
 import { DataTable, type KolomTabel } from '@/ui/data/DataTable'
 import { Pagination } from '@/ui/data/Pagination'
@@ -17,7 +17,6 @@ import { PageHeader } from '@/ui/tata-letak/PageHeader'
 import { Tombol } from '@/ui/tombol/Tombol'
 import { EmptyState } from '@/ui/umpan-balik/EmptyState'
 import { Skeleton } from '@/ui/umpan-balik/Skeleton'
-import { useSesiAdmin } from '../admin/sesi-konteks'
 import { TabKependudukan } from '../penduduk/TabKependudukan'
 import { MENU_CATAT_MUTASI } from './menu'
 
@@ -39,7 +38,7 @@ function namaPenduduk(b: BarisMutasi): string {
 
 /** Buku Mutasi (SPEC §6.6): ringkasan bulan berjalan, filter jenis dan bulan di URL, dan menu *Catat mutasi*. */
 export function DaftarMutasi({ filter, onUbahFilter, onBukaPenduduk, sekarang }: Props) {
-  const { pengguna } = useSesiAdmin()
+  const boleh = useBoleh()
   const hariIni = useMemo(() => sekarang ?? new Date(), [sekarang])
   const bulanIni = tanggalIsoWib(hariIni).slice(0, 7)
   const ringkasan = useQuery(opsiRingkasanMutasi(bulanIni))
@@ -91,7 +90,7 @@ export function DaftarMutasi({ filter, onUbahFilter, onBukaPenduduk, sekarang }:
         judul="Mutasi"
         meta={meta}
         aksi={
-          boleh(pengguna.peran, 'penduduk.ubah') && (
+          boleh('penduduk.ubah') && (
             <MenuAksi
               pemicu={
                 <Tombol varian="utama" ikon={<CaretDown aria-hidden size={14} />}>

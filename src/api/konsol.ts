@@ -9,8 +9,12 @@ import {
   barisDesaKonsolSchema, detailDesaKonsolSchema, hasilTambahDesaSchema, hasilUbahAlamatSchema, hasilUndangSekdesSchema, periksaAlamatSchema,
   ringkasanKonsolSchema,
   sesiKonsolSchema, tiketBantuanSchema, usulanAlamatSchema,
-  type FilterDesaKonsol, type TambahDesa, type UndangSekdes,
+  type FilterDesaKonsol, type TambahDesa, type UbahStatusDesa, type UndangSekdes,
 } from '@/domain/konsol/schema'
+import {
+  barisTagihanKonsolSchema, daftarTagihanKonsolSchema, hasilCariTagihanSchema, kwitansiSchema,
+  type IsianAlasan, type IsianLunas, type PeriodeTagihan, type TabTagihan,
+} from '@/domain/langganan/tagihan'
 import { panggilApi } from './client'
 
 export const kunciKonsol = {
@@ -23,6 +27,11 @@ export const kunciKonsol = {
   periksaAlamat: (label: string, desaId: string | undefined) => ['konsol', 'periksa-alamat', label, desaId ?? null] as const,
   kabupaten: ['konsol', 'kabupaten'] as const,
   detailKabupaten: (kode: string) => ['konsol', 'kabupaten-detail', kode] as const,
+  tagihan: ['konsol', 'tagihan'] as const,
+  daftarTagihan: (tab: TabTagihan | undefined, page: number) => ['konsol', 'tagihan', 'daftar', tab ?? null, page] as const,
+  cariTagihan: (q: string, tab: TabTagihan | undefined) => ['konsol', 'tagihan', 'cari', q, tab ?? null] as const,
+  detailTagihan: (id: string) => ['konsol', 'tagihan', 'detail', id] as const,
+  kwitansi: (id: string) => ['konsol', 'tagihan', 'kwitansi', id] as const,
 }
 
 export const hasilMasukKonsolSchema = z.object({ token: z.string(), sesi: sesiKonsolSchema })
@@ -104,3 +113,40 @@ export const ubahAkunKabupatenKonsol = (kode: string, id: string, isian: UbahAku
   panggilApi('PATCH', `/konsol/kabupaten/${encodeURIComponent(kode)}/pengguna/${encodeURIComponent(id)}`, {
     skema: penggunaKabupatenSchema, body: isian, sesi: 'konsol',
   })
+
+/** Tagihan langganan (SPEC-V0.2 §10.4). Tanpa `tab`, server memilih Menunggu verifikasi atau Belum dibayar dan menyebutkannya. */
+export const daftarTagihanKonsol = (query: { tab?: TabTagihan; page?: number; pageSize?: number }, signal?: AbortSignal) =>
+  panggilApi('GET', '/konsol/tagihan', { skema: daftarTagihanKonsolSchema, query, signal, sesi: 'konsol' })
+export const opsiDaftarTagihanKonsol = (tab: TabTagihan | undefined, page = 1) =>
+  queryOptions({ queryKey: kunciKonsol.daftarTagihan(tab, page), queryFn: ({ signal }) => daftarTagihanKonsol({ tab, page }, signal) })
+
+/** Kata kunci dikirim sebagai query API; tidak pernah menjadi bagian alamat halaman. */
+export const cariTagihanKonsol = (q: string, tab?: TabTagihan, signal?: AbortSignal) =>
+  panggilApi('GET', '/konsol/tagihan/cari', { skema: hasilCariTagihanSchema, query: { q, tab }, signal, sesi: 'konsol' })
+export const opsiCariTagihanKonsol = (q: string, tab: TabTagihan | undefined) =>
+  queryOptions({ queryKey: kunciKonsol.cariTagihan(q, tab), queryFn: ({ signal }) => cariTagihanKonsol(q, tab, signal), enabled: q.trim() !== '' })
+
+export const ambilTagihanKonsol = (id: string, signal?: AbortSignal) =>
+  panggilApi('GET', `/konsol/tagihan/${encodeURIComponent(id)}`, { skema: barisTagihanKonsolSchema, signal, sesi: 'konsol' })
+export const opsiTagihanKonsol = (id: string) =>
+  queryOptions({ queryKey: kunciKonsol.detailTagihan(id), queryFn: ({ signal }) => ambilTagihanKonsol(id, signal) })
+
+export const tandaiLunas = (id: string, isian: IsianLunas) =>
+  panggilApi('POST', `/konsol/tagihan/${encodeURIComponent(id)}/lunas`, { skema: barisTagihanKonsolSchema, body: isian, sesi: 'konsol' })
+export const tolakBukti = (id: string, isian: IsianAlasan) =>
+  panggilApi('POST', `/konsol/tagihan/${encodeURIComponent(id)}/tolak`, { skema: barisTagihanKonsolSchema, body: isian, sesi: 'konsol' })
+export const batalkanTagihan = (id: string, isian: IsianAlasan) =>
+  panggilApi('POST', `/konsol/tagihan/${encodeURIComponent(id)}/batalkan`, { skema: barisTagihanKonsolSchema, body: isian, sesi: 'konsol' })
+
+export const ambilKwitansiKonsol = (id: string, signal?: AbortSignal) =>
+  panggilApi('GET', `/konsol/tagihan/${encodeURIComponent(id)}/kwitansi`, { skema: kwitansiSchema, signal, sesi: 'konsol' })
+export const opsiKwitansiKonsol = (id: string) =>
+  queryOptions({ queryKey: kunciKonsol.kwitansi(id), queryFn: ({ signal }) => ambilKwitansiKonsol(id, signal) })
+
+/** Ubah status desa (Persiapan > Uji coba > Aktif, Aktif <> Ditangguhkan); membalas detail desa yang baru. */
+export const ubahStatusDesa = (desaId: string, isian: UbahStatusDesa) =>
+  panggilApi('POST', `/konsol/desa/${encodeURIComponent(desaId)}/status`, { skema: detailDesaKonsolSchema, body: isian, sesi: 'konsol' })
+
+/** Periode tagihan berlaku mulai tagihan berikutnya. */
+export const ubahPeriodeTagihan = (desaId: string, periodeTagihan: PeriodeTagihan) =>
+  panggilApi('PUT', `/konsol/desa/${encodeURIComponent(desaId)}/periode-tagihan`, { skema: detailDesaKonsolSchema, body: { periodeTagihan }, sesi: 'konsol' })

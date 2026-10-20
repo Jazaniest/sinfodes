@@ -33,6 +33,16 @@ export function RingkasanKonsol({ sekarang = new Date() }: { sekarang?: Date }) 
                 {kueri.data.perhatian.map((p) => (
                   <li key={p.jenis} className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 px-4 py-3">
                     <span className="font-medium">{kalimatPerhatian(p)}</span>
+                    {p.jenis === 'bukti-menunggu' && (
+                      <Tautan href="/konsol/tagihan?tab=menunggu" className="text-teks-kecil">
+                        Buka Tagihan
+                      </Tautan>
+                    )}
+                    {p.jenis === 'tagihan-lewat' && (
+                      <Tautan href="/konsol/tagihan?tab=lewat" className="text-teks-kecil">
+                        Lihat tagihan yang lewat
+                      </Tautan>
+                    )}
                     {p.jenis === 'berhenti-persiapan' && (
                       <Tautan href="/konsol/desa?status=Persiapan" className="text-teks-kecil">
                         Lihat desa dalam persiapan

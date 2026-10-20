@@ -1,8 +1,7 @@
 import type { ReactNode } from 'react'
-import { boleh } from '@/domain/pengguna/hak-akses'
+import { useBoleh } from '@/features/admin/useBoleh'
 import { TabNav } from '@/ui/navigasi/TabNav'
 import { PageHeader } from '@/ui/tata-letak/PageHeader'
-import { useSesiAdmin } from '../admin/sesi-konteks'
 
 type Aktif = 'identitas' | 'wilayah' | 'pengguna' | 'penomoran' | 'langganan' | 'akses-sinfodes'
 
@@ -12,8 +11,8 @@ type Aktif = 'identitas' | 'wilayah' | 'pengguna' | 'penomoran' | 'langganan' | 
  * melihat Langganan dan Akses Sinfodes; Kaur Keuangan hanya Langganan.
  */
 export function TabPengaturan({ aktif }: { aktif: Aktif }) {
-  const { pengguna } = useSesiAdmin()
-  const kelola = boleh(pengguna.peran, 'pengaturan.kelola')
+  const boleh = useBoleh()
+  const kelola = boleh('pengaturan.kelola')
   const items = [
     ...(kelola
       ? [
@@ -21,14 +20,14 @@ export function TabPengaturan({ aktif }: { aktif: Aktif }) {
           { label: 'Wilayah', href: '/admin/pengaturan/wilayah', aktif: aktif === 'wilayah' },
         ]
       : []),
-    ...(boleh(pengguna.peran, 'pengguna.kelola')
+    ...(boleh('pengguna.kelola')
       ? [{ label: 'Pengguna', href: '/admin/pengaturan/pengguna', aktif: aktif === 'pengguna' }]
       : []),
     ...(kelola ? [{ label: 'Penomoran', href: '/admin/pengaturan/penomoran', aktif: aktif === 'penomoran' }] : []),
-    ...(boleh(pengguna.peran, 'langganan.lihat')
+    ...(boleh('langganan.lihat')
       ? [{ label: 'Langganan', href: '/admin/pengaturan/langganan', aktif: aktif === 'langganan' }]
       : []),
-    ...(boleh(pengguna.peran, 'akses-sinfodes.kelola')
+    ...(boleh('akses-sinfodes.kelola')
       ? [{ label: 'Akses Sinfodes', href: '/admin/pengaturan/akses-sinfodes', aktif: aktif === 'akses-sinfodes' }]
       : []),
   ]

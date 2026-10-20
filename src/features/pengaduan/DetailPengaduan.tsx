@@ -6,7 +6,7 @@ import { balasPengaduan, kunciPengaduan, opsiPengaduan, ubahStatusPengaduan } fr
 import { segarkanPengaduan } from '@/api/segarkan'
 import { formatWaktuLog } from '@/domain/format/tanggal'
 import { balasanPengaduanSchema, formatLama, type Pengaduan, type StatusTujuan } from '@/domain/pengaduan/schema'
-import { boleh } from '@/domain/pengguna/hak-akses'
+import { useBoleh } from '@/features/admin/useBoleh'
 import { namaDusun } from '@/domain/wilayah/alamat'
 import { Cap } from '@/ui/cap/Cap'
 import { DescriptionList } from '@/ui/data/DescriptionList'
@@ -48,12 +48,13 @@ export function DetailPengaduan({ id, onKotor }: Props) {
 
 function IsiPengaduan({ pengaduan: a, onKotor }: { pengaduan: Pengaduan; onKotor?: (kotor: boolean) => void }) {
   const queryClient = useQueryClient()
-  const { pengguna, desa, dusun } = useSesiAdmin()
+  const { desa, dusun } = useSesiAdmin()
+  const boleh = useBoleh()
   const [balasan, setBalasan] = useState('')
   const [galat, setGalat] = useState<string | null>(null)
   const mengirim = useRef(false)
   const mengubah = useRef(false)
-  const bolehTanggapi = boleh(pengguna.peran, 'pengaduan.tanggapi')
+  const bolehTanggapi = boleh('pengaduan.tanggapi')
   const d = dusun.find((x) => x.id === a.dusunId)
 
   // Balasan yang sudah diketik tidak hilang diam-diam saat meninggalkan halaman.
@@ -179,7 +180,7 @@ function IsiPengaduan({ pengaduan: a, onKotor }: { pengaduan: Pengaduan; onKotor
             items={[
               {
                 label: 'Pelapor',
-                nilai: boleh(pengguna.peran, 'penduduk.lihat') ? (
+                nilai: boleh('penduduk.lihat') ? (
                   <Tautan href={`/admin/kependudukan/penduduk/${a.pelapor.pendudukId}`}>{a.pelapor.nama}</Tautan>
                 ) : (
                   a.pelapor.nama

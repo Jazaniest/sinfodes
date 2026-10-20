@@ -2,6 +2,7 @@ import { tanggalIsoWib } from '@/domain/format/tanggal'
 import {
   hargaTagihan,
   jadwalTagihan,
+  type Kwitansi,
   nomorTagihan,
   PELAKU_SISTEM,
   periodeTagihanBerikut,
@@ -79,6 +80,7 @@ export function buatTagihan(
     referensiPembayaran: null,
     bukti: null,
     penolakanTerakhir: null,
+    riwayatBukti: [],
     lunas: null,
     kwitansi: null,
     dibatalkan: null,
@@ -125,5 +127,27 @@ export function terapkanTagihanBaru(db: Pick<DbDemo, 'langganan' | 'tagihan'>, b
   for (const t of baru) {
     const l = db.langganan.find((x) => x.desaId === t.desaId)
     if (l && (l.sampai === null || t.periode.sampai > l.sampai)) l.sampai = t.periode.sampai
+  }
+}
+
+/** Nomor kwitansi `KW/{tahun}/{urut 4 digit}`: melanjutkan nomor terbesar tahun itu (keputusan 7D-2 butir 3). */
+export function nomorKwitansiBerikut(db: Pick<DbDemo, 'tagihan'>, tahun: string): string {
+  const awalan = `KW/${tahun}/`
+  const terbesar = Math.max(0, ...db.tagihan.flatMap((t) => (t.kwitansi?.nomor.startsWith(awalan) ? [Number(t.kwitansi.nomor.slice(awalan.length))] : [])))
+  return `${awalan}${String(terbesar + 1).padStart(4, '0')}`
+}
+
+/** Data kwitansi untuk tagihan yang sudah lunas; null bila belum lunas (atau desanya tidak ada). */
+export function kwitansiTagihan(db: Pick<DbDemo, 'desa'>, t: Tagihan): Kwitansi | null {
+  const desa = db.desa.find((d) => d.id === t.desaId)
+  if (t.status !== 'lunas' || !t.lunas || !t.kwitansi || !desa) return null
+  return {
+    nomor: t.kwitansi.nomor,
+    diterimaPada: t.lunas.diterimaPada,
+    nominal: t.lunas.nominalDiterima,
+    paket: t.paket,
+    periode: t.periode.label,
+    nomorTagihan: t.nomor,
+    desa: { nama: desa.nama, kecamatan: desa.kecamatan.nama, kabupaten: desa.kabupaten.nama },
   }
 }

@@ -18,7 +18,7 @@ import { JUMLAH_DESA_KABUPATEN } from '@/domain/kabupaten/jumlah-desa'
 import { akhirBulan } from '@/domain/kabupaten/laporan'
 import { median } from '@/domain/kabupaten/pemantauan'
 import type { Desa } from '@/domain/wilayah/schema'
-import { BARIS_KOSONG, bulanAwalIndeks } from './indeks-dasar'
+import { BARIS_KOSONG, bulanAwalIndeks, tangguhBeririsan } from './indeks-dasar'
 import { barisBeku, punyaRekaman, ukuranBulanPanel } from './indeks-panel'
 import { bergabungPada, desaDiKabupaten } from './kabupaten-angka'
 import type { DbDemo, UkuranBulanIndeks } from './tipe-db'
@@ -38,7 +38,12 @@ export function barisUkuran(db: DbDemo, desa: Desa, bulan: readonly string[], se
     if (b < awal || b > sekarangBulan) continue
     const beku = barisBeku(db, desa.id, b)
     if (beku && b < sekarangBulan) hasil.push(beku)
-    else if (punyaRekaman(db, desa)) hasil.push(beku ?? { ...structuredClone(BARIS_KOSONG), desaId: desa.id, bulan: b, aktif: false })
+    else if (punyaRekaman(db, desa)) {
+      const baris = beku ?? { ...structuredClone(BARIS_KOSONG), desaId: desa.id, bulan: b, aktif: false }
+      // Bulan berjalan desa rekaman ikut penangguhan terbaru; bulan yang sudah beku tidak diubah.
+      const ditangguhkan = b === sekarangBulan && baris.aktif && tangguhBeririsan(db.riwayatStatusDesa.filter((r) => r.desaId === desa.id), `${b}-01`, tanggalIsoWib(sekarang))
+      hasil.push(ditangguhkan ? { ...baris, aktif: false } : baris)
+    }
     else hasil.push(ukuranBulanPanel(db, desa, b, sekarang))
   }
   return hasil

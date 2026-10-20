@@ -49,7 +49,7 @@ export const handlerKabupaten = [
         desa.map(({ d, a }) => ({ status: d.status, aktivitasTerakhir: a.aktivitasTerakhir, langkahBerikut: langkahBerikut(a.persiapan) })),
         null,
         sekarang,
-      ).flatMap((p) => (p.jenis === 'tagihan-lewat' ? [] : [p]))
+      ).flatMap((p) => (p.jenis === 'tagihan-lewat' || p.jenis === 'bukti-menunggu' ? [] : [p]))
       const tertinggal = danaDesaKabupaten(db, kab.kode, sekarang).total.tertinggal
       if (tertinggal > 0) perhatian.push({ jenis: 'realisasi-tertinggal', jumlah: tertinggal })
       const belumMembaca = desaBelumMembacaSiaran(db, kab.kode, sekarang)

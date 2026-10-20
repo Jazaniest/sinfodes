@@ -202,6 +202,24 @@ Pekerjaan v0.2.0 (tahap 7A-7H) dicatat di sini selama berjalan di branch `develo
 - Data demo naik ke versi 26: tagihan dipindah dari `langganan.tagihan` ke `db.tagihan`, ditambah tagihan contoh (dua menunggu verifikasi dengan bukti bergambar "CONTOH", satu dibatalkan beserta penggantinya) tanpa aliran acak baru.
 - Rekening tujuan demo (`Bank Contoh Nusantara`) sengaja jelas palsu.
 
+### Ditambahkan (7D-2: tagihan di Konsol, kwitansi, penangguhan)
+
+- **Menu Tagihan di Konsol** untuk Tim Sinfodes.
+  - Lima tab dengan angkanya: Menunggu verifikasi (bawaan bila ada isinya), Belum dibayar, Lewat jatuh tempo, Lunas, dan Semua.
+  - Cari nominal: mengetik `1.500.127`, `1500127`, atau `Rp 1.500.127` langsung menemukan tagihannya di semua tab; nomor tagihan dan nama desa dicari dalam tab yang aktif. Kata kunci tidak masuk alamat halaman.
+  - Detail tagihan: pratinjau bukti beserta data yang diisi desa, *Tandai lunas* (tanggal dan nominal diterima), *Tolak bukti* (alasan wajib, dikirim sebagai notifikasi), *Batalkan tagihan*, dan riwayat. Dua tim yang bertindak bersamaan: yang kedua mendapat pesan dan layar dimuat ulang.
+  - Ringkasan Konsol: butir *bukti bayar menunggu verifikasi* bertautan ke tab-nya.
+- **Kwitansi** terbit otomatis saat tagihan ditandai lunas (`KW/{tahun}/{urut}`), dengan nominal dan terbilangnya, dari "Tim Sinfodes" tanpa tanda tangan elektronik. Bisa dicetak dari Konsol dan diunduh desa di Pengaturan → Langganan.
+- **Ubah status desa** di Detail desa → Langganan: Persiapan → Uji coba (setelah lima langkah persiapan selesai), Uji coba → Aktif (langganan mulai hari ini, tagihan pertama terbit), Aktif ↔ Ditangguhkan. Setiap perubahan butuh alasan dan tercatat di riwayat status. Periode tagihan (triwulan atau tahunan) juga diatur di sana dan berlaku mulai tagihan berikutnya.
+- **Desa Ditangguhkan:** panel hanya bisa dilihat, diunduh, dan diekspor, dengan pita *Langganan ditangguhkan, hubungi Sinfodes*. Menu Langganan dan Akses Sinfodes tetap bisa dipakai; website publik dan cek keaslian surat tetap jalan. Pengajuan surat dan pengaduan baru dari warga ditutup dengan pesan; masuk dan melihat riwayat tetap jalan. Desa tidak ikut peringkat selama masa tangguh.
+- Skenario terpandu *Tagihan langganan* di halaman Coba demo.
+
+### Diubah (7D-2)
+
+- Semua pemeriksaan hak akses di layar panel kini lewat `useBoleh()` yang memperhitungkan penangguhan, dan semua endpoint tulis desa menolak desa Ditangguhkan dengan 403 (kecuali unggah bukti tagihan dan akses bantuan).
+- Menu Konsol: Ringkasan · Desa · Kabupaten · Tagihan.
+- Data demo naik ke versi 27: riwayat status untuk dua desa Ditangguhkan.
+
 ## [0.1.0] - 2026-10-16
 
 Demo tahap 1: frontend sungguhan dengan API tiruan (MSW) dan data dummy Desa Sungai Sialang, Kabupaten Pelalawan.

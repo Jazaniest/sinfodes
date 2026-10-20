@@ -6,7 +6,7 @@ import { formatRupiah, formatUkuranKb } from '@/domain/format/angka'
 import { formatTanggal, tanggalIsoWib } from '@/domain/format/tanggal'
 import { LABEL_PERIODE_TAGIHAN, type Tagihan } from '@/domain/langganan/tagihan'
 import { CapTagihan } from '../langganan/CapTagihan'
-import { hrefTagihan } from '../langganan/tautan'
+import { hrefKwitansi, hrefTagihan } from '../langganan/tautan'
 import { DescriptionList } from '@/ui/data/DescriptionList'
 import { Tautan } from '@/ui/navigasi/Tautan'
 import { tampilkanToast } from '@/ui/toast/antrean'
@@ -129,10 +129,16 @@ function RiwayatTagihan({ daftar, hariIni }: { daftar: readonly Tagihan[]; hariI
                     <CapTagihan tagihan={t} hariIni={hariIni} />
                   </td>
                   <td className={sel}>
-                    {/* Tautan Kwitansi untuk tagihan lunas menyusul di 7D-2. */}
-                    <Tautan href={hrefTagihan(t.id)} aria-label={`Tagihan ${t.nomor}`}>
-                      Tagihan
-                    </Tautan>
+                    <span className="inline-flex flex-wrap gap-x-4 gap-y-1">
+                      <Tautan href={hrefTagihan(t.id)} aria-label={`Tagihan ${t.nomor}`}>
+                        Tagihan
+                      </Tautan>
+                      {t.status === 'lunas' && t.kwitansi && (
+                        <Tautan href={hrefKwitansi(t.id)} aria-label={`Kwitansi ${t.kwitansi.nomor}`}>
+                          Kwitansi
+                        </Tautan>
+                      )}
+                    </span>
                   </td>
                 </tr>
               ))}

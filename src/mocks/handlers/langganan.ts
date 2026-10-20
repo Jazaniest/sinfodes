@@ -6,7 +6,7 @@ import { isianBuktiSchema, type Tagihan } from '@/domain/langganan/tagihan'
 import type { PenggunaSesi } from '@/domain/pengguna/schema'
 import { ambilDb, ubahDb } from '../db'
 import { API, balasGalat, denganJaringan } from '../http'
-import { pastikanTagihan, tagihanBerjalan } from '../tagihan'
+import { kwitansiTagihan, pastikanTagihan, tagihanBerjalan } from '../tagihan'
 import { dataJson, galatIsian, butuhKemampuan } from '../tulis'
 
 const TIDAK_DITEMUKAN = 'Tagihan tidak ditemukan.'
@@ -67,6 +67,16 @@ export const handlerLangganan = [
         rekening: { ...REKENING_SINFODES },
       }
       return HttpResponse.json(hasil)
+    }),
+  ),
+  http.get(
+    `${API}/langganan/tagihan/:id/kwitansi`,
+    denganJaringan(({ request, params }) => {
+      const pengguna = butuhKemampuan(request, 'langganan.lihat', PESAN_LIHAT)
+      if (pengguna instanceof Response) return pengguna
+      const t = tagihanDesa(pengguna, String(params.id))
+      const kwitansi = t ? kwitansiTagihan(ambilDb(), t) : null
+      return kwitansi ? HttpResponse.json(kwitansi) : balasGalat('NOT_FOUND', 'Kwitansi belum tersedia.', 404)
     }),
   ),
   http.post(

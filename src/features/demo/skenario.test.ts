@@ -35,12 +35,13 @@ function akunAda(m: MasukSkenario): boolean {
 }
 
 describe('skenario terpandu (SPEC §3.6, §13.5)', () => {
-  it('skenario terpandu: SKTM 5 langkah, kelahiran 3 langkah, pemantauan, dan Siaran kabupaten 3 langkah (SPEC-V0.2 §13)', () => {
+  it('skenario terpandu: SKTM 5 langkah, kelahiran 3 langkah, pemantauan, Siaran kabupaten 3 langkah, dan Tagihan 3 langkah (SPEC-V0.2 §13)', () => {
     expect(SKENARIO_DEMO.map((s) => [s.judul, s.langkah.length])).toEqual([
       ['SKTM dari HP sampai verifikasi QR', 5],
       ['Mencatat kelahiran', 3],
       ['Pemantauan kabupaten', 2],
       ['Siaran kabupaten', 3],
+      ['Tagihan langganan', 3],
     ])
     expect(SKENARIO_DEMO.every((s) => s.langkah.every((l) => l.tombol.length > 0))).toBe(true)
   })
@@ -66,6 +67,16 @@ describe('skenario terpandu (SPEC §3.6, §13.5)', () => {
   it('pemantauan kabupaten dibuka Peninjau Pelalawan di dasbor kabupaten (SPEC-V0.2 §8.3)', () => {
     const langkah1 = SKENARIO_DEMO.find((s) => s.id === 'pemantauan')?.langkah[0]?.tombol[0]
     expect(langkah1 && tautanSkenario(langkah1, akunUji)).toBe('http://kab-pelalawan.sinfodes.localhost:3000/admin/pemantauan?demo=kab_rosnani')
+  })
+  it('skenario Tagihan: Kaur Keuangan ke Langganan, Dina ke Tagihan Konsol, lalu Kaur Keuangan lagi (rencana 7D-2 keputusan 11)', () => {
+    const tagihan = SKENARIO_DEMO.find((s) => s.id === 'tagihan')
+    expect(tagihan?.ringkas).toBe('Desa mengunggah bukti transfer, Tim Sinfodes memverifikasi, lalu kwitansi terbit.')
+    const tombol = tagihan!.langkah.map((l) => l.tombol[0])
+    expect(tombol.map((t) => tautanSkenario(t, akunUji))).toEqual([
+      'http://sungaisialang.sinfodes.localhost:3000/admin/pengaturan/langganan?demo=pgn_nurhayati',
+      'http://konsol.sinfodes.localhost:3000/konsol/tagihan?demo=kns_dina',
+      'http://sungaisialang.sinfodes.localhost:3000/admin/pengaturan/langganan?demo=pgn_nurhayati',
+    ])
   })
   it('setiap tombol memakai akun yang ada di data demo (fokus review 5)', () => {
     for (const t of semuaTombol) expect(akunAda(t.masuk), `${t.label} → ${JSON.stringify(t.masuk)}`).toBe(true)

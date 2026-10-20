@@ -9,7 +9,7 @@ import type { JenisMutasi } from '@/domain/mutasi/schema'
 import { kelompokkanNik } from '@/domain/penduduk/nik'
 import { penandaPenduduk, penandaStatus } from '@/domain/penduduk/penanda'
 import { LABEL_FIELD, type EntriRiwayat } from '@/domain/penduduk/riwayat'
-import { boleh } from '@/domain/pengguna/hak-akses'
+import { useBoleh } from '@/features/admin/useBoleh'
 import { alamatLengkap, kodeWilayahNik } from '@/domain/wilayah/alamat'
 import { DescriptionList } from '@/ui/data/DescriptionList'
 import { Timeline, type EntriTimeline } from '@/ui/data/Timeline'
@@ -76,7 +76,8 @@ type Props = {
 
 /** Profil penduduk (SPEC §6.3): lembar utama + kolom samping Riwayat dan Surat. */
 export function ProfilPenduduk({ id, sekarang, tawaran, onTutupTawaran }: Props) {
-  const { pengguna, desa, dusun } = useSesiAdmin()
+  const { desa, dusun } = useSesiAdmin()
+  const boleh = useBoleh()
   const hariIni = useMemo(() => sekarang ?? new Date(), [sekarang])
   const kueri = useQuery(opsiPenduduk(id))
   const riwayat = useQuery(opsiRiwayatPenduduk(id))
@@ -108,7 +109,7 @@ export function ProfilPenduduk({ id, sekarang, tawaran, onTutupTawaran }: Props)
     (e): e is Extract<EntriRiwayat, { jenis: 'mutasi' }> => e.jenis === 'mutasi' && (e.mutasi === 'meninggal' || e.mutasi === 'pindah'),
   )
   const anggotaLain = keluarga.data?.anggota.filter((a) => a.id !== p.id)
-  const isiTawaran = tawaran && boleh(pengguna.peran, 'surat.proses') ? isiTawaranSurat(tawaran, p) : null
+  const isiTawaran = tawaran && boleh('surat.proses') ? isiTawaranSurat(tawaran, p) : null
 
   const isiRiwayat = riwayat.isPending ? (
     <BarisKerangka jumlah={3} label="Memuat riwayat…" />
@@ -131,12 +132,12 @@ export function ProfilPenduduk({ id, sekarang, tawaran, onTutupTawaran }: Props)
         }
         aksi={
           <>
-            {hidup && boleh(pengguna.peran, 'surat.proses') && (
+            {hidup && boleh('surat.proses') && (
               <TautanTombol varian="utama" href={hrefBuatSurat({ pemohon: p.id })} ikon={<FileText aria-hidden size={16} />}>
                 Buat surat
               </TautanTombol>
             )}
-            {boleh(pengguna.peran, 'penduduk.ubah') && (
+            {boleh('penduduk.ubah') && (
               <>
                 <TautanTombol href={`/admin/kependudukan/penduduk/${p.id}/ubah`} ikon={<PencilSimple aria-hidden size={16} />}>
                   Ubah
@@ -293,10 +294,10 @@ export function ProfilPenduduk({ id, sekarang, tawaran, onTutupTawaran }: Props)
             label="Kolom samping profil"
             items={[
               { id: 'riwayat', label: 'Riwayat', isi: isiRiwayat },
-              ...(boleh(pengguna.peran, 'surat.lihat')
+              ...(boleh('surat.lihat')
                 ? [{ id: 'surat', label: 'Surat', isi: <DaftarSuratPenduduk pendudukId={p.id} /> }]
                 : []),
-              ...(boleh(pengguna.peran, 'bansos.lihat')
+              ...(boleh('bansos.lihat')
                 ? [{ id: 'bantuan', label: 'Bantuan', isi: <BantuanKeluarga keluargaId={p.keluargaId} /> }]
                 : []),
             ]}

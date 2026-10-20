@@ -110,7 +110,7 @@ export function Beranda({ sekarang = new Date() }: { sekarang?: Date }) {
       ) : kueri.isError ? (
         <ErrorState pesan={pesanGalat(kueri.error)} onCobaLagi={() => void kueri.refetch()} />
       ) : kueri.data.persiapan ? (
-        <DaftarPersiapan persiapan={kueri.data.persiapan} peran={pengguna.peran} />
+        <DaftarPersiapan persiapan={kueri.data.persiapan} />
       ) : (
         <>
           {kueri.data.suratSaya && <SuratSaya surat={kueri.data.suratSaya} />}

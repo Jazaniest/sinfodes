@@ -34,7 +34,7 @@ function barisDesa(db: DbDemo, desa: Desa, a: AngkaKonsol): BarisDesaKonsol {
   }
 }
 
-function detailDesa(db: DbDemo, desa: Desa, sekarang: Date): DetailDesaKonsol {
+export function detailDesa(db: DbDemo, desa: Desa, sekarang: Date): DetailDesaKonsol {
   const a = angkaKonsolDesa(db, desa, sekarang)
   const l = db.langganan.find((x) => x.desaId === desa.id)
   const bantuan = db.aksesBantuan.find((x) => x.desaId === desa.id && masihBerlaku(x, sekarang))
@@ -48,6 +48,12 @@ function detailDesa(db: DbDemo, desa: Desa, sekarang: Date): DetailDesaKonsol {
     aksesBantuan: bantuan ? { sampai: bantuan.sampai, sembunyikanDataPribadi: bantuan.sembunyikanDataPribadi } : null,
     langganan: l ? { paket: l.paket, periodeTagihan: l.periodeTagihan, mulai: l.mulai, sampai: l.sampai } : { paket: 'Dasar', periodeTagihan: 'triwulan', mulai: null, sampai: null },
     tagihan: db.tagihan.filter((t) => t.desaId === desa.id).sort((a, b) => a.periode.mulai.localeCompare(b.periode.mulai) || a.id.localeCompare(b.id)),
+    riwayatStatus: db.riwayatStatusDesa
+      .filter((r) => r.desaId === desa.id)
+      // Terlama dulu di penyimpanan: dibalik dulu supaya perubahan pada detik yang sama tetap terbaru di atas (sort stabil).
+      .reverse()
+      .sort((a, b) => b.pada.localeCompare(a.pada))
+      .map((r) => ({ dari: r.dari, ke: r.ke, alasan: r.alasan, pada: r.pada, oleh: r.oleh })),
   }
 }
 
@@ -131,12 +137,14 @@ export const handlerKonsol = [
       const desa = db.desa.map((d) => ({ d, a: angkaKonsolDesa(db, d, sekarang) }))
       const hariIni = tanggalIsoWib(sekarang)
       const tagihanLewat = db.tagihan.filter((t) => lewatJatuhTempo(t, hariIni)).length
+      const buktiMenunggu = db.tagihan.filter((t) => t.status === 'menunggu-verifikasi').length
       const jumlah = (s: Desa['status']) => desa.filter(({ d }) => d.status === s).length
       const hasil: RingkasanKonsol = {
         perhatian: hitungPerhatian(
           desa.map(({ d, a }) => ({ status: d.status, aktivitasTerakhir: a.aktivitasTerakhir, langkahBerikut: langkahBerikut(a.persiapan) })),
           tagihanLewat,
           sekarang,
+          buktiMenunggu,
         ),
         desa: { aktif: jumlah('Aktif'), ujiCoba: jumlah('Uji coba'), persiapan: jumlah('Persiapan'), ditangguhkan: jumlah('Ditangguhkan') },
         kabupatenMitra: db.kabupatenMitra.length,

@@ -1,8 +1,8 @@
 import { z } from 'zod'
 import { labelAlamatSah, PESAN_ALAMAT_TIDAK_SAH } from '../alamat/alamat'
 import { persiapanSchema } from '../wilayah/persiapan'
-import { desaSchema } from '../wilayah/schema'
-import { PERIODE_TAGIHAN, tagihanSchema } from '../langganan/tagihan'
+import { desaSchema, STATUS_DESA } from '../wilayah/schema'
+import { alasanSchema, PERIODE_TAGIHAN, tagihanSchema } from '../langganan/tagihan'
 import { PAKET } from './filter'
 
 export { filterDesaKonsolSchema, HARGA_TRIWULAN, PAKET, type FilterDesaKonsol, type Paket } from './filter'
@@ -50,6 +50,23 @@ export const barisDesaKonsolSchema = desaInti.extend({
 })
 export type BarisDesaKonsol = z.infer<typeof barisDesaKonsolSchema>
 
+/** Satu perubahan status desa oleh Tim Sinfodes. */
+export const riwayatStatusDesaSchema = z.object({
+  dari: z.enum(STATUS_DESA),
+  ke: z.enum(STATUS_DESA),
+  alasan: z.string(),
+  pada: waktu,
+  oleh: z.object({ id: z.string(), nama: z.string() }),
+})
+export type RiwayatStatusDesaKonsol = z.infer<typeof riwayatStatusDesaSchema>
+
+/** POST /konsol/desa/:id/status: status tujuan dan alasan wajib 10-300 karakter (rencana 7D-2 keputusan 7). */
+export const ubahStatusDesaSchema = alasanSchema.extend({ ke: z.enum(STATUS_DESA, { error: 'Pilih status tujuan.' }) })
+export type UbahStatusDesa = z.infer<typeof ubahStatusDesaSchema>
+
+/** PUT /konsol/desa/:id/periode-tagihan. */
+export const ubahPeriodeTagihanSchema = z.object({ periodeTagihan: z.enum(PERIODE_TAGIHAN, { error: 'Pilih periode tagihan.' }) })
+
 const kontakOrang = z.object({ nama: z.string(), email: z.string() })
 
 /** GET /konsol/desa/:id: isi empat tab Detail desa (SPEC §11, SPEC-V0.2 §7), tanpa isi data desa. */
@@ -75,6 +92,8 @@ export const detailDesaKonsolSchema = barisDesaKonsolSchema.extend({
   langganan: langgananSchema.omit({ desaId: true }),
   /** Semua tagihan desa ini, termasuk yang dibatalkan; urut menurut periode (SPEC-V0.2 §10). */
   tagihan: z.array(tagihanSchema),
+  /** Perubahan status desa oleh Tim Sinfodes, terbaru dulu (SPEC-V0.2 §7, §10.5). Tidak pernah dikirim ke kabupaten. */
+  riwayatStatus: z.array(riwayatStatusDesaSchema),
 })
 export type DetailDesaKonsol = z.infer<typeof detailDesaKonsolSchema>
 
@@ -83,6 +102,7 @@ export const perhatianSchema = z.discriminatedUnion('jenis', [
   z.object({ jenis: z.literal('tidak-aktif'), jumlah: z.number().int().min(1) }),
   z.object({ jenis: z.literal('berhenti-persiapan'), jumlah: z.number().int().min(1) }),
   z.object({ jenis: z.literal('tagihan-lewat'), jumlah: z.number().int().min(1) }),
+  z.object({ jenis: z.literal('bukti-menunggu'), jumlah: z.number().int().min(1) }),
 ])
 export type Perhatian = z.infer<typeof perhatianSchema>
 

@@ -17,6 +17,7 @@ import { berlakuSampai } from '@/domain/surat/waktu'
 import { dataMilik } from '../cakupan'
 import { PASSPHRASE_TTE_DEMO } from '../data/desa-demo'
 import { ubahDb } from '../db'
+import { tolakBilaDitangguhkan } from '../penangguhan'
 import { kirimNotifikasi } from '../notifikasi'
 import { API, balasGalat, denganJaringan } from '../http'
 import { butuhPengguna } from '../sesi-mock'
@@ -95,6 +96,9 @@ export const handlerSuratAksi = [
       const pengguna = butuhPengguna(request)
       if (pengguna instanceof Response) return pengguna
       if (!boleh(pengguna.peran, 'surat.lihat')) return balasGalat('FORBIDDEN', 'Peran Anda tidak berhak membuka Layanan Surat.', 403)
+      // Semua aksi surat mengubah permohonan, jadi desa yang Ditangguhkan tidak boleh menjalankannya (SPEC-V0.2 §10.5).
+      const ditangguhkan = tolakBilaDitangguhkan(pengguna.desaId)
+      if (ditangguhkan) return ditangguhkan
       const badan = (await bacaJson(request)) ?? {}
       // Mulai di sini tidak ada `await`: dua klik "Tanda tangani" tidak bisa sama-sama lolos pemeriksaan status.
       const { db, permohonan } = dataMilik(pengguna)

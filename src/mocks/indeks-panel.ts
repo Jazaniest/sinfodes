@@ -36,7 +36,7 @@ export function ukuranBulanPanel(db: DbDemo, desa: Desa, bulan: string, sekarang
     return t >= awalMs && t <= batasMs
   }
   const langganan = db.langganan.find((l) => l.desaId === desa.id)
-  const aktif = aktifSepanjang(desa, langganan, awalTanggal, akhirTanggal)
+  const aktif = aktifSepanjang(desa, langganan, awalTanggal, akhirTanggal, db.riwayatStatusDesa.filter((r) => r.desaId === desa.id))
   const tayang = desa.status === 'Aktif' || desa.status === 'Uji coba' || desa.status === 'Ditangguhkan'
 
   // Layanan Tercepat dan Warga Paling Digital.

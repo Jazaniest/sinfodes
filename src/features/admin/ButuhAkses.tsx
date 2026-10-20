@@ -1,13 +1,15 @@
 import type { ReactNode } from 'react'
-import { boleh, type Kemampuan } from '@/domain/pengguna/hak-akses'
+import type { Kemampuan } from '@/domain/pengguna/hak-akses'
 import { LABEL_PERAN } from '@/domain/pengguna/schema'
 import { Tautan } from '@/ui/navigasi/Tautan'
 import { useSesiAdmin } from './sesi-konteks'
+import { useBoleh } from './useBoleh'
 
 /** Peran tidak berhak → "Tidak punya akses" dengan tautan kembali (SPEC §3.5). */
 export function ButuhAkses({ kemampuan, children }: { kemampuan: Kemampuan; children: ReactNode }) {
   const { pengguna } = useSesiAdmin()
-  if (boleh(pengguna.peran, kemampuan)) return <>{children}</>
+  const boleh = useBoleh()
+  if (boleh(kemampuan)) return <>{children}</>
   return (
     <section className="max-w-xl py-10">
       <p className="text-label font-medium text-tinta-2 uppercase">Akses dibatasi</p>

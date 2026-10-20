@@ -1,16 +1,25 @@
 import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
+import { ambilDb } from '@/mocks/db'
 import { AKUN_KONSOL_UJI, masukKonsolSebagai, pakaiApiTiruan, SEKARANG_UJI } from '@/test/api-tiruan'
 import { renderKonsol } from '@/test/render'
+import { kosongkanToast } from '@/ui/toast/antrean'
+import { PenampungToast } from '@/ui/toast/PenampungToast'
 import { DetailDesa } from './DetailDesa'
 import type { TabDetailDesa } from './tab-detail'
 
-pakaiApiTiruan()
+pakaiApiTiruan({ dbSegarTiapUji: true })
+afterEach(() => kosongkanToast())
 
 function pasang(id: string, tab: TabDetailDesa) {
   masukKonsolSebagai(AKUN_KONSOL_UJI.tim)
-  renderKonsol(<DetailDesa id={id} tab={tab} sekarang={SEKARANG_UJI} />)
+  renderKonsol(
+    <>
+      <DetailDesa id={id} tab={tab} sekarang={SEKARANG_UJI} />
+      <PenampungToast />
+    </>,
+  )
   return userEvent.setup()
 }
 
@@ -62,6 +71,54 @@ describe('Detail desa Konsol (SPEC §11)', () => {
     expect(tagihan[1]).toHaveTextContent('Triwulan III 2026')
     expect(tagihan[1]).toHaveTextContent('Lewat jatuh tempo')
     expect(tagihan.slice(2).every((t) => t.textContent?.includes('Lunas'))).toBe(true)
+  })
+  it('Langganan: nomor tagihan menuju detail tagihan di menu Tagihan', async () => {
+    pasang('desa_sungai_sialang', 'langganan')
+    const terbit = ambilDb().tagihan.find((t) => t.desaId === 'desa_sungai_sialang' && t.status === 'terbit')!
+    expect(await screen.findByRole('link', { name: terbit.nomor })).toHaveAttribute('href', `/konsol/tagihan/${terbit.id}`)
+  })
+  it('Langganan: periode tagihan diubah dari pemilih, berlaku mulai tagihan berikutnya', async () => {
+    const user = pasang('desa_sungai_sialang', 'langganan')
+    await user.click(await screen.findByRole('button', { name: /Periode tagihan/ }))
+    await user.click(await screen.findByRole('option', { name: 'Per tahun' }))
+    expect(await screen.findByText('Periode tagihan diubah. Berlaku mulai tagihan berikutnya.')).toBeInTheDocument()
+    expect(ambilDb().langganan.find((l) => l.desaId === 'desa_sungai_sialang')!.periodeTagihan).toBe('tahunan')
+    expect(await screen.findByRole('button', { name: /Periode tagihan.*Per tahun|Per tahun.*Periode tagihan/ })).toBeInTheDocument()
+  })
+  it('Ubah status desa Aktif hanya menawarkan Ditangguhkan; setelah kirim, riwayat status bertambah', async () => {
+    const user = pasang('desa_sungai_sialang', 'langganan')
+    expect(await screen.findByText('Belum ada perubahan status.')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Ubah status' }))
+    const dialog = within(screen.getByRole('dialog'))
+    await user.click(dialog.getByRole('button', { name: /Status tujuan/ }))
+    expect((await screen.findAllByRole('option')).map((o) => o.textContent)).toEqual(['Ditangguhkan'])
+    await user.click(screen.getByRole('option', { name: 'Ditangguhkan' }))
+    await user.click(dialog.getByRole('button', { name: 'Ubah status' }))
+    expect(await dialog.findByText('Isi alasan paling sedikit 10 karakter.')).toBeInTheDocument()
+    await user.type(dialog.getByRole('textbox', { name: /Alasan/ }), 'Tunggakan dua triwulan tidak dibayar.')
+    await user.click(dialog.getByRole('button', { name: 'Ubah status' }))
+    expect(await screen.findByText('Status desa diubah menjadi Ditangguhkan.')).toBeInTheDocument()
+    const riwayat = await screen.findByRole('list', { name: 'Riwayat status' })
+    expect(within(riwayat).getAllByRole('listitem')).toHaveLength(1)
+    expect(riwayat).toHaveTextContent('Aktif → Ditangguhkan')
+    expect(riwayat).toHaveTextContent('Tunggakan dua triwulan tidak dibayar.')
+    expect(screen.getByText(/Teluk Meranti · Pelalawan · Riau · Ditangguhkan/)).toBeInTheDocument()
+  })
+  it('Persiapan yang belum lengkap: pesan server tampil di dialog dan status tidak berubah', async () => {
+    const user = pasang('desa_tanjung_lamo', 'langganan')
+    await user.click(await screen.findByRole('button', { name: 'Ubah status' }))
+    const dialog = within(screen.getByRole('dialog'))
+    await user.type(dialog.getByRole('textbox', { name: /Alasan/ }), 'Persiapan dinilai sudah cukup.')
+    await user.click(dialog.getByRole('button', { name: 'Ubah status' }))
+    expect(await dialog.findByText('Selesaikan kelima langkah persiapan dulu.')).toBeInTheDocument()
+    expect(ambilDb().desa.find((d) => d.id === 'desa_tanjung_lamo')!.status).toBe('Persiapan')
+  })
+  it('desa Ditangguhkan contoh: riwayat status memuat alasannya', async () => {
+    const air = ambilDb().desa.find((d) => d.nama === 'Air Tawar Jaya')!
+    pasang(air.id, 'langganan')
+    const riwayat = await screen.findByRole('list', { name: 'Riwayat status' })
+    expect(riwayat).toHaveTextContent('Aktif → Ditangguhkan')
+    expect(riwayat).toHaveTextContent('Tagihan dua triwulan belum dibayar.')
   })
   it('Langganan desa Persiapan: masa aktif belum ditentukan, belum ada tagihan (fokus review 4)', async () => {
     pasang('desa_tanjung_lamo', 'langganan')

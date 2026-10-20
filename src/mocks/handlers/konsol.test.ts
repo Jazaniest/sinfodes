@@ -14,10 +14,11 @@ const isianBaru = {
 }
 
 describe('API Konsol (SPEC §11, §3.4)', () => {
-  it('Ringkasan Tim Sinfodes: semua desa; 3 tidak aktif, 3 berhenti di persiapan, 1 tagihan lewat', async () => {
+  it('Ringkasan Tim Sinfodes: semua desa; 2 bukti menunggu, 3 tidak aktif, 3 berhenti di persiapan, 1 tagihan lewat', async () => {
     masukKonsolSebagai(AKUN_KONSOL_UJI.tim)
     const r = await ambilRingkasanKonsol()
     expect(r.perhatian).toEqual([
+      { jenis: 'bukti-menunggu', jumlah: 2 },
       { jenis: 'tidak-aktif', jumlah: 3 },
       { jenis: 'berhenti-persiapan', jumlah: 3 },
       { jenis: 'tagihan-lewat', jumlah: 1 },

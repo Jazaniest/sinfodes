@@ -6,7 +6,7 @@ import { kunciKeuangan, opsiApbdes, sinkronSiskeudes } from '@/api/keuangan'
 import { formatRupiahRingkas } from '@/domain/format/angka'
 import { BULAN_PENDEK, formatWaktuLog } from '@/domain/format/tanggal'
 import { jumlahKelompok, kumulatif, pembiayaanNetto, posUtama, type Apbdes } from '@/domain/keuangan/schema'
-import { boleh } from '@/domain/pengguna/hak-akses'
+import { useBoleh } from '@/features/admin/useBoleh'
 import { Rupiah } from '@/ui/domain/Rupiah'
 import { LineChart } from '@/ui/grafik/LineChart'
 import { MiniBar } from '@/ui/grafik/MiniBar'
@@ -16,7 +16,6 @@ import { Tombol } from '@/ui/tombol/Tombol'
 import { EmptyState } from '@/ui/umpan-balik/EmptyState'
 import { ErrorState } from '@/ui/umpan-balik/ErrorState'
 import { BarisKerangka } from '@/ui/umpan-balik/Skeleton'
-import { useSesiAdmin } from '../admin/sesi-konteks'
 import { LaporanKabupaten } from './LaporanKabupaten'
 import { TabelAnggaran } from './TabelAnggaran'
 
@@ -50,7 +49,7 @@ function Apbdes() {
 
 function IsiKeuangan({ apbdes: a }: { apbdes: Apbdes }) {
   const queryClient = useQueryClient()
-  const { pengguna } = useSesiAdmin()
+  const boleh = useBoleh()
   const mengirim = useRef(false)
   const sinkron = useMutation({
     mutationFn: sinkronSiskeudes,
@@ -81,7 +80,7 @@ function IsiKeuangan({ apbdes: a }: { apbdes: Apbdes }) {
         judul={`APBDes ${a.tahun}`}
         meta={`Disinkronkan dari Siskeudes · ${formatWaktuLog(a.sinkronPada)}`}
         aksi={
-          boleh(pengguna.peran, 'keuangan.sinkron') && (
+          boleh('keuangan.sinkron') && (
             <Tombol
               ikon={<ArrowsClockwise aria-hidden size={16} />}
               memuat={sinkron.isPending}

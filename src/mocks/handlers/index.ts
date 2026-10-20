@@ -28,6 +28,8 @@ import { handlerKeluarga } from './keluarga'
 import { handlerKesehatan } from './kesehatan'
 import { handlerKeluargaTulis } from './keluarga-tulis'
 import { handlerKonsol } from './konsol'
+import { handlerKonsolStatus } from './konsol-status'
+import { handlerKonsolTagihan } from './konsol-tagihan'
 import { handlerKeuangan } from './keuangan'
 import { handlerLaporan } from './laporan'
 import { handlerMutasi } from './mutasi'
@@ -63,7 +65,7 @@ export const handlers = [
   ...handlerKeuangan, ...handlerPembangunan, ...handlerTataKelola,
   ...handlerPengaturan, ...handlerPenggunaDesa, ...handlerAksesSinfodes, ...handlerWebsite, ...handlerBuku,
   ...handlerWargaSesi, ...handlerWarga, ...handlerWargaAjukan, ...handlerWargaKeluarga, ...handlerWargaPengaduan,
-  ...handlerPublik, ...handlerPublikHalaman, ...handlerKonsol, ...handlerKabupatenSesi, ...handlerKabupaten, ...handlerPenggunaKabupaten,
+  ...handlerPublik, ...handlerPublikHalaman, ...handlerKonsol, ...handlerKonsolTagihan, ...handlerKonsolStatus, ...handlerKabupatenSesi, ...handlerKabupaten, ...handlerPenggunaKabupaten,
   ...handlerPortalKabupaten, ...handlerKonsolKabupaten, ...handlerKabupatenDanaDesa, ...handlerKabupatenDataGabungan, ...handlerKabupatenPeta, ...handlerKabupatenIndeks,...handlerKabupatenLaporan, ...handlerKabupatenTenggat, ...handlerTenggatDesa,
   ...handlerKabupatenSiaran, ...handlerSiaranDesa, ...handlerPeringkat, ...handlerLencana, ...handlerLangganan,
 ]

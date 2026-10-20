@@ -1,12 +1,11 @@
 import { formatAngka } from '@/domain/format/angka'
 import { formatTanggal } from '@/domain/format/tanggal'
 import type { BarisBalita, RingkasPosyandu } from '@/domain/kesehatan/schema'
-import { boleh } from '@/domain/pengguna/hak-akses'
+import { useBoleh } from '@/features/admin/useBoleh'
 import { Cap } from '@/ui/cap/Cap'
 import { DescriptionList } from '@/ui/data/DescriptionList'
 import { Drawer } from '@/ui/lapisan/Drawer'
 import { Tautan } from '@/ui/navigasi/Tautan'
-import { useSesiAdmin } from '../admin/sesi-konteks'
 
 type Props = { balita: BarisBalita | null; posyandu: readonly RingkasPosyandu[]; onTutup: () => void }
 
@@ -14,8 +13,8 @@ const sel = 'border-b border-garis px-2 py-1.5'
 
 /** Rincian satu balita: data dasar, status, dan seluruh riwayat pengukurannya (terbaru dulu). */
 export function LaciBalita({ balita: b, posyandu, onTutup }: Props) {
-  const { pengguna } = useSesiAdmin()
-  const bolehLihat = boleh(pengguna.peran, 'penduduk.lihat')
+  const boleh = useBoleh()
+  const bolehLihat = boleh('penduduk.lihat')
   return (
     <Drawer
       isOpen={b !== null}

@@ -9,6 +9,7 @@ import {
 import type { Notifikasi } from '@/domain/notifikasi/schema'
 import { boleh } from '@/domain/pengguna/hak-akses'
 import type { PenggunaSesi } from '@/domain/pengguna/schema'
+import type { Tagihan } from '@/domain/langganan/tagihan'
 import type { DbDemo } from './tipe-db'
 
 const HARI_MS = 86_400_000
@@ -56,4 +57,24 @@ export function notifikasiTagihanBaru(db: Pick<DbDemo, 'tagihan' | 'notifikasi'>
       },
     ]
   })
+}
+
+export type AksiTagihanKonsol = 'ditolak' | 'lunas' | 'dibatalkan'
+const JUDUL_AKSI: Readonly<Record<AksiTagihanKonsol, string>> = {
+  ditolak: 'Bukti pembayaran ditolak',
+  lunas: 'Pembayaran diterima',
+  dibatalkan: 'Tagihan dibatalkan',
+}
+
+/**
+ * Notifikasi keputusan Tim Sinfodes atas satu tagihan, untuk setiap pengguna aktif pemegang `langganan.lihat` di desanya
+ * (rencana 7D-2 keputusan 6). ID memuat jumlah riwayat tagihan, jadi penolakan berulang tidak bertabrakan.
+ */
+export function notifikasiAksiTagihan(db: Pick<DbDemo, 'pengguna'>, t: Tagihan, aksi: AksiTagihanKonsol, isi: string, waktu: string): Notifikasi[] {
+  return db.pengguna
+    .filter((p) => p.desaId === t.desaId && p.aktif && boleh(p.peran, 'langganan.lihat'))
+    .map((p): Notifikasi => ({
+      id: `ntf_tgh_${aksi}_${t.id}_${t.riwayat.length}_${p.id}`, desaId: p.desaId, penggunaId: p.id, jenis: 'tagihan', judul: JUDUL_AKSI[aksi], isi,
+      waktu, dibaca: false, rujukan: { jenis: 'tagihan', id: t.id },
+    }))
 }
