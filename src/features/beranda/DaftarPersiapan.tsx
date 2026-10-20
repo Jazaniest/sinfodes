@@ -1,6 +1,6 @@
 import { Check } from '@phosphor-icons/react'
-import { boleh, type Kemampuan } from '@/domain/pengguna/hak-akses'
-import type { PeranSesi } from '@/domain/pengguna/schema'
+import type { Kemampuan } from '@/domain/pengguna/hak-akses'
+import { useBoleh } from '../admin/useBoleh'
 import {
   jumlahSelesai,
   LABEL_LANGKAH_PERSIAPAN,
@@ -37,7 +37,8 @@ const TUJUAN: Readonly<Record<LangkahPersiapan, Tujuan>> = {
  * Beranda desa berstatus Persiapan (SPEC §5.3): lima langkah dengan progres, tiap langkah menuju halamannya. Langkah yang
  * halamannya tidak boleh dibuka peran ini ditulis tanpa tautan beserta siapa yang mengerjakannya, jadi tidak ada tombol mati.
  */
-export function DaftarPersiapan({ persiapan, peran }: { persiapan: Persiapan; peran: PeranSesi }) {
+export function DaftarPersiapan({ persiapan }: { persiapan: Persiapan }) {
+  const boleh = useBoleh()
   const selesai = jumlahSelesai(persiapan)
   const berikut = langkahBerikut(persiapan)
   return (
@@ -59,7 +60,7 @@ export function DaftarPersiapan({ persiapan, peran }: { persiapan: Persiapan; pe
       <ol aria-label="Langkah persiapan" className="divide-y divide-garis border-y border-garis bg-lembar">
         {persiapan.map((l, i) => {
           const tujuan = TUJUAN[l.langkah]
-          const bisa = boleh(peran, tujuan.kemampuan)
+          const bisa = boleh(tujuan.kemampuan)
           const label = LABEL_LANGKAH_PERSIAPAN[l.langkah]
           return (
             <li key={l.langkah} className="flex items-start gap-3 px-4 py-3">
@@ -84,7 +85,7 @@ export function DaftarPersiapan({ persiapan, peran }: { persiapan: Persiapan; pe
         })}
       </ol>
       {berikut === null && <p className="text-tinta-2">Semua langkah selesai. Status desa diubah oleh Tim Sinfodes.</p>}
-      {berikut !== null && boleh(peran, TUJUAN[berikut].kemampuan) && (
+      {berikut !== null && boleh(TUJUAN[berikut].kemampuan) && (
         <TautanTombol href={TUJUAN[berikut].href} varian="utama" className="self-start">
           {`Lanjutkan: ${LABEL_LANGKAH_PERSIAPAN[berikut]}`}
         </TautanTombol>

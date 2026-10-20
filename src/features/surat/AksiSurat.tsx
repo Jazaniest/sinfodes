@@ -1,7 +1,7 @@
 import { FilePdf, PenNib, Printer, WhatsappLogo } from '@phosphor-icons/react'
 import { useState } from 'react'
 import { samarkanTelepon } from '@/domain/format/telepon'
-import { boleh } from '@/domain/pengguna/hak-akses'
+import { useBoleh } from '@/features/admin/useBoleh'
 import { aksiTersedia } from '@/domain/surat/alur'
 import type { AksiSurat as Aksi, DetailPermohonan } from '@/domain/surat/permohonan'
 import { tampilkanToast } from '@/ui/toast/antrean'
@@ -27,11 +27,12 @@ type JenisDialog = AksiAlasan | 'tandatangani' | 'kirim-wa'
 /** Aksi sesuai status dan peran (SPEC §7.4). Tombol yang tidak berhak disembunyikan; API tiruan tetap memeriksa. */
 export function AksiSurat({ d, isian, onBerhasil, onGalatIsian, onCetak }: Props) {
   const { pengguna, desa } = useSesiAdmin()
+  const boleh = useBoleh()
   const [dialog, setDialog] = useState<JenisDialog | null>(null)
   const [galatDialog, setGalatDialog] = useState<string | undefined>()
   const p = d.permohonan
   const aksi = aksiTersedia(p, d.jenis, pengguna.peran).filter((a) => a !== 'kirim-wa' || d.pemohon.telepon !== null)
-  const bolehCetak = p.status === 'selesai' && (boleh(pengguna.peran, 'surat.proses') || boleh(pengguna.peran, 'surat.tandatangani'))
+  const bolehCetak = p.status === 'selesai' && (boleh('surat.proses') || boleh('surat.tandatangani'))
   const { jalan: kirim, sedang, berjalan } = useAksiSurat(p.id, {
     onBerhasil: (_baru, a) => {
       setDialog(null)

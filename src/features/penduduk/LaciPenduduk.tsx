@@ -6,7 +6,7 @@ import { formatTanggal, formatUmur } from '@/domain/format/tanggal'
 import { kelompokkanNik } from '@/domain/penduduk/nik'
 import { penandaPenduduk } from '@/domain/penduduk/penanda'
 import type { BarisPenduduk } from '@/domain/penduduk/schema'
-import { boleh } from '@/domain/pengguna/hak-akses'
+import { useBoleh } from '@/features/admin/useBoleh'
 import { alamatLengkap, kodeWilayahNik } from '@/domain/wilayah/alamat'
 import { DescriptionList } from '@/ui/data/DescriptionList'
 import { Nik } from '@/ui/domain/Nik'
@@ -26,7 +26,8 @@ type Props = { penduduk: BarisPenduduk | null; hariIni: Date; onTutup: () => voi
 
 /** Laci ringkasan saat baris diklik (SPEC §6.2): identitas ringkas, anggota keluarga, dan tiga surat terakhir. */
 export function LaciPenduduk({ penduduk, hariIni, onTutup, onBukaProfil }: Props) {
-  const { pengguna, desa, dusun } = useSesiAdmin()
+  const { desa, dusun } = useSesiAdmin()
+  const boleh = useBoleh()
   const keluarga = useQuery({ ...opsiKeluarga(penduduk?.keluargaId ?? ''), enabled: penduduk !== null })
   return (
     <Drawer
@@ -41,7 +42,7 @@ export function LaciPenduduk({ penduduk, hariIni, onTutup, onBukaProfil }: Props
             <Tombol varian="utama" onPress={() => onBukaProfil(penduduk.id)}>
               Buka profil
             </Tombol>
-            {penduduk.statusDasar === 'Hidup' && boleh(pengguna.peran, 'surat.proses') && (
+            {penduduk.statusDasar === 'Hidup' && boleh('surat.proses') && (
               <TautanTombol href={hrefBuatSurat({ pemohon: penduduk.id })} ikon={<FileText aria-hidden size={16} />}>
                 Buat surat untuk orang ini
               </TautanTombol>
@@ -103,7 +104,7 @@ export function LaciPenduduk({ penduduk, hariIni, onTutup, onBukaProfil }: Props
               </ul>
             )}
           </section>
-          {boleh(pengguna.peran, 'surat.lihat') && (
+          {boleh('surat.lihat') && (
             <section aria-labelledby="judul-surat-laci">
               <h3 id="judul-surat-laci" className="text-label font-medium text-tinta-2 uppercase">
                 Surat terakhir

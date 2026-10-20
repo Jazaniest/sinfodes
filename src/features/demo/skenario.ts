@@ -22,9 +22,12 @@ const PUBLIK: MasukSkenario = { bagian: 'publik' }
 const SS: TujuanAlamat = { jenis: 'desa', label: 'sungaisialang' }
 const KAB_PELALAWAN: TujuanAlamat = { jenis: 'kabupaten', label: 'kab-pelalawan' }
 const ADMIN_PELALAWAN: MasukSkenario = { bagian: 'kabupaten', id: 'kab_fajar' }
+const KAUR_KEUANGAN: MasukSkenario = { bagian: 'admin', peran: 'kaur-keuangan' }
+const TIM_SINFODES: MasukSkenario = { bagian: 'konsol', peran: 'tim' }
 
 /**
- * Skenario terpandu: tiga alur demo kriteria selesai tahap 1 (SPEC §3.6, §13.5), ditambah Siaran kabupaten (SPEC-V0.2 §13).
+ * Skenario terpandu: tiga alur demo kriteria selesai tahap 1 (SPEC §3.6, §13.5), ditambah Siaran kabupaten dan Tagihan
+ * langganan (SPEC-V0.2 §13).
  */
 export const SKENARIO_DEMO: readonly Skenario[] = [
   {
@@ -109,6 +112,25 @@ export const SKENARIO_DEMO: readonly Skenario[] = [
       {
         teks: 'Dasbor kabupaten melihat Sungai Sialang dibaca dan ditindaklanjuti beserta catatannya. Siaran juga bisa ditarik.',
         tombol: [{ label: 'Admin Kabupaten: status siaran', masuk: ADMIN_PELALAWAN, tujuan: KAB_PELALAWAN, jalur: '/admin/siaran' }],
+      },
+    ],
+  },
+  {
+    id: 'tagihan',
+    judul: 'Tagihan langganan',
+    ringkas: 'Desa mengunggah bukti transfer, Tim Sinfodes memverifikasi, lalu kwitansi terbit.',
+    langkah: [
+      {
+        teks: 'Kaur Keuangan Sungai Sialang membuka Langganan, menyalin nominal unik tagihan, lalu mengunggah bukti transfer.',
+        tombol: [{ label: 'Kaur Keuangan: Langganan', masuk: KAUR_KEUANGAN, tujuan: SS, jalur: '/admin/pengaturan/langganan' }],
+      },
+      {
+        teks: 'Tim Sinfodes mencari nominalnya di menu Tagihan, memeriksa bukti, lalu menandai lunas.',
+        tombol: [{ label: 'Dina: Tagihan', masuk: TIM_SINFODES, tujuan: { jenis: 'konsol' }, jalur: '/konsol/tagihan' }],
+      },
+      {
+        teks: 'Kaur Keuangan kembali ke Langganan: tagihan Lunas dan kwitansinya bisa diunduh.',
+        tombol: [{ label: 'Kaur Keuangan: kwitansi', masuk: KAUR_KEUANGAN, tujuan: SS, jalur: '/admin/pengaturan/langganan' }],
       },
     ],
   },

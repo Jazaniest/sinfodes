@@ -31,6 +31,7 @@ describe('aturan Konsol Sinfodes (SPEC §11)', () => {
       { jenis: 'berhenti-persiapan', jumlah: 2 },
       { jenis: 'tagihan-lewat', jumlah: 1 },
     ])
+    expect(hitungPerhatian(daftar, 1, SEKARANG, 2)[0]).toEqual({ jenis: 'bukti-menunggu', jumlah: 2 })
     // Pemantau: tanpa butir tagihan; butir bernilai nol tidak dikirim.
     expect(hitungPerhatian(daftar.slice(1, 2), null, SEKARANG)).toEqual([])
   })
@@ -38,6 +39,7 @@ describe('aturan Konsol Sinfodes (SPEC §11)', () => {
     expect(kalimatPerhatian({ jenis: 'tidak-aktif', jumlah: 3 })).toBe('3 desa tidak aktif 14 hari')
     expect(kalimatPerhatian({ jenis: 'berhenti-persiapan', jumlah: 2 })).toBe('2 desa berhenti di langkah persiapan')
     expect(kalimatPerhatian({ jenis: 'tagihan-lewat', jumlah: 1 })).toBe('1 tagihan lewat jatuh tempo')
+    expect(kalimatPerhatian({ jenis: 'bukti-menunggu', jumlah: 2 })).toBe('2 bukti bayar menunggu verifikasi')
     expect(kalimatPlatform({ desa: { aktif: 26, ujiCoba: 5, persiapan: 7, ditangguhkan: 2 }, kabupatenMitra: 2 })).toBe(
       '26 desa aktif, 5 uji coba, 7 dalam persiapan, dan 2 ditangguhkan. 2 kabupaten mitra.',
     )

@@ -1,3 +1,4 @@
+import type { StatusDesa } from '../wilayah/schema'
 import type { PenggunaSesi, PeranSesi } from './schema'
 
 export const KEMAMPUAN = [
@@ -43,6 +44,28 @@ export const HAK_AKSES: Readonly<Record<PeranSesi, ReadonlySet<Kemampuan>>> = {
 
 export function boleh(peran: PeranSesi, kemampuan: Kemampuan): boolean {
   return HAK_AKSES[peran].has(kemampuan)
+}
+
+/**
+ * Kemampuan yang mengubah data desa. Dicabut dari semua peran selama desa Ditangguhkan (SPEC-V0.2 §10.5, rencana 7D-2 keputusan 9):
+ * panel hanya bisa dilihat. Tidak termasuk `langganan.*` dan `akses-sinfodes.kelola`, yang justru dibutuhkan untuk memulihkan desa.
+ */
+export const KEMAMPUAN_TULIS = [
+  'penduduk.ubah', 'surat.proses', 'surat.paraf', 'surat.tandatangani', 'pengaduan.tanggapi', 'keuangan.sinkron', 'keuangan.lapor',
+  'website.kelola', 'pengaturan.kelola', 'pengguna.kelola', 'siaran.tindak',
+] as const satisfies readonly Kemampuan[]
+
+const TULIS: ReadonlySet<Kemampuan> = new Set<Kemampuan>(KEMAMPUAN_TULIS)
+
+/** Kemampuan peran di desa berstatus tertentu; hanya Ditangguhkan yang berbeda dari `HAK_AKSES`. */
+export function kemampuanEfektif(peran: PeranSesi, status: StatusDesa): ReadonlySet<Kemampuan> {
+  const dasar = HAK_AKSES[peran]
+  return status === 'Ditangguhkan' ? new Set([...dasar].filter((k) => !TULIS.has(k))) : dasar
+}
+
+/** `boleh` yang memperhitungkan penangguhan desa. Layar memakainya lewat `useBoleh()`, API tiruan lewat `butuhKemampuan`. */
+export function bolehDi(peran: PeranSesi, status: StatusDesa, kemampuan: Kemampuan): boolean {
+  return boleh(peran, kemampuan) && !(status === 'Ditangguhkan' && TULIS.has(kemampuan))
 }
 
 /** Kepala dusun hanya melihat data dusunnya; peran lain melihat seluruh desa. */

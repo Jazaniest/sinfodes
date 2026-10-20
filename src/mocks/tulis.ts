@@ -4,18 +4,26 @@ import { galatDariZod } from '@/domain/format/galat-isian'
 import type { Pelaku } from '@/domain/mutasi/schema'
 import type { Perubahan } from '@/domain/penduduk/perubahan'
 import type { Penduduk } from '@/domain/penduduk/schema'
-import { boleh, type Kemampuan } from '@/domain/pengguna/hak-akses'
+import { boleh, bolehDi, type Kemampuan } from '@/domain/pengguna/hak-akses'
 import type { PenggunaSesi } from '@/domain/pengguna/schema'
 import type { Dusun } from '@/domain/wilayah/schema'
 import { balasGalat } from './http'
+import { hanyaMembaca, PESAN_PANEL_DITANGGUHKAN, statusDesaDi } from './penangguhan'
 import { butuhPengguna } from './sesi-mock'
 import type { DbDemo } from './tipe-db'
 
-/** Pengguna yang punya kemampuan tertentu, atau Response galat yang langsung dikembalikan handler. */
+/**
+ * Pengguna yang punya kemampuan tertentu, atau Response galat yang langsung dikembalikan handler. Selama desa Ditangguhkan,
+ * request yang mengubah data ditolak walau perannya berhak (SPEC-V0.2 §10.5); request baca (`GET`) tidak.
+ */
 export function butuhKemampuan(request: Request, kemampuan: Kemampuan, pesan: string): PenggunaSesi | Response {
   const pengguna = butuhPengguna(request)
   if (pengguna instanceof Response) return pengguna
-  return boleh(pengguna.peran, kemampuan) ? pengguna : balasGalat('FORBIDDEN', pesan, 403)
+  if (!boleh(pengguna.peran, kemampuan)) return balasGalat('FORBIDDEN', pesan, 403)
+  if (!hanyaMembaca(request) && !bolehDi(pengguna.peran, statusDesaDi(pengguna.desaId), kemampuan)) {
+    return balasGalat('FORBIDDEN', PESAN_PANEL_DITANGGUHKAN, 403)
+  }
+  return pengguna
 }
 
 /** Hanya Operator dan Sekretaris Desa yang boleh mengubah data kependudukan (SPEC §5.1). */

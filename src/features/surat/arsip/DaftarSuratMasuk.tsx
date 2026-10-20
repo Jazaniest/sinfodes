@@ -5,7 +5,7 @@ import { opsiSuratMasuk } from '@/api/arsip'
 import { pesanGalat } from '@/api/galat'
 import { formatAngka } from '@/domain/format/angka'
 import { daftarBulanTerakhir, formatBulan, formatTanggal } from '@/domain/format/tanggal'
-import { boleh } from '@/domain/pengguna/hak-akses'
+import { useBoleh } from '@/features/admin/useBoleh'
 import type { FilterSuratMasuk, SuratMasuk } from '@/domain/surat/arsip'
 import { DataTable, type KolomTabel } from '@/ui/data/DataTable'
 import { Pagination } from '@/ui/data/Pagination'
@@ -14,7 +14,6 @@ import { PageHeader } from '@/ui/tata-letak/PageHeader'
 import { Tombol } from '@/ui/tombol/Tombol'
 import { EmptyState } from '@/ui/umpan-balik/EmptyState'
 import { Skeleton } from '@/ui/umpan-balik/Skeleton'
-import { useSesiAdmin } from '../../admin/sesi-konteks'
 import { TabSurat } from '../TabSurat'
 import { DialogSuratMasuk } from './DialogSuratMasuk'
 import { LaciSuratMasuk } from './LaciSuratMasuk'
@@ -27,14 +26,14 @@ const strip = <span className="text-tinta-2">—</span>
 
 /** Register surat masuk per bulan (SPEC §7.4 layar 5), urut nomor agenda. */
 export function DaftarSuratMasuk({ filter, onUbahFilter, sekarang }: Props) {
-  const { pengguna } = useSesiAdmin()
+  const boleh = useBoleh()
   const hariIni = useMemo(() => sekarang ?? new Date(), [sekarang])
   const bulanPilihan = useMemo(() => daftarBulanTerakhir(hariIni, 12), [hariIni])
   const bulan = filter.bulan ?? bulanPilihan[0]
   const daftar = useQuery({ ...opsiSuratMasuk({ ...filter, bulan }), placeholderData: keepPreviousData })
   const [mencatat, setMencatat] = useState(false)
   const [terpilih, setTerpilih] = useState<SuratMasuk | null>(null)
-  const bolehCatat = boleh(pengguna.peran, 'surat.proses')
+  const bolehCatat = boleh('surat.proses')
   const total = daftar.data?.meta.total
 
   const kolom = useMemo(

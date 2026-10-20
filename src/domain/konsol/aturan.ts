@@ -16,6 +16,14 @@ export function labelTriwulan(tanggal: string): string {
   return `Triwulan ${angkaRomawi(Math.ceil(Number(tanggal.slice(5, 7)) / 3))} ${tanggal.slice(0, 4)}`
 }
 
+/** Perpindahan status desa yang boleh dilakukan Tim Sinfodes (rencana 7D-2 keputusan 7). */
+export const PERPINDAHAN_STATUS: Readonly<Record<StatusDesa, readonly StatusDesa[]>> = {
+  Persiapan: ['Uji coba'],
+  'Uji coba': ['Aktif'],
+  Aktif: ['Ditangguhkan'],
+  Ditangguhkan: ['Aktif'],
+}
+
 export type KeadaanDesaKonsol = { status: StatusDesa; aktivitasTerakhir: string | null; langkahBerikut: LangkahPersiapan | null }
 
 const diamSedikitnya = (aktivitas: string | null, hari: number, sekarang: Date): boolean =>
@@ -25,7 +33,12 @@ const diamSedikitnya = (aktivitas: string | null, hari: number, sekarang: Date):
  * Butir "Perlu perhatian" (SPEC §11). `tagihanLewat` null untuk pemantau, karena urusan tagihan hanya untuk Tim Sinfodes.
  * Butir bernilai nol tidak dikirim.
  */
-export function hitungPerhatian(daftar: readonly KeadaanDesaKonsol[], tagihanLewat: number | null, sekarang: Date): Perhatian[] {
+export function hitungPerhatian(
+  daftar: readonly KeadaanDesaKonsol[],
+  tagihanLewat: number | null,
+  sekarang: Date,
+  buktiMenunggu: number | null = null,
+): Perhatian[] {
   const tidakAktif = daftar.filter(
     (d) => (d.status === 'Aktif' || d.status === 'Uji coba') && diamSedikitnya(d.aktivitasTerakhir, BATAS_TIDAK_AKTIF_HARI, sekarang),
   ).length
@@ -33,6 +46,8 @@ export function hitungPerhatian(daftar: readonly KeadaanDesaKonsol[], tagihanLew
     (d) => d.status === 'Persiapan' && d.langkahBerikut !== null && diamSedikitnya(d.aktivitasTerakhir, BATAS_BERHENTI_HARI, sekarang),
   ).length
   const hasil: Perhatian[] = []
+  // Pekerjaan harian Tim Sinfodes didahulukan: bukti bayar yang menunggu diperiksa.
+  if (buktiMenunggu) hasil.push({ jenis: 'bukti-menunggu', jumlah: buktiMenunggu })
   if (tidakAktif > 0) hasil.push({ jenis: 'tidak-aktif', jumlah: tidakAktif })
   if (berhenti > 0) hasil.push({ jenis: 'berhenti-persiapan', jumlah: berhenti })
   if (tagihanLewat) hasil.push({ jenis: 'tagihan-lewat', jumlah: tagihanLewat })
@@ -49,6 +64,8 @@ export function kalimatPerhatian(p: Perhatian): string {
       return `${n} desa berhenti di langkah persiapan`
     case 'tagihan-lewat':
       return `${n} tagihan lewat jatuh tempo`
+    case 'bukti-menunggu':
+      return `${n} bukti bayar menunggu verifikasi`
   }
 }
 

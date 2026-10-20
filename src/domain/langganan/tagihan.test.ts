@@ -1,13 +1,17 @@
 import { describe, expect, it } from 'vitest'
 import {
   hargaTagihan,
+  alasanSchema,
   isianBuktiSchema,
   jadwalTagihan,
   labelStatusTagihan,
   lewatJatuhTempo,
+  lunasSchema,
   nomorTagihan,
   periodeTagihanBerikut,
   periodeTagihanMemuat,
+  tabTagihan,
+  uraiNominal,
   type Tagihan,
 } from './tagihan'
 
@@ -78,5 +82,38 @@ describe('isianBuktiSchema', () => {
     expect(galat({ ...sah, tanggalTransfer: '' })).toEqual(['Pilih tanggal transfer.'])
     expect(galat({ ...sah, nominalTransfer: undefined })).toEqual(['Isi nominal yang ditransfer.'])
     expect(isianBuktiSchema.safeParse({ ...sah, namaPengirim: 'a'.repeat(80) }).success).toBe(true)
+  })
+})
+
+describe('tab Tagihan Konsol (rencana 7D-2 Tugas 1)', () => {
+  const t = (status: Tagihan['status'], jatuhTempo = '2026-10-15') => ({ status, jatuhTempo }) as Pick<Tagihan, 'status' | 'jatuhTempo'>
+  it('tiap status masuk satu tab; dibatalkan hanya di Semua', () => {
+    expect(tabTagihan(t('menunggu-verifikasi'), '2026-10-20')).toBe('menunggu')
+    expect(tabTagihan(t('terbit'), '2026-10-15')).toBe('belum')
+    expect(tabTagihan(t('terbit'), '2026-10-16')).toBe('lewat')
+    expect(tabTagihan(t('lunas'), '2026-12-01')).toBe('lunas')
+    expect(tabTagihan(t('dibatalkan'), '2026-12-01')).toBeNull()
+  })
+})
+
+describe('uraiNominal', () => {
+  it.each(['1.500.127', '1500127', 'Rp1.500.127', 'Rp 1.500.127', ' rp 1.500.127 '])('"%s" menjadi 1500127', (q) => {
+    expect(uraiNominal(q)).toBe(1_500_127)
+  })
+  it.each(['', 'sungai', 'Rp', '1.5a', 'SFD/2026/T4/001'])('"%s" bukan nominal', (q) => {
+    expect(uraiNominal(q)).toBeNull()
+  })
+})
+
+describe('isian aksi Konsol', () => {
+  it('alasan: 10-300 karakter dengan pesan persis', () => {
+    expect(alasanSchema.safeParse({ alasan: 'Sembilan.' }).error?.issues[0].message).toBe('Isi alasan paling sedikit 10 karakter.')
+    expect(alasanSchema.safeParse({ alasan: 'x'.repeat(301) }).error?.issues[0].message).toBe('Paling banyak 300 karakter.')
+    expect(alasanSchema.safeParse({ alasan: ' Nominal tidak sesuai ' }).data).toEqual({ alasan: 'Nominal tidak sesuai' })
+  })
+  it('lunas: tanggal wajib dan nominal lebih dari 0', () => {
+    expect(lunasSchema.safeParse({ diterimaPada: '', nominalDiterima: 1 }).error?.issues[0].message).toBe('Pilih tanggal diterima.')
+    expect(lunasSchema.safeParse({ diterimaPada: '2026-09-24', nominalDiterima: 0 }).error?.issues[0].message).toBe('Nominal harus lebih dari 0.')
+    expect(lunasSchema.safeParse({ diterimaPada: '2026-09-24', nominalDiterima: 1_500_127 }).success).toBe(true)
   })
 })

@@ -5,6 +5,7 @@ export const MENU_KONSOL: readonly ItemMenuKonsol[] = [
   { label: 'Ringkasan', href: '/konsol' },
   { label: 'Desa', href: '/konsol/desa' },
   { label: 'Kabupaten', href: '/konsol/kabupaten' },
+  { label: 'Tagihan', href: '/konsol/tagihan' },
 ]
 
 /** Ringkasan hanya aktif di /konsol; menu lain juga aktif di halaman di bawahnya, mis. detail desa. */

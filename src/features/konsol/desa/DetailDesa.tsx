@@ -1,12 +1,12 @@
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState, type ReactNode } from 'react'
 import { GalatApi, pesanGalat } from '@/api/galat'
-import { opsiDetailDesaKonsol } from '@/api/konsol'
+import { kunciKonsol, opsiDetailDesaKonsol, ubahPeriodeTagihan } from '@/api/konsol'
 import { DOMAIN_INDUK, keAlamat } from '@/app/alamat'
 import { formatAngka, formatRupiah, formatUkuranKb } from '@/domain/format/angka'
 import { formatTanggal, formatWaktuLog, tanggalIsoWib } from '@/domain/format/tanggal'
 import { HARGA_TRIWULAN, type DetailDesaKonsol } from '@/domain/konsol/schema'
-import { LABEL_PERIODE_TAGIHAN } from '@/domain/langganan/tagihan'
+import { LABEL_PERIODE_TAGIHAN, PERIODE_TAGIHAN, type PeriodeTagihan } from '@/domain/langganan/tagihan'
 import { CapTagihan } from '@/features/langganan/CapTagihan'
 import { jumlahSelesai, LABEL_LANGKAH_PERSIAPAN, LANGKAH_PERSIAPAN } from '@/domain/wilayah/persiapan'
 import { Cap } from '@/ui/cap/Cap'
@@ -14,6 +14,9 @@ import { DescriptionList } from '@/ui/data/DescriptionList'
 import { BarChart } from '@/ui/grafik/BarChart'
 import { MiniBar } from '@/ui/grafik/MiniBar'
 import { Checkbox } from '@/ui/isian/Checkbox'
+import { Select } from '@/ui/isian/Select'
+import { Timeline } from '@/ui/data/Timeline'
+import { tampilkanToast } from '@/ui/toast/antrean'
 import { TabNav } from '@/ui/navigasi/TabNav'
 import { Tautan } from '@/ui/navigasi/Tautan'
 import { PageHeader } from '@/ui/tata-letak/PageHeader'
@@ -23,6 +26,7 @@ import { ErrorState } from '@/ui/umpan-balik/ErrorState'
 import { BarisKerangka } from '@/ui/umpan-balik/Skeleton'
 import { AksesBantuanDesa } from './AksesBantuanDesa'
 import { DialogUbahAlamat } from './DialogUbahAlamat'
+import { DialogUbahStatus } from './DialogUbahStatus'
 import { DialogUndangSekdes } from './DialogUndangSekdes'
 import { LABEL_TAB_DETAIL_DESA, TAB_DETAIL_DESA, type TabDetailDesa } from './tab-detail'
 
@@ -180,6 +184,61 @@ function TabKeaktifan({ d }: { d: DetailDesaKonsol }) {
   )
 }
 
+/** Periode tagihan berlaku mulai tagihan berikutnya; tagihan yang sudah terbit tidak berubah (rencana 7D-2 keputusan 8). */
+function PemilihPeriode({ d }: { d: DetailDesaKonsol }) {
+  const queryClient = useQueryClient()
+  const ubah = useMutation({
+    mutationFn: (periode: PeriodeTagihan) => ubahPeriodeTagihan(d.id, periode),
+    onSuccess: async () => {
+      tampilkanToast({ pesan: 'Periode tagihan diubah. Berlaku mulai tagihan berikutnya.', nada: 'berhasil' })
+      await queryClient.invalidateQueries({ queryKey: kunciKonsol.semua })
+    },
+    onError: (e) => tampilkanToast({ pesan: pesanGalat(e), nada: 'galat' }),
+  })
+  return (
+    <Select
+      label="Periode tagihan"
+      labelTersembunyi
+      className="w-44"
+      isDisabled={ubah.isPending}
+      pilihan={PERIODE_TAGIHAN.map((p) => ({ id: p, label: LABEL_PERIODE_TAGIHAN[p] }))}
+      nilai={d.langganan.periodeTagihan}
+      onUbah={(id) => {
+        const baru = PERIODE_TAGIHAN.find((p) => p === id)
+        if (baru && baru !== d.langganan.periodeTagihan) ubah.mutate(baru)
+      }}
+    />
+  )
+}
+
+function StatusDesa({ d }: { d: DetailDesaKonsol }) {
+  const [ubah, setUbah] = useState(false)
+  return (
+    <section aria-labelledby="judul-status-desa" className="flex flex-col gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 id="judul-status-desa" className={judulBagian}>
+          {`Status desa: ${d.status}`}
+        </h2>
+        <Tombol onPress={() => setUbah(true)}>Ubah status</Tombol>
+      </div>
+      {d.riwayatStatus.length === 0 ? (
+        <p className={redup}>Belum ada perubahan status.</p>
+      ) : (
+        <Timeline
+          label="Riwayat status"
+          entri={d.riwayatStatus.map((r, i) => ({
+            id: `${i}-${r.pada}`,
+            waktu: formatWaktuLog(r.pada),
+            judul: `${r.dari} → ${r.ke} · ${r.oleh.nama}`,
+            keterangan: r.alasan,
+          }))}
+        />
+      )}
+      {ubah && <DialogUbahStatus desa={d} onTutup={() => setUbah(false)} />}
+    </section>
+  )
+}
+
 function TabLangganan({ d, hariIni }: { d: DetailDesaKonsol; hariIni: string }) {
   const l = d.langganan
   const masa =
@@ -189,7 +248,7 @@ function TabLangganan({ d, hariIni }: { d: DetailDesaKonsol; hariIni: string }) 
       <DescriptionList
         items={[
           { label: 'Paket', nilai: `${l.paket} · ${formatRupiah(HARGA_TRIWULAN[l.paket])} per triwulan` },
-          { label: 'Penagihan', nilai: LABEL_PERIODE_TAGIHAN[l.periodeTagihan] },
+          { label: 'Penagihan', nilai: <PemilihPeriode d={d} /> },
           { label: d.status === 'Uji coba' ? 'Masa uji coba' : 'Masa aktif', nilai: masa },
         ]}
       />
@@ -227,7 +286,7 @@ function TabLangganan({ d, hariIni }: { d: DetailDesaKonsol; hariIni: string }) 
                   return (
                     <tr key={t.id}>
                       <th scope="row" className={`${sel} text-left font-mono font-normal`}>
-                        {t.nomor}
+                        <Tautan href={`/konsol/tagihan/${encodeURIComponent(t.id)}`}>{t.nomor}</Tautan>
                       </th>
                       <td className={sel}>{t.periode.label}</td>
                       <td className={`${sel} text-right tabular-nums`}>{formatRupiah(t.nominal)}</td>
@@ -242,8 +301,9 @@ function TabLangganan({ d, hariIni }: { d: DetailDesaKonsol; hariIni: string }) 
             </table>
           </div>
         )}
-        <p className="text-teks-kecil text-tinta-2">Tagihan contoh untuk demo; pembayaran tidak diproses di sini.</p>
+        <p className="text-teks-kecil text-tinta-2">Tagihan contoh untuk demo; pembayaran diverifikasi di menu Tagihan.</p>
       </section>
+      <StatusDesa d={d} />
     </div>
   )
 }

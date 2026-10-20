@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { boleh, cakupanDusun } from './hak-akses'
+import { boleh, bolehDi, cakupanDusun, HAK_AKSES, KEMAMPUAN_TULIS, kemampuanEfektif } from './hak-akses'
 import type { Pengguna } from './schema'
 
 describe('hak akses (SPEC §5.1)', () => {
@@ -55,5 +55,32 @@ describe('hak akses (SPEC §5.1)', () => {
     }
     expect(cakupanDusun(dasar)).toBe('dsn_ss_2')
     expect(cakupanDusun({ ...dasar, peran: 'operator', dusunId: null })).toBeNull()
+  })
+})
+
+describe('desa Ditangguhkan (SPEC-V0.2 §10.5, rencana 7D-2 Tugas 4)', () => {
+  it('Sekretaris Desa: tidak ada satu pun kemampuan tulis, tetapi Langganan, Akses Sinfodes, dan semua kemampuan lihat tetap', () => {
+    const efektif = kemampuanEfektif('sekdes', 'Ditangguhkan')
+    for (const k of KEMAMPUAN_TULIS) expect(efektif.has(k), k).toBe(false)
+    for (const k of ['langganan.bayar', 'langganan.lihat', 'akses-sinfodes.kelola', 'penduduk.lihat', 'surat.lihat', 'keuangan.lihat', 'siaran.lihat'] as const) {
+      expect(efektif.has(k), k).toBe(true)
+    }
+  })
+  it('semua kemampuan tulis memang dimiliki sekurangnya satu peran (daftar tidak basi)', () => {
+    for (const k of KEMAMPUAN_TULIS) expect(Object.values(HAK_AKSES).some((s) => s.has(k)), k).toBe(true)
+  })
+  it('status lain tidak mengubah apa pun', () => {
+    for (const status of ['Aktif', 'Uji coba', 'Persiapan'] as const) {
+      expect([...kemampuanEfektif('sekdes', status)].sort()).toEqual([...HAK_AKSES.sekdes].sort())
+    }
+  })
+  it('bolehDi: tulis ditolak saat Ditangguhkan, lihat dan bayar tetap', () => {
+    expect(bolehDi('operator', 'Aktif', 'penduduk.ubah')).toBe(true)
+    expect(bolehDi('operator', 'Ditangguhkan', 'penduduk.ubah')).toBe(false)
+    expect(bolehDi('operator', 'Ditangguhkan', 'penduduk.lihat')).toBe(true)
+    expect(bolehDi('kaur-keuangan', 'Ditangguhkan', 'langganan.bayar')).toBe(true)
+    expect(bolehDi('kaur-keuangan', 'Ditangguhkan', 'keuangan.sinkron')).toBe(false)
+    expect(bolehDi('kades', 'Ditangguhkan', 'akses-sinfodes.kelola')).toBe(true)
+    expect(bolehDi('kades', 'Ditangguhkan', 'surat.tandatangani')).toBe(false)
   })
 })

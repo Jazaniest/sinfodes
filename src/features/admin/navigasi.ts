@@ -1,4 +1,5 @@
-import { boleh, type Kemampuan } from '@/domain/pengguna/hak-akses'
+import { bolehDi, type Kemampuan } from '@/domain/pengguna/hak-akses'
+import type { StatusDesa } from '@/domain/wilayah/schema'
 import type { PeranSesi } from '@/domain/pengguna/schema'
 
 /** Kunci angka di samping menu: jumlah yang perlu ditindaklanjuti peran aktif (SPEC §5.2). */
@@ -55,8 +56,8 @@ export const MENU_ADMIN: readonly KelompokMenu[] = [
 ]
 
 /** Angka menu Pengaduan: pengaduan Baru, hanya untuk peran yang bisa menanggapi. Kepala Desa melihat menu tanpa angka. */
-export const angkaPengaduan = (peran: PeranSesi, baru: number | undefined): number | undefined =>
-  boleh(peran, 'pengaduan.tanggapi') ? baru : undefined
+export const angkaPengaduan = (peran: PeranSesi, baru: number | undefined, status: StatusDesa = 'Aktif'): number | undefined =>
+  bolehDi(peran, status, 'pengaduan.tanggapi') ? baru : undefined
 
 /** Menu di bawah garis (SPEC §5.2). Siaran kabupaten (SPEC-V0.2 §8.4) di antara Pengaturan dan Notifikasi, tanpa angka. */
 export const MENU_BAWAH: readonly ItemMenu[] = [
@@ -69,22 +70,26 @@ export const MENU_BAWAH: readonly ItemMenu[] = [
  * Menu di bawah garis yang boleh dibuka peran ini; yang tidak berhak disembunyikan (SPEC §5.1). Kepala Desa dan Kaur Keuangan
  * tidak mengelola pengaturan, tetapi membuka Langganan (SPEC-V0.2 §10): menu Pengaturannya langsung ke halaman itu.
  */
-export function menuBawahUntuk(peran: PeranSesi): ItemMenu[] {
+export function menuBawahUntuk(peran: PeranSesi, status: StatusDesa = 'Aktif'): ItemMenu[] {
+  const boleh = (k: Kemampuan) => bolehDi(peran, status, k)
   return MENU_BAWAH.flatMap((i) => {
-    if (i.kemampuan === null || boleh(peran, i.kemampuan)) return [i]
-    if (i.label === 'Pengaturan' && boleh(peran, 'langganan.lihat')) {
+    if (i.kemampuan === null || boleh(i.kemampuan)) return [i]
+    if (i.label === 'Pengaturan' && boleh('langganan.lihat')) {
       return [{ ...i, href: '/admin/pengaturan/langganan', kemampuan: 'langganan.lihat' as const }]
     }
-    if (i.label === 'Pengaturan' && boleh(peran, 'akses-sinfodes.kelola')) {
+    if (i.label === 'Pengaturan' && boleh('akses-sinfodes.kelola')) {
       return [{ ...i, href: '/admin/pengaturan/akses-sinfodes', kemampuan: 'akses-sinfodes.kelola' as const }]
     }
     return []
   })
 }
 
-/** Menu yang tidak berhak diakses disembunyikan, bukan dinonaktifkan (SPEC §5.1). */
-export function menuUntuk(peran: PeranSesi): KelompokMenu[] {
-  return MENU_ADMIN.map((k) => ({ ...k, item: k.item.filter((i) => i.kemampuan === null || boleh(peran, i.kemampuan)) })).filter(
+/**
+ * Menu yang tidak berhak diakses disembunyikan, bukan dinonaktifkan (SPEC §5.1). Selama desa Ditangguhkan, menu yang butuh
+ * kemampuan tulis (mis. Website Desa) ikut hilang (SPEC-V0.2 §10.5).
+ */
+export function menuUntuk(peran: PeranSesi, status: StatusDesa = 'Aktif'): KelompokMenu[] {
+  return MENU_ADMIN.map((k) => ({ ...k, item: k.item.filter((i) => i.kemampuan === null || bolehDi(peran, status, i.kemampuan)) })).filter(
     (k) => k.item.length > 0,
   )
 }

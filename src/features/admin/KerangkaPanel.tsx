@@ -7,11 +7,12 @@ import { opsiJumlahPengaduan } from '@/api/pengaduan'
 import { keluar, opsiSesi } from '@/api/sesi'
 import { opsiJumlahPermohonan } from '@/api/surat'
 import { hapusSesi } from '@/app/sesi'
-import { boleh } from '@/domain/pengguna/hak-akses'
+import { bolehDi, type Kemampuan } from '@/domain/pengguna/hak-akses'
 import { PencarianCepat } from '../cari/PencarianCepat'
 import { AdminShell } from './AdminShell'
 import { angkaPengaduan } from './navigasi'
 import { PitaBantuan } from './PitaBantuan'
+import { PitaDitangguhkan } from './PitaDitangguhkan'
 import { SesiAdminKonteks } from './sesi-konteks'
 import { hapusSemuaDraf } from './useDrafFormulir'
 
@@ -27,10 +28,12 @@ export function KerangkaPanel() {
   const router = useRouter()
   const queryClient = useQueryClient()
   const [cariTerbuka, setCariTerbuka] = useState(false)
+  // KerangkaPanel yang menyediakan konteks sesi, jadi tidak bisa memakai useBoleh(); aturannya sama (bolehDi).
+  const boleh = (kemampuan: Kemampuan) => bolehDi(sesi.pengguna.peran, sesi.desa.status, kemampuan)
   // Angka menu Layanan Surat; ikut dimuat ulang setiap kali permohonan berubah (segarkanSurat).
-  const jumlahSurat = useQuery({ ...opsiJumlahPermohonan(), enabled: boleh(sesi.pengguna.peran, 'surat.lihat') })
+  const jumlahSurat = useQuery({ ...opsiJumlahPermohonan(), enabled: boleh('surat.lihat') })
   // Angka menu Pengaduan; ikut dimuat ulang setiap kali pengaduan dibalas atau statusnya berubah (segarkanPengaduan).
-  const jumlahPengaduan = useQuery({ ...opsiJumlahPengaduan(), enabled: boleh(sesi.pengguna.peran, 'pengaduan.lihat') })
+  const jumlahPengaduan = useQuery({ ...opsiJumlahPengaduan(), enabled: boleh('pengaduan.lihat') })
   // Angka menu Notifikasi; ikut dimuat ulang saat surat berubah (segarkanSurat) dan saat ditandai dibaca.
   const notifikasi = useQuery(opsiNotifikasi())
 
@@ -67,14 +70,15 @@ export function KerangkaPanel() {
         onKeluar={() => void keluarSesi()}
         hitungan={{
           surat: jumlahSurat.data?.perluTindakan,
-          pengaduan: angkaPengaduan(sesi.pengguna.peran, jumlahPengaduan.data?.status.baru),
+          pengaduan: angkaPengaduan(sesi.pengguna.peran, jumlahPengaduan.data?.status.baru, sesi.desa.status),
           notifikasi: notifikasi.data?.belumDibaca,
         }}
       >
         {sesi.bantuan && <PitaBantuan bantuan={sesi.bantuan} />}
+        {sesi.desa.status === 'Ditangguhkan' && <PitaDitangguhkan />}
         <Outlet />
       </AdminShell>
-      <PencarianCepat isOpen={cariTerbuka} onOpenChange={setCariTerbuka} peran={sesi.pengguna.peran} />
+      <PencarianCepat isOpen={cariTerbuka} onOpenChange={setCariTerbuka} boleh={boleh} />
     </SesiAdminKonteks>
   )
 }

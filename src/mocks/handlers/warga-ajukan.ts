@@ -11,6 +11,7 @@ import { ambilDb, ubahDb } from '../db'
 import { API, balasGalat, denganJaringan } from '../http'
 import { bacaMultipart, catatKiriman, kirimanSebelumnya } from '../kiriman-warga'
 import { kirimNotifikasi } from '../notifikasi'
+import { tolakBilaLayananDitutup } from '../penangguhan'
 import { butuhWarga } from '../sesi-mock'
 import { perkiraanHariKerja } from '../surat-perkiraan'
 import { balasField, balasIsianTidakValid, catatAktivitas, idBaru } from '../tulis'
@@ -39,6 +40,8 @@ export const handlerWargaAjukan = [
     denganJaringan(async ({ request }) => {
       const w = butuhWarga(request)
       if (w instanceof Response) return w
+      const ditutup = tolakBilaLayananDitutup(w.penduduk.desaId)
+      if (ditutup) return ditutup
       const { data, berkas } = await bacaMultipart(request)
       const masukan = kirimPermohonanWargaSchema.safeParse(data)
       if (!masukan.success) return balasIsianTidakValid(masukan.error)

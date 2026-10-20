@@ -6,7 +6,7 @@ import { kunciPengaturan, opsiPengaturanDesa, simpanIdentitas } from '@/api/peng
 import { kunciSesi } from '@/api/sesi'
 import { MAKS_GAMBAR_KB } from '@/domain/format/gambar'
 import { formDariIdentitas, isianIdentitas, periksaIdentitas, type FormIdentitas, type PengaturanDesa } from '@/domain/pengaturan/identitas'
-import { boleh } from '@/domain/pengguna/hak-akses'
+import { useBoleh } from '@/features/admin/useBoleh'
 import { KopSurat } from '@/ui/dokumen/KopSurat'
 import { PratinjauLembar } from '@/ui/dokumen/PratinjauLembar'
 import { fokusIsianSalah } from '@/ui/hooks/fokus-isian'
@@ -19,7 +19,6 @@ import { tampilkanToast } from '@/ui/toast/antrean'
 import { Tombol } from '@/ui/tombol/Tombol'
 import { ErrorState } from '@/ui/umpan-balik/ErrorState'
 import { BarisKerangka } from '@/ui/umpan-balik/Skeleton'
-import { useSesiAdmin } from '../admin/sesi-konteks'
 import { KepalaPengaturan } from './TabPengaturan'
 import { UnggahGambar } from './UnggahGambar'
 
@@ -55,7 +54,7 @@ const tanpaKunci = (g: Record<string, string>, awalan: string) =>
 
 function FormIdentitasDesa({ data, onKotor }: { data: PengaturanDesa; onKotor?: (kotor: boolean) => void }) {
   const queryClient = useQueryClient()
-  const { pengguna } = useSesiAdmin()
+  const boleh = useBoleh()
   const awal = useMemo(() => formDariIdentitas(data.identitas), [data])
   const [form, setForm] = useState<FormIdentitas>(awal)
   const [galat, setGalat] = useState<Record<string, string>>({})
@@ -167,7 +166,7 @@ function FormIdentitasDesa({ data, onKotor }: { data: PengaturanDesa; onKotor?: 
             <p>{data.kepalaDesa ?? 'Belum ada akun Kepala Desa yang aktif'}</p>
             <p className={gayaKeterangan}>
               Diambil dari akun Kepala Desa yang aktif dan dipakai di blok tanda tangan surat.{' '}
-              {boleh(pengguna.peran, 'pengguna.kelola') ? (
+              {boleh('pengguna.kelola') ? (
                 <Tautan href="/admin/pengaturan/pengguna">Atur di tab Pengguna</Tautan>
               ) : (
                 'Diatur Sekretaris Desa di tab Pengguna.'

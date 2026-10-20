@@ -5,7 +5,7 @@ import { segarkanSurat } from '@/api/segarkan'
 import { kunciSurat, opsiPermohonan, ubahPermohonan } from '@/api/surat'
 import { asalDesa } from '@/app/alamat'
 import { formatJam, formatTanggal, formatWaktuLog } from '@/domain/format/tanggal'
-import { boleh } from '@/domain/pengguna/hak-akses'
+import { useBoleh } from '@/features/admin/useBoleh'
 import { JUDUL_KEJADIAN } from '@/domain/surat/alur'
 import { samaIsian } from '@/domain/surat/jenis'
 import { LABEL_KANAL, type DetailPermohonan } from '@/domain/surat/permohonan'
@@ -126,7 +126,8 @@ function CatatanInternal({ d, bisaUbah }: { d: DetailPermohonan; bisaUbah: boole
 
 /** Ruang kerja surat (SPEC §7.4 layar 3): lembar di kiri, panel status, riwayat, pemohon, isian, dan aksi di kanan. */
 export function RuangKerjaSurat({ id, sekarang, onKotor }: Props) {
-  const { pengguna, desa, dusun } = useSesiAdmin()
+  const { desa, dusun } = useSesiAdmin()
+  const boleh = useBoleh()
   const queryClient = useQueryClient()
   const hariIni = useMemo(() => sekarang ?? new Date(), [sekarang])
   const kueri = useQuery(opsiPermohonan(id))
@@ -170,7 +171,7 @@ export function RuangKerjaSurat({ id, sekarang, onKotor }: Props) {
   const d = kueri.data
   const p = d.permohonan
   const isian = ubahan ?? p.isian
-  const bisaUbahIsian = p.status === 'diproses' && boleh(pengguna.peran, 'surat.proses')
+  const bisaUbahIsian = p.status === 'diproses' && boleh('surat.proses')
   const lembar = dataLembar(d, { desa, dusun, isian, hariIni, asal: asalDesa(desa.slug) })
   const penanda = p.status === 'dibatalkan' ? <Cap varian="dibatalkan" /> : p.terbit ? undefined : <Cap varian="draf" />
   const ubahIsian = (kunci: string, nilai: string) => {
@@ -271,7 +272,7 @@ export function RuangKerjaSurat({ id, sekarang, onKotor }: Props) {
               <DaftarLampiran p={p} />
             </Bagian>
             <Bagian judul="Catatan internal">
-              <CatatanInternal key={p.id} d={d} bisaUbah={boleh(pengguna.peran, 'surat.proses')} />
+              <CatatanInternal key={p.id} d={d} bisaUbah={boleh('surat.proses')} />
             </Bagian>
           </aside>
         </div>

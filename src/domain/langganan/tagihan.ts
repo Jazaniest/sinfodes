@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { daftarSchema } from '../api'
 import { angkaRomawi } from '../format/romawi'
 import { HARGA_TRIWULAN, PAKET, type Paket } from '../konsol/filter'
 
@@ -66,6 +67,8 @@ export const tagihanSchema = z.object({
   referensiPembayaran: z.string().nullable(),
   bukti: buktiSchema.nullable(),
   penolakanTerakhir: alasanOleh.nullable(),
+  /** Bukti yang pernah ditolak Tim Sinfodes, terlama dulu (rencana 7D-2). */
+  riwayatBukti: z.array(buktiSchema),
   lunas: z.object({ diterimaPada: tanggal, nominalDiterima: z.number().int().positive(), ditandaiPada: waktu, olehNama: z.string() }).nullable(),
   kwitansi: z.object({ nomor: z.string(), terbitPada: tanggal }).nullable(),
   dibatalkan: alasanOleh.nullable(),
@@ -136,3 +139,80 @@ export const lewatJatuhTempo = (t: Pick<Tagihan, 'status' | 'jatuhTempo'>, hariI
 export function labelStatusTagihan(t: Pick<Tagihan, 'status' | 'jatuhTempo'>, hariIni: string): string {
   return lewatJatuhTempo(t, hariIni) ? LABEL_LEWAT_JATUH_TEMPO : LABEL_STATUS_TAGIHAN[t.status]
 }
+
+/** Tab daftar Tagihan di Konsol (rencana 7D-2 keputusan 1). "Belum dibayar" belum lewat jatuh tempo; dibatalkan hanya muncul di Semua. */
+export const TAB_TAGIHAN = ['menunggu', 'belum', 'lewat', 'lunas', 'semua'] as const
+export type TabTagihan = (typeof TAB_TAGIHAN)[number]
+export const LABEL_TAB_TAGIHAN: Readonly<Record<TabTagihan, string>> = {
+  menunggu: 'Menunggu verifikasi',
+  belum: 'Belum dibayar',
+  lewat: 'Lewat jatuh tempo',
+  lunas: 'Lunas',
+  semua: 'Semua',
+}
+
+/** Tab khusus yang memuat tagihan ini selain "Semua"; null untuk tagihan dibatalkan. */
+export function tabTagihan(t: Pick<Tagihan, 'status' | 'jatuhTempo'>, hariIni: string): Exclude<TabTagihan, 'semua'> | null {
+  if (t.status === 'menunggu-verifikasi') return 'menunggu'
+  if (t.status === 'lunas') return 'lunas'
+  if (t.status === 'dibatalkan') return null
+  return lewatJatuhTempo(t, hariIni) ? 'lewat' : 'belum'
+}
+
+/**
+ * Kata pencarian yang berupa nominal: buang "Rp", spasi, dan titik; bila sisanya hanya angka, kembalikan angkanya. Selain itu
+ * null (dicocokkan sebagai nomor tagihan atau nama desa).
+ */
+export function uraiNominal(q: string): number | null {
+  const sisa = q.trim().replace(/^rp/i, '').replace(/[\s.]/g, '')
+  return /^\d+$/.test(sisa) ? Number(sisa) : null
+}
+
+const PESAN_ALASAN_PENDEK = 'Isi alasan paling sedikit 10 karakter.'
+export const alasanSchema = z.object({
+  alasan: z
+    .string({ error: PESAN_ALASAN_PENDEK })
+    .trim()
+    .min(10, PESAN_ALASAN_PENDEK)
+    .max(300, 'Paling banyak 300 karakter.'),
+})
+export type IsianAlasan = z.infer<typeof alasanSchema>
+
+/** Isian Tandai lunas. Batas tanggal (tidak sesudah hari ini, tidak sebelum tanggal transfer) diperiksa di handler dan layar. */
+export const lunasSchema = z.object({
+  diterimaPada: z.iso.date({ error: 'Pilih tanggal diterima.' }),
+  nominalDiterima: z.number({ error: 'Nominal harus lebih dari 0.' }).int('Nominal harus lebih dari 0.').positive('Nominal harus lebih dari 0.'),
+})
+export type IsianLunas = z.infer<typeof lunasSchema>
+export const PESAN_DITERIMA_LEWAT = 'Tanggal diterima tidak boleh sesudah hari ini.'
+export const PESAN_DITERIMA_SEBELUM_TRANSFER = 'Tanggal diterima tidak boleh sebelum tanggal transfer.'
+export const PESAN_TIDAK_MENUNGGU = 'Tagihan ini tidak menunggu verifikasi.'
+export const PESAN_TIDAK_BISA_BATAL = 'Tagihan ini sudah tidak bisa dibatalkan.'
+
+/** Satu baris daftar Tagihan Konsol: tagihan beserta desa pemiliknya. */
+export const barisTagihanKonsolSchema = tagihanSchema.extend({
+  desa: z.object({ id: z.string(), nama: z.string(), kecamatan: z.string(), kabupaten: z.string(), alamatKantor: z.string() }),
+})
+export type BarisTagihanKonsol = z.infer<typeof barisTagihanKonsolSchema>
+
+/** GET /konsol/tagihan: halaman daftar, tab yang dipakai, dan jumlah per tab. */
+export const daftarTagihanKonsolSchema = daftarSchema(barisTagihanKonsolSchema).extend({
+  tab: z.enum(TAB_TAGIHAN),
+  jumlah: z.record(z.enum(TAB_TAGIHAN), z.number().int().min(0)),
+})
+export type DaftarTagihanKonsol = z.infer<typeof daftarTagihanKonsolSchema>
+
+export const hasilCariTagihanSchema = z.object({ data: z.array(barisTagihanKonsolSchema) })
+export type HasilCariTagihan = z.infer<typeof hasilCariTagihanSchema>
+
+/** Kwitansi pembayaran yang sudah diterima. */
+export const kwitansiSchema = z.object({
+  nomor: z.string(),
+  diterimaPada: tanggal,
+  nominal: z.number().int().positive(),
+  paket: z.enum(PAKET),
+  periode: z.string(),
+  nomorTagihan: z.string(),
+  desa: z.object({ nama: z.string(), kecamatan: z.string(), kabupaten: z.string() }),
+})
+export type Kwitansi = z.infer<typeof kwitansiSchema>

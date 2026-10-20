@@ -5,11 +5,10 @@ import { kunciNotifikasi } from '@/api/notifikasi'
 import { batalkanDikirim, kunciTenggatDesa, opsiTenggatDesa } from '@/api/tenggat'
 import { formatTanggal, tanggalIsoWib } from '@/domain/format/tanggal'
 import { kalimatSisa, LABEL_STATUS_KIRIM, sisaHari, statusKirim, type ButirTenggatDesa } from '@/domain/kabupaten/tenggat'
-import { boleh } from '@/domain/pengguna/hak-akses'
+import { useBoleh } from '@/features/admin/useBoleh'
 import { cn } from '@/ui/cn'
 import { tampilkanToast } from '@/ui/toast/antrean'
 import { Tombol } from '@/ui/tombol/Tombol'
-import { useSesiAdmin } from '../admin/sesi-konteks'
 import { DialogTandaiDikirim } from './DialogTandaiDikirim'
 
 const ID_LAPORAN_KABUPATEN = 'laporan-kabupaten'
@@ -24,13 +23,13 @@ function teksStatus(t: ButirTenggatDesa, hariIni: string): string {
  * Tidak tampil untuk desa yang bukan sasaran tenggat. Pemegang `keuangan.lapor` bisa menandai dan membatalkan.
  */
 export function LaporanKabupaten({ sekarang = new Date() }: { sekarang?: Date }) {
-  const { pengguna } = useSesiAdmin()
+  const boleh = useBoleh()
   const queryClient = useQueryClient()
   const kueri = useQuery(opsiTenggatDesa())
   const [tandai, setTandai] = useState<ButirTenggatDesa | null>(null)
   const wadah = useRef<HTMLElement>(null)
   const hariIni = tanggalIsoWib(sekarang)
-  const bolehLapor = boleh(pengguna.peran, 'keuangan.lapor')
+  const bolehLapor = boleh('keuangan.lapor')
   const batal = useMutation({
     mutationFn: batalkanDikirim,
     onSuccess: () => {

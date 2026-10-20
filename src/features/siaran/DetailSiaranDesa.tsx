@@ -2,10 +2,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useRef, useState } from 'react'
 import { GalatApi, pesanGalat } from '@/api/galat'
 import { kunciDetailSiaranDesa, kunciSiaranDesa, opsiDetailSiaranDesa, tandaiSiaranDibaca } from '@/api/siaran'
-import { boleh } from '@/domain/pengguna/hak-akses'
+import { useBoleh } from '@/features/admin/useBoleh'
 import { formatJam, formatTanggal, tanggalIsoWib } from '@/domain/format/tanggal'
 import { lewatTenggatSiaran, type DetailSiaranDesa as Detail } from '@/domain/kabupaten/siaran'
-import { useSesiAdmin } from '@/features/admin/sesi-konteks'
 import { IsiSiaran } from '@/features/kabupaten/siaran/IsiSiaran'
 import { cn } from '@/ui/cn'
 import { Tautan } from '@/ui/navigasi/Tautan'
@@ -60,7 +59,7 @@ export function DetailSiaranDesa({ id, sekarang = new Date() }: Props) {
 }
 
 function IsiDetail({ s, hariIni }: { s: Detail; hariIni: string }) {
-  const { pengguna } = useSesiAdmin()
+  const boleh = useBoleh()
   const [dialog, setDialog] = useState(false)
   const lewat = lewatTenggatSiaran(s.tindakLanjut, s.status, hariIni)
   return (
@@ -84,7 +83,7 @@ function IsiDetail({ s, hariIni }: { s: Detail; hariIni: string }) {
                     <blockquote className="border-l-2 border-garis pl-3 text-tinta-2">{s.ditindaklanjuti.catatan}</blockquote>
                   )}
                 </>
-              ) : boleh(pengguna.peran, 'siaran.tindak') ? (
+              ) : boleh('siaran.tindak') ? (
                 <Tombol varian="utama" onPress={() => setDialog(true)}>
                   Tandai sudah ditindaklanjuti
                 </Tombol>
