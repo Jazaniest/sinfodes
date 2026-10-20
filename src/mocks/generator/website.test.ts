@@ -81,20 +81,43 @@ describe('isi website demo (SPEC §12.6, §9)', () => {
     // Zulkifli (akun warga demo, pemilik usaha): nomornya sama dengan WhatsApp akun warganya.
     expect(db.umkm.find((u) => u.pemilik === 'Zulkifli')).toMatchObject({ nama: 'Toko Bangunan Rengas Jaya', whatsapp: '081371185570' })
   })
-  it('situs: tiap desa punya satu dokumen; Sungai Sialang dari tampilan v0.1, lainnya tema Warta bawaan; draf kosong', () => {
+  it('situs: tiap desa punya satu dokumen; Sungai Sialang dari tampilan v0.1, Tanjung Lamo tema Warta bawaan; draf kosong', () => {
     expect(db.situs).toHaveLength(db.desa.length)
     expect(new Set(db.situs.map((x) => x.desaId)).size).toBe(db.desa.length)
     const ss = db.situs.find((x) => x.desaId === 'desa_sungai_sialang')!
     expect(versiSitusSchema.parse(ss.terbit).tema).toMatchObject({
       warnaUtama: '#1F4E79', warnaAksen: '#1F4E79', motif: 'pucuk-rebung', huruf: 'plex', sampul: '/demo/foto/sampul-sungai-kampar.jpg', logo: null,
+      kepala: 'warta', foto: 'bingkai', idGaleri: 'warta',
     })
     for (const x of db.situs) {
       expect(x.draf).toBeNull()
       expect(x.riwayat).toEqual([])
       expect(versiSitusSchema.safeParse(x.terbit).success, x.desaId).toBe(true)
     }
-    const fiktif = db.situs.find((x) => x.desaId !== 'desa_sungai_sialang' && x.desaId !== 'desa_tanjung_lamo')!
-    expect(fiktif.terbit.tema).toMatchObject({ huruf: 'plex', latar: 'kertas', sudut: 'tajam', kepadatan: 'lega' })
+    const lamo = db.situs.find((x) => x.desaId === 'desa_tanjung_lamo')!
+    expect(lamo.terbit.tema).toMatchObject({ huruf: 'plex', latar: 'kertas', sudut: 'tajam', kepadatan: 'lega', kepala: 'warta', foto: 'bingkai' })
     expect(db.percobaanVerifikasi).toEqual([])
+  })
+  it('tema galeri desa fiktif (7E-2): idGaleri bukan null, paling sedikit 5 tema berbeda, Sungai Sialang tetap warta', () => {
+    const fiktif = db.desa.filter((d) => d.id !== 'desa_sungai_sialang' && d.id !== 'desa_tanjung_lamo' && d.status !== 'Persiapan')
+    expect(fiktif.length).toBeGreaterThan(30)
+    const tema = fiktif.map((d) => db.situs.find((x) => x.desaId === d.id)!.terbit.tema)
+    for (const t of tema) expect(t.idGaleri, t.huruf).not.toBeNull()
+    expect(new Set(tema.map((t) => t.idGaleri)).size).toBeGreaterThanOrEqual(5)
+    expect(db.situs.find((x) => x.desaId === 'desa_sungai_sialang')!.terbit.tema.idGaleri).toBe('warta')
+    for (const x of db.situs) expect(versiSitusSchema.safeParse(x.terbit).success, x.desaId).toBe(true)
+  })
+  it('tema galeri desa fiktif sama untuk dua kali bangkit (deterministik)', () => {
+    const lagi = bangkitkanDb(new Date('2026-09-24T02:00:00Z'))
+    expect(lagi.situs.map((x) => [x.desaId, x.terbit.tema.idGaleri])).toEqual(db.situs.map((x) => [x.desaId, x.terbit.tema.idGaleri]))
+    expect(lagi.rekamDesa.map((r) => r.profilSingkat)).toEqual(db.rekamDesa.map((r) => r.profilSingkat))
+  })
+  it('profil singkat desa rekaman: dua paragraf yang menyebut nama desanya sendiri', () => {
+    for (const r of db.rekamDesa) {
+      const desa = db.desa.find((d) => d.id === r.desaId)!
+      expect(r.profilSingkat, desa.nama).toHaveLength(2)
+      expect(r.profilSingkat![0]).toContain(`Desa ${desa.nama}`)
+      expect(r.profilSingkat![0]).toContain(`Kabupaten ${desa.kabupaten.nama}`)
+    }
   })
 })

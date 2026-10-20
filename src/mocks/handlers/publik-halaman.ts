@@ -42,6 +42,7 @@ export const handlerPublikHalaman = [
           rt: d.rw.reduce((n, w) => n + w.rt.length, 0),
         })),
         peta: lapisanDesa(db, desa.id),
+        profilSingkat: profil ? null : (db.rekamDesa.find((r) => r.desaId === desa.id)?.profilSingkat ?? null),
         perangkat: pengurus.filter((p) => p.lembaga === 'perangkat').map(keOrang),
         lembaga: JENIS_LEMBAGA.filter((j) => j !== 'perangkat').flatMap((j) => {
           const anggota = pengurus.filter((p) => p.lembaga === j)

@@ -123,7 +123,8 @@ describe('data Konsol (SPEC §12.8, §11)', () => {
     const lain = bangkitkanKonsol(buatAcak(SEED_DEMO + 9), {
       acuan: SEKARANG, desaPanel: DESA_DEMO, acakPemantauan: buatAcak(SEED_DEMO + 11), acakKontak: buatAcak(1), acakBelanja: buatAcak(SEED_DEMO + 13), acakKomposisi: buatAcak(SEED_DEMO + 14),
     })
-    const tanpaSekdes = (r: RekamDesa) => ({ ...r, kontak: { ...r.kontak, sekdes: null } })
+    // `profilSingkat` ditambahkan generator utama (7E-2), bukan bangkitkanKonsol.
+    const tanpaSekdes = ({ profilSingkat, ...r }: RekamDesa) => (void profilSingkat, { ...r, kontak: { ...r.kontak, sekdes: null } })
     expect(lain.rekam.map(tanpaSekdes)).toEqual(db.rekamDesa.slice(0, 38).map(tanpaSekdes))
   })
   it('alamat semua desa sah dan unik, slug v0.1 jadi alias (SPEC-V0.2 §4.2)', () => {

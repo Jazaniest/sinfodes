@@ -15,7 +15,7 @@ type Props = {
 /** Laci samping (SPEC §4.4): ringkasan baris tabel, atau menu navigasi di layar < 1024px. */
 export function Drawer({ isOpen, onOpenChange, judul, children, aksi, sisi = 'kanan' }: Props) {
   return (
-    <ModalOverlay isOpen={isOpen} onOpenChange={onOpenChange} isDismissable className="fixed inset-0 z-40 bg-tinta/30">
+    <ModalOverlay isOpen={isOpen} onOpenChange={onOpenChange} isDismissable className="fixed inset-0 z-40 bg-tirai">
       <Modal
         className={cn(
           'fixed inset-y-0 flex w-[min(440px,100vw)] flex-col bg-lembar shadow-melayang outline-none',

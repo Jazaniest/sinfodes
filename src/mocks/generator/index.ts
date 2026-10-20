@@ -1,6 +1,8 @@
 import { waktuIsoWib } from '@/domain/format/tanggal'
+import { ID_TEMA, type IdTema } from '@/domain/website/tema'
 import { DESA_DEMO, DUSUN_DEMO, ID_SUNGAI_SIALANG, PENGGUNA_DEMO } from '../data/desa-demo'
 import { KABUPATEN_MITRA_DEMO, PENGGUNA_KABUPATEN_DEMO } from '../data/kabupaten-demo'
+import { POTENSI_UMUM, susunProfilSingkat } from '../data/profil-singkat'
 import { AKUN_WARGA_DEMO } from '../data/warga-demo'
 import { buatAcak } from '../prng'
 import { VERSI_DATA, type DbDemo } from '../tipe-db'
@@ -30,7 +32,7 @@ import { bangkitkanPeta } from './peta'
 import { bangkitkanSurat } from './surat'
 import { bangkitkanSiaran } from './siaran'
 import { bangkitkanTenggat } from './tenggat'
-import { bangkitkanWebsite, situsBawaan } from './website'
+import { bangkitkanWebsite, situsBawaan, situsGaleri } from './website'
 
 export const SEED_DEMO = 20260924
 
@@ -137,6 +139,14 @@ export function bangkitkanDb(sekarang: Date): DbDemo {
   const siaran = bangkitkanSiaran(buatAcak(SEED_DEMO + 16), { acuan: sekarang, desa: semuaDesa, pengguna: PENGGUNA_DEMO })
   // Aliran acak kedelapan belas: riwayat jejak bulanan desa rekaman untuk Indeks dan peringkat (SPEC-V0.2 §9.7).
   const ukuranRekam = bangkitkanUkuranRekam(buatAcak(SEED_DEMO + 18), { acuan: sekarang, desa: semuaDesa, rekam: konsol.rekam, langganan: konsol.langganan })
+  // Aliran acak kesembilan belas: tema galeri dan potensi unggulan desa fiktif (SPEC-V0.2 §13). Berurutan menurut `desa`;
+  // Sungai Sialang (Warta v0.1) dan Tanjung Lamo (Persiapan) tidak ikut, jadi pilihan mereka tidak menggeser yang lain.
+  const acakTema = buatAcak(SEED_DEMO + 19)
+  const temaDesa = new Map<string, { tema: IdTema; potensi: string }>()
+  for (const d of semuaDesa) {
+    if (d.id === ID_SUNGAI_SIALANG || DESA_DEMO.some((x) => x.id === d.id)) continue
+    temaDesa.set(d.id, { tema: acakTema.pilih(ID_TEMA), potensi: acakTema.pilih(POTENSI_UMUM) })
+  }
   const db: DbDemo = {
     versiData: VERSI_DATA,
     tanggalAcuan: waktuIsoWib(sekarang),
@@ -167,7 +177,11 @@ export function bangkitkanDb(sekarang: Date): DbDemo {
     pengumuman: website.pengumuman,
     agenda: website.agenda,
     galeri: website.galeri,
-    situs: semuaDesa.map((d) => (d.id === ID_SUNGAI_SIALANG ? website.situs : situsBawaan(d.id, website.situs.terbit.diperbarui))),
+    situs: semuaDesa.map((d) => {
+      if (d.id === ID_SUNGAI_SIALANG) return website.situs
+      const pilihan = temaDesa.get(d.id)
+      return pilihan ? situsGaleri(d.id, website.situs.terbit.diperbarui, pilihan.tema) : situsBawaan(d.id, website.situs.terbit.diperbarui)
+    }),
     profilDesa: [website.profil],
     potensi: website.potensi,
     umkm: website.umkm,
@@ -180,7 +194,12 @@ export function bangkitkanDb(sekarang: Date): DbDemo {
     langganan: konsol.langganan,
     tagihan: [],
     riwayatStatusDesa: [],
-    rekamDesa: konsol.rekam,
+    rekamDesa: konsol.rekam.map((r) => {
+      const d = semuaDesa.find((x) => x.id === r.desaId)
+      const pilihan = temaDesa.get(r.desaId)
+      if (!d || !pilihan) return r
+      return { ...r, profilSingkat: susunProfilSingkat({ nama: d.nama, kecamatan: d.kecamatan.nama, kabupaten: d.kabupaten.nama, jiwa: r.jiwa, potensi: pilihan.potensi }) }
+    }),
     riwayatMasuk,
     // Slug v0.1 ("sungai-sialang") tetap mengarah ke desanya lewat alias (SPEC-V0.2 §4.2).
     aliasAlamat: semuaDesa.flatMap((d) => (slugDesa(d.nama) === d.slug ? [] : [{ label: slugDesa(d.nama), desaId: d.id }])),

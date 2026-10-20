@@ -35,13 +35,14 @@ function akunAda(m: MasukSkenario): boolean {
 }
 
 describe('skenario terpandu (SPEC §3.6, §13.5)', () => {
-  it('skenario terpandu: SKTM 5 langkah, kelahiran 3 langkah, pemantauan, Siaran kabupaten 3 langkah, dan Tagihan 3 langkah (SPEC-V0.2 §13)', () => {
+  it('skenario terpandu: SKTM 5 langkah, kelahiran 3 langkah, pemantauan, Siaran kabupaten 3 langkah, Tagihan 3 langkah, dan Ganti tema 2 langkah (SPEC-V0.2 §13)', () => {
     expect(SKENARIO_DEMO.map((s) => [s.judul, s.langkah.length])).toEqual([
       ['SKTM dari HP sampai verifikasi QR', 5],
       ['Mencatat kelahiran', 3],
       ['Pemantauan kabupaten', 2],
       ['Siaran kabupaten', 3],
       ['Tagihan langganan', 3],
+      ['Ganti tema website', 2],
     ])
     expect(SKENARIO_DEMO.every((s) => s.langkah.every((l) => l.tombol.length > 0))).toBe(true)
   })
@@ -76,6 +77,16 @@ describe('skenario terpandu (SPEC §3.6, §13.5)', () => {
       'http://sungaisialang.sinfodes.localhost:3000/admin/pengaturan/langganan?demo=pgn_nurhayati',
       'http://konsol.sinfodes.localhost:3000/konsol/tagihan?demo=kns_dina',
       'http://sungaisialang.sinfodes.localhost:3000/admin/pengaturan/langganan?demo=pgn_nurhayati',
+    ])
+  })
+  it('skenario Ganti tema: Operator ke Tampilan, lalu website Sungai Sialang tanpa masuk (rencana 7E-2 keputusan 11)', () => {
+    const tema = SKENARIO_DEMO.find((s) => s.id === 'ganti-tema')
+    expect(tema?.ringkas).toBe('Operator memasang tema dari galeri, lalu melihat website desa berubah.')
+    expect(tema?.langkah.map((l) => l.teks)).toEqual(['Pilih tema di galeri', 'Lihat hasilnya di website'])
+    const tombol = tema!.langkah.map((l) => l.tombol[0])
+    expect(tombol.map((t) => tautanSkenario(t, akunUji))).toEqual([
+      'http://sungaisialang.sinfodes.localhost:3000/admin/website/tampilan?demo=pgn_rosmiati',
+      'http://sungaisialang.sinfodes.localhost:3000/',
     ])
   })
   it('setiap tombol memakai akun yang ada di data demo (fokus review 5)', () => {

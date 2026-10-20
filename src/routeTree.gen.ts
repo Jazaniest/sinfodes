@@ -42,6 +42,7 @@ import { Route as DesaSlugTransparansiRouteImport } from './routes/desa/$slug/tr
 import { Route as DesaSlugVerifikasiRouteImport } from './routes/desa/$slug/verifikasi'
 import { Route as KabupatenAdminDasborRouteImport } from './routes/kabupaten/admin/_dasbor'
 import { Route as KabupatenAdminMasukRouteImport } from './routes/kabupaten/admin/masuk'
+import { Route as KatalogTemaIdRouteImport } from './routes/katalog_.tema.$id'
 import { Route as KonsolKonsolIndexRouteImport } from './routes/konsol/_konsol/index'
 import { Route as KonsolKonsolPemantauanRouteImport } from './routes/konsol/_konsol/pemantauan'
 import { Route as WargaAppIndexRouteImport } from './routes/warga/_app/index'
@@ -289,6 +290,11 @@ const KabupatenAdminDasborRoute = KabupatenAdminDasborRouteImport.update({
 const KabupatenAdminMasukRoute = KabupatenAdminMasukRouteImport.update({
   id: '/kabupaten/admin/masuk',
   path: '/kabupaten/admin/masuk',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const KatalogTemaIdRoute = KatalogTemaIdRouteImport.update({
+  id: '/katalog_/tema/$id',
+  path: '/katalog/tema/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const KonsolKonsolIndexRoute = KonsolKonsolIndexRouteImport.update({
@@ -790,6 +796,7 @@ export interface FileRoutesByFullPath {
   '/desa/$slug/verifikasi': typeof DesaSlugVerifikasiRoute
   '/kabupaten/admin': typeof KabupatenAdminDasborRouteWithChildren
   '/kabupaten/admin/masuk': typeof KabupatenAdminMasukRoute
+  '/katalog/tema/$id': typeof KatalogTemaIdRoute
   '/konsol/pemantauan': typeof KonsolKonsolPemantauanRoute
   '/warga/ajukan': typeof WargaAppAjukanRoute
   '/warga/akun': typeof WargaAppAkunRoute
@@ -903,6 +910,7 @@ export interface FileRoutesByTo {
   '/desa/$slug/transparansi': typeof DesaSlugTransparansiRoute
   '/desa/$slug/verifikasi': typeof DesaSlugVerifikasiRoute
   '/kabupaten/admin/masuk': typeof KabupatenAdminMasukRoute
+  '/katalog/tema/$id': typeof KatalogTemaIdRoute
   '/konsol/pemantauan': typeof KonsolKonsolPemantauanRoute
   '/warga/ajukan': typeof WargaAppAjukanRoute
   '/warga/akun': typeof WargaAppAkunRoute
@@ -1022,6 +1030,7 @@ export interface FileRoutesById {
   '/desa/$slug/verifikasi': typeof DesaSlugVerifikasiRoute
   '/kabupaten/admin/_dasbor': typeof KabupatenAdminDasborRouteWithChildren
   '/kabupaten/admin/masuk': typeof KabupatenAdminMasukRoute
+  '/katalog_/tema/$id': typeof KatalogTemaIdRoute
   '/konsol/_konsol/pemantauan': typeof KonsolKonsolPemantauanRoute
   '/warga/_app/ajukan': typeof WargaAppAjukanRoute
   '/warga/_app/akun': typeof WargaAppAkunRoute
@@ -1142,6 +1151,7 @@ export interface FileRouteTypes {
     | '/desa/$slug/verifikasi'
     | '/kabupaten/admin'
     | '/kabupaten/admin/masuk'
+    | '/katalog/tema/$id'
     | '/konsol/pemantauan'
     | '/warga/ajukan'
     | '/warga/akun'
@@ -1255,6 +1265,7 @@ export interface FileRouteTypes {
     | '/desa/$slug/transparansi'
     | '/desa/$slug/verifikasi'
     | '/kabupaten/admin/masuk'
+    | '/katalog/tema/$id'
     | '/konsol/pemantauan'
     | '/warga/ajukan'
     | '/warga/akun'
@@ -1373,6 +1384,7 @@ export interface FileRouteTypes {
     | '/desa/$slug/verifikasi'
     | '/kabupaten/admin/_dasbor'
     | '/kabupaten/admin/masuk'
+    | '/katalog_/tema/$id'
     | '/konsol/_konsol/pemantauan'
     | '/warga/_app/ajukan'
     | '/warga/_app/akun'
@@ -1478,6 +1490,7 @@ export interface RootRouteChildren {
   KabupatenIndexRoute: typeof KabupatenIndexRoute
   KabupatenAdminDasborRoute: typeof KabupatenAdminDasborRouteWithChildren
   KabupatenAdminMasukRoute: typeof KabupatenAdminMasukRoute
+  KatalogTemaIdRoute: typeof KatalogTemaIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1711,6 +1724,13 @@ declare module '@tanstack/react-router' {
       path: '/kabupaten/admin/masuk'
       fullPath: '/kabupaten/admin/masuk'
       preLoaderRoute: typeof KabupatenAdminMasukRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/katalog_/tema/$id': {
+      id: '/katalog_/tema/$id'
+      path: '/katalog/tema/$id'
+      fullPath: '/katalog/tema/$id'
+      preLoaderRoute: typeof KatalogTemaIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/konsol/_konsol/': {
@@ -2578,6 +2598,7 @@ const rootRouteChildren: RootRouteChildren = {
   KabupatenIndexRoute: KabupatenIndexRoute,
   KabupatenAdminDasborRoute: KabupatenAdminDasborRouteWithChildren,
   KabupatenAdminMasukRoute: KabupatenAdminMasukRoute,
+  KatalogTemaIdRoute: KatalogTemaIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

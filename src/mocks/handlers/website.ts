@@ -2,6 +2,7 @@ import { http, HttpResponse } from 'msw'
 import { waktuIsoWib } from '@/domain/format/tanggal'
 import { periksaTema } from '@/domain/website/kontras'
 import type { VersiSitus } from '@/domain/website/situs'
+import { samaDenganGaleri } from '@/domain/website/galeri-dasar'
 import { temaDasarSchema } from '@/domain/website/tema'
 import { ambilDb, ubahDb } from '../db'
 import { API, balasDaftar, balasGalat, denganJaringan } from '../http'
@@ -79,7 +80,9 @@ export const handlerWebsite = [
         for (const p of gagal) fields[p.kunci === 'aksen-latar' ? 'warnaAksen' : 'warnaUtama'] ??= p.pesan ?? ''
         return balasGalat('VALIDATION', gagal[0].pesan ?? 'Kontras warna belum cukup.', 422, fields)
       }
-      const baru: VersiSitus = { tema: isian.data, diperbarui: waktuIsoWib(new Date()), oleh: pelakuDari(pengguna) }
+      // Tema galeri terpasang dihitung di sini, bukan dipercaya dari klien: null begitu satu pengaturan berbeda dari tema.
+      const tema = { ...isian.data, idGaleri: samaDenganGaleri(isian.data) }
+      const baru: VersiSitus = { tema, diperbarui: waktuIsoWib(new Date()), oleh: pelakuDari(pengguna) }
       ubahDb((d) => {
         const ada = d.situs.find((x) => x.desaId === pengguna.desaId)
         if (ada) ada.terbit = baru

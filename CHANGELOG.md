@@ -237,6 +237,22 @@ Pekerjaan v0.2.0 (tahap 7A-7H) dicatat di sini selama berjalan di branch `develo
 - Data tampilan v0.1 dipindah: aksen lama menjadi warna utama dan aksen. Desa tanpa pengaturan tampil dengan tema Warta bawaan.
 - Data demo naik ke versi 28.
 
+### Ditambahkan (7E-2: galeri tema, website desa rekaman, mode gelap)
+
+- **Galeri tema** di awal Website Desa › Tampilan › Dasar: delapan tema (Warta, Balai, Pesisir, Serambi, Ladang, Tenun, Rimba, Bandar) dengan screenshot pratinjau sungguhan, *Lihat pratinjau* (gambar besar), dan *Pakai tema ini*. Memasang tema langsung menyimpannya dan mengganti warna, huruf, sudut, kepadatan, kepala, foto, dan motif; logo, sampul, foto latar, dan sambutan tetap. Formulir yang belum disimpan diperingatkan akan hilang. Semua pengaturan tetap bisa diubah, dan tanda *Dipakai* hilang begitu ada yang berbeda dari tema.
+- **Tema berbeda strukturnya:** dua pengaturan baru, bentuk kepala halaman (Warta, Ringkas, Pita) dan perlakuan foto (Bingkai atau Penuh dengan keterangan di atas lapisan gelap tipis). Keduanya juga bisa diatur sendiri di kelompok *Kepala dan foto*.
+- **Website minimal desa rekaman:** desa fiktif memakai tema galeri yang dipilih acak secara deterministik (paling sedikit lima tema berbeda), dan Beranda serta Profil desa rekaman menampilkan *Profil singkat* dua paragraf, jam layanan, dan kontak kantor, bukan bagian kabar yang kosong.
+- **Mode gelap pribadi** untuk panel desa, dasbor kabupaten, dan Konsol: *Terang*, *Gelap*, atau *Ikuti perangkat* di menu akun, disimpan per perangkat (`localStorage` `sinfodes.mode`). Website publik, layanan warga, dan tampilan cetak tidak pernah gelap; pratinjau website di Tampilan dan lembar surat, laporan, tagihan, serta kwitansi tetap terang di dalam panel gelap. Palet gelap Register diuji kontrasnya (teks, biru, warna di atas warna isi, garis isian, dan status hijau, oker, merah tetap terbedakan).
+- **Skenario Coba demo *Ganti tema website*:** Operator memasang tema dari galeri, lalu melihat website Sungai Sialang berubah.
+- Halaman katalog tema `/katalog/tema/{id}` (hanya build demo, dibuka di alamat desa) untuk mengambil screenshot pratinjau galeri.
+
+### Diubah (7E-2)
+
+- `temaDasarSchema` mendapat `kepala`, `foto`, dan `idGaleri` (bawaan `warta`, `bingkai`, `null` untuk data lama). `idGaleri` dihitung ulang server dari pengaturan yang disimpan, bukan dipercaya dari klien.
+- `GET /publik/:slug/beranda` dan `GET /publik/:slug/profil` membawa `profilSingkat` (null untuk desa yang punya kabar atau profil).
+- Overlay dialog dan laci memakai token `--color-tirai`, bukan `bg-tinta/30`, supaya tetap gelap di mode gelap.
+- Data demo naik ke versi 29.
+
 ## [0.1.0] - 2026-10-16
 
 Demo tahap 1: frontend sungguhan dengan API tiruan (MSW) dan data dummy Desa Sungai Sialang, Kabupaten Pelalawan.

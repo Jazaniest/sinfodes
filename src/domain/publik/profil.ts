@@ -27,6 +27,8 @@ export const profilPublikSchema = z.object({
   perangkat: z.array(pengurusPublikSchema),
   /** Lembaga lain urut SPEC §8; lembaga tanpa pengurus tidak dikirim. */
   lembaga: z.array(z.object({ lembaga: z.enum(JENIS_LEMBAGA), nama: z.string(), pengurus: z.array(pengurusPublikSchema).min(1) })),
+  /** Profil singkat desa rekaman yang belum punya profil lengkap (SPEC-V0.2 §13); null untuk desa lain. */
+  profilSingkat: z.array(z.string()).nullable(),
 })
 export type ProfilPublik = z.infer<typeof profilPublikSchema>
 

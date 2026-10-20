@@ -16,6 +16,7 @@ import { Rubrik } from '@/ui/website/Rubrik'
 import { KartuKabar } from '../kabar/KartuKabar'
 import { usePublik } from '../publik-konteks'
 import { DeretLencana } from './DeretLencana'
+import { ProfilSingkat } from './ProfilSingkat'
 
 // Cuplikan APBDes dan potensi ada di bawah layar: dimuat terpisah supaya JS awal Beranda tetap ≤ 200 KB (SPEC §13.4).
 const BerandaLanjut = lazy(() => import('./BerandaLanjut'))
@@ -139,47 +140,53 @@ export function BerandaPublik() {
           {kueri.data.lencana.length > 0 && <DeretLencana lencana={kueri.data.lencana} />}
           {kueri.data.utama && <BeritaUtama a={kueri.data.utama} dasar={dasar} />}
           <LayananCepat dasar={dasar} />
-          <div className="grid gap-[var(--desa-jarak,2.5rem)] lg:grid-cols-[2fr_1fr]">
-            <Rubrik
-              id="kabar-terbaru"
-              judul="Kabar terbaru"
-              bagian="blok-kabar"
-              aksi={
-                <Tautan href={`${dasar}/kabar`} className="text-teks-kecil">
-                  Semua kabar
-                </Tautan>
-              }
-            >
-              <div className="flex flex-col gap-5">
-                {kueri.data.terbaru.map((a) => (
-                  <KartuKabar key={a.slug} a={a} dasar={dasar} />
-                ))}
-              </div>
-            </Rubrik>
-            <div className="flex flex-col gap-[var(--desa-jarak,2.5rem)]">
-              <Pengumuman b={kueri.data} />
-              <Agenda b={kueri.data} />
-            </div>
-          </div>
-          <Rubrik id="desa-dalam-angka" judul="Desa dalam angka" bagian="blok-angka">
-            <div className="grid items-start gap-4 sm:grid-cols-2">
-              {kueri.data.sampul && (
-                <div data-bagian="sampul">
-                  <FotoWarta
-                    berkas={kueri.data.sampul.berkas}
-                    alt={kueri.data.sampul.keterangan}
-                    keterangan={kueri.data.sampul.keterangan}
-                    kredit={kueri.data.sampul.kredit}
-                    sizes="(min-width: 40rem) 30rem, 100vw"
-                  />
+          {kueri.data.profilSingkat ? (
+            <ProfilSingkat paragraf={kueri.data.profilSingkat} />
+          ) : (
+            <>
+              <div className="grid gap-[var(--desa-jarak,2.5rem)] lg:grid-cols-[2fr_1fr]">
+                <Rubrik
+                  id="kabar-terbaru"
+                  judul="Kabar terbaru"
+                  bagian="blok-kabar"
+                  aksi={
+                    <Tautan href={`${dasar}/kabar`} className="text-teks-kecil">
+                      Semua kabar
+                    </Tautan>
+                  }
+                >
+                  <div className="flex flex-col gap-5">
+                    {kueri.data.terbaru.map((a) => (
+                      <KartuKabar key={a.slug} a={a} dasar={dasar} />
+                    ))}
+                  </div>
+                </Rubrik>
+                <div className="flex flex-col gap-[var(--desa-jarak,2.5rem)]">
+                  <Pengumuman b={kueri.data} />
+                  <Agenda b={kueri.data} />
                 </div>
-              )}
-              <p className="font-serif text-judul-bagian">{kalimatAngkaDesa(identitas.nama, kueri.data.angka)}</p>
-            </div>
-          </Rubrik>
-          <Suspense fallback={null}>
-            <BerandaLanjut b={kueri.data} dasar={dasar} />
-          </Suspense>
+              </div>
+              <Rubrik id="desa-dalam-angka" judul="Desa dalam angka" bagian="blok-angka">
+                <div className="grid items-start gap-4 sm:grid-cols-2">
+                  {kueri.data.sampul && (
+                    <div data-bagian="sampul">
+                      <FotoWarta
+                        berkas={kueri.data.sampul.berkas}
+                        alt={kueri.data.sampul.keterangan}
+                        keterangan={kueri.data.sampul.keterangan}
+                        kredit={kueri.data.sampul.kredit}
+                        sizes="(min-width: 40rem) 30rem, 100vw"
+                      />
+                    </div>
+                  )}
+                  <p className="font-serif text-judul-bagian">{kalimatAngkaDesa(identitas.nama, kueri.data.angka)}</p>
+                </div>
+              </Rubrik>
+              <Suspense fallback={null}>
+                <BerandaLanjut b={kueri.data} dasar={dasar} />
+              </Suspense>
+            </>
+          )}
         </>
       )}
     </div>

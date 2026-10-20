@@ -7,6 +7,9 @@ import { cn } from '@/ui/cn'
 import { useMediaQuery } from '@/ui/hooks/useMediaQuery'
 import { Drawer } from '@/ui/lapisan/Drawer'
 import { MenuAksi } from '@/ui/lapisan/Menu'
+import type { ModeTampilan } from '@/ui/mode/mode'
+import { pilihanMode } from '@/ui/mode/pilihan-mode'
+import { useModeTampilan } from '@/ui/mode/useModeTampilan'
 import { MENU_KONSOL, menuKonsolAktif } from './navigasi'
 
 type Props = { sesi: SesiKonsol; jalur: string; onKeluar: () => void; children: ReactNode }
@@ -28,10 +31,12 @@ function Merek() {
   )
 }
 
-function IsiNavigasi({ sesi, jalur, onKeluar, onPilih }: Omit<Props, 'children'> & { onPilih?: () => void }) {
+type PropsIsi = Omit<Props, 'children'> & { onPilih?: () => void; mode: ModeTampilan; ubahMode: (mode: ModeTampilan) => void }
+
+function IsiNavigasi({ sesi, jalur, onKeluar, onPilih, mode, ubahMode }: PropsIsi) {
   const { pengguna } = sesi
   return (
-    <div className="flex h-full flex-col gap-6 bg-tinta px-4 py-5 text-kapur">
+    <div data-sisi-konsol className="flex h-full flex-col gap-6 bg-tinta px-4 py-5 text-kapur">
       <Merek />
       <nav aria-label="Menu konsol" className="flex-1">
         <ul className="flex flex-col gap-0.5">
@@ -68,6 +73,7 @@ function IsiNavigasi({ sesi, jalur, onKeluar, onPilih }: Omit<Props, 'children'>
             </Button>
           }
           items={[{ id: 'keluar', label: 'Keluar', onAction: onKeluar }]}
+          pilihan={pilihanMode(mode, ubahMode)}
         />
       </div>
     </div>
@@ -75,8 +81,11 @@ function IsiNavigasi({ sesi, jalur, onKeluar, onPilih }: Omit<Props, 'children'>
 }
 
 /** Kerangka Konsol (SPEC §11, §4.7): sidebar tinta gelap dengan logo Sinfodes di depan, supaya jelas beda dari panel desa. */
-export function KonsolShell({ children, ...nav }: Props) {
+export function KonsolShell({ children, ...props }: Props) {
   const lebar = useMediaQuery('(min-width: 1024px)')
+  // Mode gelap pribadi: dipasang ke <html> selama kerangka terbuka, dilepas saat kerangka dilepas.
+  const [mode, ubahMode] = useModeTampilan()
+  const nav = { ...props, mode, ubahMode }
   const [laciTerbuka, setLaciTerbuka] = useState(false)
   return (
     <div className="min-h-screen lg:flex">
@@ -91,7 +100,7 @@ export function KonsolShell({ children, ...nav }: Props) {
           <IsiNavigasi {...nav} />
         </aside>
       ) : (
-        <header className="sticky top-0 z-30 flex h-14 items-center gap-2 bg-tinta px-4 text-kapur print:hidden">
+        <header data-sisi-konsol className="sticky top-0 z-30 flex h-14 items-center gap-2 bg-tinta px-4 text-kapur print:hidden">
           <div className="min-w-0 flex-1">
             <Merek />
           </div>

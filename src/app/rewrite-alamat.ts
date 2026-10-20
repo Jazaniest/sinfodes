@@ -18,7 +18,8 @@ export function masukkanJalur(konteks: KonteksAlamat, jalur: string): string {
   switch (konteks.jenis) {
     case 'desa': {
       const dasar = `/desa/${konteks.label}`
-      if (berawalan(jalur, '/admin') || berawalan(jalur, '/warga') || berawalan(jalur, dasar)) return jalur
+      // `/katalog/tema/…` (demo, 7E-2) dibuka di alamat desa karena API hanya melayani website desa lewat alamat desa itu.
+      if (['/admin', '/warga', '/katalog/tema', dasar].some((a) => berawalan(jalur, a))) return jalur
       return tambahAwalan(dasar, jalur)
     }
     case 'konsol':

@@ -1,8 +1,9 @@
 import { screen, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { keAlamat } from '@/app/alamat'
-import { ubahDb } from '@/mocks/db'
+import { ambilDb, ubahDb } from '@/mocks/db'
 import { pakaiApiTiruan } from '@/test/api-tiruan'
+import { contohIdentitasPublik } from '@/test/publik'
 import { renderPublik } from '@/test/render'
 import { BerandaPublik } from './BerandaPublik'
 
@@ -95,5 +96,20 @@ describe('Beranda website desa (SPEC §9)', () => {
     renderPublik(<BerandaPublik />)
     expect(await screen.findByRole('region', { name: 'Layanan cepat' })).toBeInTheDocument()
     expect(screen.queryByRole('region', { name: 'Lencana juara' })).not.toBeInTheDocument()
+  })
+  it('desa rekaman tanpa kabar (7E-2): bagian Profil singkat menggantikan Kabar terbaru yang kosong', async () => {
+    const desa = ambilDb().desa.find((d) => d.nama === 'Sungai Gelugur')!
+    const identitas = { ...contohIdentitasPublik(), slug: desa.slug, nama: desa.nama }
+    renderPublik(<BerandaPublik />, identitas)
+    const profil = await screen.findByRole('region', { name: 'Profil singkat' })
+    expect(within(profil).getAllByText(/Desa Sungai Gelugur/).length).toBeGreaterThan(0)
+    expect(profil.querySelectorAll('p').length).toBeGreaterThanOrEqual(2)
+    expect(screen.queryByRole('region', { name: 'Kabar terbaru' })).not.toBeInTheDocument()
+    expect(screen.getByRole('region', { name: 'Layanan cepat' })).toBeInTheDocument()
+  })
+  it('Sungai Sialang tetap tanpa bagian Profil singkat', async () => {
+    renderPublik(<BerandaPublik />)
+    await screen.findByRole('region', { name: 'Kabar terbaru' })
+    expect(screen.queryByRole('region', { name: 'Profil singkat' })).not.toBeInTheDocument()
   })
 })

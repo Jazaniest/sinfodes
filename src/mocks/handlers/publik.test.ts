@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   ambilArtikelPublik, ambilBerandaPublik, ambilIdentitasPublik, ambilKreditFotoPublik, ambilLayananPublik, daftarKabarPublik,
 } from '@/api/publik'
+import { ambilProfilPublik } from '@/api/publik-halaman'
 import { ambilDb } from '@/mocks/db'
 import { pakaiApiTiruan } from '@/test/api-tiruan'
 
@@ -74,5 +75,24 @@ describe('API website publik (SPEC §9, §3.4)', () => {
     expect(k.find((f) => f.berkas === '/demo/foto/ombak-bono.jpg')).toMatchObject({
       keterangan: 'Ombak Bono di Teluk Meranti', judulAsli: 'Bekudo Bono.jpg', pembuat: 'Domiyanto1977', lisensi: 'CC BY-SA 4.0',
     })
+  })
+  it('desa rekaman tanpa kabar: beranda memuat profilSingkat dua paragraf yang menyebut desanya; Sungai Sialang null (7E-2)', async () => {
+    const gelugur = ambilDb().desa.find((d) => d.nama === 'Sungai Gelugur')!
+    const b = await ambilBerandaPublik(gelugur.slug)
+    expect(b.utama).toBeNull()
+    expect(b.profilSingkat).toHaveLength(2)
+    expect(b.profilSingkat?.[0]).toContain('Desa Sungai Gelugur')
+    expect((await ambilBerandaPublik('sungaisialang')).profilSingkat).toBeNull()
+  })
+  it('profil desa rekaman memuat paragraf yang sama; Sungai Sialang tidak (7E-2)', async () => {
+    const gelugur = ambilDb().desa.find((d) => d.nama === 'Sungai Gelugur')!
+    const beranda = await ambilBerandaPublik(gelugur.slug)
+    expect((await ambilProfilPublik(gelugur.slug)).profilSingkat).toEqual(beranda.profilSingkat)
+    expect((await ambilProfilPublik('sungaisialang')).profilSingkat).toBeNull()
+  })
+  it('identitas desa fiktif membawa tema galerinya', async () => {
+    const gelugur = ambilDb().desa.find((d) => d.nama === 'Sungai Gelugur')!
+    const id = await ambilIdentitasPublik(gelugur.slug)
+    expect(id.tema.idGaleri).not.toBeNull()
   })
 })

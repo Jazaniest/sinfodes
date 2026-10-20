@@ -53,6 +53,19 @@ export const KEPADATAN: Readonly<Record<IdKepadatan, { label: string; jarak: str
   rapat: { label: 'Rapat', jarak: '1.5rem', kecil: '0.75rem' },
 }
 
+/** Delapan tema galeri (SPEC-V0.2 §11.3); isinya di `galeri-tema.ts`. */
+export const ID_TEMA = ['warta', 'balai', 'pesisir', 'serambi', 'ladang', 'tenun', 'rimba', 'bandar'] as const
+export type IdTema = (typeof ID_TEMA)[number]
+export const adalahIdTema = (id: string): id is IdTema => (ID_TEMA as readonly string[]).includes(id)
+
+/** Bentuk kepala halaman: nameplate bertanggal, satu baris ringkas, atau pita penuh warna utama. */
+export const ID_KEPALA = ['warta', 'ringkas', 'pita'] as const
+export type IdKepala = (typeof ID_KEPALA)[number]
+
+/** Perlakuan foto sampul dan kartu: berbingkai dengan keterangan di bawah, atau melebar dengan keterangan di atas foto. */
+export const ID_FOTO = ['bingkai', 'penuh'] as const
+export type IdFoto = (typeof ID_FOTO)[number]
+
 const PESAN_HEX = 'Kode warna harus berbentuk #RRGGBB.'
 const PESAN_SAMBUTAN = 'Kalimat sambutan paling banyak 120 karakter.'
 const PESAN_SAMPUL = `Foto sampul harus gambar PNG, JPG, WebP, atau SVG, paling besar ${MAKS_GAMBAR_KB.sampul} KB.`
@@ -72,9 +85,13 @@ export const temaDasarSchema = z.object({
   huruf: z.enum(ID_PASANGAN_HURUF),
   sudut: z.enum(ID_SUDUT),
   kepadatan: z.enum(ID_KEPADATAN),
+  kepala: z.enum(ID_KEPALA).default('warta'),
+  foto: z.enum(ID_FOTO).default('bingkai'),
   motif: z.enum(ID_MOTIF),
   logo: gambarDataUrlSchema(MAKS_GAMBAR_KB.logo).nullable(),
   sampul: fotoSampul,
+  /** Tema galeri yang sedang terpasang; null begitu satu pengaturan diubah dari nilai tema. */
+  idGaleri: z.enum(ID_TEMA).nullable().default(null),
   warga: z.object({
     fotoLatar: fotoSampul,
     sambutan: z
@@ -96,9 +113,12 @@ export function TEMA_WARTA_BAWAAN(warnaHex: string): TemaDasar {
     huruf: 'plex',
     sudut: 'tajam',
     kepadatan: 'lega',
+    kepala: 'warta',
+    foto: 'bingkai',
     motif: 'pucuk-rebung',
     logo: null,
     sampul: null,
+    idGaleri: null,
     warga: { fotoLatar: null, sambutan: null },
   }
 }

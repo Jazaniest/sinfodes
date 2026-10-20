@@ -12,6 +12,10 @@ it.each([
   ['/warga/riwayat', '/warga/riwayat'],
   ['/wargaku', '/desa/sungaisialang/wargaku'],
   ['/desa/sungaisialang/kabar', '/desa/sungaisialang/kabar'],
+  // Katalog tema galeri (7E-2): halaman demo yang membaca website desa lewat alamat desa itu sendiri.
+  ['/katalog/tema/tenun', '/katalog/tema/tenun'],
+  ['/katalog', '/desa/sungaisialang/katalog'],
+  ['/katalog/temaku', '/desa/sungaisialang/katalog/temaku'],
 ])('desa: masuk %s → %s', (luar, dalam) => expect(masukkanJalur(desa, luar)).toBe(dalam))
 
 it.each([

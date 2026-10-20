@@ -85,6 +85,21 @@ describe('Website Desa › Tampilan › Dasar (rencana 7E-1 Tugas 4)', () => {
     expect(within(pratinjau()).getByText('HP (390 px)')).toBeInTheDocument()
     expect(within(pratinjau()).getByText('Desktop (1280 px)')).toBeInTheDocument()
   })
+  it('kepala Pita dan foto Penuh mengubah kedua pratinjau; Simpan membawa keduanya (7E-2)', async () => {
+    const user = pasang()
+    await hexUtama()
+    await user.click(screen.getByRole('radio', { name: /^Pita/ }))
+    await user.click(screen.getByRole('radio', { name: /^Penuh/ }))
+    const bingkai = pratinjau().querySelectorAll<HTMLElement>('[data-situs]')
+    expect(bingkai).toHaveLength(2)
+    for (const b of bingkai) {
+      expect(b.querySelector('header[data-bentuk="pita"] [data-pita]')).not.toBeNull()
+      expect(b.querySelector('figure[data-foto="penuh"] [data-lapisan]')).not.toBeNull()
+    }
+    await user.click(screen.getByRole('button', { name: 'Simpan' }))
+    expect(await screen.findByText('Tampilan website disimpan.')).toBeInTheDocument()
+    expect(ambilDb().situs.find((s) => s.desaId === 'desa_sungai_sialang')?.terbit.tema).toMatchObject({ kepala: 'pita', foto: 'penuh', idGaleri: null })
+  })
   it('Simpan menyimpan tema: toast, dan website publik memuat tema baru', async () => {
     const user = pasang()
     await hexUtama()

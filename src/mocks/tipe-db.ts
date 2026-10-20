@@ -33,7 +33,7 @@ import type { SitusDesa } from '@/domain/website/situs'
 import type { Desa, Dusun, StatusDesa } from '@/domain/wilayah/schema'
 
 /** Naikkan setiap kali seed atau struktur data berubah; data lama di IndexedDB otomatis diganti (SPEC §12). */
-export const VERSI_DATA = 28
+export const VERSI_DATA = 29
 
 /** Satu perubahan status desa oleh Tim Sinfodes (SPEC-V0.2 §7, §10.5), dengan alasannya. */
 export type RiwayatStatusDesa = {
@@ -86,6 +86,8 @@ export type PercobaanVerifikasi = { desaId: string; gagal: string[]; terkunciSam
 export type RekamDesa = {
   desaId: string
   jiwa: number
+  /** Dua paragraf profil singkat untuk website minimal desa rekaman (7E-2); desa rekaman tak punya profil lengkap. */
+  profilSingkat?: string[]
   kelengkapan: number | null
   penggunaAktif: number
   aktivitasTerakhir: string | null

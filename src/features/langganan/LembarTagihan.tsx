@@ -15,6 +15,7 @@ const label = 'text-label font-medium text-tinta-2 uppercase'
 export function LembarTagihan({ tagihan: t }: { tagihan: TagihanCetak }) {
   return (
     <article
+      data-terang
       aria-label={`Tagihan ${t.nomor}`}
       className="mx-auto flex w-full max-w-[210mm] flex-col gap-6 border border-garis bg-lembar p-8 text-tinta print:max-w-none print:border-0 print:p-0"
     >

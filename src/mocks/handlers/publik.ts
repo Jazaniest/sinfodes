@@ -143,16 +143,17 @@ export const handlerPublik = [
       const apbdes = apbdesTerbaru(desa.id)
       // Berita utama: kabar terbaru yang berfoto (SPEC §9: foto besar dengan keterangan).
       const utama = daftar.find((a) => a.foto !== null) ?? daftar.at(0) ?? null
+      const pengumumanBerlaku = db.pengumuman
+        .filter((p) => p.desaId === desa.id && statusPengumuman(p, hariIni) === 'berlaku')
+        .sort((a, b) => b.mulai.localeCompare(a.mulai))
+      const rekam = db.rekamDesa.find((r) => r.desaId === desa.id)
       const hasil: BerandaPublik = {
         utama: utama ? ringkas(db, utama) : null,
         terbaru: daftar
           .filter((a) => a !== utama)
           .slice(0, 4)
           .map((a) => ringkas(db, a)),
-        pengumuman: db.pengumuman
-          .filter((p) => p.desaId === desa.id && statusPengumuman(p, hariIni) === 'berlaku')
-          .sort((a, b) => b.mulai.localeCompare(a.mulai))
-          .map((p) => pengumumanPublikSchema.parse(p)),
+        pengumuman: pengumumanBerlaku.map((p) => pengumumanPublikSchema.parse(p)),
         agenda: db.agenda
           .filter((a) => a.desaId === desa.id && a.tanggal >= hariIni)
           .sort((a, b) => a.tanggal.localeCompare(b.tanggal) || a.mulai.localeCompare(b.mulai))
@@ -165,6 +166,8 @@ export const handlerPublik = [
           : null,
         potensi: potensiDesa(db, desa.id).map((p) => ({ id: p.id, judul: p.judul, kategori: p.kategori, foto: fotoDari(db, desa.id, p.foto) })),
         lencana: lencanaTampil(db, desa.id).map(keLencanaPublik),
+        // Desa rekaman tanpa kabar terbit maupun pengumuman berlaku memakai website minimal (SPEC-V0.2 §13).
+        profilSingkat: daftar.length === 0 && pengumumanBerlaku.length === 0 ? (rekam?.profilSingkat ?? null) : null,
       }
       return HttpResponse.json(hasil)
     }),

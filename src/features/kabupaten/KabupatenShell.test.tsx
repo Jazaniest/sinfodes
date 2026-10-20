@@ -25,3 +25,22 @@ it('kerangka dasbor: lambang contoh, nama kabupaten, menu menurut peran, dan Kel
   await user.click(screen.getByRole('menuitem', { name: 'Keluar' }))
   expect(onKeluar).toHaveBeenCalledOnce()
 })
+
+it('mode gelap (7E-2): menu akun punya pilihan Tampilan; atribut dilepas saat kerangka dilepas', async () => {
+  localStorage.setItem('sinfodes.mode', 'perangkat')
+  const { unmount } = render(
+    <KabupatenShell sesi={contohSesiKabupaten('kab_rosnani')} jalur="/kabupaten/admin/pemantauan" onKeluar={vi.fn()}>
+      <p>Isi dasbor</p>
+    </KabupatenShell>,
+  )
+  const user = userEvent.setup()
+  await user.click(screen.getByRole('button', { name: /Hj\. Rosnani/ }))
+  const kelompok = screen.getByRole('group', { name: 'Tampilan' })
+  expect(within(kelompok).getAllByRole('menuitemradio').map((p) => p.textContent)).toEqual(['Terang', 'Gelap', 'Ikuti perangkat'])
+  expect(within(kelompok).getByRole('menuitemradio', { name: 'Ikuti perangkat' })).toBeChecked()
+  await user.click(within(kelompok).getByRole('menuitemradio', { name: 'Gelap' }))
+  expect(document.documentElement).toHaveAttribute('data-mode', 'gelap')
+  expect(localStorage.getItem('sinfodes.mode')).toBe('gelap')
+  unmount()
+  expect(document.documentElement).not.toHaveAttribute('data-mode')
+})
