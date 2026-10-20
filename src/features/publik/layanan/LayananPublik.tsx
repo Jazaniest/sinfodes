@@ -18,7 +18,7 @@ export function LayananPublik() {
   const kueri = useQuery(opsiLayananPublik(identitas.slug))
   useGulirKeJangkar(kueri.isSuccess)
   return (
-    <div className="flex flex-col gap-10">
+    <div className="flex flex-col gap-[var(--desa-jarak,2.5rem)]">
       <div className="flex flex-col gap-2">
         <h1 className="font-serif text-judul-halaman font-medium">Layanan</h1>
         <p className="max-w-[56ch] text-tinta-2">
@@ -46,7 +46,7 @@ export function LayananPublik() {
               Masuk dengan NIK dan PIN dari kantor desa. Belum punya PIN? Mintalah di kantor desa dengan membawa KTP-el.
             </p>
           </Rubrik>
-          <div className="grid gap-10 sm:grid-cols-2">
+          <div className="grid gap-[var(--desa-jarak,2.5rem)] sm:grid-cols-2">
             <Rubrik id="jam-layanan" judul="Jam layanan kantor desa">
               <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
                 {identitas.jamLayanan.map((j) => (

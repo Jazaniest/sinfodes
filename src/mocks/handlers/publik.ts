@@ -19,7 +19,7 @@ import { perkiraanHariKerja } from '../surat-perkiraan'
 import type { DbDemo } from '../tipe-db'
 import { bacaJson } from '../tulis'
 import { apbdesTerbaru } from './keuangan'
-import { tampilanDesa } from './website'
+import { versiTerbit } from './website'
 
 /**
  * Website tayang untuk desa yang sudah berjalan, termasuk yang Ditangguhkan, sehingga cek keaslian suratnya selalu jalan. Desa
@@ -40,11 +40,12 @@ export function cariDesaPublik(slug: unknown, request: Request): { db: DbDemo; d
 }
 
 function identitas(db: DbDemo, d: Desa): IdentitasPublik {
-  const t = tampilanDesa(db, d.id)
+  const { warga, ...tema } = versiTerbit(db, d.id).tema
+  void warga // tampilan halaman masuk warga tidak ikut website publik
   return {
     slug: d.slug, nama: d.nama, kecamatan: d.kecamatan, kabupaten: d.kabupaten, provinsi: d.provinsi, alamatKantor: d.alamatKantor,
     kodePos: d.kodePos, surel: d.surel, telepon: d.telepon, jamLayanan: d.jamLayanan, luasKm2: d.luasKm2,
-    aksen: t.aksen, motif: t.motif, logo: t.logo ?? d.lambang ?? null,
+    tema, favicon: d.lambang ?? null,
   }
 }
 
@@ -57,7 +58,7 @@ export function fotoDari(db: DbDemo, desaId: string, berkas: string | null): Fot
 
 /** Sampul Tampilan website: foto kurasi berkredit, atau unggahan desa (data URL) tanpa kredit. */
 function sampulDari(db: DbDemo, d: Desa): FotoPublik | null {
-  const sampul = tampilanDesa(db, d.id).sampul
+  const sampul = versiTerbit(db, d.id).tema.sampul
   if (!sampul) return null
   return fotoDari(db, d.id, sampul) ?? { berkas: sampul, keterangan: `Desa ${d.nama}`, kredit: null }
 }

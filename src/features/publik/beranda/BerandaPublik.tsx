@@ -23,7 +23,7 @@ const IKON = { size: 28, 'aria-hidden': true } as const
 
 function BeritaUtama({ a, dasar }: { a: RingkasArtikel; dasar: string }) {
   return (
-    <article aria-labelledby="berita-utama" className="flex flex-col gap-3">
+    <article data-bagian="blok-kabar" aria-labelledby="berita-utama" className="flex flex-col gap-3">
       {a.foto && (
         <FotoWarta
           berkas={a.foto.berkas}
@@ -55,7 +55,7 @@ function LayananCepat({ dasar }: { dasar: string }) {
     { judul: 'Jadwal posyandu', keterangan: 'Di setiap dusun', href: `${dasar}/layanan#posyandu`, ikon: <Baby {...IKON} /> },
   ]
   return (
-    <Rubrik id="layanan-cepat" judul="Layanan cepat">
+    <Rubrik id="layanan-cepat" judul="Layanan cepat" bagian="blok-layanan">
       <ul className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {daftar.map((l) => (
           <li key={l.judul}>
@@ -76,7 +76,7 @@ function LayananCepat({ dasar }: { dasar: string }) {
 
 function Pengumuman({ b }: { b: DataBeranda }) {
   return (
-    <Rubrik id="pengumuman" judul="Pengumuman">
+    <Rubrik id="pengumuman" judul="Pengumuman" bagian="blok-pengumuman">
       {b.pengumuman.length === 0 ? (
         <p className="text-tinta-2">Tidak ada pengumuman yang sedang berlaku.</p>
       ) : (
@@ -96,7 +96,7 @@ function Pengumuman({ b }: { b: DataBeranda }) {
 
 function Agenda({ b }: { b: DataBeranda }) {
   return (
-    <Rubrik id="agenda" judul="Agenda">
+    <Rubrik id="agenda" judul="Agenda" bagian="blok-agenda">
       {b.agenda.length === 0 ? (
         <p className="text-tinta-2">Belum ada agenda dalam waktu dekat.</p>
       ) : (
@@ -130,7 +130,7 @@ export function BerandaPublik() {
   const kueri = useQuery(opsiBerandaPublik(identitas.slug))
   const dasar = `/desa/${identitas.slug}`
   return (
-    <div className="flex flex-col gap-10">
+    <div className="flex flex-col gap-[var(--desa-jarak,2.5rem)]">
       <h1 className="sr-only">Beranda Desa {identitas.nama}</h1>
       {kueri.isPending && <BarisKerangka jumlah={6} label="Memuat beranda desa…" />}
       {kueri.isError && <ErrorState pesan={pesanGalat(kueri.error)} onCobaLagi={() => void kueri.refetch()} />}
@@ -139,10 +139,11 @@ export function BerandaPublik() {
           {kueri.data.lencana.length > 0 && <DeretLencana lencana={kueri.data.lencana} />}
           {kueri.data.utama && <BeritaUtama a={kueri.data.utama} dasar={dasar} />}
           <LayananCepat dasar={dasar} />
-          <div className="grid gap-10 lg:grid-cols-[2fr_1fr]">
+          <div className="grid gap-[var(--desa-jarak,2.5rem)] lg:grid-cols-[2fr_1fr]">
             <Rubrik
               id="kabar-terbaru"
               judul="Kabar terbaru"
+              bagian="blok-kabar"
               aksi={
                 <Tautan href={`${dasar}/kabar`} className="text-teks-kecil">
                   Semua kabar
@@ -155,21 +156,23 @@ export function BerandaPublik() {
                 ))}
               </div>
             </Rubrik>
-            <div className="flex flex-col gap-10">
+            <div className="flex flex-col gap-[var(--desa-jarak,2.5rem)]">
               <Pengumuman b={kueri.data} />
               <Agenda b={kueri.data} />
             </div>
           </div>
-          <Rubrik id="desa-dalam-angka" judul="Desa dalam angka">
+          <Rubrik id="desa-dalam-angka" judul="Desa dalam angka" bagian="blok-angka">
             <div className="grid items-start gap-4 sm:grid-cols-2">
               {kueri.data.sampul && (
-                <FotoWarta
-                  berkas={kueri.data.sampul.berkas}
-                  alt={kueri.data.sampul.keterangan}
-                  keterangan={kueri.data.sampul.keterangan}
-                  kredit={kueri.data.sampul.kredit}
-                  sizes="(min-width: 40rem) 30rem, 100vw"
-                />
+                <div data-bagian="sampul">
+                  <FotoWarta
+                    berkas={kueri.data.sampul.berkas}
+                    alt={kueri.data.sampul.keterangan}
+                    keterangan={kueri.data.sampul.keterangan}
+                    kredit={kueri.data.sampul.kredit}
+                    sizes="(min-width: 40rem) 30rem, 100vw"
+                  />
+                </div>
               )}
               <p className="font-serif text-judul-bagian">{kalimatAngkaDesa(identitas.nama, kueri.data.angka)}</p>
             </div>

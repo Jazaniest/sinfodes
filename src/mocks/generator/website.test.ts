@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import {
-  agendaSchema, artikelSchema, fotoGaleriSchema, pengumumanSchema, potensiSchema, profilDesaSchema, statusPengumuman, tampilanWebsiteSchema,
+  agendaSchema, artikelSchema, fotoGaleriSchema, pengumumanSchema, potensiSchema, profilDesaSchema, statusPengumuman,
   umkmSchema,
 } from '@/domain/website/schema'
+import { versiSitusSchema } from '@/domain/website/situs'
 import { FOTO_DEMO } from '../data/foto-demo'
 import { bangkitkanDb } from './index'
 
@@ -80,11 +81,20 @@ describe('isi website demo (SPEC §12.6, §9)', () => {
     // Zulkifli (akun warga demo, pemilik usaha): nomornya sama dengan WhatsApp akun warganya.
     expect(db.umkm.find((u) => u.pemilik === 'Zulkifli')).toMatchObject({ nama: 'Toko Bangunan Rengas Jaya', whatsapp: '081371185570' })
   })
-  it('tampilan bawaan: Biru tinta, Pucuk rebung, sampul foto Sungai Kampar, tanpa logo; belum ada percobaan verifikasi', () => {
-    expect(db.tampilanWebsite).toHaveLength(1)
-    expect(tampilanWebsiteSchema.parse(db.tampilanWebsite[0])).toMatchObject({
-      aksen: 'biru-tinta', motif: 'pucuk-rebung', sampul: '/demo/foto/sampul-sungai-kampar.jpg', logo: null,
+  it('situs: tiap desa punya satu dokumen; Sungai Sialang dari tampilan v0.1, lainnya tema Warta bawaan; draf kosong', () => {
+    expect(db.situs).toHaveLength(db.desa.length)
+    expect(new Set(db.situs.map((x) => x.desaId)).size).toBe(db.desa.length)
+    const ss = db.situs.find((x) => x.desaId === 'desa_sungai_sialang')!
+    expect(versiSitusSchema.parse(ss.terbit).tema).toMatchObject({
+      warnaUtama: '#1F4E79', warnaAksen: '#1F4E79', motif: 'pucuk-rebung', huruf: 'plex', sampul: '/demo/foto/sampul-sungai-kampar.jpg', logo: null,
     })
+    for (const x of db.situs) {
+      expect(x.draf).toBeNull()
+      expect(x.riwayat).toEqual([])
+      expect(versiSitusSchema.safeParse(x.terbit).success, x.desaId).toBe(true)
+    }
+    const fiktif = db.situs.find((x) => x.desaId !== 'desa_sungai_sialang' && x.desaId !== 'desa_tanjung_lamo')!
+    expect(fiktif.terbit.tema).toMatchObject({ huruf: 'plex', latar: 'kertas', sudut: 'tajam', kepadatan: 'lega' })
     expect(db.percobaanVerifikasi).toEqual([])
   })
 })

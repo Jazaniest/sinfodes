@@ -9,6 +9,14 @@ import { BerandaPublik } from './BerandaPublik'
 pakaiApiTiruan({ dbSegarTiapUji: true })
 
 describe('Beranda website desa (SPEC §9)', () => {
+  it('setiap bagian bernama sesuai kontrak tema v1 (rencana 7E-1)', async () => {
+    const { container } = renderPublik(<BerandaPublik />)
+    await screen.findByRole('region', { name: 'Layanan cepat' })
+    await screen.findByRole('region', { name: 'APBDes 2026' })
+    for (const bagian of ['blok-kabar', 'blok-layanan', 'blok-pengumuman', 'blok-agenda', 'blok-angka', 'blok-apbdes', 'blok-potensi', 'sampul']) {
+      expect(container.querySelector(`[data-bagian="${bagian}"]`), bagian).not.toBeNull()
+    }
+  })
   it('berita utama dengan foto besar, keterangan, dan kredit; bukan banner sambutan', async () => {
     renderPublik(<BerandaPublik />)
     const utama = await screen.findByRole('article', { name: 'Penyaluran BLT Tahap III Dijadwalkan 30 September' })

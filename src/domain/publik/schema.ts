@@ -1,9 +1,8 @@
 import { z } from 'zod'
 import { lencanaPublikSchema } from '../indeks/lencana'
 import { jenisSuratWargaSchema } from '../warga/ajukan'
-import {
-  agendaSchema, ID_AKSEN, KATEGORI_ARTIKEL, KATEGORI_POTENSI, kreditFotoSchema, MOTIF_WEBSITE, pengumumanSchema,
-} from '../website/schema'
+import { agendaSchema, KATEGORI_ARTIKEL, KATEGORI_POTENSI, kreditFotoSchema, pengumumanSchema } from '../website/schema'
+import { temaDasarSchema } from '../website/tema'
 import { desaSchema } from '../wilayah/schema'
 
 const waktu = z.iso.datetime({ offset: true })
@@ -17,10 +16,10 @@ export const identitasPublikSchema = desaSchema
     telepon: true, jamLayanan: true, luasKm2: true,
   })
   .extend({
-    aksen: z.enum(ID_AKSEN),
-    motif: z.enum(MOTIF_WEBSITE),
-    /** Logo website, atau lambang desa bila logo belum diunggah; kosong berarti monogram. */
-    logo: z.string().nullable(),
+    /** Tema Dasar tanpa tampilan halaman masuk warga (`warga`), yang hanya dibaca alamat desa. */
+    tema: temaDasarSchema.omit({ warga: true }),
+    /** Lambang desa (data URL) untuk favicon dan logo cadangan; null berarti monogram dari inisial desa. */
+    favicon: z.string().nullable(),
   })
 export type IdentitasPublik = z.infer<typeof identitasPublikSchema>
 

@@ -1,8 +1,10 @@
 import { tanggalIsoWib } from '@/domain/format/tanggal'
 import type { Pengguna, Peran } from '@/domain/pengguna/schema'
 import type {
-  Agenda, Artikel, FotoGaleri, KategoriArtikel, Pengumuman, Potensi, ProfilDesa, TampilanWebsite, Umkm,
+  Agenda, Artikel, FotoGaleri, KategoriArtikel, Pengumuman, Potensi, ProfilDesa, Umkm,
 } from '@/domain/website/schema'
+import type { SitusDesa } from '@/domain/website/situs'
+import { TEMA_WARTA_BAWAAN } from '@/domain/website/tema'
 import type { Desa, Dusun } from '@/domain/wilayah/schema'
 import { NASKAH_ARTIKEL } from '../data/artikel-demo'
 import { POTENSI_DEMO, PROFIL_DEMO, UMKM_DEMO } from '../data/profil-demo'
@@ -100,13 +102,26 @@ const jadiSlug = (teks: string) =>
 
 const nomor2 = (i: number) => String(i + 1).padStart(2, '0')
 
+/**
+ * Situs bawaan desa selain Sungai Sialang (Tanjung Lamo dan desa fiktif): tema Warta dengan aksen Biru tinta. Motif Garis
+ * seperti tampilan bawaan v0.1, sehingga website desa lain tampil sama seperti sebelumnya. Tanpa PRNG.
+ */
+export function situsBawaan(desaId: string, diperbarui: string): SitusDesa {
+  return {
+    desaId,
+    terbit: { tema: { ...TEMA_WARTA_BAWAAN('#1F4E79'), motif: 'garis' }, diperbarui, oleh: { id: 'sinfodes', nama: 'Sinfodes' } },
+    draf: null,
+    riwayat: [],
+  }
+}
+
 /** Isi Website Desa demo (SPEC §12.6). Tetap, tanpa PRNG; tanggal relatif terhadap tanggal acuan. */
 export function bangkitkanWebsite(o: { desa: Desa; dusun: readonly Dusun[]; pengguna: readonly Pengguna[]; acuan: Date }): {
   artikel: Artikel[]
   pengumuman: Pengumuman[]
   agenda: Agenda[]
   galeri: FotoGaleri[]
-  tampilan: TampilanWebsite
+  situs: SitusDesa
   profil: ProfilDesa
   potensi: Potensi[]
   umkm: Umkm[]
@@ -165,13 +180,16 @@ export function bangkitkanWebsite(o: { desa: Desa; dusun: readonly Dusun[]; peng
           : null,
       }
     }),
-    tampilan: {
+    situs: {
       desaId: o.desa.id,
-      aksen: 'biru-tinta',
-      motif: 'pucuk-rebung',
-      sampul: '/demo/foto/sampul-sungai-kampar.jpg',
-      logo: null,
-      diperbarui: `${geser(-30)}T10:00:00+07:00`,
+      // Tampilan v0.1 (Biru tinta, Pucuk rebung, sampul Sungai Kampar, tanpa logo) menjadi tema Dasar.
+      terbit: {
+        tema: { ...TEMA_WARTA_BAWAAN('#1F4E79'), sampul: '/demo/foto/sampul-sungai-kampar.jpg' },
+        diperbarui: `${geser(-30)}T10:00:00+07:00`,
+        oleh: { id: 'pgn_rosmiati', nama: nama('operator') },
+      },
+      draf: null,
+      riwayat: [],
     },
     profil: { desaId: o.desa.id, ...structuredClone(PROFIL_DEMO) },
     potensi: POTENSI_DEMO.map((p, i) => ({

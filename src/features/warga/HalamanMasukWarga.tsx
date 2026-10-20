@@ -17,6 +17,7 @@ export function HalamanMasukWarga() {
     <FormMasukWarga
       namaDesa={desa?.nama ?? null}
       ditutup={desa?.status === 'Persiapan'}
+      tampilan={desa?.tampilanWarga ?? null}
       modeDemo={import.meta.env.VITE_DEMO === 'true'}
       onBerhasil={(token, sesi) => {
         pasangSesiWarga(token, sesi, queryClient)

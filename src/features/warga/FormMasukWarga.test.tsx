@@ -2,6 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { pakaiApiTiruan } from '@/test/api-tiruan'
+import type { TampilanWarga } from '@/domain/alamat/schema'
 import { FormMasukWarga } from './FormMasukWarga'
 
 pakaiApiTiruan({ dbSegarTiapUji: true })
@@ -62,3 +63,51 @@ describe('masuk layanan warga (SPEC §10)', () => {
     expect(await screen.findByText(/PIN baru dikirim ke nomor WhatsApp/)).toBeInTheDocument()
   })
 })
+
+describe('masuk warga dengan tema desa (rencana 7E-1 Tugas 5)', () => {
+  const LATAR = '/demo/foto/sampul-sungai-kampar.jpg'
+  const SAMBUTAN = 'Selamat datang di layanan warga Desa Sungai Sialang, silakan masuk dengan NIK dan PIN dari kantor desa.'
+  const tampilan = (ubah: Partial<TampilanWarga> = {}): TampilanWarga => ({
+    warnaUtama: '#2F5D3A', logo: null, fotoLatar: LATAR, sambutan: SAMBUTAN, huruf: 'plex', ...ubah,
+  })
+  const gambarLatar = (c: HTMLElement) => c.querySelector<HTMLElement>('img[alt=""]')
+
+  it('sambutan, foto latar dekoratif, dan variabel warna desa; kolom NIK dan PIN sama seperti sebelumnya', () => {
+    const { container } = render(<FormMasukWarga namaDesa="Sungai Sialang" tampilan={tampilan()} onBerhasil={vi.fn()} />)
+    expect(screen.getByText(SAMBUTAN)).toBeInTheDocument()
+    expect(gambarLatar(container)).toHaveAttribute('src', LATAR)
+    expect(kolomNik()).toBeInTheDocument()
+    expect(kolomPin()).toBeInTheDocument()
+    const akar = container.querySelector<HTMLElement>('main')!
+    expect(akar.style.getPropertyValue('--desa-warna-utama')).toBe('#2F5D3A')
+    expect(akar.style.getPropertyValue('--color-biru')).toBe('var(--desa-warna-utama)')
+    expect(akar.style.getPropertyValue('--radius-1')).toBe('')
+  })
+  it('tanpa foto latar tidak ada gambar latar; tanpa sambutan tidak ada kalimat sambutan', () => {
+    const { container } = render(<FormMasukWarga namaDesa="Sungai Sialang" tampilan={tampilan({ fotoLatar: null, sambutan: null })} onBerhasil={vi.fn()} />)
+    expect(gambarLatar(container)).toBeNull()
+    expect(screen.queryByText(SAMBUTAN)).not.toBeInTheDocument()
+  })
+  it('foto latar terang dan sambutan 120 karakter: teks tetap di lembar putih dan boleh dipatahkan (fokus review 4)', () => {
+    const { container } = render(<FormMasukWarga namaDesa="Sungai Sialang" tampilan={tampilan({ sambutan: 'x'.repeat(120) })} onBerhasil={vi.fn()} />)
+    expect(screen.getByText('x'.repeat(120))).toHaveClass('break-words')
+    const lembar = screen.getByRole('heading', { level: 1 }).closest('[data-lembar]')
+    expect(lembar).toHaveClass('bg-lembar')
+    expect(lembar).toContainElement(kolomNik())
+    expect(lembar).not.toContainElement(gambarLatar(container))
+  })
+  it('logo desa tampil di kepala lembar; tanpa logo memakai tanda Sinfodes', () => {
+    const logo = `data:image/png;base64,${'A'.repeat(64)}`
+    const a = render(<FormMasukWarga namaDesa="Sungai Sialang" tampilan={tampilan({ logo })} onBerhasil={vi.fn()} />)
+    expect(screen.getByRole('img', { name: 'Logo Desa Sungai Sialang' })).toHaveAttribute('src', logo)
+    a.unmount()
+    render(<FormMasukWarga namaDesa="Sungai Sialang" tampilan={tampilan()} onBerhasil={vi.fn()} />)
+    expect(screen.getByRole('img', { name: 'Sinfodes' })).toBeInTheDocument()
+  })
+  it('huruf desa dipakai hanya untuk judul', () => {
+    render(<FormMasukWarga namaDesa="Sungai Sialang" tampilan={tampilan({ huruf: 'fraunces' })} onBerhasil={vi.fn()} />)
+    expect(screen.getByRole('heading', { level: 1 }).style.fontFamily).toContain('Fraunces')
+    expect(kolomNik().style.fontFamily).toBe('')
+  })
+})
+

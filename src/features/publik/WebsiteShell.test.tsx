@@ -43,12 +43,42 @@ describe('kerangka website desa (SPEC §9)', () => {
     expect(kaki).toHaveTextContent('Dikelola Pemerintah Desa Sungai Sialang · Didukung Sinfodes')
     expect(within(kaki).getByRole('link', { name: 'Kredit foto' })).toHaveAttribute('href', '/desa/sungaisialang/kredit-foto')
   })
-  it('aksen desa menggantikan biru Register; skala HP website (SPEC §9, fokus review 5)', () => {
-    const { container } = pasang('/desa/sungaisialang', { aksen: 'hijau-sawit' })
-    const akar = container.firstElementChild as HTMLElement
-    expect(akar.style.getPropertyValue('--color-biru')).toBe('#2F5D3A')
+  it('wadah memasang variabel kontrak dan memetakan token Register ke variabel itu (SPEC-V0.2 §11.1)', () => {
+    const tema = { ...contohIdentitasPublik().tema, warnaUtama: '#2F5D3A', warnaAksen: '#4A6B2F', huruf: 'fraunces' as const, sudut: 'bulat' as const }
+    const { container } = pasang('/desa/sungaisialang', { tema })
+    const akar = container.querySelector<HTMLElement>('[data-situs]')!
+    expect(akar.style.getPropertyValue('--desa-warna-utama')).toBe('#2F5D3A')
+    expect(akar.style.getPropertyValue('--desa-warna-aksen')).toBe('#4A6B2F')
+    expect(akar.style.getPropertyValue('--desa-sudut')).toBe('10px')
+    expect(akar.style.getPropertyValue('--desa-huruf-judul')).toContain('Fraunces')
+    expect(akar.style.getPropertyValue('--color-biru')).toBe('var(--desa-warna-utama)')
+    expect(akar.style.getPropertyValue('--radius-1')).toBe('var(--desa-sudut)')
     expect(akar).toHaveClass('skala-publik')
-    expect(container.querySelector('svg[data-motif="pucuk-rebung"] path')).toHaveAttribute('fill', '#2F5D3A')
+    expect(container.querySelector('svg[data-motif="pucuk-rebung"]')).not.toBeNull()
+  })
+  it('bagian kerangka bernama sesuai kontrak: kepala, menu, isi, kaki', () => {
+    const { container } = pasang('/desa/sungaisialang')
+    for (const bagian of ['kepala', 'menu', 'isi', 'kaki']) {
+      expect(container.querySelector(`[data-bagian="${bagian}"]`), bagian).not.toBeNull()
+    }
+    expect(container.querySelector('main')).toHaveAttribute('data-bagian', 'isi')
+  })
+  it('favicon: lambang desa dipasang ke link[rel=icon] dan dipulihkan saat kerangka dilepas', () => {
+    document.head.innerHTML = '<link rel="icon" href="/favicon.svg">'
+    const lambang = `data:image/png;base64,${'A'.repeat(64)}`
+    const { unmount } = pasang('/desa/sungaisialang', { favicon: lambang })
+    expect(document.head.querySelector('link[rel="icon"]')).toHaveAttribute('href', lambang)
+    unmount()
+    expect(document.head.querySelector('link[rel="icon"]')).toHaveAttribute('href', '/favicon.svg')
+  })
+  it('logo efektif: logo unggahan, kalau tidak lambang desa, kalau tidak monogram', () => {
+    const lambang = `data:image/png;base64,${'B'.repeat(64)}`
+    const a = pasang('/desa/sungaisialang', { favicon: lambang })
+    expect(a.container.querySelector('header img')).toHaveAttribute('src', lambang)
+    a.unmount()
+    const logo = `data:image/png;base64,${'C'.repeat(64)}`
+    const b = pasang('/desa/sungaisialang', { favicon: lambang, tema: { ...contohIdentitasPublik().tema, logo } })
+    expect(b.container.querySelector('header img')).toHaveAttribute('src', logo)
   })
   it('nameplate, menu, dan kaki halaman tidak ikut tercetak; hanya isi halaman (fokus review 5)', () => {
     pasang('/desa/sungaisialang/transparansi')

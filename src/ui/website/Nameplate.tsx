@@ -1,11 +1,11 @@
 import { useId } from 'react'
-import type { MotifWebsite } from '@/domain/website/schema'
+import type { IdMotif } from '@/domain/website/motif'
 import { cn } from '../cn'
 import { LambangDesa } from '../domain/LambangDesa'
 import { POLA_MOTIF } from './motif'
 
-/** Pita motif berwarna aksen di atas kepala halaman website (SPEC §9). Dekoratif. */
-export function PitaMotif({ motif, aksen, className }: { motif: MotifWebsite; aksen: string; className?: string }) {
+/** Pita motif berwarna aksen desa (variabel --desa-warna-aksen) di atas kepala halaman website. Dekoratif. */
+export function PitaMotif({ motif, className }: { motif: IdMotif; className?: string }) {
   // ID pola harus sah di dalam url(#…); karakter khusus dari useId dibuang.
   const idPola = `motif-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`
   const pola = POLA_MOTIF[motif]
@@ -13,7 +13,7 @@ export function PitaMotif({ motif, aksen, className }: { motif: MotifWebsite; ak
     <svg aria-hidden data-motif={motif} className={cn('block h-3 w-full', className)}>
       <defs>
         <pattern id={idPola} width={pola.lebar} height={pola.tinggi} patternUnits="userSpaceOnUse">
-          <path d={pola.jalur} fill={aksen} />
+          <path d={pola.jalur} fillRule="evenodd" style={{ fill: 'var(--desa-warna-aksen)' }} />
         </pattern>
       </defs>
       <rect width="100%" height="100%" fill={`url(#${idPola})`} />
@@ -25,9 +25,7 @@ type Props = {
   nama: string
   kecamatan: string
   kabupaten: string
-  /** Warna aksen (hex) dari Tampilan website. */
-  aksen: string
-  motif: MotifWebsite
+  motif: IdMotif
   /** Logo website; kosong berarti monogram desa. */
   logo: string | null
   /** Tanggal yang sudah diformat, mis. "Kamis, 24 September 2026". */
@@ -38,14 +36,14 @@ type Props = {
  * Kepala halaman website desa bergaya warta desa (SPEC §9): pita motif beraksen, logo, nama desa besar ber-serif,
  * baris wilayah kapital kecil, tanggal, dan garis ganda seperti kop. Dipakai pratinjau Tampilan dan website publik.
  */
-export function Nameplate({ nama, kecamatan, kabupaten, aksen, motif, logo, tanggal }: Props) {
+export function Nameplate({ nama, kecamatan, kabupaten, motif, logo, tanggal }: Props) {
   return (
-    <header className="bg-lembar">
-      <PitaMotif motif={motif} aksen={aksen} />
+    <header data-bagian="kepala" className="bg-lembar">
+      <PitaMotif motif={motif} />
       <div className="flex items-center gap-4 px-5 pt-4 pb-3">
         {logo ? <img src={logo} alt="" className="size-14 shrink-0 object-contain" /> : <LambangDesa nama={nama} ukuran="besar" />}
         <div className="min-w-0">
-          <p className="font-serif text-[1.75rem] leading-tight font-medium" style={{ color: aksen }}>
+          <p className="font-serif text-[1.75rem] leading-tight font-medium text-biru">
             {nama}
           </p>
           <p className="text-label font-medium tracking-wide text-tinta-2 uppercase">

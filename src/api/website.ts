@@ -2,8 +2,10 @@ import { queryOptions } from '@tanstack/react-query'
 import { daftarSchema } from '@/domain/api'
 import { lencanaAdminSchema } from '@/domain/indeks/lencana'
 import {
-  agendaSchema, artikelSchema, fotoGaleriSchema, pengumumanSchema, tampilanWebsiteSchema, type UbahTampilan,
+  agendaSchema, artikelSchema, fotoGaleriSchema, pengumumanSchema,
 } from '@/domain/website/schema'
+import { situsSchema, versiSitusSchema } from '@/domain/website/situs'
+import type { TemaDasar } from '@/domain/website/tema'
 import { panggilApi } from './client'
 
 const daftarArtikelSchema = daftarSchema(artikelSchema)
@@ -17,7 +19,7 @@ export const kunciWebsite = {
   pengumuman: ['website', 'pengumuman'] as const,
   agenda: ['website', 'agenda'] as const,
   galeri: ['website', 'galeri'] as const,
-  tampilan: ['website', 'tampilan'] as const,
+  situs: ['website', 'situs'] as const,
   lencana: ['website', 'lencana'] as const,
 }
 
@@ -41,12 +43,12 @@ export function daftarGaleri(signal?: AbortSignal) {
 }
 export const opsiGaleri = () => queryOptions({ queryKey: kunciWebsite.galeri, queryFn: ({ signal }) => daftarGaleri(signal) })
 
-export function ambilTampilan(signal?: AbortSignal) {
-  return panggilApi('GET', '/website/tampilan', { skema: tampilanWebsiteSchema, signal })
+export function ambilSitus(signal?: AbortSignal) {
+  return panggilApi('GET', '/website/situs', { skema: situsSchema, signal })
 }
-export const opsiTampilan = () => queryOptions({ queryKey: kunciWebsite.tampilan, queryFn: ({ signal }) => ambilTampilan(signal) })
-export function simpanTampilan(isian: UbahTampilan) {
-  return panggilApi('PUT', '/website/tampilan', { skema: tampilanWebsiteSchema, body: isian })
+export const opsiSitus = () => queryOptions({ queryKey: kunciWebsite.situs, queryFn: ({ signal }) => ambilSitus(signal) })
+export function simpanTema(tema: TemaDasar) {
+  return panggilApi('PUT', '/website/situs/tema', { skema: versiSitusSchema, body: tema })
 }
 
 const daftarLencanaSchema = daftarSchema(lencanaAdminSchema)

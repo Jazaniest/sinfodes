@@ -11,7 +11,7 @@ import { HalamanMasuk } from './HalamanMasuk'
 pakaiApiTiruan()
 
 const SUNGAI_SIALANG: DesaAlamat = {
-  label: 'sungaisialang', nama: 'Sungai Sialang', kecamatan: 'Teluk Meranti', kabupaten: 'Pelalawan', status: 'Aktif', lambang: null,
+  label: 'sungaisialang', nama: 'Sungai Sialang', kecamatan: 'Teluk Meranti', kabupaten: 'Pelalawan', status: 'Aktif', lambang: null, tampilanWarga: null,
 }
 
 function pasang(desa: DesaAlamat | null = SUNGAI_SIALANG, modeDemo = false) {

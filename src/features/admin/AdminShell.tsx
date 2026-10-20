@@ -1,5 +1,5 @@
 import { List, MagnifyingGlass } from '@phosphor-icons/react'
-import { useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { Button, Link } from 'react-aria-components'
 import logoMark from '@/assets/brand/sinfodes-mark.svg'
 import { formatAngka } from '@/domain/format/angka'
@@ -9,6 +9,7 @@ import { LambangDesa } from '@/ui/domain/LambangDesa'
 import { useMediaQuery } from '@/ui/hooks/useMediaQuery'
 import { Hitungan } from '@/ui/hitungan/Hitungan'
 import { Drawer } from '@/ui/lapisan/Drawer'
+import { pasangFavicon } from '@/ui/website/favicon'
 import { MenuAksi } from '@/ui/lapisan/Menu'
 import { LABEL_HITUNGAN, menuAktif, menuBawahUntuk, menuUntuk, type ItemMenu, type KunciHitungan } from './navigasi'
 
@@ -20,6 +21,13 @@ type Props = {
   /** Angka di samping menu; nol atau kosong tidak ditampilkan. */
   hitungan?: Partial<Record<KunciHitungan, number>>
   children: ReactNode
+}
+
+/** Garis 3 px warna aksen desa di tepi atas sidebar atau bilah atas HP (rencana 7E-1); dekoratif. */
+function GarisAksen({ sesi }: { sesi: SesiAdmin }) {
+  const aksen = sesi.tampilanPanel?.warnaAksen
+  if (!aksen) return null
+  return <div aria-hidden data-garis-aksen className="pointer-events-none absolute inset-x-0 top-0 h-[3px]" style={{ backgroundColor: aksen }} />
 }
 
 const fokus =
@@ -116,6 +124,12 @@ function IsiNavigasi({ sesi, jalur, onCari, onKeluar, onPilih, hitungan }: Omit<
 /** Kerangka panel admin (SPEC §5.2, §5.7): sidebar ≥ 1024px, bar atas + laci di layar lebih kecil. */
 export function AdminShell({ children, ...nav }: Props) {
   const lebar = useMediaQuery('(min-width: 1024px)')
+  // Favicon lambang desa selama panel terbuka; favicon Sinfodes kembali saat panel dilepas.
+  const panel = nav.sesi.tampilanPanel
+  const faviconLambang = panel?.favicon ?? null
+  const adaPanel = panel !== undefined
+  const namaDesa = nav.sesi.desa.nama
+  useEffect(() => (adaPanel ? pasangFavicon(faviconLambang, namaDesa) : undefined), [adaPanel, faviconLambang, namaDesa])
   const [laciTerbuka, setLaciTerbuka] = useState(false)
   return (
     <div className="min-h-screen lg:flex">
@@ -127,10 +141,12 @@ export function AdminShell({ children, ...nav }: Props) {
       </a>
       {lebar ? (
         <aside className="sticky top-0 h-screen w-[216px] shrink-0 border-r border-garis bg-kertas-2 xl:w-[240px] print:hidden">
+          <GarisAksen sesi={nav.sesi} />
           <IsiNavigasi {...nav} />
         </aside>
       ) : (
         <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-garis bg-kertas-2 px-4 print:hidden">
+          <GarisAksen sesi={nav.sesi} />
           <LambangDesa nama={nav.sesi.desa.nama} gambar={nav.sesi.desa.lambang} />
           <p className="min-w-0 flex-1 truncate font-serif font-medium">Desa {nav.sesi.desa.nama}</p>
           <Button aria-label="Cari" onPress={nav.onCari} className={cn('rounded-1 p-2', fokus)}>

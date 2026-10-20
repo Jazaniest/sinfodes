@@ -11,6 +11,42 @@ function pasang(jalur: string) {
   )
 }
 
+describe('WargaShell dengan tema desa (rencana 7E-1 Tugas 5)', () => {
+  const tampilan = { warnaUtama: '#2F5D3A', logo: null, fotoLatar: null, sambutan: null, huruf: 'fraunces' as const }
+  it('wadah memasang warna utama desa; warna status Register tidak ditimpa', () => {
+    const { container } = render(
+      <WargaShell sesi={contohSesiWarga()} jalur="/warga" tampilan={tampilan}>
+        <p>Isi</p>
+      </WargaShell>,
+    )
+    const akar = container.firstElementChild as HTMLElement
+    expect(akar.style.getPropertyValue('--desa-warna-utama')).toBe('#2F5D3A')
+    expect(akar.style.getPropertyValue('--color-biru')).toBe('var(--desa-warna-utama)')
+    for (const status of ['--color-hijau', '--color-oker', '--color-merah', '--color-stempel']) {
+      expect(akar.style.getPropertyValue(status), status).toBe('')
+    }
+  })
+  it('kepala memakai logo desa bila ada, dan huruf judul desa hanya di nama desa', () => {
+    const logo = `data:image/png;base64,${'A'.repeat(64)}`
+    render(
+      <WargaShell sesi={contohSesiWarga()} jalur="/warga" tampilan={{ ...tampilan, logo }}>
+        <p>Isi</p>
+      </WargaShell>,
+    )
+    expect(screen.getByRole('banner').querySelector('img')).toHaveAttribute('src', logo)
+    expect(screen.getByText('Desa Sungai Sialang').style.fontFamily).toContain('Fraunces')
+    expect(screen.getByRole('main').style.fontFamily).toBe('')
+  })
+  it('tanpa tema (belum dimuat) kerangka tetap tampil dengan warna Register', () => {
+    const { container } = render(
+      <WargaShell sesi={contohSesiWarga()} jalur="/warga">
+        <p>Isi</p>
+      </WargaShell>,
+    )
+    expect((container.firstElementChild as HTMLElement).style.getPropertyValue('--desa-warna-utama')).toBe('')
+  })
+})
+
 describe('WargaShell (SPEC §4.4, §10)', () => {
   it('kepala berisi nama desa; navigasi bawah berlabel teks dengan menu aktif', () => {
     pasang('/warga/riwayat/srt_contoh')

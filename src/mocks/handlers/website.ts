@@ -1,23 +1,22 @@
 import { http, HttpResponse } from 'msw'
 import { waktuIsoWib } from '@/domain/format/tanggal'
-import { ubahTampilanSchema, type TampilanWebsite } from '@/domain/website/schema'
+import { periksaTema } from '@/domain/website/kontras'
+import type { VersiSitus } from '@/domain/website/situs'
+import { temaDasarSchema } from '@/domain/website/tema'
 import { ambilDb, ubahDb } from '../db'
-import { API, balasDaftar, denganJaringan } from '../http'
+import { API, balasDaftar, balasGalat, denganJaringan } from '../http'
 import type { DbDemo } from '../tipe-db'
-import { bacaJson, balasIsianTidakValid, butuhKemampuan } from '../tulis'
+import { situsBawaan } from '../generator/website'
+import { bacaJson, balasIsianTidakValid, butuhKemampuan, pelakuDari } from '../tulis'
 
 const butuhPengelola = (request: Request) => butuhKemampuan(request, 'website.kelola', 'Peran Anda tidak berhak mengelola Website Desa.')
 
 /** Satu halaman berisi semua baris: daftar website pendek dan belum dipecah per halaman. */
 const balasSemua = <T,>(daftar: readonly T[]) => balasDaftar(daftar, 1, Math.max(daftar.length, 1))
 
-/** Tampilan tersimpan, atau bawaan netral (motif Garis) untuk desa yang belum mengaturnya (SPEC §9). */
-export function tampilanDesa(db: DbDemo, desaId: string): TampilanWebsite {
-  return (
-    db.tampilanWebsite.find((t) => t.desaId === desaId) ?? {
-      desaId, aksen: 'biru-tinta', motif: 'garis', sampul: null, logo: null, diperbarui: db.tanggalAcuan,
-    }
-  )
+/** Versi terbit situs desa, atau tema Warta bawaan untuk desa yang belum punya dokumen (mis. desa baru dari Konsol). */
+export function versiTerbit(db: DbDemo, desaId: string): VersiSitus {
+  return (db.situs.find((x) => x.desaId === desaId) ?? situsBawaan(desaId, db.tanggalAcuan)).terbit
 }
 
 /** Website Desa (SPEC §8): artikel, pengumuman, agenda, dan galeri hanya lihat; Tampilan bisa disimpan. */
@@ -59,23 +58,32 @@ export const handlerWebsite = [
     }),
   ),
   http.get(
-    `${API}/website/tampilan`,
+    `${API}/website/situs`,
     denganJaringan(({ request }) => {
       const pengguna = butuhPengelola(request)
       if (pengguna instanceof Response) return pengguna
-      return HttpResponse.json(tampilanDesa(ambilDb(), pengguna.desaId))
+      return HttpResponse.json({ terbit: versiTerbit(ambilDb(), pengguna.desaId) })
     }),
   ),
   http.put(
-    `${API}/website/tampilan`,
+    `${API}/website/situs/tema`,
     denganJaringan(async ({ request }) => {
       const pengguna = butuhPengelola(request)
       if (pengguna instanceof Response) return pengguna
-      const isian = ubahTampilanSchema.safeParse(await bacaJson(request))
+      const isian = temaDasarSchema.safeParse(await bacaJson(request))
       if (!isian.success) return balasIsianTidakValid(isian.error)
-      const baru: TampilanWebsite = { ...isian.data, desaId: pengguna.desaId, diperbarui: waktuIsoWib(new Date()) }
+      // Kontras ditegakkan di sini juga, bukan hanya di layar (fokus review 2).
+      const gagal = periksaTema(isian.data).filter((p) => !p.lolos)
+      if (gagal.length > 0) {
+        const fields: Record<string, string> = {}
+        for (const p of gagal) fields[p.kunci === 'aksen-latar' ? 'warnaAksen' : 'warnaUtama'] ??= p.pesan ?? ''
+        return balasGalat('VALIDATION', gagal[0].pesan ?? 'Kontras warna belum cukup.', 422, fields)
+      }
+      const baru: VersiSitus = { tema: isian.data, diperbarui: waktuIsoWib(new Date()), oleh: pelakuDari(pengguna) }
       ubahDb((d) => {
-        d.tampilanWebsite = [...d.tampilanWebsite.filter((t) => t.desaId !== pengguna.desaId), baru]
+        const ada = d.situs.find((x) => x.desaId === pengguna.desaId)
+        if (ada) ada.terbit = baru
+        else d.situs.push({ desaId: pengguna.desaId, terbit: baru, draf: null, riwayat: [] })
       })
       return HttpResponse.json(baru)
     }),

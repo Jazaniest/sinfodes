@@ -100,3 +100,22 @@ describe('sesi terkunci per alamat (SPEC-V0.2 §4.3)', () => {
     expect((await ambil('http://localhost/api/v1/sesi', 'demo.pgn_rosmiati')).status).toBe(200)
   })
 })
+
+describe('tampilanWarga di GET /alamat (rencana 7E-1 Tugas 2)', () => {
+  const tema = {
+    warnaUtama: '#1F4E79', warnaAksen: '#1F4E79', latar: 'kertas', huruf: 'plex', sudut: 'tajam', kepadatan: 'lega', motif: 'pucuk-rebung',
+    logo: null, sampul: null, warga: { fotoLatar: null, sambutan: 'Selamat datang di layanan Desa Sungai Sialang.' },
+  }
+  it('sambutan ikut berubah setelah PUT tema; tidak ada di alamat induk, Konsol, kabupaten', async () => {
+    const sebelum = (await (await ambil(url('sungaisialang', '/alamat'))).json()) as { desa: { tampilanWarga: unknown } }
+    expect(sebelum.desa.tampilanWarga).toEqual({ warnaUtama: '#1F4E79', logo: null, fotoLatar: null, sambutan: null, huruf: 'plex' })
+    const put = await fetch(url('sungaisialang', '/website/situs/tema'), {
+      method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer demo.pgn_hendri' }, body: JSON.stringify(tema),
+    })
+    expect(put.status).toBe(200)
+    const sesudah = (await (await ambil(url('sungaisialang', '/alamat'))).json()) as { desa: { tampilanWarga: { sambutan: string } } }
+    expect(sesudah.desa.tampilanWarga.sambutan).toBe('Selamat datang di layanan Desa Sungai Sialang.')
+    expect(await (await ambil(url(null, '/alamat'))).json()).toEqual({ jenis: 'induk' })
+    expect(await (await ambil(url('kab-pelalawan', '/alamat'))).json()).not.toHaveProperty('desa')
+  })
+})
