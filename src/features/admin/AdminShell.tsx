@@ -11,6 +11,9 @@ import { Hitungan } from '@/ui/hitungan/Hitungan'
 import { Drawer } from '@/ui/lapisan/Drawer'
 import { pasangFavicon } from '@/ui/website/favicon'
 import { MenuAksi } from '@/ui/lapisan/Menu'
+import type { ModeTampilan } from '@/ui/mode/mode'
+import { pilihanMode } from '@/ui/mode/pilihan-mode'
+import { useModeTampilan } from '@/ui/mode/useModeTampilan'
 import { LABEL_HITUNGAN, menuAktif, menuBawahUntuk, menuUntuk, type ItemMenu, type KunciHitungan } from './navigasi'
 
 type Props = {
@@ -54,7 +57,9 @@ function TautanMenu({ item: i, jalur, onPilih, hitungan }: { item: ItemMenu; jal
   )
 }
 
-function IsiNavigasi({ sesi, jalur, onCari, onKeluar, onPilih, hitungan }: Omit<Props, 'children'> & { onPilih?: () => void }) {
+type PropsIsi = Omit<Props, 'children'> & { onPilih?: () => void; mode: ModeTampilan; ubahMode: (mode: ModeTampilan) => void }
+
+function IsiNavigasi({ sesi, jalur, onCari, onKeluar, onPilih, hitungan, mode, ubahMode }: PropsIsi) {
   const { desa, pengguna } = sesi
   return (
     <div className="flex h-full flex-col gap-5 px-4 py-5">
@@ -114,6 +119,7 @@ function IsiNavigasi({ sesi, jalur, onCari, onKeluar, onPilih, hitungan }: Omit<
             </Button>
           }
           items={[{ id: 'keluar', label: 'Keluar', onAction: onKeluar }]}
+          pilihan={pilihanMode(mode, ubahMode)}
         />
         <img src={logoMark} alt="Sinfodes" className="h-6 w-auto" />
       </div>
@@ -122,8 +128,11 @@ function IsiNavigasi({ sesi, jalur, onCari, onKeluar, onPilih, hitungan }: Omit<
 }
 
 /** Kerangka panel admin (SPEC §5.2, §5.7): sidebar ≥ 1024px, bar atas + laci di layar lebih kecil. */
-export function AdminShell({ children, ...nav }: Props) {
+export function AdminShell({ children, ...props }: Props) {
   const lebar = useMediaQuery('(min-width: 1024px)')
+  // Mode gelap pribadi: dipasang ke <html> selama panel terbuka, dilepas saat panel dilepas (website publik tetap terang).
+  const [mode, ubahMode] = useModeTampilan()
+  const nav = { ...props, mode, ubahMode }
   // Favicon lambang desa selama panel terbuka; favicon Sinfodes kembali saat panel dilepas.
   const panel = nav.sesi.tampilanPanel
   const faviconLambang = panel?.favicon ?? null

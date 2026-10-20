@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { ID_MOTIF } from '@/domain/website/motif'
 import { FotoWarta } from './FotoWarta'
+import { FotoKonteks } from './foto-konteks'
 import { CapLencana } from './Lencana'
 import { POLA_MOTIF } from './motif'
 import { Rubrik } from './Rubrik'
@@ -33,6 +34,32 @@ describe('komponen website desa (SPEC §9)', () => {
     const img = container.querySelector('img')
     expect(img).toHaveClass('w-24', 'shrink-0')
     expect(img).not.toHaveClass('w-full')
+  })
+  it('FotoWarta (7E-2): bingkai menaruh keterangan di bawah foto tanpa lapisan', () => {
+    const { container } = render(<FotoWarta berkas="/demo/foto/ombak-bono.jpg" alt="" keterangan="Ombak Bono" />)
+    expect(container.querySelector('[data-lapisan]')).toBeNull()
+    expect(screen.getByRole('figure')).toHaveAttribute('data-foto', 'bingkai')
+  })
+  it('FotoWarta penuh: keterangan di atas lapisan gelap aria-hidden; tanpa keterangan tanpa lapisan', () => {
+    const { container, unmount } = render(
+      <FotoKonteks.Provider value="penuh">
+        <FotoWarta berkas="/demo/foto/ombak-bono.jpg" alt="Ombak" keterangan="Ombak Bono" kredit="Domiyanto1977" />
+      </FotoKonteks.Provider>,
+    )
+    const lapisan = container.querySelector('[data-lapisan]')
+    expect(lapisan).not.toBeNull()
+    expect(lapisan).toHaveAttribute('aria-hidden', 'true')
+    expect(screen.getByRole('figure')).toHaveAttribute('data-foto', 'penuh')
+    expect(screen.getByRole('figure')).toHaveTextContent('Ombak Bono · Foto: Domiyanto1977')
+    expect(container.querySelector('figcaption')).toHaveClass('text-putih')
+    unmount()
+    const tanpa = render(
+      <FotoKonteks.Provider value="penuh">
+        <FotoWarta berkas="/demo/foto/ombak-bono.jpg" alt="Ombak" />
+      </FotoKonteks.Provider>,
+    )
+    expect(tanpa.container.querySelector('[data-lapisan]')).toBeNull()
+    expect(tanpa.container.querySelector('figure')).toBeNull()
   })
   it('Rubrik: wilayah bernama judulnya, dengan id sebagai jangkar', () => {
     render(

@@ -6,6 +6,9 @@ import { cn } from '@/ui/cn'
 import { useMediaQuery } from '@/ui/hooks/useMediaQuery'
 import { Drawer } from '@/ui/lapisan/Drawer'
 import { MenuAksi } from '@/ui/lapisan/Menu'
+import type { ModeTampilan } from '@/ui/mode/mode'
+import { pilihanMode } from '@/ui/mode/pilihan-mode'
+import { useModeTampilan } from '@/ui/mode/useModeTampilan'
 import { LambangContoh } from './LambangContoh'
 import { menuKabupaten, menuKabupatenAktif } from './navigasi'
 
@@ -26,7 +29,9 @@ function Kepala({ nama }: { nama: string }) {
   )
 }
 
-function IsiNavigasi({ sesi, jalur, onKeluar, onPilih }: Omit<Props, 'children'> & { onPilih?: () => void }) {
+type PropsIsi = Omit<Props, 'children'> & { onPilih?: () => void; mode: ModeTampilan; ubahMode: (mode: ModeTampilan) => void }
+
+function IsiNavigasi({ sesi, jalur, onKeluar, onPilih, mode, ubahMode }: PropsIsi) {
   const { pengguna, kabupaten } = sesi
   return (
     <div className="flex h-full flex-col gap-6 border-r border-garis bg-kertas-2 px-4 py-5">
@@ -64,6 +69,7 @@ function IsiNavigasi({ sesi, jalur, onKeluar, onPilih }: Omit<Props, 'children'>
             </Button>
           }
           items={[{ id: 'keluar', label: 'Keluar', onAction: onKeluar }]}
+          pilihan={pilihanMode(mode, ubahMode)}
         />
       </div>
     </div>
@@ -74,8 +80,11 @@ function IsiNavigasi({ sesi, jalur, onKeluar, onPilih }: Omit<Props, 'children'>
  * Kerangka dasbor kabupaten (SPEC-V0.2 §8.3): sidebar terang dengan lambang kabupaten, beda dari Konsol (tinta gelap) dan dari
  * panel desa (nama desa).
  */
-export function KabupatenShell({ children, ...nav }: Props) {
+export function KabupatenShell({ children, ...props }: Props) {
   const lebar = useMediaQuery('(min-width: 1024px)')
+  // Mode gelap pribadi: dipasang ke <html> selama kerangka terbuka, dilepas saat kerangka dilepas.
+  const [mode, ubahMode] = useModeTampilan()
+  const nav = { ...props, mode, ubahMode }
   const [laciTerbuka, setLaciTerbuka] = useState(false)
   return (
     <div className="min-h-screen lg:flex">

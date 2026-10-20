@@ -4,9 +4,11 @@ import { tautanWhatsapp } from '@/domain/format/whatsapp'
 import type { IdentitasPublik } from '@/domain/publik/schema'
 import { formatWhatsapp } from '@/domain/warga/akun'
 import { pemetaanRegister, variabelTema } from '@/domain/website/tema'
+import { cn } from '@/ui/cn'
 import { Tautan } from '@/ui/navigasi/Tautan'
 import { pasangFavicon } from '@/ui/website/favicon'
 import { muatPasanganHuruf } from '@/ui/website/huruf'
+import { FotoKonteks } from '@/ui/website/foto-konteks'
 import { Nameplate } from '@/ui/website/Nameplate'
 import { menuPublik, menuPublikAktif } from './navigasi'
 
@@ -38,7 +40,7 @@ export function WebsiteShell({ identitas: d, jalur, tanggal, children }: Props) 
       >
         Langsung ke isi
       </a>
-      <div className="mx-auto max-w-5xl bg-lembar print:hidden">
+      <div className={cn('bg-lembar print:hidden', tema.kepala !== 'pita' && 'mx-auto max-w-5xl')}>
         <Nameplate
           nama={d.nama}
           kecamatan={d.kecamatan.nama}
@@ -46,25 +48,28 @@ export function WebsiteShell({ identitas: d, jalur, tanggal, children }: Props) 
           motif={tema.motif}
           logo={tema.logo ?? d.favicon}
           tanggal={tanggal}
+          bentuk={tema.kepala}
+          menu={
+            <nav data-bagian="menu" aria-label="Menu website desa" className={cn(tema.kepala === 'ringkas' ? 'min-w-0 max-w-full' : 'mx-auto max-w-5xl')}>
+              <ul className="flex gap-1 overflow-x-auto px-3 sm:px-4">
+                {menuPublik(d.slug).map((m) => (
+                  <li key={m.href} className="shrink-0">
+                    <Link
+                      href={m.href}
+                      aria-current={menuPublikAktif(m.href, jalur, d.slug) ? 'page' : undefined}
+                      className="inline-flex min-h-tombol items-center px-2 font-medium underline-offset-8 outline-none hover:text-biru aria-[current=page]:text-biru aria-[current=page]:underline aria-[current=page]:decoration-2 data-focus-visible:outline-2 data-focus-visible:outline-solid data-focus-visible:-outline-offset-2 data-focus-visible:outline-biru"
+                    >
+                      {m.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          }
         />
-        <nav data-bagian="menu" aria-label="Menu website desa">
-          <ul className="flex gap-1 overflow-x-auto px-3 sm:px-4">
-            {menuPublik(d.slug).map((m) => (
-              <li key={m.href} className="shrink-0">
-                <Link
-                  href={m.href}
-                  aria-current={menuPublikAktif(m.href, jalur, d.slug) ? 'page' : undefined}
-                  className="inline-flex min-h-tombol items-center px-2 font-medium underline-offset-8 outline-none hover:text-biru aria-[current=page]:text-biru aria-[current=page]:underline aria-[current=page]:decoration-2 data-focus-visible:outline-2 data-focus-visible:outline-solid data-focus-visible:-outline-offset-2 data-focus-visible:outline-biru"
-                >
-                  {m.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
       </div>
       <main id="isi" data-bagian="isi" tabIndex={-1} className="mx-auto max-w-5xl px-4 py-6 outline-none sm:px-5 print:p-0">
-        {children}
+        <FotoKonteks.Provider value={tema.foto}>{children}</FotoKonteks.Provider>
       </main>
       <KakiWebsite d={d} />
     </div>

@@ -36,4 +36,26 @@ describe('kerangka Konsol (SPEC §11, §4.7)', () => {
     await user.click(screen.getByRole('menuitem', { name: 'Keluar' }))
     expect(onKeluar).toHaveBeenCalledOnce()
   })
+  it('mode gelap (7E-2): menu akun punya pilihan Tampilan; sidebar tetap bersisi tinta; atribut dilepas saat dilepas', async () => {
+    localStorage.setItem('sinfodes.mode', 'gelap')
+    const onKeluar = vi.fn()
+    const sesi = contohSesiKonsol()
+    const { unmount } = render(
+      <SesiKonsolKonteks value={sesi}>
+        <KonsolShell sesi={sesi} jalur="/konsol" onKeluar={onKeluar}>
+          <p>Isi khusus tim</p>
+        </KonsolShell>
+      </SesiKonsolKonteks>,
+    )
+    expect(document.documentElement).toHaveAttribute('data-mode', 'gelap')
+    expect(document.querySelector('[data-sisi-konsol]')).not.toBeNull()
+    const user = userEvent.setup()
+    await user.click(screen.getByRole('button', { name: /Dina/ }))
+    const kelompok = screen.getByRole('group', { name: 'Tampilan' })
+    expect(within(kelompok).getByRole('menuitemradio', { name: 'Gelap' })).toBeChecked()
+    await user.click(within(kelompok).getByRole('menuitemradio', { name: 'Terang' }))
+    expect(document.documentElement).not.toHaveAttribute('data-mode')
+    expect(localStorage.getItem('sinfodes.mode')).toBe('terang')
+    unmount()
+  })
 })

@@ -87,7 +87,7 @@ export function PencarianCepat({ isOpen, onOpenChange, boleh }: Props) {
       isOpen={isOpen}
       onOpenChange={ubahBuka}
       isDismissable
-      className="fixed inset-0 z-50 flex items-start justify-center bg-tinta/30 px-4 pt-[12vh]"
+      className="fixed inset-0 z-50 flex items-start justify-center bg-tirai px-4 pt-[12vh]"
     >
       <Modal className="w-full max-w-xl rounded-2 border border-garis bg-lembar shadow-melayang outline-none">
         <Dialog aria-label="Pencarian cepat" className="outline-none">

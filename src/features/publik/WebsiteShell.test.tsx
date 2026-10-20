@@ -2,6 +2,7 @@ import { render, screen, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import type { IdentitasPublik } from '@/domain/publik/schema'
 import { contohIdentitasPublik } from '@/test/publik'
+import { FotoWarta } from '@/ui/website/FotoWarta'
 import { WebsiteShell } from './WebsiteShell'
 
 function pasang(jalur: string, ubah: Partial<IdentitasPublik> = {}) {
@@ -85,5 +86,40 @@ describe('kerangka website desa (SPEC §9)', () => {
     expect(screen.getByRole('navigation', { name: 'Menu website desa' }).parentElement).toHaveClass('print:hidden')
     expect(screen.getByRole('contentinfo')).toHaveClass('print:hidden')
     expect(screen.getByRole('main')).toHaveClass('print:p-0')
+  })
+  it('bentuk kepala dan perlakuan foto mengikuti tema (7E-2)', () => {
+    const tema = { ...contohIdentitasPublik().tema, kepala: 'pita' as const, foto: 'penuh' as const }
+    const { container } = render(
+      <WebsiteShell identitas={{ ...contohIdentitasPublik(), tema }} jalur="/desa/sungaisialang" tanggal="Kamis, 24 September 2026">
+        <FotoWarta berkas="/demo/foto/ombak-bono.jpg" alt="" keterangan="Ombak Bono" />
+      </WebsiteShell>,
+    )
+    expect(container.querySelector('header[data-bentuk="pita"] [data-pita]')).not.toBeNull()
+    expect(container.querySelector('figure')).toHaveAttribute('data-foto', 'penuh')
+    expect(screen.getByRole('navigation', { name: 'Menu website desa' })).toBeInTheDocument()
+  })
+  it('tema bawaan: kepala warta dan foto berbingkai', () => {
+    const { container } = render(
+      <WebsiteShell identitas={contohIdentitasPublik()} jalur="/desa/sungaisialang" tanggal="Kamis, 24 September 2026">
+        <FotoWarta berkas="/demo/foto/ombak-bono.jpg" alt="" keterangan="Ombak Bono" />
+      </WebsiteShell>,
+    )
+    expect(container.querySelector('header[data-bentuk="warta"]')).not.toBeNull()
+    expect(container.querySelector('figure')).toHaveAttribute('data-foto', 'bingkai')
+  })
+  it('website publik tidak pernah memasang mode gelap, walau pilihan tersimpan gelap (fokus review 1)', () => {
+    localStorage.setItem('sinfodes.mode', 'gelap')
+    const { unmount } = pasang('/desa/sungaisialang')
+    expect(document.documentElement).not.toHaveAttribute('data-mode')
+    unmount()
+    expect(document.documentElement).not.toHaveAttribute('data-mode')
+  })
+  it('kepala ringkas: menu di dalam kepala dan tidak melebar penuh, supaya berada di kanan nama (7E-2)', () => {
+    const tema = { ...contohIdentitasPublik().tema, kepala: 'ringkas' as const }
+    const { container } = pasang('/desa/sungaisialang', { tema })
+    const nav = screen.getByRole('navigation', { name: 'Menu website desa' })
+    expect(container.querySelector('header[data-bentuk="ringkas"]')).toContainElement(nav)
+    expect(nav).not.toHaveClass('max-w-5xl')
+    expect(nav).not.toHaveClass('mx-auto')
   })
 })

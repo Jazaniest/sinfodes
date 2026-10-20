@@ -93,10 +93,20 @@ describe('tema Dasar (rencana 7E-1 Tugas 1)', () => {
     const besar = `data:image/png;base64,${'A'.repeat(600 * 1366)}`
     expect(pesan({ ...TEMA, logo: besar })).toBe('Ukuran gambar paling besar 500 KB.')
   })
-  it('TEMA_WARTA_BAWAAN: Plex, kertas, tajam, lega, pucuk rebung, tanpa gambar', () => {
+  it('TEMA_WARTA_BAWAAN: Plex, kertas, tajam, lega, kepala warta, foto berbingkai, pucuk rebung, tanpa gambar', () => {
     expect(TEMA).toEqual({
       warnaUtama: '#1F4E79', warnaAksen: '#1F4E79', latar: 'kertas', huruf: 'plex', sudut: 'tajam', kepadatan: 'lega',
-      motif: 'pucuk-rebung', logo: null, sampul: null, warga: { fotoLatar: null, sambutan: null },
+      kepala: 'warta', foto: 'bingkai', motif: 'pucuk-rebung', logo: null, sampul: null, idGaleri: null,
+      warga: { fotoLatar: null, sambutan: null },
     })
+  })
+  it('skema (7E-2): kepala, foto, dan idGaleri bernilai bawaan untuk data lama; nilai di luar daftar ditolak', () => {
+    const { kepala, foto, idGaleri, ...lama } = TEMA
+    void [kepala, foto, idGaleri]
+    expect(temaDasarSchema.parse(lama)).toMatchObject({ kepala: 'warta', foto: 'bingkai', idGaleri: null })
+    expect(temaDasarSchema.safeParse({ ...TEMA, kepala: 'pita', foto: 'penuh', idGaleri: 'tenun' }).success).toBe(true)
+    expect(temaDasarSchema.safeParse({ ...TEMA, kepala: 'lonjong' }).success).toBe(false)
+    expect(temaDasarSchema.safeParse({ ...TEMA, foto: 'melayang' }).success).toBe(false)
+    expect(temaDasarSchema.safeParse({ ...TEMA, idGaleri: 'tidak-ada' }).success).toBe(false)
   })
 })

@@ -22,7 +22,7 @@ export function Dialog({ isOpen, onOpenChange, judul, subjudul, children, aksi, 
       isOpen={isOpen}
       onOpenChange={onOpenChange}
       isDismissable={peran === 'dialog'}
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-tinta/30 px-4 py-[8vh]"
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-tirai px-4 py-[8vh]"
     >
       <Modal
         className={cn(

@@ -246,7 +246,7 @@ function FormIdentitasDesa({ data, onKotor }: { data: PengaturanDesa; onKotor?: 
               keterangan={`PNG, JPG, WebP, atau SVG, paling besar ${MAKS_GAMBAR_KB.lambang} KB. Tanpa lambang, kop memakai lambang tiruan netral.`}
             />
             <PratinjauLembar label="Pratinjau kop surat">
-              <div className="w-[21cm] bg-lembar px-[2cm] pt-[1.2cm] pb-[0.8cm] font-surat-tinos text-[12pt] text-tinta">
+              <div data-terang className="w-[21cm] bg-lembar px-[2cm] pt-[1.2cm] pb-[0.8cm] font-surat-tinos text-[12pt] text-tinta">
                 <KopSurat kop={kop} />
               </div>
             </PratinjauLembar>

@@ -80,7 +80,7 @@ function Lembar({ l, sekarang }: { l: Laporan; sekarang: Date }) {
   const nama = formatBulan(l.bulan)
   const dd = l.ringkasan.danaDesa
   return (
-    <article aria-label={`Laporan bulanan ${nama}`} className="mx-auto flex w-full max-w-[210mm] flex-col gap-8 border border-garis bg-lembar p-8 print:max-w-none print:border-0 print:p-0">
+    <article data-terang aria-label={`Laporan bulanan ${nama}`} className="mx-auto flex w-full max-w-[210mm] flex-col gap-8 border border-garis bg-lembar p-8 print:max-w-none print:border-0 print:p-0">
       <style>{GAYA_CETAK}</style>
       <section aria-label="Sampul" className="flex min-h-[60vh] flex-col items-center justify-center gap-3 text-center print:min-h-[240mm] print:break-after-page">
         <LambangContoh nama={l.kabupaten.nama} className="h-20 w-auto text-tinta" />

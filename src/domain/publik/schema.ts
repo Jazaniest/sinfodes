@@ -71,6 +71,8 @@ export const berandaPublikSchema = z.object({
   potensi: z.array(ringkasPotensiSchema),
   /** Lencana juara dari periode tutup terakhir yang tidak disembunyikan desa, paling banyak 6 (SPEC-V0.2 §9.6). */
   lencana: z.array(lencanaPublikSchema),
+  /** Profil singkat dua paragraf untuk desa rekaman tanpa kabar maupun pengumuman (SPEC-V0.2 §13); null untuk desa lain. */
+  profilSingkat: z.array(z.string()).nullable(),
 })
 export type BerandaPublik = z.infer<typeof berandaPublikSchema>
 

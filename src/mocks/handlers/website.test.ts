@@ -3,6 +3,7 @@ import { GalatApi } from '@/api/galat'
 import { ambilIdentitasPublik } from '@/api/publik'
 import { ambilSesi } from '@/api/sesi'
 import { ambilSitus, daftarAgenda, daftarArtikel, daftarGaleri, daftarPengumuman, simpanTema } from '@/api/website'
+import { pasangTema } from '@/domain/website/galeri-tema'
 import { TEMA_WARTA_BAWAAN, type TemaDasar } from '@/domain/website/tema'
 import { AKUN_UJI, masukSebagai, pakaiApiTiruan } from '@/test/api-tiruan'
 
@@ -65,6 +66,18 @@ describe('Website Desa (SPEC §8)', () => {
     const publik = await ambilIdentitasPublik('sungaisialang')
     expect(publik.tema).toMatchObject({ warnaUtama: '#2F5D3A', huruf: 'fraunces', motif: 'mega-mendung' })
     expect(publik.tema).not.toHaveProperty('warga')
+  })
+  it('idGaleri dihitung server: tema galeri terpasang ditandai, satu pengaturan diubah → null (7E-2)', async () => {
+    masukSebagai(AKUN_UJI.sekdes)
+    expect((await ambilSitus()).terbit.tema).toMatchObject({ idGaleri: 'warta', kepala: 'warta', foto: 'bingkai' })
+    const pesisir = await simpanTema(pasangTema(TEMA, 'pesisir'))
+    expect(pesisir.tema).toMatchObject({ idGaleri: 'pesisir', huruf: 'literata', kepala: 'pita', foto: 'penuh' })
+    expect((await ambilIdentitasPublik('sungaisialang')).tema).toMatchObject({ idGaleri: 'pesisir', kepala: 'pita' })
+    const diubah = await simpanTema({ ...pesisir.tema, sudut: 'tajam' })
+    expect(diubah.tema.idGaleri).toBeNull()
+    // Isian idGaleri dari klien tidak dipercaya.
+    const palsu = await simpanTema({ ...pesisir.tema, sudut: 'tajam', idGaleri: 'tenun' })
+    expect(palsu.tema.idGaleri).toBeNull()
   })
   it('API menolak walau layar dilewati: #FFD400 → 422 field warnaUtama dengan pesan persis (fokus review 2)', async () => {
     masukSebagai(AKUN_UJI.sekdes)

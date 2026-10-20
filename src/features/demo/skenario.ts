@@ -26,8 +26,8 @@ const KAUR_KEUANGAN: MasukSkenario = { bagian: 'admin', peran: 'kaur-keuangan' }
 const TIM_SINFODES: MasukSkenario = { bagian: 'konsol', peran: 'tim' }
 
 /**
- * Skenario terpandu: tiga alur demo kriteria selesai tahap 1 (SPEC §3.6, §13.5), ditambah Siaran kabupaten dan Tagihan
- * langganan (SPEC-V0.2 §13).
+ * Skenario terpandu: tiga alur demo kriteria selesai tahap 1 (SPEC §3.6, §13.5), ditambah Siaran kabupaten, Tagihan
+ * langganan, dan Ganti tema (SPEC-V0.2 §13).
  */
 export const SKENARIO_DEMO: readonly Skenario[] = [
   {
@@ -132,6 +132,18 @@ export const SKENARIO_DEMO: readonly Skenario[] = [
         teks: 'Kaur Keuangan kembali ke Langganan: tagihan Lunas dan kwitansinya bisa diunduh.',
         tombol: [{ label: 'Kaur Keuangan: kwitansi', masuk: KAUR_KEUANGAN, tujuan: SS, jalur: '/admin/pengaturan/langganan' }],
       },
+    ],
+  },
+  {
+    id: 'ganti-tema',
+    judul: 'Ganti tema website',
+    ringkas: 'Operator memasang tema dari galeri, lalu melihat website desa berubah.',
+    langkah: [
+      {
+        teks: 'Pilih tema di galeri',
+        tombol: [{ label: 'Operator: Tampilan', masuk: OPERATOR, tujuan: SS, jalur: '/admin/website/tampilan' }],
+      },
+      { teks: 'Lihat hasilnya di website', tombol: [{ label: 'Website Sungai Sialang', masuk: PUBLIK, tujuan: SS, jalur: '/' }] },
     ],
   },
 ]

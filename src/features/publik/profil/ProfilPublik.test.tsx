@@ -2,8 +2,9 @@ import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import type { PropsPetaDesa } from '@/features/peta/PetaDesa'
-import { ubahDb } from '@/mocks/db'
+import { ambilDb, ubahDb } from '@/mocks/db'
 import { pakaiApiTiruan } from '@/test/api-tiruan'
+import { contohIdentitasPublik } from '@/test/publik'
 import { renderPublik } from '@/test/render'
 import { ProfilPublik } from './ProfilPublik'
 
@@ -98,5 +99,12 @@ describe('Profil website desa (SPEC §9)', () => {
     expect(screen.getByText('Peta desa belum tersedia.')).toBeInTheDocument()
     expect(screen.queryByRole('img')).not.toBeInTheDocument()
     expect(screen.getByRole('region', { name: 'Pemerintah desa' })).toHaveTextContent('Kepala Desa')
+  })
+  it('desa rekaman (7E-2): profil memakai paragraf Profil singkat yang sama dengan beranda', async () => {
+    const desa = ambilDb().desa.find((d) => d.nama === 'Sungai Gelugur')!
+    renderPublik(<ProfilPublik />, { ...contohIdentitasPublik(), slug: desa.slug, nama: desa.nama })
+    const profil = await screen.findByRole('region', { name: 'Profil singkat' })
+    expect(profil).toHaveTextContent('Desa Sungai Gelugur')
+    expect(screen.queryByRole('region', { name: 'Sejarah' })).not.toBeInTheDocument()
   })
 })

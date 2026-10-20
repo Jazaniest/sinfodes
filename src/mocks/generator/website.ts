@@ -4,7 +4,8 @@ import type {
   Agenda, Artikel, FotoGaleri, KategoriArtikel, Pengumuman, Potensi, ProfilDesa, Umkm,
 } from '@/domain/website/schema'
 import type { SitusDesa } from '@/domain/website/situs'
-import { TEMA_WARTA_BAWAAN } from '@/domain/website/tema'
+import { pasangTema } from '@/domain/website/galeri-dasar'
+import { TEMA_WARTA_BAWAAN, type IdTema } from '@/domain/website/tema'
 import type { Desa, Dusun } from '@/domain/wilayah/schema'
 import { NASKAH_ARTIKEL } from '../data/artikel-demo'
 import { POTENSI_DEMO, PROFIL_DEMO, UMKM_DEMO } from '../data/profil-demo'
@@ -115,6 +116,16 @@ export function situsBawaan(desaId: string, diperbarui: string): SitusDesa {
   }
 }
 
+/** Situs desa fiktif dengan tema galeri `id` (SPEC-V0.2 §13): Warta bawaan tanpa logo dan sampul, lalu tema dipasang. */
+export function situsGaleri(desaId: string, diperbarui: string, id: IdTema): SitusDesa {
+  return {
+    desaId,
+    terbit: { tema: pasangTema(TEMA_WARTA_BAWAAN('#1F4E79'), id), diperbarui, oleh: { id: 'sinfodes', nama: 'Sinfodes' } },
+    draf: null,
+    riwayat: [],
+  }
+}
+
 /** Isi Website Desa demo (SPEC §12.6). Tetap, tanpa PRNG; tanggal relatif terhadap tanggal acuan. */
 export function bangkitkanWebsite(o: { desa: Desa; dusun: readonly Dusun[]; pengguna: readonly Pengguna[]; acuan: Date }): {
   artikel: Artikel[]
@@ -184,7 +195,7 @@ export function bangkitkanWebsite(o: { desa: Desa; dusun: readonly Dusun[]; peng
       desaId: o.desa.id,
       // Tampilan v0.1 (Biru tinta, Pucuk rebung, sampul Sungai Kampar, tanpa logo) menjadi tema Dasar.
       terbit: {
-        tema: { ...TEMA_WARTA_BAWAAN('#1F4E79'), sampul: '/demo/foto/sampul-sungai-kampar.jpg' },
+        tema: { ...TEMA_WARTA_BAWAAN('#1F4E79'), sampul: '/demo/foto/sampul-sungai-kampar.jpg', idGaleri: 'warta' },
         diperbarui: `${geser(-30)}T10:00:00+07:00`,
         oleh: { id: 'pgn_rosmiati', nama: nama('operator') },
       },

@@ -10,8 +10,8 @@ import { formatTanggal, tanggalIsoWib } from '@/domain/format/tanggal'
 import { gelapkanSampaiLolos, periksaTema, type Pemeriksaan } from '@/domain/website/kontras'
 import { ASAL_MOTIF, ID_MOTIF, LABEL_MOTIF, type IdMotif } from '@/domain/website/motif'
 import {
-  ID_KEPADATAN, ID_LATAR, ID_PASANGAN_HURUF, ID_SUDUT, KEPADATAN, LATAR, PASANGAN_HURUF, SUDUT, temaDasarSchema, type IdKepadatan,
-  type IdLatar, type IdPasanganHuruf, type IdSudut, type TemaDasar,
+  ID_FOTO, ID_KEPADATAN, ID_KEPALA, ID_LATAR, ID_PASANGAN_HURUF, ID_SUDUT, KEPADATAN, LATAR, PASANGAN_HURUF, SUDUT,
+  temaDasarSchema, type IdFoto, type IdKepadatan, type IdKepala, type IdLatar, type IdPasanganHuruf, type IdSudut, type TemaDasar,
 } from '@/domain/website/tema'
 import { cn } from '@/ui/cn'
 import { TextArea } from '@/ui/isian/TextArea'
@@ -22,6 +22,8 @@ import { muatPasanganHuruf } from '@/ui/website/huruf'
 import { PitaMotif } from '@/ui/website/Nameplate'
 import { useSesiAdmin } from '../../admin/sesi-konteks'
 import { UnggahGambar } from '../../pengaturan/UnggahGambar'
+import { GaleriTema } from './GaleriTema'
+import { FOTO, KEPALA } from './pilihan'
 import { PanelKontras } from './PanelKontras'
 import { PemilihWarna } from './PemilihWarna'
 import { Pratinjau } from './Pratinjau'
@@ -202,7 +204,15 @@ export function FormDasar({ data, onKotor, sekarang }: Props) {
 
   return (
     <>
-      <div className="grid grid-cols-[minmax(0,1fr)] gap-8 xl:grid-cols-[minmax(0,1fr)_minmax(0,30rem)]">
+      <GaleriTema
+        data={data}
+        kotor={kotor}
+        onTerpasang={(tema) => {
+          setForm(tema)
+          setGalat({})
+        }}
+      />
+      <div className="mt-8 grid grid-cols-[minmax(0,1fr)] gap-8 xl:grid-cols-[minmax(0,1fr)_minmax(0,30rem)]">
         <div className="flex flex-col gap-8">
           <section className="flex flex-col gap-4">
             <h2 className={judulBagian}>Warna</h2>
@@ -239,6 +249,26 @@ export function FormDasar({ data, onKotor, sekarang }: Props) {
                 <span className="flex flex-col gap-0.5">
                   <span className="text-teks-kecil font-medium">{KEPADATAN[id].label}</span>
                   <span className="text-label text-tinta-2">Jarak antarbagian {id === 'lega' ? '2,5' : '1,5'} rem</span>
+                </span>
+              )}
+            </Kelompok>
+          </section>
+
+          <section className="flex flex-col gap-4">
+            <h2 className={judulBagian}>Kepala dan foto</h2>
+            <Kelompok label="Bentuk kepala halaman" nilai={form.kepala} onUbah={(v: IdKepala) => ubah('kepala', v)} ids={ID_KEPALA} kolom="sm:grid-cols-3">
+              {(id) => (
+                <span className="flex flex-col gap-0.5">
+                  <span className="text-teks-kecil font-medium">{KEPALA[id].label}</span>
+                  <span className="text-label text-tinta-2">{KEPALA[id].keterangan}</span>
+                </span>
+              )}
+            </Kelompok>
+            <Kelompok label="Perlakuan foto" nilai={form.foto} onUbah={(v: IdFoto) => ubah('foto', v)} ids={ID_FOTO} kolom="sm:grid-cols-2">
+              {(id) => (
+                <span className="flex flex-col gap-0.5">
+                  <span className="text-teks-kecil font-medium">{FOTO[id].label}</span>
+                  <span className="text-label text-tinta-2">{FOTO[id].keterangan}</span>
                 </span>
               )}
             </Kelompok>

@@ -181,4 +181,27 @@ describe('ButuhAkses (SPEC §3.5)', () => {
     )
     expect(screen.getByRole('link', { name: 'Layanan Surat' })).toBeInTheDocument()
   })
+  it('mode gelap (7E-2): pilihan tersimpan dipasang ke <html>, dan dilepas saat kerangka dilepas', () => {
+    localStorage.setItem('sinfodes.mode', 'gelap')
+    const { unmount } = render(
+      <AdminShell sesi={contohSesi('operator')} jalur="/admin" onCari={vi.fn()} onKeluar={vi.fn()}>
+        <p>Isi halaman</p>
+      </AdminShell>,
+    )
+    expect(document.documentElement).toHaveAttribute('data-mode', 'gelap')
+    unmount()
+    expect(document.documentElement).not.toHaveAttribute('data-mode')
+  })
+  it('menu akun: kelompok Tampilan dengan tiga pilihan; memilih Gelap menyimpan dan memasang mode', async () => {
+    const { user } = pasang('operator')
+    expect(document.documentElement).not.toHaveAttribute('data-mode')
+    await user.click(screen.getByRole('button', { name: /Rosmiati/ }))
+    const kelompok = screen.getByRole('group', { name: 'Tampilan' })
+    const pilihan = within(kelompok).getAllByRole('menuitemradio')
+    expect(pilihan.map((p) => p.textContent)).toEqual(['Terang', 'Gelap', 'Ikuti perangkat'])
+    expect(within(kelompok).getByRole('menuitemradio', { name: 'Terang' })).toBeChecked()
+    await user.click(within(kelompok).getByRole('menuitemradio', { name: 'Gelap' }))
+    expect(localStorage.getItem('sinfodes.mode')).toBe('gelap')
+    expect(document.documentElement).toHaveAttribute('data-mode', 'gelap')
+  })
 })

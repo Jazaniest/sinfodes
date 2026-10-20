@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { pemetaanRegister, variabelTema, type TemaDasar } from '@/domain/website/tema'
+import { FotoWarta } from '@/ui/website/FotoWarta'
+import { FotoKonteks, useBentukFoto } from '@/ui/website/foto-konteks'
 import { Nameplate, PitaMotif } from '@/ui/website/Nameplate'
 
 type TemaPratinjau = Omit<TemaDasar, 'warga'>
@@ -16,30 +18,61 @@ type Props = {
 }
 
 const MENU = ['Beranda', 'Profil', 'Kabar', 'Layanan']
+const KETERANGAN_CONTOH = 'Warga bergotong royong membersihkan parit dusun.'
 
-/** Cuplikan website di dalam wadah ber-variabel tema: nameplate, menu, satu kartu kabar, satu tombol, dan pita motif. */
-function Cuplikan({ tema, nama, kecamatan, kabupaten, lambang, tanggal }: Props) {
+/** Foto kosong: kotak putus-putus dengan keterangan, ditaruh menurut perlakuan foto tema. */
+function FotoKosong() {
+  const bentuk = useBentukFoto()
+  const kotak = (
+    <div className="flex aspect-[16/9] items-center justify-center rounded-1 border border-dashed border-garis-input bg-kertas-2 text-teks-kecil text-tinta-2">
+      Belum ada foto sampul
+    </div>
+  )
+  if (bentuk === 'penuh') {
+    return (
+      <figure data-foto="penuh" className="relative overflow-hidden">
+        {kotak}
+        <div aria-hidden data-lapisan className="pointer-events-none absolute inset-x-0 bottom-0 h-2/3 bg-linear-to-t from-black/80 from-45% to-transparent" />
+        <figcaption className="absolute inset-x-0 bottom-0 px-3 pt-6 pb-2 text-teks-kecil text-putih">{KETERANGAN_CONTOH}</figcaption>
+      </figure>
+    )
+  }
   return (
-    <>
-      <Nameplate nama={nama} kecamatan={kecamatan} kabupaten={kabupaten} motif={tema.motif} logo={tema.logo ?? lambang} tanggal={tanggal} />
-      <ul className="flex gap-1 bg-lembar px-4">
-        {MENU.map((m, i) => (
-          <li
-            key={m}
-            className={`inline-flex min-h-tombol items-center px-2 font-medium ${i === 0 ? 'text-biru underline decoration-2 underline-offset-8' : ''}`}
-          >
-            {m}
-          </li>
-        ))}
-      </ul>
+    <figure data-foto="bingkai">
+      {kotak}
+      <figcaption className="mt-1.5 text-teks-kecil text-tinta-2">{KETERANGAN_CONTOH}</figcaption>
+    </figure>
+  )
+}
+
+/** Cuplikan website di dalam wadah ber-variabel tema: kepala sesuai bentuknya, menu, satu kartu kabar, satu tombol, dan pita motif. */
+function Cuplikan({ tema, nama, kecamatan, kabupaten, lambang, tanggal }: Props) {
+  const menu = (
+    <ul className="flex gap-1 bg-lembar px-4">
+      {MENU.map((m, i) => (
+        <li
+          key={m}
+          className={`inline-flex min-h-tombol items-center px-2 font-medium ${i === 0 ? 'text-biru underline decoration-2 underline-offset-8' : ''}`}
+        >
+          {m}
+        </li>
+      ))}
+    </ul>
+  )
+  return (
+    <FotoKonteks.Provider value={tema.foto}>
+      <Nameplate
+        nama={nama}
+        kecamatan={kecamatan}
+        kabupaten={kabupaten}
+        motif={tema.motif}
+        logo={tema.logo ?? lambang}
+        tanggal={tanggal}
+        bentuk={tema.kepala}
+        menu={menu}
+      />
       <div className="flex flex-col gap-[var(--desa-jarak)] px-5 py-5">
-        {tema.sampul ? (
-          <img src={tema.sampul} alt="" className="aspect-[16/9] w-full rounded-1 object-cover" />
-        ) : (
-          <div className="flex aspect-[16/9] items-center justify-center rounded-1 border border-dashed border-garis-input bg-kertas-2 text-teks-kecil text-tinta-2">
-            Belum ada foto sampul
-          </div>
-        )}
+        {tema.sampul ? <FotoWarta berkas={tema.sampul} alt="" keterangan={KETERANGAN_CONTOH} rasio="lebar" utama /> : <FotoKosong />}
         <article className="flex flex-col gap-2 rounded-2 border border-garis bg-lembar p-4">
           <p className="text-label font-semibold tracking-wide text-biru uppercase">Pembangunan · 24 September 2026</p>
           <h3 className="font-serif text-judul-bagian font-medium">Semenisasi jalan dusun capai 70 persen</h3>
@@ -48,7 +81,7 @@ function Cuplikan({ tema, nama, kecamatan, kabupaten, lambang, tanggal }: Props)
         </article>
         <PitaMotif motif={tema.motif} />
       </div>
-    </>
+    </FotoKonteks.Provider>
   )
 }
 

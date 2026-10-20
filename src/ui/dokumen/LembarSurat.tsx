@@ -40,6 +40,7 @@ export function LembarSurat({ kop, isi, nomor, tandaTangan, kertas, huruf, verif
   const qrDiKaki = tandaTangan.mode === 'basah' && verifikasi !== null
   return (
     <article
+      data-terang
       aria-label={`Lembar ${isi.judul.toLocaleLowerCase('id-ID')}`}
       className={cn(
         'relative flex flex-col bg-putih pt-[2cm] pr-[2cm] pb-[2cm] pl-[3cm] text-[12pt] leading-[1.15] text-tinta',
