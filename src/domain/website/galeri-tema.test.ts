@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { GALERI_TEMA, pasangTema, samaDenganGaleri, temaGaleri } from './galeri-tema'
 import { periksaTema } from './kontras'
+import { menuBawaan, susunanSchema } from './susunan'
 import { temaDasarSchema, TEMA_WARTA_BAWAAN } from './tema'
 
 describe('Galeri tema (rencana 7E-2 Tugas 1)', () => {
@@ -11,13 +12,27 @@ describe('Galeri tema (rencana 7E-2 Tugas 1)', () => {
     expect(GALERI_TEMA.map((t) => t.id)).toEqual(['warta', 'balai', 'pesisir', 'serambi', 'ladang', 'tenun', 'rimba', 'bandar'])
     expect(GALERI_TEMA[0].dasar).toMatchObject({ huruf: 'plex', latar: 'kertas', sudut: 'tajam', kepadatan: 'lega', kepala: 'warta', foto: 'bingkai', motif: 'pucuk-rebung' })
   })
-  it('setiap tema punya nama, satu kalimat keterangan, dan susunan beranda null', () => {
+  it('setiap tema punya nama, satu kalimat keterangan, dan susunan beranda yang sah', () => {
     for (const t of GALERI_TEMA) {
       expect(t.nama.length, t.id).toBeGreaterThan(2)
       expect(t.keterangan.endsWith('.'), t.id).toBe(true)
-      expect(t.susunanBeranda, t.id).toBeNull()
+      expect(t.susunanBeranda.length, t.id).toBeGreaterThan(0)
+      const hasil = susunanSchema.safeParse({ beranda: t.susunanBeranda, halaman: [], menu: menuBawaan() })
+      expect(hasil.success, `${t.id}: ${hasil.success ? '' : hasil.error.issues.map((i) => i.message).join(' | ')}`).toBe(true)
     }
     expect(temaGaleri('warta').keterangan).toBe('Tampilan warta desa seperti v0.1: kepala bertanggal dan foto berbingkai.')
+  })
+  it('susunan beranda Warta mereproduksi Beranda v0.1 (rencana 7F-1 Tugas 1)', () => {
+    expect(temaGaleri('warta').susunanBeranda.map((b) => `${b.jenis}:${b.varian}:${b.lebar}`)).toEqual([
+      'lencana:deret:penuh', 'kabar:sorotan:penuh', 'layanan:kisi:penuh', 'kabar:daftar:lebar',
+      'pengumuman-agenda:bertumpuk:sempit', 'angka:kalimat:penuh', 'apbdes:batang:penuh', 'potensi:kartu:penuh',
+    ])
+    const kabar = temaGaleri('warta').susunanBeranda[1]
+    expect(kabar.jenis === 'kabar' ? kabar.isi : null).toEqual({ jumlah: 1 })
+  })
+  it('tidak ada dua tema dengan susunan beranda yang sama (jenis dan varian berurutan)', () => {
+    const kunci = GALERI_TEMA.map((t) => t.susunanBeranda.map((b) => `${b.jenis}:${b.varian}`).join('|'))
+    expect(new Set(kunci).size).toBe(8)
   })
   it('setiap tema lolos pemeriksa kontras di latarnya sendiri dan lolos skema tema', () => {
     for (const t of GALERI_TEMA) {

@@ -153,6 +153,8 @@ describe('API Konsol (SPEC §11, §3.4)', () => {
   })
   it('website desa fiktif yang Aktif tetap terbuka dengan isi kosong, bukan galat (fokus review 4)', async () => {
     const b = await ambilBerandaPublik('sungaigelugur')
-    expect(b).toMatchObject({ utama: null, terbaru: [], pengumuman: [], agenda: [], apbdes: null, potensi: [] })
+    expect(b.blok.filter((x) => ['kabar', 'apbdes', 'potensi', 'pengumuman-agenda', 'galeri'].includes(x.jenis))).toEqual([])
+    expect(b.blok.length).toBeGreaterThan(0)
+    expect(b.profilSingkat?.length).toBe(2)
   })
 })

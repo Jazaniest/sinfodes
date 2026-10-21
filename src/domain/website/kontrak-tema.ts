@@ -39,5 +39,18 @@ export const BAGIAN_KONTRAK = [
   'blok-apbdes',
   'blok-potensi',
   'cek-keaslian',
+  // Blok susunan 7F-1: setiap blok dibungkus `section data-bagian="blok-{jenis}"`. `blok-pengumuman` dan `blok-agenda`
+  // tetap dipakai bagian dalam blok Pengumuman & agenda.
+  'blok-sampul',
+  'blok-pengumuman-agenda',
+  'blok-galeri',
+  'blok-peta',
+  'blok-video',
+  'blok-sambutan',
+  'blok-teks',
+  'blok-ajakan',
+  'blok-kontak',
+  'blok-lencana',
+  'blok-pemisah',
 ] as const
 export type BagianKontrak = (typeof BAGIAN_KONTRAK)[number]

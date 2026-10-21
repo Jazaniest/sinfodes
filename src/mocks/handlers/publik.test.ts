@@ -4,9 +4,16 @@ import {
 } from '@/api/publik'
 import { ambilProfilPublik } from '@/api/publik-halaman'
 import { ambilDb } from '@/mocks/db'
+import type { BlokTampil } from '@/domain/publik/schema'
 import { pakaiApiTiruan } from '@/test/api-tiruan'
 
 pakaiApiTiruan()
+
+type BlokB<T extends BlokTampil['jenis']> = Extract<BlokTampil, { jenis: T }>
+const blok = <T extends BlokTampil['jenis']>(daftar: readonly BlokTampil[], jenis: T) =>
+  daftar.find((x) => x.jenis === jenis) as BlokB<T> | undefined
+const sepasangKabar = (daftar: readonly BlokTampil[]) =>
+  daftar.filter((x) => x.jenis === 'kabar') as unknown as readonly [BlokB<'kabar'>, BlokB<'kabar'>]
 
 describe('API website publik (SPEC §9, §3.4)', () => {
   it('identitas dan tampilan desa, tanpa sesi', async () => {
@@ -28,23 +35,26 @@ describe('API website publik (SPEC §9, §3.4)', () => {
   })
   it('beranda: berita utama terbaru yang berfoto, 4 kabar terbaru, pengumuman berlaku, agenda mendatang, angka desa, sampul', async () => {
     const b = await ambilBerandaPublik('sungaisialang')
-    expect(b.utama).toMatchObject({
+    const [sorotan, daftarKabar] = sepasangKabar(b.blok)
+    const pa = blok(b.blok, 'pengumuman-agenda')!
+    const angkaBlok = blok(b.blok, 'angka')!
+    expect(sorotan.data.artikel[0]).toMatchObject({
       judul: 'Penyaluran BLT Tahap III Dijadwalkan 30 September',
       foto: { berkas: '/demo/foto/penyaluran-bantuan.jpg', keterangan: 'Penyaluran bantuan', kredit: 'Sakila Karema · CC0' },
     })
-    expect(b.terbaru.map((a) => a.judul)).toEqual([
+    expect(daftarKabar.data.artikel.map((a) => a.judul)).toEqual([
       'Semenisasi Jalan Dusun III Capai 70 Persen', 'Layanan Surat Kini Bisa Diajukan dari HP',
       'Kelas Ibu Balita: Cegah Stunting dari Dapur Sendiri', 'BUMDes Sialang Makmur Mulai Pasarkan Ikan Salai Selais',
     ])
-    expect(b.terbaru.find((a) => a.judul.startsWith('Kelas Ibu'))?.foto).toBeNull()
-    expect(b.pengumuman).toHaveLength(3)
-    expect(b.agenda).toHaveLength(5)
-    expect(b.agenda.map((a) => a.tanggal)).toEqual([...b.agenda.map((a) => a.tanggal)].sort())
-    expect(b.agenda[0]).not.toHaveProperty('desaId')
-    expect(b.angka).toMatchObject({ dusun: 4, luasKm2: 48.6 })
-    expect(b.angka.jiwa).toBeGreaterThan(b.angka.kk)
-    expect(b.angka.rt).toBeGreaterThanOrEqual(b.angka.dusun)
-    expect(b.sampul).toEqual({ berkas: '/demo/foto/sampul-sungai-kampar.jpg', keterangan: 'Lanskap Sungai Kampar', kredit: 'M Zai Ar · CC BY-SA 4.0' })
+    expect(daftarKabar.data.artikel.find((a) => a.judul.startsWith('Kelas Ibu'))?.foto).toBeNull()
+    expect(pa.data.pengumuman).toHaveLength(3)
+    expect(pa.data.agenda).toHaveLength(5)
+    expect(pa.data.agenda.map((a) => a.tanggal)).toEqual([...pa.data.agenda.map((a) => a.tanggal)].sort())
+    expect(pa.data.agenda[0]).not.toHaveProperty('desaId')
+    expect(angkaBlok.data.angka).toMatchObject({ dusun: 4, luasKm2: 48.6 })
+    expect(angkaBlok.data.angka.jiwa).toBeGreaterThan(angkaBlok.data.angka.kk)
+    expect(angkaBlok.data.angka.rt).toBeGreaterThanOrEqual(angkaBlok.data.angka.dusun)
+    expect(angkaBlok.data.sampul).toEqual({ berkas: '/demo/foto/sampul-sungai-kampar.jpg', keterangan: 'Lanskap Sungai Kampar', kredit: 'M Zai Ar · CC BY-SA 4.0' })
   })
   it('kabar: hanya yang terbit, terbaru dulu; filter kategori; draf tidak bisa dibuka lewat alamatnya (fokus review 4)', async () => {
     const semua = await daftarKabarPublik('sungaisialang', null)
@@ -79,7 +89,7 @@ describe('API website publik (SPEC §9, §3.4)', () => {
   it('desa rekaman tanpa kabar: beranda memuat profilSingkat dua paragraf yang menyebut desanya; Sungai Sialang null (7E-2)', async () => {
     const gelugur = ambilDb().desa.find((d) => d.nama === 'Sungai Gelugur')!
     const b = await ambilBerandaPublik(gelugur.slug)
-    expect(b.utama).toBeNull()
+    expect(b.blok.filter((x) => x.jenis === 'kabar')).toEqual([])
     expect(b.profilSingkat).toHaveLength(2)
     expect(b.profilSingkat?.[0]).toContain('Desa Sungai Gelugur')
     expect((await ambilBerandaPublik('sungaisialang')).profilSingkat).toBeNull()

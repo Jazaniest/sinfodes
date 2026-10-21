@@ -1,6 +1,9 @@
 import { z } from 'zod'
 import { lencanaPublikSchema } from '../indeks/lencana'
+import { lapisanPetaSchema } from '../peta/schema'
 import { jenisSuratWargaSchema } from '../warga/ajukan'
+import { blokSchema, type Blok, type JenisBlok } from '../website/blok'
+import { ID_MOTIF } from '../website/motif'
 import { agendaSchema, KATEGORI_ARTIKEL, KATEGORI_POTENSI, kreditFotoSchema, pengumumanSchema } from '../website/schema'
 import { temaDasarSchema } from '../website/tema'
 import { desaSchema } from '../wilayah/schema'
@@ -8,6 +11,10 @@ import { desaSchema } from '../wilayah/schema'
 const waktu = z.iso.datetime({ offset: true })
 const tanggal = z.iso.date()
 const jumlah = z.number().int().min(0)
+
+/** Satu baris menu website yang sudah diselesaikan (SPEC-V0.2 11.4): label, tujuan, dan tanda tautan luar. */
+export const itemMenuPublikSchema = z.object({ label: z.string(), href: z.string(), luar: z.boolean() })
+export type ItemMenuPublik = z.infer<typeof itemMenuPublikSchema>
 
 /** GET /publik/:slug: identitas dan tampilan untuk kepala dan kaki semua halaman website desa (SPEC §9). */
 export const identitasPublikSchema = desaSchema
@@ -20,6 +27,8 @@ export const identitasPublikSchema = desaSchema
     tema: temaDasarSchema.omit({ warga: true }),
     /** Lambang desa (data URL) untuk favicon dan logo cadangan; null berarti monogram dari inisial desa. */
     favicon: z.string().nullable(),
+    /** Menu website dari susunan terbit, dengan Beranda selalu pertama (7F-1). */
+    menu: z.array(itemMenuPublikSchema),
   })
 export type IdentitasPublik = z.infer<typeof identitasPublikSchema>
 
@@ -59,19 +68,51 @@ export const ringkasPotensiSchema = z.object({
 export type RingkasPotensi = z.infer<typeof ringkasPotensiSchema>
 
 /** GET /publik/:slug/beranda (SPEC §9). */
+/**
+ * Sumber data per jenis blok (SPEC-V0.2 11.4): blok bersumber diisi server dari modul terkait; blok lain (`z.undefined()`)
+ * hanya memakai `isi` yang tersimpan di susunan.
+ */
+export const DATA_BLOK = {
+  sampul: z.object({ nama: z.string(), sampul: fotoPublikSchema.nullable() }),
+  kabar: z.object({ artikel: z.array(ringkasArtikelSchema) }),
+  layanan: z.undefined(),
+  angka: z.object({ nama: z.string(), angka: angkaDesaSchema, sampul: fotoPublikSchema.nullable() }),
+  apbdes: z.object({ tahun: z.number().int(), pendapatan: anggaranRealisasiSchema, belanja: anggaranRealisasiSchema }),
+  'pengumuman-agenda': z.object({ pengumuman: z.array(pengumumanPublikSchema), agenda: z.array(agendaPublikSchema) }),
+  galeri: z.object({ foto: z.array(fotoPublikSchema) }),
+  peta: z.object({ lapisan: lapisanPetaSchema }),
+  potensi: z.object({ potensi: z.array(ringkasPotensiSchema) }),
+  video: z.undefined(),
+  sambutan: z.undefined(),
+  teks: z.undefined(),
+  ajakan: z.object({ href: z.string() }),
+  kontak: identitasPublikSchema.pick({ nama: true, alamatKantor: true, telepon: true, surel: true, jamLayanan: true }),
+  lencana: z.object({ lencana: z.array(lencanaPublikSchema) }),
+  pemisah: z.object({ motif: z.enum(ID_MOTIF) }),
+} as const satisfies Record<JenisBlok, z.ZodType>
+
+type DataBlok<J extends JenisBlok> = z.infer<(typeof DATA_BLOK)[J]>
+
+/** Blok siap tampil (SPEC-V0.2 11.4): isi blok susunan ditambah `data` terisi server; `data` hanya untuk blok bersumber. */
+export type BlokTampil = {
+  [J in JenisBlok]: Extract<Blok, { jenis: J }> &
+    ([DataBlok<J>] extends [undefined] ? { data?: undefined } : { data: DataBlok<J> })
+}[JenisBlok]
+
+/** Blok dari API publik. Bagian `isi` divalidasi `blokSchema` dan `data` divalidasi per jenis di `DATA_BLOK`. */
+export const blokTampilSchema = z.custom<BlokTampil>((v) => {
+  const blok = blokSchema.safeParse(v)
+  return blok.success && DATA_BLOK[blok.data.jenis].safeParse((v as { data?: unknown }).data).success
+}, 'Blok tidak valid.')
+
+/** Halaman tambahan website desa (SPEC-V0.2 11.4): judul dan blok susunannya. */
+export const halamanPublikSchema = z.object({ judul: z.string(), blok: z.array(blokTampilSchema) })
+export type HalamanPublik = z.infer<typeof halamanPublikSchema>
+
 export const berandaPublikSchema = z.object({
-  utama: ringkasArtikelSchema.nullable(),
-  terbaru: z.array(ringkasArtikelSchema),
-  pengumuman: z.array(pengumumanPublikSchema),
-  agenda: z.array(agendaPublikSchema),
-  angka: angkaDesaSchema,
-  sampul: fotoPublikSchema.nullable(),
-  /** Cuplikan APBDes terbaru (SPEC §9: MiniBar pendapatan dan belanja); null bila desa belum mengumumkan APBDes. */
-  apbdes: z.object({ tahun: z.number().int(), pendapatan: anggaranRealisasiSchema, belanja: anggaranRealisasiSchema }).nullable(),
-  potensi: z.array(ringkasPotensiSchema),
-  /** Lencana juara dari periode tutup terakhir yang tidak disembunyikan desa, paling banyak 6 (SPEC-V0.2 §9.6). */
-  lencana: z.array(lencanaPublikSchema),
-  /** Profil singkat dua paragraf untuk desa rekaman tanpa kabar maupun pengumuman (SPEC-V0.2 §13); null untuk desa lain. */
+  /** Blok susunan beranda yang sudah berisi data (7F-1). Blok kosong tidak dikirim. */
+  blok: z.array(blokTampilSchema),
+  /** Profil singkat dua paragraf untuk desa rekaman tanpa kabar maupun pengumuman (SPEC-V0.2 13); null untuk desa lain. */
   profilSingkat: z.array(z.string()).nullable(),
 })
 export type BerandaPublik = z.infer<typeof berandaPublikSchema>

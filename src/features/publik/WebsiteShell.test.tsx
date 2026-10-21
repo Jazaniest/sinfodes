@@ -98,6 +98,47 @@ describe('kerangka website desa (SPEC §9)', () => {
     expect(container.querySelector('figure')).toHaveAttribute('data-foto', 'penuh')
     expect(screen.getByRole('navigation', { name: 'Menu website desa' })).toBeInTheDocument()
   })
+  it('menu mengikuti identitas.menu; tautan luar dibuka di tab baru dengan penanda (7F-1)', () => {
+    const identitas = {
+      ...contohIdentitasPublik(),
+      menu: [
+        { label: 'Beranda', href: '/desa/sungaisialang', luar: false },
+        { label: 'Kabar', href: '/desa/sungaisialang/kabar', luar: false },
+        { label: 'Situs Kecamatan', href: 'https://kecamatan.example.id', luar: true },
+      ],
+    }
+    render(
+      <WebsiteShell identitas={identitas} jalur="/desa/sungaisialang/halaman/sejarah-kampung" tanggal="Kamis, 24 September 2026">
+        <p>Isi halaman</p>
+      </WebsiteShell>,
+    )
+    const nav = screen.getByRole('navigation', { name: 'Menu website desa' })
+    expect(within(nav).getAllByRole('link').map((a) => a.getAttribute('href'))).toEqual([
+      '/desa/sungaisialang', '/desa/sungaisialang/kabar', 'https://kecamatan.example.id',
+    ])
+    const luar = within(nav).getByRole('link', { name: /Situs Kecamatan/ })
+    expect(luar).toHaveAttribute('target', '_blank')
+    expect(luar).toHaveAttribute('rel', 'noopener noreferrer')
+    expect(luar).toHaveTextContent('(membuka situs lain)')
+    expect(within(nav).getByRole('link', { name: 'Kabar' })).not.toHaveAttribute('aria-current')
+  })
+  it('menu aktif juga untuk halaman tambahan di bawahnya (7F-1)', () => {
+    const identitas = {
+      ...contohIdentitasPublik(),
+      menu: [
+        { label: 'Beranda', href: '/desa/sungaisialang', luar: false },
+        { label: 'Sejarah Kampung', href: '/desa/sungaisialang/halaman/sejarah-kampung', luar: false },
+      ],
+    }
+    render(
+      <WebsiteShell identitas={identitas} jalur="/desa/sungaisialang/halaman/sejarah-kampung" tanggal="Kamis, 24 September 2026">
+        <p>Isi halaman</p>
+      </WebsiteShell>,
+    )
+    const nav = screen.getByRole('navigation', { name: 'Menu website desa' })
+    expect(within(nav).getByRole('link', { name: 'Sejarah Kampung' })).toHaveAttribute('aria-current', 'page')
+    expect(within(nav).getByRole('link', { name: 'Beranda' })).not.toHaveAttribute('aria-current')
+  })
   it('tema bawaan: kepala warta dan foto berbingkai', () => {
     const { container } = render(
       <WebsiteShell identitas={contohIdentitasPublik()} jalur="/desa/sungaisialang" tanggal="Kamis, 24 September 2026">

@@ -2,7 +2,7 @@ import { queryOptions } from '@tanstack/react-query'
 import { z } from 'zod'
 import { daftarSchema } from '@/domain/api'
 import {
-  artikelPublikSchema, berandaPublikSchema, hasilVerifikasiSchema, identitasPublikSchema, kreditFotoPublikSchema,
+  artikelPublikSchema, berandaPublikSchema, halamanPublikSchema, hasilVerifikasiSchema, identitasPublikSchema, kreditFotoPublikSchema,
   layananPublikSchema, ringkasArtikelSchema,
 } from '@/domain/publik/schema'
 import type { KategoriArtikel } from '@/domain/website/schema'
@@ -15,6 +15,7 @@ export const kunciPublik = {
   semua: ['publik'] as const,
   identitas: (slug: string) => ['publik', slug, 'identitas'] as const,
   beranda: (slug: string) => ['publik', slug, 'beranda'] as const,
+  halaman: (slug: string, nama: string) => ['publik', slug, 'halaman', nama] as const,
   kabar: (slug: string, kategori: KategoriArtikel | null) => ['publik', slug, 'kabar', kategori ?? 'semua'] as const,
   artikel: (slug: string, artikel: string) => ['publik', slug, 'artikel', artikel] as const,
   layanan: (slug: string) => ['publik', slug, 'layanan'] as const,
@@ -36,6 +37,12 @@ export const ambilBerandaPublik = (slug: string, signal?: AbortSignal) =>
   panggilApi('GET', jalurPublik(slug, '/beranda'), { skema: berandaPublikSchema, signal, sesi: null })
 export const opsiBerandaPublik = (slug: string) =>
   queryOptions({ queryKey: kunciPublik.beranda(slug), queryFn: ({ signal }) => ambilBerandaPublik(slug, signal) })
+
+/** Halaman tambahan website desa (`/halaman/{nama}`), disusun dari blok seperti beranda (SPEC-V0.2 11.4). */
+export const ambilHalamanTambahan = (slug: string, nama: string, signal?: AbortSignal) =>
+  panggilApi('GET', jalurPublik(slug, `/halaman/${encodeURIComponent(nama)}`), { skema: halamanPublikSchema, signal, sesi: null })
+export const opsiHalamanTambahan = (slug: string, nama: string) =>
+  queryOptions({ queryKey: kunciPublik.halaman(slug, nama), queryFn: ({ signal }) => ambilHalamanTambahan(slug, nama, signal) })
 
 export const daftarKabarPublik = (slug: string, kategori: KategoriArtikel | null, signal?: AbortSignal) =>
   panggilApi('GET', jalurPublik(slug, '/kabar'), { skema: daftarSchema(ringkasArtikelSchema), query: { kategori }, signal, sesi: null })

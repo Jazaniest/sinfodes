@@ -1,7 +1,10 @@
 import { http, HttpResponse } from 'msw'
+import { z } from 'zod'
 import { waktuIsoWib } from '@/domain/format/tanggal'
 import { periksaTema } from '@/domain/website/kontras'
-import type { VersiSitus } from '@/domain/website/situs'
+import { susunanSchema } from '@/domain/website/susunan'
+import type { TemaDasar } from '@/domain/website/tema'
+import type { SitusDesa, VersiRiwayat, VersiSitus } from '@/domain/website/situs'
 import { samaDenganGaleri } from '@/domain/website/galeri-dasar'
 import { temaDasarSchema } from '@/domain/website/tema'
 import { ambilDb, ubahDb } from '../db'
@@ -20,7 +23,54 @@ export function versiTerbit(db: DbDemo, desaId: string): VersiSitus {
   return (db.situs.find((x) => x.desaId === desaId) ?? situsBawaan(desaId, db.tanggalAcuan)).terbit
 }
 
-/** Website Desa (SPEC §8): artikel, pengumuman, agenda, dan galeri hanya lihat; Tampilan bisa disimpan. */
+/** Tema valid (skema + kontras server); `idGaleri` dihitung ulang, tidak dipercaya dari klien (fokus review 2). */
+function sahkanTema(mentah: unknown): TemaDasar | Response {
+  const isian = temaDasarSchema.safeParse(mentah)
+  if (!isian.success) return balasIsianTidakValid(isian.error)
+  const gagal = periksaTema(isian.data).filter((p) => !p.lolos)
+  if (gagal.length > 0) {
+    const fields: Record<string, string> = {}
+    for (const p of gagal) fields[p.kunci === 'aksen-latar' ? 'warnaAksen' : 'warnaUtama'] ??= p.pesan ?? ''
+    return balasGalat('VALIDATION', gagal[0].pesan ?? 'Kontras warna belum cukup.', 422, fields)
+  }
+  return { ...isian.data, idGaleri: samaDenganGaleri(isian.data) }
+}
+
+/** `vrs_` + nomor berikutnya, dihitung dari semua versi dokumen desa itu. */
+function idVersiBaru(db: DbDemo, desaId: string): string {
+  const s = db.situs.find((x) => x.desaId === desaId)
+  const nomor = [s?.terbit.id, s?.draf?.id, ...(s?.riwayat ?? []).map((v) => v.id)]
+    .map((id) => Number(/^vrs_([0-9]+)$/.exec(id ?? '')?.[1] ?? 0))
+    .reduce((a, b) => Math.max(a, b), 0)
+  return `vrs_${nomor + 1}`
+}
+
+const dokumen = (db: DbDemo, desaId: string): SitusDesa => db.situs.find((x) => x.desaId === desaId) ?? situsBawaan(desaId, db.tanggalAcuan)
+
+/** Versi riwayat tanpa gambar data URL besar: `logo`, `sampul`, dan `fotoLatar` diganti penanda `true`/`null`. */
+function kePenanda(v: VersiSitus): VersiRiwayat {
+  return {
+    ...v,
+    tema: {
+      ...v.tema,
+      logo: v.tema.logo ? true : null,
+      sampul: v.tema.sampul ? true : null,
+      warga: { ...v.tema.warga, fotoLatar: v.tema.warga.fotoLatar ? true : null },
+    },
+  }
+}
+
+const skemaCatatan = z.object({
+  catatan: z
+    .string()
+    .trim()
+    .max(200, 'Paling banyak 200 karakter.')
+    .transform((s) => (s === '' ? null : s))
+    .nullable()
+    .default(null),
+})
+
+/** Website Desa (SPEC A8): artikel, pengumuman, agenda, dan galeri hanya lihat; Tampilan bisa disimpan. */
 export const handlerWebsite = [
   http.get(
     `${API}/website/artikel`,
@@ -63,7 +113,8 @@ export const handlerWebsite = [
     denganJaringan(({ request }) => {
       const pengguna = butuhPengelola(request)
       if (pengguna instanceof Response) return pengguna
-      return HttpResponse.json({ terbit: versiTerbit(ambilDb(), pengguna.desaId) })
+      const dok = dokumen(ambilDb(), pengguna.desaId)
+      return HttpResponse.json({ terbit: dok.terbit, draf: dok.draf })
     }),
   ),
   http.put(
@@ -71,24 +122,105 @@ export const handlerWebsite = [
     denganJaringan(async ({ request }) => {
       const pengguna = butuhPengelola(request)
       if (pengguna instanceof Response) return pengguna
-      const isian = temaDasarSchema.safeParse(await bacaJson(request))
-      if (!isian.success) return balasIsianTidakValid(isian.error)
-      // Kontras ditegakkan di sini juga, bukan hanya di layar (fokus review 2).
-      const gagal = periksaTema(isian.data).filter((p) => !p.lolos)
-      if (gagal.length > 0) {
-        const fields: Record<string, string> = {}
-        for (const p of gagal) fields[p.kunci === 'aksen-latar' ? 'warnaAksen' : 'warnaUtama'] ??= p.pesan ?? ''
-        return balasGalat('VALIDATION', gagal[0].pesan ?? 'Kontras warna belum cukup.', 422, fields)
-      }
-      // Tema galeri terpasang dihitung di sini, bukan dipercaya dari klien: null begitu satu pengaturan berbeda dari tema.
-      const tema = { ...isian.data, idGaleri: samaDenganGaleri(isian.data) }
-      const baru: VersiSitus = { tema, diperbarui: waktuIsoWib(new Date()), oleh: pelakuDari(pengguna) }
+      const tema = sahkanTema(await bacaJson(request))
+      if (tema instanceof Response) return tema
+      const diperbarui = waktuIsoWib(new Date())
+      const oleh = pelakuDari(pengguna)
+      const db = ambilDb()
+      const ada = db.situs.find((x) => x.desaId === pengguna.desaId)
+      const baru: VersiSitus = { ...(ada?.terbit ?? situsBawaan(pengguna.desaId, db.tanggalAcuan).terbit), tema, diperbarui, oleh }
       ubahDb((d) => {
-        const ada = d.situs.find((x) => x.desaId === pengguna.desaId)
-        if (ada) ada.terbit = baru
+        const dok = d.situs.find((x) => x.desaId === pengguna.desaId)
+        if (dok) dok.terbit = baru
         else d.situs.push({ desaId: pengguna.desaId, terbit: baru, draf: null, riwayat: [] })
       })
       return HttpResponse.json(baru)
+    }),
+  ),
+  http.put(
+    `${API}/website/situs/draf`,
+    denganJaringan(async ({ request }) => {
+      const pengguna = butuhPengelola(request)
+      if (pengguna instanceof Response) return pengguna
+      const masukan = z.object({ tema: z.unknown(), susunan: susunanSchema }).safeParse(await bacaJson(request))
+      if (!masukan.success) return balasIsianTidakValid(masukan.error)
+      const tema = sahkanTema(masukan.data.tema)
+      if (tema instanceof Response) return tema
+      const db = ambilDb()
+      const draf: VersiSitus = {
+        id: idVersiBaru(db, pengguna.desaId),
+        tema,
+        susunan: masukan.data.susunan,
+        diperbarui: waktuIsoWib(new Date()),
+        oleh: pelakuDari(pengguna),
+        catatan: null,
+      }
+      ubahDb((d) => {
+        const ada = d.situs.find((x) => x.desaId === pengguna.desaId)
+        if (ada) ada.draf = draf
+        else d.situs.push({ desaId: pengguna.desaId, terbit: situsBawaan(pengguna.desaId, d.tanggalAcuan).terbit, draf, riwayat: [] })
+      })
+      return HttpResponse.json(draf)
+    }),
+  ),
+  http.delete(
+    `${API}/website/situs/draf`,
+    denganJaringan(({ request }) => {
+      const pengguna = butuhPengelola(request)
+      if (pengguna instanceof Response) return pengguna
+      const terbit = dokumen(ambilDb(), pengguna.desaId).terbit
+      ubahDb((d) => {
+        const ada = d.situs.find((x) => x.desaId === pengguna.desaId)
+        if (ada) ada.draf = null
+      })
+      return HttpResponse.json({ terbit, draf: null })
+    }),
+  ),
+  http.post(
+    `${API}/website/situs/terbitkan`,
+    denganJaringan(async ({ request }) => {
+      const pengguna = butuhPengelola(request)
+      if (pengguna instanceof Response) return pengguna
+      const isian = skemaCatatan.safeParse(await bacaJson(request))
+      if (!isian.success) return balasIsianTidakValid(isian.error)
+      const dok = dokumen(ambilDb(), pengguna.desaId)
+      if (!dok.draf) return balasGalat('CONFLICT', 'Tidak ada draf untuk diterbitkan.', 409)
+      const terbit: VersiSitus = { ...dok.draf, diperbarui: waktuIsoWib(new Date()), oleh: pelakuDari(pengguna), catatan: isian.data.catatan }
+      ubahDb((d) => {
+        const ada = d.situs.find((x) => x.desaId === pengguna.desaId)
+        if (!ada) return
+        ada.riwayat.unshift(ada.terbit)
+        ada.riwayat = ada.riwayat.slice(0, 20)
+        ada.terbit = terbit
+        ada.draf = null
+      })
+      return HttpResponse.json(terbit)
+    }),
+  ),
+  http.get(
+    `${API}/website/situs/riwayat`,
+    denganJaringan(({ request }) => {
+      const pengguna = butuhPengelola(request)
+      if (pengguna instanceof Response) return pengguna
+      return HttpResponse.json({ data: dokumen(ambilDb(), pengguna.desaId).riwayat.map(kePenanda) })
+    }),
+  ),
+  http.post(
+    `${API}/website/situs/riwayat/:id/pulihkan`,
+    denganJaringan(({ params, request }) => {
+      const pengguna = butuhPengelola(request)
+      if (pengguna instanceof Response) return pengguna
+      const db = ambilDb()
+      const versi = dokumen(db, pengguna.desaId).riwayat.find((v) => v.id === String(params.id))
+      if (!versi) return balasGalat('NOT_FOUND', 'Versi tidak ditemukan.', 404)
+      // Pulihkan menyalin versi lama menjadi draf; website belum berubah sampai diterbitkan.
+      const draf: VersiSitus = { ...structuredClone(versi), id: idVersiBaru(db, pengguna.desaId), diperbarui: waktuIsoWib(new Date()) }
+      ubahDb((d) => {
+        const ada = d.situs.find((x) => x.desaId === pengguna.desaId)
+        if (ada) ada.draf = draf
+        else d.situs.push({ desaId: pengguna.desaId, terbit: situsBawaan(pengguna.desaId, d.tanggalAcuan).terbit, draf, riwayat: [] })
+      })
+      return HttpResponse.json(draf)
     }),
   ),
 ]

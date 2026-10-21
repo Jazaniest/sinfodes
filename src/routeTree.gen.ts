@@ -76,6 +76,7 @@ import { Route as AdminPanelWebsiteGaleriRouteImport } from './routes/admin/_pan
 import { Route as AdminPanelWebsiteLencanaRouteImport } from './routes/admin/_panel/website/lencana'
 import { Route as AdminPanelWebsitePengumumanRouteImport } from './routes/admin/_panel/website/pengumuman'
 import { Route as AdminPanelWebsiteTampilanRouteImport } from './routes/admin/_panel/website/tampilan'
+import { Route as DesaSlugHalamanNamaRouteImport } from './routes/desa/$slug/halaman/$nama'
 import { Route as DesaSlugKabarIndexRouteImport } from './routes/desa/$slug/kabar/index'
 import { Route as DesaSlugKabarArtikelRouteImport } from './routes/desa/$slug/kabar/$artikel'
 import { Route as KabupatenAdminDasborIndexRouteImport } from './routes/kabupaten/admin/_dasbor/index'
@@ -477,6 +478,11 @@ const AdminPanelWebsiteTampilanRoute =
     path: '/website/tampilan',
     getParentRoute: () => AdminPanelRoute,
   } as any)
+const DesaSlugHalamanNamaRoute = DesaSlugHalamanNamaRouteImport.update({
+  id: '/halaman/$nama',
+  path: '/halaman/$nama',
+  getParentRoute: () => DesaSlugRoute,
+} as any)
 const DesaSlugKabarIndexRoute = DesaSlugKabarIndexRouteImport.update({
   id: '/kabar/',
   path: '/kabar/',
@@ -823,6 +829,7 @@ export interface FileRoutesByFullPath {
   '/admin/website/lencana': typeof AdminPanelWebsiteLencanaRoute
   '/admin/website/pengumuman': typeof AdminPanelWebsitePengumumanRoute
   '/admin/website/tampilan': typeof AdminPanelWebsiteTampilanRoute
+  '/desa/$slug/halaman/$nama': typeof DesaSlugHalamanNamaRoute
   '/desa/$slug/kabar/$artikel': typeof DesaSlugKabarArtikelRoute
   '/kabupaten/admin/data-gabungan': typeof KabupatenAdminDasborDataGabunganRoute
   '/kabupaten/admin/indeks': typeof KabupatenAdminDasborIndeksRoute
@@ -937,6 +944,7 @@ export interface FileRoutesByTo {
   '/admin/website/lencana': typeof AdminPanelWebsiteLencanaRoute
   '/admin/website/pengumuman': typeof AdminPanelWebsitePengumumanRoute
   '/admin/website/tampilan': typeof AdminPanelWebsiteTampilanRoute
+  '/desa/$slug/halaman/$nama': typeof DesaSlugHalamanNamaRoute
   '/desa/$slug/kabar/$artikel': typeof DesaSlugKabarArtikelRoute
   '/kabupaten/admin/data-gabungan': typeof KabupatenAdminDasborDataGabunganRoute
   '/kabupaten/admin/indeks': typeof KabupatenAdminDasborIndeksRoute
@@ -1057,6 +1065,7 @@ export interface FileRoutesById {
   '/admin/_panel/website/lencana': typeof AdminPanelWebsiteLencanaRoute
   '/admin/_panel/website/pengumuman': typeof AdminPanelWebsitePengumumanRoute
   '/admin/_panel/website/tampilan': typeof AdminPanelWebsiteTampilanRoute
+  '/desa/$slug/halaman/$nama': typeof DesaSlugHalamanNamaRoute
   '/desa/$slug/kabar/$artikel': typeof DesaSlugKabarArtikelRoute
   '/kabupaten/admin/_dasbor/data-gabungan': typeof KabupatenAdminDasborDataGabunganRoute
   '/kabupaten/admin/_dasbor/indeks': typeof KabupatenAdminDasborIndeksRoute
@@ -1178,6 +1187,7 @@ export interface FileRouteTypes {
     | '/admin/website/lencana'
     | '/admin/website/pengumuman'
     | '/admin/website/tampilan'
+    | '/desa/$slug/halaman/$nama'
     | '/desa/$slug/kabar/$artikel'
     | '/kabupaten/admin/data-gabungan'
     | '/kabupaten/admin/indeks'
@@ -1292,6 +1302,7 @@ export interface FileRouteTypes {
     | '/admin/website/lencana'
     | '/admin/website/pengumuman'
     | '/admin/website/tampilan'
+    | '/desa/$slug/halaman/$nama'
     | '/desa/$slug/kabar/$artikel'
     | '/kabupaten/admin/data-gabungan'
     | '/kabupaten/admin/indeks'
@@ -1411,6 +1422,7 @@ export interface FileRouteTypes {
     | '/admin/_panel/website/lencana'
     | '/admin/_panel/website/pengumuman'
     | '/admin/_panel/website/tampilan'
+    | '/desa/$slug/halaman/$nama'
     | '/desa/$slug/kabar/$artikel'
     | '/kabupaten/admin/_dasbor/data-gabungan'
     | '/kabupaten/admin/_dasbor/indeks'
@@ -1964,6 +1976,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPanelWebsiteTampilanRouteImport
       parentRoute: typeof AdminPanelRoute
     }
+    '/desa/$slug/halaman/$nama': {
+      id: '/desa/$slug/halaman/$nama'
+      path: '/halaman/$nama'
+      fullPath: '/desa/$slug/halaman/$nama'
+      preLoaderRoute: typeof DesaSlugHalamanNamaRouteImport
+      parentRoute: typeof DesaSlugRoute
+    }
     '/desa/$slug/kabar/': {
       id: '/desa/$slug/kabar/'
       path: '/kabar'
@@ -2457,6 +2476,7 @@ interface DesaSlugRouteChildren {
   DesaSlugTransparansiRoute: typeof DesaSlugTransparansiRoute
   DesaSlugVerifikasiRoute: typeof DesaSlugVerifikasiRoute
   DesaSlugIndexRoute: typeof DesaSlugIndexRoute
+  DesaSlugHalamanNamaRoute: typeof DesaSlugHalamanNamaRoute
   DesaSlugKabarArtikelRoute: typeof DesaSlugKabarArtikelRoute
   DesaSlugKabarIndexRoute: typeof DesaSlugKabarIndexRoute
 }
@@ -2470,6 +2490,7 @@ const DesaSlugRouteChildren: DesaSlugRouteChildren = {
   DesaSlugTransparansiRoute: DesaSlugTransparansiRoute,
   DesaSlugVerifikasiRoute: DesaSlugVerifikasiRoute,
   DesaSlugIndexRoute: DesaSlugIndexRoute,
+  DesaSlugHalamanNamaRoute: DesaSlugHalamanNamaRoute,
   DesaSlugKabarArtikelRoute: DesaSlugKabarArtikelRoute,
   DesaSlugKabarIndexRoute: DesaSlugKabarIndexRoute,
 }
