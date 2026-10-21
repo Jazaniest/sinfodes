@@ -253,6 +253,20 @@ Pekerjaan v0.2.0 (tahap 7A-7H) dicatat di sini selama berjalan di branch `develo
 - Overlay dialog dan laci memakai token `--color-tirai`, bukan `bg-tinta/30`, supaya tetap gelap di mode gelap.
 - Data demo naik ke versi 29.
 
+### Ditambahkan (7F-1: susunan blok, halaman tambahan, menu website)
+
+- **Beranda dari susunan blok:** website desa kini dirender dari susunan blok terbit. Katalog 16 jenis blok (Sampul, Kabar terbaru, Layanan cepat, Angka desa, APBDes ringkas, Pengumuman & agenda, Galeri, Peta, Potensi, Video, Sambutan Kades, Teks, Ajakan, Kontak & jam layanan, Lencana juara, Pemisah motif) dengan 2-3 varian tiap jenis, plus lebar Penuh/Lebar/Sempit (Lebar lalu Sempit menjadi pasangan berdampingan di layar lebar). Susunan bawaan Warta mereproduksi beranda v0.1, dan delapan tema galeri mempunyai susunan berandanya sendiri yang bisa dipasang bersama temanya.
+- **Halaman tambahan** `/halaman/{nama}` (paling banyak 10, 30 blok per halaman) dengan menu website yang bisa diatur urutannya: halaman sistem bisa disembunyikan (kecuali Layanan dan Cek keaslian yang wajib tampil), halaman tambahan bisa dikeluarkan dari menu, dan paling banyak 2 tautan luar yang dibuka di tab baru.
+- **Dokumen `situs` draf, terbit, dan riwayat** per desa: `PUT /website/situs/draf`, `DELETE draf`, `POST terbitkan` dengan catatan, `GET riwayat` (20 terbitan terakhir, gambar diganti penanda), dan `POST riwayat/:id/pulihkan` menjadi draf. Website publik hanya membaca versi terbit.
+- **API publik blok:** `GET /publik/:slug/beranda` dan `GET /publik/:slug/halaman/:nama` mengembalikan daftar blok yang sudah berisi datanya; blok kosong, tersembunyi, dan Ajakan ke halaman yang sudah dihapus tidak dikirim. `GET /publik/:slug` membawa `menu` yang sudah diselesaikan.
+- **Blok Video YouTube** dengan gambar pratinjau `i.ytimg.com` dan tombol *Putar video*; iframe `youtube-nocookie` baru dimuat setelah diklik.
+- Nama bagian kontrak tema v1 bertambah: `blok-sampul`, `blok-pengumuman-agenda`, `blok-galeri`, `blok-peta`, `blok-video`, `blok-sambutan`, `blok-teks`, `blok-ajakan`, `blok-kontak`, `blok-lencana`, dan `blok-pemisah`.
+
+### Diubah (7F-1)
+
+- `versiSitusSchema` mendapat `id` (`vrs_{n}`), `susunan`, dan `catatan`; respons `GET /website/situs` kini `{ terbit, draf }`.
+- Data demo naik ke versi 30: setiap situs desa memperoleh susunan beranda dari temanya (Warta untuk Sungai Sialang dan Tanjung Lamo).
+
 ## [0.1.0] - 2026-10-16
 
 Demo tahap 1: frontend sungguhan dengan API tiruan (MSW) dan data dummy Desa Sungai Sialang, Kabupaten Pelalawan.

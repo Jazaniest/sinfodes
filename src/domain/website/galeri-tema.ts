@@ -6,24 +6,26 @@ import pratinjauRimba from '@/assets/tema/rimba.webp'
 import pratinjauSerambi from '@/assets/tema/serambi.webp'
 import pratinjauTenun from '@/assets/tema/tenun.webp'
 import pratinjauWarta from '@/assets/tema/warta.webp'
+import type { Blok } from './blok'
 import { DASAR_TEMA, type DasarTema } from './galeri-dasar'
+import { SUSUNAN_BERANDA_TEMA } from './susunan'
 import type { IdTema } from './tema'
 
 export { pasangTema, samaDenganGaleri, SLUG_PRATINJAU_TEMA, type DasarTema } from './galeri-dasar'
 
-/** Satu tema galeri (SPEC-V0.2 §11.3). `susunanBeranda` baru diisi di 7F. */
+/** Satu tema galeri (SPEC-V0.2 11.3). `susunanBeranda` adalah susunan saran beranda tema ini (7F-1). */
 export type TemaGaleri = {
   id: IdTema
   nama: string
   keterangan: string
   dasar: DasarTema
-  susunanBeranda: null
+  susunanBeranda: Blok[]
   /** Screenshot sungguhan website Sungai Sialang dengan tema ini, 1280 x 800. */
   pratinjau: string
 }
 
 const tema = (id: IdTema, nama: string, keterangan: string, pratinjau: string): TemaGaleri => ({
-  id, nama, keterangan, dasar: DASAR_TEMA[id], susunanBeranda: null, pratinjau,
+  id, nama, keterangan, dasar: DASAR_TEMA[id], susunanBeranda: SUSUNAN_BERANDA_TEMA[id], pratinjau,
 })
 
 /** Delapan tema galeri, urutan tampil. Warta adalah tampilan v0.1 dan menjadi bawaan. */

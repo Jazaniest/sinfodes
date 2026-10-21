@@ -5,6 +5,7 @@ import type {
 } from '@/domain/website/schema'
 import type { SitusDesa } from '@/domain/website/situs'
 import { pasangTema } from '@/domain/website/galeri-dasar'
+import { menuBawaan, SUSUNAN_BERANDA_TEMA, susunanBawaan, type Susunan } from '@/domain/website/susunan'
 import { TEMA_WARTA_BAWAAN, type IdTema } from '@/domain/website/tema'
 import type { Desa, Dusun } from '@/domain/wilayah/schema'
 import { NASKAH_ARTIKEL } from '../data/artikel-demo'
@@ -110,17 +111,28 @@ const nomor2 = (i: number) => String(i + 1).padStart(2, '0')
 export function situsBawaan(desaId: string, diperbarui: string): SitusDesa {
   return {
     desaId,
-    terbit: { tema: { ...TEMA_WARTA_BAWAAN('#1F4E79'), motif: 'garis' }, diperbarui, oleh: { id: 'sinfodes', nama: 'Sinfodes' } },
+    terbit: {
+      id: 'vrs_1', tema: { ...TEMA_WARTA_BAWAAN('#1F4E79'), motif: 'garis' }, susunan: susunanBawaan(),
+      diperbarui, oleh: { id: 'sinfodes', nama: 'Sinfodes' }, catatan: null,
+    },
     draf: null,
     riwayat: [],
   }
 }
 
 /** Situs desa fiktif dengan tema galeri `id` (SPEC-V0.2 §13): Warta bawaan tanpa logo dan sampul, lalu tema dipasang. */
+/** Susunan beranda tema galeri `id` dengan menu bawaan (migrasi 7F-1). */
+export function susunanTema(id: IdTema): Susunan {
+  return { beranda: [...SUSUNAN_BERANDA_TEMA[id]], halaman: [], menu: menuBawaan() }
+}
+
 export function situsGaleri(desaId: string, diperbarui: string, id: IdTema): SitusDesa {
   return {
     desaId,
-    terbit: { tema: pasangTema(TEMA_WARTA_BAWAAN('#1F4E79'), id), diperbarui, oleh: { id: 'sinfodes', nama: 'Sinfodes' } },
+    terbit: {
+      id: 'vrs_1', tema: pasangTema(TEMA_WARTA_BAWAAN('#1F4E79'), id), susunan: susunanTema(id),
+      diperbarui, oleh: { id: 'sinfodes', nama: 'Sinfodes' }, catatan: null,
+    },
     draf: null,
     riwayat: [],
   }
@@ -195,9 +207,12 @@ export function bangkitkanWebsite(o: { desa: Desa; dusun: readonly Dusun[]; peng
       desaId: o.desa.id,
       // Tampilan v0.1 (Biru tinta, Pucuk rebung, sampul Sungai Kampar, tanpa logo) menjadi tema Dasar.
       terbit: {
+        id: 'vrs_1',
         tema: { ...TEMA_WARTA_BAWAAN('#1F4E79'), sampul: '/demo/foto/sampul-sungai-kampar.jpg', idGaleri: 'warta' },
+        susunan: susunanBawaan(),
         diperbarui: `${geser(-30)}T10:00:00+07:00`,
         oleh: { id: 'pgn_rosmiati', nama: nama('operator') },
+        catatan: null,
       },
       draf: null,
       riwayat: [],

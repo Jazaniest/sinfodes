@@ -4,7 +4,8 @@ import { lencanaAdminSchema } from '@/domain/indeks/lencana'
 import {
   agendaSchema, artikelSchema, fotoGaleriSchema, pengumumanSchema,
 } from '@/domain/website/schema'
-import { situsSchema, versiSitusSchema } from '@/domain/website/situs'
+import { riwayatSitusSchema, situsSchema, versiSitusSchema } from '@/domain/website/situs'
+import { type Susunan } from '@/domain/website/susunan'
 import type { TemaDasar } from '@/domain/website/tema'
 import { panggilApi } from './client'
 
@@ -20,6 +21,7 @@ export const kunciWebsite = {
   agenda: ['website', 'agenda'] as const,
   galeri: ['website', 'galeri'] as const,
   situs: ['website', 'situs'] as const,
+  riwayat: ['website', 'riwayat'] as const,
   lencana: ['website', 'lencana'] as const,
 }
 
@@ -49,6 +51,32 @@ export function ambilSitus(signal?: AbortSignal) {
 export const opsiSitus = () => queryOptions({ queryKey: kunciWebsite.situs, queryFn: ({ signal }) => ambilSitus(signal) })
 export function simpanTema(tema: TemaDasar) {
   return panggilApi('PUT', '/website/situs/tema', { skema: versiSitusSchema, body: tema })
+}
+
+/** Simpan draf tampilan (tema + susunan); website publik baru berubah setelah `terbitkan`. */
+export function simpanDraf(tema: TemaDasar, susunan: Susunan) {
+  return panggilApi('PUT', '/website/situs/draf', { skema: versiSitusSchema, body: { tema, susunan } })
+}
+
+/** Buang draf: kembali ke versi terbit. */
+export function buangDraf() {
+  return panggilApi('DELETE', '/website/situs/draf', { skema: situsSchema })
+}
+
+/** Terbitkan draf menjadi versi tayang; versi terbit lama masuk riwayat. */
+export function terbitkan(catatan: string | null) {
+  return panggilApi('POST', '/website/situs/terbitkan', { skema: versiSitusSchema, body: { catatan } })
+}
+
+/** 20 terbitan terakhir (terbaru dulu), tanpa gambar data URL. */
+export function daftarRiwayat(signal?: AbortSignal) {
+  return panggilApi('GET', '/website/situs/riwayat', { skema: riwayatSitusSchema, signal })
+}
+export const opsiRiwayat = () => queryOptions({ queryKey: kunciWebsite.riwayat, queryFn: ({ signal }) => daftarRiwayat(signal) })
+
+/** Salin versi riwayat menjadi draf; website belum berubah sampai diterbitkan. */
+export function pulihkanVersi(id: string) {
+  return panggilApi('POST', `/website/situs/riwayat/${id}/pulihkan`, { skema: versiSitusSchema })
 }
 
 const daftarLencanaSchema = daftarSchema(lencanaAdminSchema)

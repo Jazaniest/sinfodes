@@ -8,6 +8,12 @@ import { ambilDb } from '../db'
 
 pakaiApiTiruan({ dbSegarTiapUji: true })
 
+/** Lencana di beranda publik sekarang lewat blok susunan (7F-1). */
+const lencanaBeranda = async (slug: string) => {
+  const b = await ambilBerandaPublik(slug)
+  return (b.blok.find((x) => x.jenis === 'lencana') as Extract<(typeof b.blok)[number], { jenis: 'lencana' }> | undefined)?.data.lencana ?? []
+}
+
 const kunciDilarang = (nilai: unknown, ditemukan = new Set<string>()): Set<string> => {
   if (Array.isArray(nilai)) nilai.forEach((x) => kunciDilarang(x, ditemukan))
   else if (nilai !== null && typeof nilai === 'object') {
@@ -29,17 +35,17 @@ describe('lencana: daftar, saklar tampil, dan bukti (rencana 7C-2 Tugas 4)', () 
     expect(daftar.every((l) => milik.has(l.kode))).toBe(true)
     expect(daftar).toHaveLength(milik.size)
 
-    const sebelum = (await ambilBerandaPublik('sungaisialang')).lencana
+    const sebelum = (await lencanaBeranda('sungaisialang'))
     expect(sebelum.length).toBeGreaterThan(0)
     const sasaran = sebelum[0]
     const diubah = await ubahTampilLencana(sasaran.kode, false)
     expect(diubah).toMatchObject({ kode: sasaran.kode, tampil: false })
-    const sesudah = (await ambilBerandaPublik('sungaisialang')).lencana
+    const sesudah = (await lencanaBeranda('sungaisialang'))
     expect(sesudah.map((l) => l.kode)).not.toContain(sasaran.kode)
     expect((await ambilBuktiLencana(sasaran.kode)).kalimat).toBe(sasaran.kalimat)
 
     await ubahTampilLencana(sasaran.kode, true)
-    expect((await ambilBerandaPublik('sungaisialang')).lencana.map((l) => l.kode)).toContain(sasaran.kode)
+    expect((await lencanaBeranda('sungaisialang')).map((l) => l.kode)).toContain(sasaran.kode)
   })
   it('Kades tidak berhak: GET dan PUT 403 dengan pesan persis', async () => {
     masukSebagai(AKUN_UJI.kades)
@@ -67,10 +73,11 @@ describe('lencana: daftar, saklar tampil, dan bukti (rencana 7C-2 Tugas 4)', () 
   })
   it('beranda publik: paling banyak 6 lencana, semuanya dari periode tutup terakhir per musim, tanpa kunci terlarang', async () => {
     const beranda = await ambilBerandaPublik('sungaisialang')
-    expect(beranda.lencana.length).toBeLessThanOrEqual(6)
+    const lencana = (beranda.blok.find((x) => x.jenis === 'lencana') as Extract<(typeof beranda.blok)[number], { jenis: 'lencana' }> | undefined)?.data.lencana ?? []
+    expect(lencana.length).toBeLessThanOrEqual(6)
     const terakhir: Record<string, string> = { bulanan: '2026-08', triwulan: '2026-T2', tahunan: '2025' }
-    for (const l of beranda.lencana) expect(l.periode.kode).toBe(terakhir[l.periode.musim])
-    expect(kunciDilarang(beranda.lencana).size).toBe(0)
-    expect(JSON.stringify(beranda.lencana)).not.toContain('2026-09')
+    for (const l of lencana) expect(l.periode.kode).toBe(terakhir[l.periode.musim])
+    expect(kunciDilarang(lencana).size).toBe(0)
+    expect(JSON.stringify(lencana)).not.toContain('2026-09')
   })
 })

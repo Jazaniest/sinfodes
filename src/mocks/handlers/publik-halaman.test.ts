@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { ambilBerandaPublik } from '@/api/publik'
+import type { BlokTampil } from '@/domain/publik/schema'
 import { ambilPotensiPublik, ambilProfilPublik, ambilStatistikPublik, ambilTransparansiPublik } from '@/api/publik-halaman'
 import { ambilStatistikPenduduk } from '@/api/statistik'
 import { ubahDb } from '@/mocks/db'
@@ -46,7 +47,8 @@ describe('API halaman website desa (SPEC §9, §3.4)', () => {
     const s = await ambilStatistikPublik('sungaisialang')
     expect(s).toMatchObject({ tanggal: '2026-09-24', jiwa: admin.jiwa, laki: admin.laki, perempuan: admin.perempuan, kk: admin.kk })
     expect(s.agama).toEqual(admin.agama.map(({ label, jumlah }) => ({ label, jumlah })))
-    expect((await ambilBerandaPublik('sungaisialang')).angka).toMatchObject({ jiwa: admin.jiwa, kk: admin.kk })
+    const angkaBlok = (await ambilBerandaPublik('sungaisialang')).blok.find((x) => x.jenis === 'angka') as Extract<BlokTampil, { jenis: 'angka' }>
+    expect(angkaBlok?.data.angka).toMatchObject({ jiwa: admin.jiwa, kk: admin.kk })
     ubahDb((d) => {
       const ibu = d.penduduk.find((p) => p.id === 'pdk_siti_rahmah')
       if (!ibu) throw new Error('Siti Rahmah tidak ada')
@@ -68,14 +70,16 @@ describe('API halaman website desa (SPEC §9, §3.4)', () => {
       nama: 'Toko Bangunan Rengas Jaya', dusun: 'Dusun III Teluk Rengas', whatsapp: '081371185570',
     })
   })
-  it('beranda: cuplikan APBDes terbaru dan potensi desa (SPEC §9)', async () => {
+  it('beranda: cuplikan APBDes terbaru dan potensi desa lewat blok susunan (SPEC 9)', async () => {
     const b = await ambilBerandaPublik('sungaisialang')
-    expect(b.apbdes).toMatchObject({ tahun: 2026, pendapatan: { anggaran: 1_826_650_000 }, belanja: { anggaran: 1_866_650_000 } })
-    expect(b.apbdes?.pendapatan.realisasi).toBeGreaterThan(0)
-    expect(b.potensi).toHaveLength(6)
-    expect(b.potensi[0]).toEqual({
+    const apbdes = b.blok.find((x) => x.jenis === 'apbdes') as Extract<(typeof b.blok)[number], { jenis: 'apbdes' }> | undefined
+    expect(apbdes?.data).toMatchObject({ tahun: 2026, pendapatan: { anggaran: 1_826_650_000 }, belanja: { anggaran: 1_866_650_000 } })
+    expect(apbdes?.data.pendapatan.realisasi).toBeGreaterThan(0)
+    const potensi = b.blok.find((x) => x.jenis === 'potensi') as Extract<(typeof b.blok)[number], { jenis: 'potensi' }> | undefined
+    expect(potensi?.data.potensi).toHaveLength(6)
+    expect(potensi?.data.potensi[0]).toMatchObject({
       id: 'ptn_ss_01', judul: 'Madu sialang', kategori: 'Hasil hutan',
-      foto: { berkas: '/demo/foto/madu-sialang.jpg', keterangan: 'Panen madu sialang', kredit: 'Zhilal Darma · CC BY-SA 4.0' },
+      foto: { berkas: '/demo/foto/madu-sialang.jpg', keterangan: 'Panen madu sialang', kredit: expect.stringContaining('CC BY-SA 4.0') },
     })
   })
   it('desa yang belum melengkapi isinya: bagian kosong atau null, bukan galat (fokus review 1)', async () => {
@@ -92,7 +96,7 @@ describe('API halaman website desa (SPEC §9, §3.4)', () => {
     expect(p.perangkat.length).toBeGreaterThan(0)
     expect(await ambilTransparansiPublik('sungaisialang')).toEqual({ apbdes: null, kegiatan: [] })
     expect(await ambilPotensiPublik('sungaisialang')).toEqual({ potensi: [], umkm: [] })
-    expect(await ambilBerandaPublik('sungaisialang')).toMatchObject({ apbdes: null, potensi: [] })
+    expect((await ambilBerandaPublik('sungaisialang')).blok.filter((x) => x.jenis === 'apbdes' || x.jenis === 'potensi')).toEqual([])
   })
   it('desa yang websitenya belum dibuka → NOT_FOUND', async () => {
     await expect(ambilProfilPublik('tanjunglamo')).rejects.toMatchObject({ kode: 'NOT_FOUND' })

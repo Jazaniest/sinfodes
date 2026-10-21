@@ -1,4 +1,5 @@
 import { useEffect, type CSSProperties, type ReactNode } from 'react'
+import { ArrowSquareOut } from '@phosphor-icons/react'
 import { Link } from 'react-aria-components'
 import { tautanWhatsapp } from '@/domain/format/whatsapp'
 import type { IdentitasPublik } from '@/domain/publik/schema'
@@ -10,7 +11,7 @@ import { pasangFavicon } from '@/ui/website/favicon'
 import { muatPasanganHuruf } from '@/ui/website/huruf'
 import { FotoKonteks } from '@/ui/website/foto-konteks'
 import { Nameplate } from '@/ui/website/Nameplate'
-import { menuPublik, menuPublikAktif } from './navigasi'
+import { menuPublikAktif } from './navigasi'
 
 type Props = {
   identitas: IdentitasPublik
@@ -52,15 +53,28 @@ export function WebsiteShell({ identitas: d, jalur, tanggal, children }: Props) 
           menu={
             <nav data-bagian="menu" aria-label="Menu website desa" className={cn(tema.kepala === 'ringkas' ? 'min-w-0 max-w-full' : 'mx-auto max-w-5xl')}>
               <ul className="flex gap-1 overflow-x-auto px-3 sm:px-4">
-                {menuPublik(d.slug).map((m) => (
+                {d.menu.map((m) => (
                   <li key={m.href} className="shrink-0">
-                    <Link
-                      href={m.href}
-                      aria-current={menuPublikAktif(m.href, jalur, d.slug) ? 'page' : undefined}
-                      className="inline-flex min-h-tombol items-center px-2 font-medium underline-offset-8 outline-none hover:text-biru aria-[current=page]:text-biru aria-[current=page]:underline aria-[current=page]:decoration-2 data-focus-visible:outline-2 data-focus-visible:outline-solid data-focus-visible:-outline-offset-2 data-focus-visible:outline-biru"
-                    >
-                      {m.label}
-                    </Link>
+                    {m.luar ? (
+                      <a
+                        href={m.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex min-h-tombol items-center gap-1 px-2 font-medium outline-none hover:text-biru data-focus-visible:outline-2 data-focus-visible:outline-solid data-focus-visible:-outline-offset-2 data-focus-visible:outline-biru"
+                      >
+                        {m.label}
+                        <ArrowSquareOut aria-hidden size={14} />
+                        <span className="sr-only"> (membuka situs lain)</span>
+                      </a>
+                    ) : (
+                      <Link
+                        href={m.href}
+                        aria-current={menuPublikAktif(m.href, jalur, d.slug) ? 'page' : undefined}
+                        className="inline-flex min-h-tombol items-center px-2 font-medium underline-offset-8 outline-none hover:text-biru aria-[current=page]:text-biru aria-[current=page]:underline aria-[current=page]:decoration-2 data-focus-visible:outline-2 data-focus-visible:outline-solid data-focus-visible:-outline-offset-2 data-focus-visible:outline-biru"
+                      >
+                        {m.label}
+                      </Link>
+                    )}
                   </li>
                 ))}
               </ul>

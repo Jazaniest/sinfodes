@@ -1,24 +1,22 @@
 import { http, HttpResponse } from 'msw'
 import { tanggalIsoWib, waktuIsoWib } from '@/domain/format/tanggal'
 import { jadwalBerikut, teksJadwal } from '@/domain/kesehatan/schema'
-import { jumlahKelompok } from '@/domain/keuangan/schema'
 import { LABEL_PERAN } from '@/domain/pengguna/schema'
 import {
-  agendaPublikSchema, pengumumanPublikSchema, verifikasiMasukanSchema, type AngkaDesa, type ArtikelPublik, type BerandaPublik,
-  type FotoPublik, type HasilVerifikasi, type IdentitasPublik, type KreditFotoPublik, type LayananPublik, type RingkasArtikel,
+  verifikasiMasukanSchema, type ArtikelPublik, type BerandaPublik,
+  type HasilVerifikasi, type IdentitasPublik, type KreditFotoPublik, type LayananPublik,
 } from '@/domain/publik/schema'
 import { hitungBerlaku, kodeSah, rapikanKode, samarkanNama } from '@/domain/publik/verifikasi'
-import { statusPengumuman, type Artikel, type Potensi } from '@/domain/website/schema'
 import { namaDusun } from '@/domain/wilayah/alamat'
 import type { Desa } from '@/domain/wilayah/schema'
 import { ambilDb, ubahDb } from '../db'
+import { menuSitus, pengumumanBerlaku, ringkas, selesaikanBlok, terbit } from '../blok-publik'
 import { API, balasDaftar, balasGalat, denganJaringan } from '../http'
 import { desaKonteks, konteksPermintaan, tanpaKonteks } from '../konteks-permintaan'
-import { keLencanaPublik, lencanaTampil, pastikanLencana } from '../lencana'
+import { pastikanLencana } from '../lencana'
 import { perkiraanHariKerja } from '../surat-perkiraan'
 import type { DbDemo } from '../tipe-db'
 import { bacaJson } from '../tulis'
-import { apbdesTerbaru } from './keuangan'
 import { versiTerbit } from './website'
 
 /**
@@ -45,48 +43,7 @@ function identitas(db: DbDemo, d: Desa): IdentitasPublik {
   return {
     slug: d.slug, nama: d.nama, kecamatan: d.kecamatan, kabupaten: d.kabupaten, provinsi: d.provinsi, alamatKantor: d.alamatKantor,
     kodePos: d.kodePos, surel: d.surel, telepon: d.telepon, jamLayanan: d.jamLayanan, luasKm2: d.luasKm2,
-    tema, favicon: d.lambang ?? null,
-  }
-}
-
-/** Foto kurasi dari galeri beserta keterangan dan kreditnya; null bila berkasnya belum tersedia. */
-export function fotoDari(db: DbDemo, desaId: string, berkas: string | null): FotoPublik | null {
-  const f = berkas ? db.galeri.find((x) => x.desaId === desaId && x.berkas === berkas && x.tersedia) : undefined
-  if (!f) return null
-  return { berkas: f.berkas, keterangan: f.judul, kredit: f.kredit ? `${f.kredit.pembuat} · ${f.kredit.lisensi}` : null }
-}
-
-/** Sampul Tampilan website: foto kurasi berkredit, atau unggahan desa (data URL) tanpa kredit. */
-function sampulDari(db: DbDemo, d: Desa): FotoPublik | null {
-  const sampul = versiTerbit(db, d.id).tema.sampul
-  if (!sampul) return null
-  return fotoDari(db, d.id, sampul) ?? { berkas: sampul, keterangan: `Desa ${d.nama}`, kredit: null }
-}
-
-const ringkas = (db: DbDemo, a: Artikel): RingkasArtikel => ({
-  slug: a.slug, judul: a.judul, kategori: a.kategori, tanggal: a.tanggal, ringkasan: a.ringkasan, foto: fotoDari(db, a.desaId, a.foto),
-})
-
-/** Artikel yang sudah terbit, terbaru dulu. Draf tidak pernah tampil di website. */
-const terbit = (db: DbDemo, desaId: string): Artikel[] =>
-  db.artikel.filter((a) => a.desaId === desaId && a.status === 'terbit').sort((a, b) => b.tanggal.localeCompare(a.tanggal))
-
-/** Potensi desa urut tampil (SPEC §9). */
-export const potensiDesa = (db: DbDemo, desaId: string): Potensi[] =>
-  db.potensi.filter((p) => p.desaId === desaId).sort((a, b) => a.urutan - b.urutan)
-
-/** KK yang masih punya anggota, sama dengan hitungan panel admin (cakupan.ts), supaya angka website dan panel sama. */
-export const jumlahKkAktif = (db: DbDemo, desaId: string): number =>
-  db.keluarga.filter((k) => k.desaId === desaId && k.anggotaIds.length > 0).length
-
-function angkaDesa(db: DbDemo, d: Desa): AngkaDesa {
-  const dusun = db.dusun.filter((x) => x.desaId === d.id)
-  return {
-    jiwa: db.penduduk.filter((p) => p.desaId === d.id && p.statusDasar === 'Hidup').length,
-    kk: jumlahKkAktif(db, d.id),
-    dusun: dusun.length,
-    rt: dusun.reduce((n, x) => n + x.rw.reduce((m, rw) => m + rw.rt.length, 0), 0),
-    luasKm2: d.luasKm2,
+    tema, favicon: d.lambang ?? null, menu: menuSitus(db, d),
   }
 }
 
@@ -138,36 +95,13 @@ export const handlerPublik = [
       if (c instanceof Response) return c
       pastikanLencana(new Date())
       const { db, desa } = c
-      const hariIni = tanggalIsoWib(new Date())
       const daftar = terbit(db, desa.id)
-      const apbdes = apbdesTerbaru(desa.id)
-      // Berita utama: kabar terbaru yang berfoto (SPEC §9: foto besar dengan keterangan).
-      const utama = daftar.find((a) => a.foto !== null) ?? daftar.at(0) ?? null
-      const pengumumanBerlaku = db.pengumuman
-        .filter((p) => p.desaId === desa.id && statusPengumuman(p, hariIni) === 'berlaku')
-        .sort((a, b) => b.mulai.localeCompare(a.mulai))
+      const pengumuman = pengumumanBerlaku(db, desa.id, tanggalIsoWib(new Date()))
       const rekam = db.rekamDesa.find((r) => r.desaId === desa.id)
       const hasil: BerandaPublik = {
-        utama: utama ? ringkas(db, utama) : null,
-        terbaru: daftar
-          .filter((a) => a !== utama)
-          .slice(0, 4)
-          .map((a) => ringkas(db, a)),
-        pengumuman: pengumumanBerlaku.map((p) => pengumumanPublikSchema.parse(p)),
-        agenda: db.agenda
-          .filter((a) => a.desaId === desa.id && a.tanggal >= hariIni)
-          .sort((a, b) => a.tanggal.localeCompare(b.tanggal) || a.mulai.localeCompare(b.mulai))
-          .slice(0, 5)
-          .map((a) => agendaPublikSchema.parse(a)),
-        angka: angkaDesa(db, desa),
-        sampul: sampulDari(db, desa),
-        apbdes: apbdes
-          ? { tahun: apbdes.tahun, pendapatan: jumlahKelompok(apbdes, 'pendapatan'), belanja: jumlahKelompok(apbdes, 'belanja') }
-          : null,
-        potensi: potensiDesa(db, desa.id).map((p) => ({ id: p.id, judul: p.judul, kategori: p.kategori, foto: fotoDari(db, desa.id, p.foto) })),
-        lencana: lencanaTampil(db, desa.id).map(keLencanaPublik),
-        // Desa rekaman tanpa kabar terbit maupun pengumuman berlaku memakai website minimal (SPEC-V0.2 §13).
-        profilSingkat: daftar.length === 0 && pengumumanBerlaku.length === 0 ? (rekam?.profilSingkat ?? null) : null,
+        blok: selesaikanBlok(db, desa, versiTerbit(db, desa.id).susunan.beranda, new Date()),
+        // Desa rekaman tanpa kabar terbit maupun pengumuman berlaku memakai website minimal (SPEC-V0.2 13).
+        profilSingkat: daftar.length === 0 && pengumuman.length === 0 ? (rekam?.profilSingkat ?? null) : null,
       }
       return HttpResponse.json(hasil)
     }),

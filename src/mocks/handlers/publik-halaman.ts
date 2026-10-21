@@ -2,17 +2,20 @@ import { http, HttpResponse } from 'msw'
 import { tanggalIsoWib } from '@/domain/format/tanggal'
 import { JENIS_LEMBAGA, NAMA_LENGKAP_LEMBAGA, teksMasaBakti, type Pengurus } from '@/domain/lembaga/schema'
 import { URUTAN_STATUS } from '@/domain/pembangunan/schema'
+import type { HalamanPublik } from '@/domain/publik/schema'
 import type { PotensiPublik } from '@/domain/publik/potensi'
 import type { PengurusPublik, ProfilPublik } from '@/domain/publik/profil'
 import { keStatistikPublik } from '@/domain/publik/statistik'
 import type { TransparansiPublik } from '@/domain/publik/transparansi'
 import { hitungStatistik } from '@/domain/statistik/penduduk'
 import { namaDusun } from '@/domain/wilayah/alamat'
-import { API, denganJaringan } from '../http'
+import { fotoDari, jumlahKkAktif, potensiDesa, selesaikanBlok } from '../blok-publik'
+import { API, balasGalat, denganJaringan } from '../http'
 import { apbdesTerbaru } from './keuangan'
 import { barisKegiatan } from './pembangunan'
-import { cariDesaPublik, fotoDari, jumlahKkAktif, potensiDesa } from './publik'
+import { cariDesaPublik } from './publik'
 import { lapisanDesa } from './tata-kelola'
+import { versiTerbit } from './website'
 
 /** Jabatan dan nama saja: website tidak membuka rujukan ke data penduduk (`pendudukId`). */
 const keOrang = (p: Pengurus): PengurusPublik => ({ jabatan: p.jabatan, nama: p.nama, masaBakti: teksMasaBakti(p.masaBakti) })
@@ -112,6 +115,18 @@ export const handlerPublikHalaman = [
             }
           }),
       }
+      return HttpResponse.json(hasil)
+    }),
+  ),
+  http.get(
+    `${API}/publik/:slug/halaman/:nama`,
+    denganJaringan(({ request, params }) => {
+      const c = cariDesaPublik(params.slug, request)
+      if (c instanceof Response) return c
+      const { db, desa } = c
+      const halaman = versiTerbit(db, desa.id).susunan.halaman.find((h) => h.nama === String(params.nama))
+      if (!halaman) return balasGalat('NOT_FOUND', 'Halaman tidak ditemukan.', 404)
+      const hasil: HalamanPublik = { judul: halaman.judul, blok: selesaikanBlok(db, desa, halaman.blok, new Date()) }
       return HttpResponse.json(hasil)
     }),
   ),
