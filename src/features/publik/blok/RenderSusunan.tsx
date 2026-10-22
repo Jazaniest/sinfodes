@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react'
-import type { BlokTampil } from '@/domain/publik/schema'
-import { LABEL_JENIS_BLOK } from '@/domain/website/blok'
+import type { BlokPratinjau, BlokTampil } from '@/domain/publik/schema'
+import { LABEL_JENIS_BLOK, type Blok } from '@/domain/website/blok'
 import { pasanganBerdampingan } from '@/domain/website/susunan'
+import { cn } from '@/ui/cn'
 import { BlokAjakan } from './BlokAjakan'
 import { BlokAngka } from './BlokAngka'
 import { BlokApbdes } from './BlokApbdes'
@@ -23,15 +24,19 @@ import { BlokVideo } from './BlokVideo'
  * Wadah satu blok susunan (SPEC-V0.2 11.4): bagian kontrak `blok-{jenis}` bernama dari judul blok. `role="group"` menjaga
  * supaya hanya judul di dalam blok yang menjadi landmark, tanpa nama ganda untuk pembaca layar.
  */
-export function WadahBlok({ blok, children }: { blok: BlokTampil; children: ReactNode }) {
+export function WadahBlok({ blok, children }: { blok: Blok; children: ReactNode }) {
   return (
     <section
       role="group"
       data-bagian={`blok-${blok.jenis}`}
+      data-blok={blok.id}
       data-varian={blok.varian}
       aria-label={LABEL_JENIS_BLOK[blok.jenis]}
-      className="flex min-w-0 flex-col gap-3"
+      className={cn('flex min-w-0 flex-col gap-3', blok.tersembunyi && 'opacity-50')}
     >
+      {blok.tersembunyi && (
+        <span className="w-fit rounded-penuh bg-kertas-2 px-2 py-0.5 text-label font-medium text-tinta-2">Tersembunyi</span>
+      )}
       {children}
     </section>
   )
@@ -80,17 +85,36 @@ function IsiBlok({ blok, dasar }: { blok: BlokTampil; dasar: string }) {
  * Susunan halaman website dari blok siap tampil (SPEC-V0.2 11.4): dipakai beranda, halaman tambahan, dan pratinjau
  * penyunting. Blok `lebar` yang langsung diikuti blok `sempit` digambar berdampingan; jenis yang tidak dikenal dilewati.
  */
-export function RenderSusunan({ blok, dasar }: { blok: readonly BlokTampil[]; dasar: string }) {
+/** Blok yang sumber datanya belum ada (pratinjau penyunting): tidak tampil di website, digambar kotak bergaris putus. */
+function KotakKosong() {
+  return (
+    <div className="flex items-center justify-center rounded-2 border border-dashed border-garis-input bg-kertas-2 p-6 text-center text-teks-kecil text-tinta-2">
+      Blok ini tidak tampil di website karena datanya belum ada.
+    </div>
+  )
+}
+
+function IsiAtauKosong({ blok, dasar }: { blok: BlokTampil | BlokPratinjau; dasar: string }) {
+  return (blok as { kosong?: boolean }).kosong === true ? (
+    <WadahBlok blok={blok}>
+      <KotakKosong />
+    </WadahBlok>
+  ) : (
+    <IsiBlok blok={blok as BlokTampil} dasar={dasar} />
+  )
+}
+
+export function RenderSusunan({ blok, dasar }: { blok: readonly (BlokTampil | BlokPratinjau)[]; dasar: string }) {
   return (
     <div className="flex flex-col gap-[var(--desa-jarak,2.5rem)]">
       {pasanganBerdampingan(blok).map((p) =>
         Array.isArray(p) ? (
           <div key={p[0].id} className="grid items-start gap-[var(--desa-jarak,2.5rem)] lg:grid-cols-[2fr_1fr]">
-            <IsiBlok blok={p[0]} dasar={dasar} />
-            <IsiBlok blok={p[1]} dasar={dasar} />
+            <IsiAtauKosong blok={p[0]} dasar={dasar} />
+            <IsiAtauKosong blok={p[1]} dasar={dasar} />
           </div>
         ) : (
-          <IsiBlok key={p.id} blok={p} dasar={dasar} />
+          <IsiAtauKosong key={p.id} blok={p} dasar={dasar} />
         ),
       )}
     </div>

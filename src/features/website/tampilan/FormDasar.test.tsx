@@ -1,62 +1,54 @@
-import { fireEvent, screen, waitFor, within } from '@testing-library/react'
+﻿import { configure, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { http, HttpResponse } from 'msw'
 import { afterEach, describe, expect, it } from 'vitest'
 import { ambilIdentitasPublik } from '@/api/publik'
 import { ambilDb } from '@/mocks/db'
-import { serverUji } from '@/mocks/node'
 import { AKUN_UJI, masukSebagai, pakaiApiTiruan } from '@/test/api-tiruan'
-import { renderPanel } from '@/test/render'
-import { contohSesi } from '@/test/sesi'
+import { renderRute } from '@/test/render'
 import { kosongkanToast } from '@/ui/toast/antrean'
-import { PenampungToast } from '@/ui/toast/PenampungToast'
-import { TabTampilan } from './TabTampilan'
 
 pakaiApiTiruan({ dbSegarTiapUji: true })
+// Render rute penuh bisa melewati 3 detik bawaan saat seluruh suite berjalan paralel di mesin lambat.
+configure({ asyncUtilTimeout: 10_000 })
 afterEach(() => kosongkanToast())
 
 const PESAN_UTAMA = 'Kontras warna utama di atas latar 1,3 : 1; perlu paling sedikit 4,5 : 1.'
 
 function pasang() {
   masukSebagai(AKUN_UJI.operator)
-  renderPanel(
-    <>
-      <TabTampilan />
-      <PenampungToast />
-    </>,
-    contohSesi('operator'),
-  )
+  renderRute('/admin/website/tampilan')
   return userEvent.setup({ applyAccept: false })
 }
 const hexUtama = () => screen.findByRole('textbox', { name: 'Kode warna utama' })
 const pratinjau = () => screen.getByRole('region', { name: 'Pratinjau tampilan website' })
+const bilah = () => screen.getByRole('region', { name: 'Bilah draf' })
 const ketik = async (user: ReturnType<typeof userEvent.setup>, kotak: HTMLElement, nilai: string) => {
   await user.clear(kotak)
   await user.type(kotak, nilai)
 }
 
-describe('Website Desa › Tampilan › Dasar (rencana 7E-1 Tugas 4)', () => {
-  it('hanya sub-tab Dasar yang tampil; Susunan dan Kode belum ada', async () => {
+describe('Website Desa - Tampilan - Dasar di alur draf (rencana 7F-2 Tugas 2)', () => {
+  it('sub-tab Dasar dan Susunan tampil; Kode belum ada', async () => {
     pasang()
     await hexUtama()
     const subtab = screen.getByRole('navigation', { name: 'Bagian tampilan' })
-    expect(within(subtab).getAllByRole('link').map((a) => a.textContent)).toEqual(['Dasar'])
+    expect(within(subtab).getAllByRole('link').map((a) => a.textContent)).toEqual(['Dasar', 'Susunan'])
   })
-  it('warna kuning terang: pesan kontras persis tampil dan Simpan nonaktif', async () => {
+  it('warna kuning terang: pesan kontras persis tampil, status perlu diperbaiki, Terbitkan nonaktif', async () => {
     const user = pasang()
     await ketik(user, await hexUtama(), '#FFD400')
     expect(await screen.findByText(PESAN_UTAMA)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Simpan' })).toBeDisabled()
-    expect(screen.getByText('Perbaiki kontras dulu sebelum menyimpan.')).toBeInTheDocument()
+    expect(within(bilah()).getByText('Ada isian yang perlu diperbaiki')).toBeInTheDocument()
+    expect(within(bilah()).getByRole('button', { name: 'Terbitkan' })).toBeDisabled()
   })
-  it('Pakai versi lebih gelap membuat pemeriksaan lolos dan Simpan aktif', async () => {
+  it('Pakai versi lebih gelap membuat pemeriksaan lolos dan simpan otomatis berjalan lagi', async () => {
     const user = pasang()
     await ketik(user, await hexUtama(), '#FFD400')
     await user.click(await screen.findByRole('button', { name: 'Pakai versi lebih gelap' }))
     await waitFor(() => expect(screen.queryByText(PESAN_UTAMA)).not.toBeInTheDocument())
     expect(screen.queryByRole('button', { name: 'Pakai versi lebih gelap' })).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Simpan' })).toBeEnabled()
     expect((screen.getByRole('textbox', { name: 'Kode warna utama' }) as HTMLInputElement).value).toMatch(/^#[0-9A-F]{6}$/)
+    await waitFor(() => expect(within(bilah()).getByText(/^Draf tersimpan pukul/)).toBeInTheDocument())
   })
   it('preset warna mengisi kode warna; kode yang rusak ditandai setelah isian dilepas', async () => {
     const user = pasang()
@@ -85,7 +77,7 @@ describe('Website Desa › Tampilan › Dasar (rencana 7E-1 Tugas 4)', () => {
     expect(within(pratinjau()).getByText('HP (390 px)')).toBeInTheDocument()
     expect(within(pratinjau()).getByText('Desktop (1280 px)')).toBeInTheDocument()
   })
-  it('kepala Pita dan foto Penuh mengubah kedua pratinjau; Simpan membawa keduanya (7E-2)', async () => {
+  it('kepala Pita dan foto Penuh mengubah kedua pratinjau', async () => {
     const user = pasang()
     await hexUtama()
     await user.click(screen.getByRole('radio', { name: /^Pita/ }))
@@ -96,21 +88,17 @@ describe('Website Desa › Tampilan › Dasar (rencana 7E-1 Tugas 4)', () => {
       expect(b.querySelector('header[data-bentuk="pita"] [data-pita]')).not.toBeNull()
       expect(b.querySelector('figure[data-foto="penuh"] [data-lapisan]')).not.toBeNull()
     }
-    await user.click(screen.getByRole('button', { name: 'Simpan' }))
-    expect(await screen.findByText('Tampilan website disimpan.')).toBeInTheDocument()
-    expect(ambilDb().situs.find((s) => s.desaId === 'desa_sungai_sialang')?.terbit.tema).toMatchObject({ kepala: 'pita', foto: 'penuh', idGaleri: null })
   })
-  it('Simpan menyimpan tema: toast, dan website publik memuat tema baru', async () => {
+  it('perubahan warna masuk draf otomatis; website publik belum berubah sampai diterbitkan', async () => {
     const user = pasang()
     await hexUtama()
     await user.click(within(screen.getByRole('radiogroup', { name: 'Preset warna utama' })).getByRole('radio', { name: 'Hijau sawit' }))
     await user.click(screen.getByRole('radio', { name: /^Bitter/ }))
-    await user.click(screen.getByRole('button', { name: 'Simpan' }))
-    expect(await screen.findByText('Tampilan website disimpan.')).toBeInTheDocument()
-    expect(ambilDb().situs.find((s) => s.desaId === 'desa_sungai_sialang')?.terbit.tema).toMatchObject({ warnaUtama: '#2F5D3A', huruf: 'bitter' })
-    expect((await ambilIdentitasPublik('sungaisialang')).tema).toMatchObject({ warnaUtama: '#2F5D3A', huruf: 'bitter' })
+    await waitFor(() => expect(within(bilah()).getByText(/^Draf tersimpan pukul/)).toBeInTheDocument())
+    expect(ambilDb().situs.find((s) => s.desaId === 'desa_sungai_sialang')?.draf?.tema).toMatchObject({ warnaUtama: '#2F5D3A', huruf: 'bitter' })
+    expect((await ambilIdentitasPublik('sungaisialang')).tema.warnaUtama).toBe('#1F4E79')
   })
-  it('kalimat sambutan 121 karakter ditolak dengan pesan persis; penghitung n/120', async () => {
+  it('kalimat sambutan 121 karakter ditandai dengan pesan persis; penghitung n/120', async () => {
     const user = pasang()
     await hexUtama()
     const kotak = screen.getByRole('textbox', { name: 'Kalimat sambutan' })
@@ -118,20 +106,8 @@ describe('Website Desa › Tampilan › Dasar (rencana 7E-1 Tugas 4)', () => {
     await user.click(kotak)
     await user.paste('x'.repeat(121))
     expect(screen.getByText('121/120')).toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: 'Simpan' }))
     expect(await screen.findByText('Kalimat sambutan paling banyak 120 karakter.')).toBeInTheDocument()
-    expect(ambilDb().situs.find((s) => s.desaId === 'desa_sungai_sialang')?.terbit.tema.warga.sambutan).toBeNull()
-  })
-  it('galat 422 dari server tampil di isian warna utama', async () => {
-    serverUji.use(
-      http.put('*/api/v1/website/situs/tema', () =>
-        HttpResponse.json({ error: { code: 'VALIDATION', message: 'Isian tidak valid.', fields: { warnaUtama: 'Pesan dari server.' } } }, { status: 422 }),
-      ),
-    )
-    const user = pasang()
-    await hexUtama()
-    await user.click(screen.getByRole('button', { name: 'Simpan' }))
-    expect(await screen.findByText('Pesan dari server.')).toBeInTheDocument()
+    expect(within(bilah()).getByText('Ada isian yang perlu diperbaiki')).toBeInTheDocument()
   })
   it('logo terlalu besar ditolak; foto latar halaman masuk dapat diunggah', async () => {
     const user = pasang()
@@ -143,13 +119,13 @@ describe('Website Desa › Tampilan › Dasar (rencana 7E-1 Tugas 4)', () => {
     await user.upload(masukan[2], new File([new Uint8Array([137, 80, 78, 71])], 'latar.png', { type: 'image/png' }))
     expect(await screen.findByAltText('Foto latar halaman masuk yang dipilih')).toHaveAttribute('src', expect.stringMatching(/^data:image\/png;base64,/))
   })
-  it('perubahan tanpa disimpan menandai formulir kotor; Batalkan perubahan mengembalikannya', async () => {
-    const user = pasang()
-    const kotak = await hexUtama()
-    expect(screen.getByRole('button', { name: 'Batalkan perubahan' })).toBeDisabled()
-    fireEvent.change(kotak, { target: { value: '#2F5D3A' } })
-    expect(screen.getByRole('button', { name: 'Batalkan perubahan' })).toBeEnabled()
-    await user.click(screen.getByRole('button', { name: 'Batalkan perubahan' }))
-    expect(kotak).toHaveValue('#1F4E79')
+  it('tombol Simpan dan Batalkan perubahan sudah tidak ada: perubahan langsung mengalir ke draf', async () => {
+    pasang()
+    await hexUtama()
+    expect(screen.queryByRole('button', { name: 'Simpan' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Batalkan perubahan' })).not.toBeInTheDocument()
+    fireEvent.change(screen.getByRole('textbox', { name: 'Kode warna utama' }), { target: { value: '#2F5D3A' } })
+    await waitFor(() => expect(within(bilah()).getByText(/^Draf tersimpan pukul/)).toBeInTheDocument())
+    expect(ambilDb().situs.find((s) => s.desaId === 'desa_sungai_sialang')?.draf?.tema.warnaUtama).toBe('#2F5D3A')
   })
 })

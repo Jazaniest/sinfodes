@@ -15,7 +15,7 @@ import { apbdesTerbaru } from './keuangan'
 import { barisKegiatan } from './pembangunan'
 import { cariDesaPublik } from './publik'
 import { lapisanDesa } from './tata-kelola'
-import { versiTerbit } from './website'
+import { versiTerbit, sumberTerbit } from './website'
 
 /** Jabatan dan nama saja: website tidak membuka rujukan ke data penduduk (`pendudukId`). */
 const keOrang = (p: Pengurus): PengurusPublik => ({ jabatan: p.jabatan, nama: p.nama, masaBakti: teksMasaBakti(p.masaBakti) })
@@ -126,7 +126,7 @@ export const handlerPublikHalaman = [
       const { db, desa } = c
       const halaman = versiTerbit(db, desa.id).susunan.halaman.find((h) => h.nama === String(params.nama))
       if (!halaman) return balasGalat('NOT_FOUND', 'Halaman tidak ditemukan.', 404)
-      const hasil: HalamanPublik = { judul: halaman.judul, blok: selesaikanBlok(db, desa, halaman.blok, new Date()) }
+      const hasil: HalamanPublik = { judul: halaman.judul, blok: selesaikanBlok(db, desa, halaman.blok, new Date(), sumberTerbit(db, desa.id)) }
       return HttpResponse.json(hasil)
     }),
   ),

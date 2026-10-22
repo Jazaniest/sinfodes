@@ -219,3 +219,25 @@ export function pasanganBerdampingan<T extends Blok>(blok: readonly T[]): (T | [
   }
   return hasil
 }
+
+/**
+ * Body `PUT /website/situs/draf` (7F-2). `dasarId` adalah ID draf yang dimuat klien (null bila mulai dari terbit); bila
+ * server sudah punya draf dengan ID lain, simpanan ditolak 409 supaya perubahan tab lain tidak tertimpa diam-diam.
+ */
+export const simpanDrafSchema = z.object({
+  dasarId: z.string().min(1).nullable(),
+  tema: z.unknown(),
+  susunan: susunanSchema,
+})
+export type MasukanSimpanDraf = z.infer<typeof simpanDrafSchema>
+
+/**
+ * Body `POST /website/situs/pratinjau` (7F-2): tema dan susunan yang sedang disunting untuk satu halaman (`'beranda'`
+ * atau ID halaman tambahan). Kontras tema tidak diperiksa supaya pratinjau tetap jalan selama warnanya sedang diperbaiki.
+ */
+export const pratinjauSchema = z.object({
+  tema: z.unknown(),
+  susunan: susunanSchema,
+  halaman: z.string().min(1, 'Halaman wajib dipilih.'),
+})
+export type MasukanPratinjau = z.infer<typeof pratinjauSchema>

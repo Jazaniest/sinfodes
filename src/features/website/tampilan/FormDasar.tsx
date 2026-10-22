@@ -1,9 +1,6 @@
 import { Check } from '@phosphor-icons/react'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { Label, Radio, RadioGroup } from 'react-aria-components'
-import { GalatApi, pesanGalat } from '@/api/galat'
-import { kunciWebsite, simpanTema } from '@/api/website'
 import { MAKS_GAMBAR_KB } from '@/domain/format/gambar'
 import { galatDariZod } from '@/domain/format/galat-isian'
 import { formatTanggal, tanggalIsoWib } from '@/domain/format/tanggal'
@@ -15,9 +12,6 @@ import {
 } from '@/domain/website/tema'
 import { cn } from '@/ui/cn'
 import { TextArea } from '@/ui/isian/TextArea'
-import { BilahAksi } from '@/ui/tata-letak/FormulirBagian'
-import { tampilkanToast } from '@/ui/toast/antrean'
-import { Tombol } from '@/ui/tombol/Tombol'
 import { muatPasanganHuruf } from '@/ui/website/huruf'
 import { PitaMotif } from '@/ui/website/Nameplate'
 import { useSesiAdmin } from '../../admin/sesi-konteks'
@@ -27,9 +21,10 @@ import { FOTO, KEPALA } from './pilihan'
 import { PanelKontras } from './PanelKontras'
 import { PemilihWarna } from './PemilihWarna'
 import { Pratinjau } from './Pratinjau'
+import { useDrafSitus } from './useDrafSitus'
 import { POLA_HEX } from './warna'
 
-type Props = { data: TemaDasar; onKotor?: (kotor: boolean) => void; sekarang?: Date }
+type Props = { sekarang?: Date }
 
 const judulBagian = 'font-serif text-judul-bagian font-medium'
 const MAKS_SAMBUTAN = 120
@@ -122,104 +117,77 @@ function ContohMotif({ id }: { id: IdMotif }) {
 const warnaSah = (w: string) => POLA_HEX.test(w)
 
 /** Website Desa › Tampilan › Dasar (SPEC-V0.2 §11.1): warna, latar, huruf, sudut, kepadatan, motif, logo, sampul, dan halaman masuk warga. */
-export function FormDasar({ data, onKotor, sekarang }: Props) {
-  const queryClient = useQueryClient()
+export function FormDasar({ sekarang }: Props) {
   const { desa } = useSesiAdmin()
-  const [form, setForm] = useState<TemaDasar>(data)
-  const [galat, setGalat] = useState<Record<string, string>>({})
-  const mengirim = useRef(false)
-  const kotor = JSON.stringify(form) !== JSON.stringify(data)
+  const { isi, ubah } = useDrafSitus()
+  const form = isi?.tema
+  const huruf = form?.huruf
 
   useEffect(() => {
-    onKotor?.(kotor)
-  }, [kotor, onKotor])
-  useEffect(() => {
-    void muatPasanganHuruf(form.huruf)
-  }, [form.huruf])
+    if (huruf) void muatPasanganHuruf(huruf)
+  }, [huruf])
 
-  const ubah = <K extends keyof TemaDasar>(kunci: K, nilai: TemaDasar[K]) => {
-    setForm((l) => ({ ...l, [kunci]: nilai }))
-    setGalat((g) => ({ ...g, [kunci]: '' }))
+  // Nilai warna sah terakhir, dipakai pemeriksaan dan pratinjau selama kode warna masih diketik.
+  const [warnaAman, setWarnaAman] = useState(() => ({
+    utama: form && warnaSah(form.warnaUtama) ? form.warnaUtama : '#1F4E79',
+    aksen: form && warnaSah(form.warnaAksen) ? form.warnaAksen : '#1F4E79',
+  }))
+  const utamaSah = form ? warnaSah(form.warnaUtama) : true
+  const aksenSah = form ? warnaSah(form.warnaAksen) : true
+  if (form && ((utamaSah && form.warnaUtama !== warnaAman.utama) || (aksenSah && form.warnaAksen !== warnaAman.aksen))) {
+    setWarnaAman({
+      utama: utamaSah ? form.warnaUtama : warnaAman.utama,
+      aksen: aksenSah ? form.warnaAksen : warnaAman.aksen,
+    })
+  }
+  if (!form) return null
+
+  const hasilSah = temaDasarSchema.safeParse(form)
+  const galat = hasilSah.success ? {} : galatDariZod(hasilSah.error)
+
+  const ubahTema = <K extends keyof TemaDasar>(kunci: K, nilai: TemaDasar[K]) => {
+    ubah((i) => ({ ...i, tema: { ...i.tema, [kunci]: nilai } }))
   }
   const ubahWarga = <K extends keyof TemaDasar['warga']>(kunci: K, nilai: TemaDasar['warga'][K]) => {
-    setForm((l) => ({ ...l, warga: { ...l.warga, [kunci]: nilai } }))
-    setGalat((g) => ({ ...g, [`warga.${kunci}`]: '' }))
+    ubah((i) => ({ ...i, tema: { ...i.tema, warga: { ...i.tema.warga, [kunci]: nilai } } }))
   }
 
-  const utamaSah = warnaSah(form.warnaUtama)
-  const aksenSah = warnaSah(form.warnaAksen)
   // Pemeriksaan hanya untuk warna yang sudah berbentuk #RRGGBB; yang masih diketik ditandai di isiannya.
   const pemeriksaan = periksaTema({
-    warnaUtama: utamaSah ? form.warnaUtama : data.warnaUtama,
-    warnaAksen: aksenSah ? form.warnaAksen : data.warnaAksen,
+    warnaUtama: utamaSah ? form.warnaUtama : warnaAman.utama,
+    warnaAksen: aksenSah ? form.warnaAksen : warnaAman.aksen,
     latar: form.latar,
   }).filter((p) => (p.kunci === 'aksen-latar' ? aksenSah : utamaSah))
-  const gagalKontras = pemeriksaan.some((p) => !p.lolos)
-  const hexRusak = !utamaSah || !aksenSah
 
   const gelapkan = (kunci: Pemeriksaan['kunci']) => {
     if (kunci === 'aksen-latar') {
       const baru = gelapkanSampaiLolos(form.warnaAksen, (h) => periksaTema({ ...form, warnaAksen: h }).every((p) => p.kunci !== 'aksen-latar' || p.lolos))
-      ubah('warnaAksen', baru)
+      ubahTema('warnaAksen', baru)
     } else {
       const baru = gelapkanSampaiLolos(form.warnaUtama, (h) => periksaTema({ ...form, warnaUtama: h }).every((p) => p.kunci === 'aksen-latar' || p.lolos))
-      ubah('warnaUtama', baru)
+      ubahTema('warnaUtama', baru)
     }
   }
 
-  const simpan = useMutation({
-    mutationFn: () => simpanTema(form),
-    onSuccess: (baru) => {
-      queryClient.setQueryData(kunciWebsite.situs, { terbit: baru })
-      setForm(baru.tema)
-      tampilkanToast({ pesan: 'Tampilan website disimpan.', nada: 'berhasil' })
-    },
-    onError: (e) => {
-      if (e instanceof GalatApi && Object.keys(e.fields).length > 0) setGalat(e.fields)
-      tampilkanToast({ pesan: pesanGalat(e), nada: 'galat' })
-    },
-    onSettled: () => {
-      mengirim.current = false
-    },
-  })
-  const kirim = () => {
-    if (mengirim.current) return
-    const hasil = temaDasarSchema.safeParse(form)
-    if (!hasil.success) {
-      setGalat(galatDariZod(hasil.error))
-      return
-    }
-    mengirim.current = true
-    simpan.mutate()
-  }
-
-  const aksenPratinjau = aksenSah ? form.warnaAksen : data.warnaAksen
+  const aksenPratinjau = aksenSah ? form.warnaAksen : warnaAman.aksen
   const temaPratinjau = {
     ...form,
-    warnaUtama: utamaSah ? form.warnaUtama : data.warnaUtama,
+    warnaUtama: utamaSah ? form.warnaUtama : warnaAman.utama,
     warnaAksen: aksenPratinjau,
   }
   const panjangSambutan = form.warga.sambutan?.length ?? 0
-  const dikunci = gagalKontras || hexRusak
 
   return (
     <>
-      <GaleriTema
-        data={data}
-        kotor={kotor}
-        onTerpasang={(tema) => {
-          setForm(tema)
-          setGalat({})
-        }}
-      />
+      <GaleriTema />
       <div className="mt-8 grid grid-cols-[minmax(0,1fr)] gap-8 xl:grid-cols-[minmax(0,1fr)_minmax(0,30rem)]">
         <div className="flex flex-col gap-8">
           <section className="flex flex-col gap-4">
             <h2 className={judulBagian}>Warna</h2>
-            <PemilihWarna judul="Warna utama" nilai={form.warnaUtama} onUbah={(v) => ubah('warnaUtama', v)} galat={galat.warnaUtama || undefined} keterangan="Dipakai untuk tautan, tombol, dan nama desa." />
-            <PemilihWarna judul="Warna aksen" nilai={form.warnaAksen} onUbah={(v) => ubah('warnaAksen', v)} galat={galat.warnaAksen || undefined} keterangan="Dipakai untuk pita motif dan garis di panel." />
+            <PemilihWarna judul="Warna utama" nilai={form.warnaUtama} onUbah={(v) => ubahTema('warnaUtama', v)} galat={galat.warnaUtama || undefined} keterangan="Dipakai untuk tautan, tombol, dan nama desa." />
+            <PemilihWarna judul="Warna aksen" nilai={form.warnaAksen} onUbah={(v) => ubahTema('warnaAksen', v)} galat={galat.warnaAksen || undefined} keterangan="Dipakai untuk pita motif dan garis di panel." />
             <PanelKontras pemeriksaan={pemeriksaan} onGelapkan={gelapkan} />
-            <Kelompok label="Latar" nilai={form.latar} onUbah={(v: IdLatar) => ubah('latar', v)} ids={ID_LATAR} kolom="sm:grid-cols-2">
+            <Kelompok label="Latar" nilai={form.latar} onUbah={(v: IdLatar) => ubahTema('latar', v)} ids={ID_LATAR} kolom="sm:grid-cols-2">
               {(id) => (
                 <span className="flex items-center gap-3">
                   <span aria-hidden className="flex size-9 shrink-0 items-center justify-center rounded-1 border border-garis" style={{ backgroundColor: LATAR[id].latar }}>
@@ -233,10 +201,10 @@ export function FormDasar({ data, onKotor, sekarang }: Props) {
 
           <section className="flex flex-col gap-4">
             <h2 className={judulBagian}>Huruf, sudut, dan kepadatan</h2>
-            <Kelompok label="Pasangan huruf" nilai={form.huruf} onUbah={(v: IdPasanganHuruf) => ubah('huruf', v)} ids={ID_PASANGAN_HURUF} kolom="sm:grid-cols-2">
+            <Kelompok label="Pasangan huruf" nilai={form.huruf} onUbah={(v: IdPasanganHuruf) => ubahTema('huruf', v)} ids={ID_PASANGAN_HURUF} kolom="sm:grid-cols-2">
               {(id) => <ContohHuruf id={id} />}
             </Kelompok>
-            <Kelompok label="Sudut" nilai={form.sudut} onUbah={(v: IdSudut) => ubah('sudut', v)} ids={ID_SUDUT} kolom="sm:grid-cols-3">
+            <Kelompok label="Sudut" nilai={form.sudut} onUbah={(v: IdSudut) => ubahTema('sudut', v)} ids={ID_SUDUT} kolom="sm:grid-cols-3">
               {(id) => (
                 <span className="flex items-center gap-3">
                   <span aria-hidden className="size-8 shrink-0 border-2 border-tinta-2" style={{ borderRadius: SUDUT[id].besar }} />
@@ -244,7 +212,7 @@ export function FormDasar({ data, onKotor, sekarang }: Props) {
                 </span>
               )}
             </Kelompok>
-            <Kelompok label="Kepadatan" nilai={form.kepadatan} onUbah={(v: IdKepadatan) => ubah('kepadatan', v)} ids={ID_KEPADATAN} kolom="sm:grid-cols-2">
+            <Kelompok label="Kepadatan" nilai={form.kepadatan} onUbah={(v: IdKepadatan) => ubahTema('kepadatan', v)} ids={ID_KEPADATAN} kolom="sm:grid-cols-2">
               {(id) => (
                 <span className="flex flex-col gap-0.5">
                   <span className="text-teks-kecil font-medium">{KEPADATAN[id].label}</span>
@@ -256,7 +224,7 @@ export function FormDasar({ data, onKotor, sekarang }: Props) {
 
           <section className="flex flex-col gap-4">
             <h2 className={judulBagian}>Kepala dan foto</h2>
-            <Kelompok label="Bentuk kepala halaman" nilai={form.kepala} onUbah={(v: IdKepala) => ubah('kepala', v)} ids={ID_KEPALA} kolom="sm:grid-cols-3">
+            <Kelompok label="Bentuk kepala halaman" nilai={form.kepala} onUbah={(v: IdKepala) => ubahTema('kepala', v)} ids={ID_KEPALA} kolom="sm:grid-cols-3">
               {(id) => (
                 <span className="flex flex-col gap-0.5">
                   <span className="text-teks-kecil font-medium">{KEPALA[id].label}</span>
@@ -264,7 +232,7 @@ export function FormDasar({ data, onKotor, sekarang }: Props) {
                 </span>
               )}
             </Kelompok>
-            <Kelompok label="Perlakuan foto" nilai={form.foto} onUbah={(v: IdFoto) => ubah('foto', v)} ids={ID_FOTO} kolom="sm:grid-cols-2">
+            <Kelompok label="Perlakuan foto" nilai={form.foto} onUbah={(v: IdFoto) => ubahTema('foto', v)} ids={ID_FOTO} kolom="sm:grid-cols-2">
               {(id) => (
                 <span className="flex flex-col gap-0.5">
                   <span className="text-teks-kecil font-medium">{FOTO[id].label}</span>
@@ -276,7 +244,7 @@ export function FormDasar({ data, onKotor, sekarang }: Props) {
 
           <section className="flex flex-col gap-4" style={{ '--desa-warna-aksen': aksenPratinjau } as CSSProperties}>
             <h2 className={judulBagian}>Motif</h2>
-            <Kelompok label="Motif pita" nilai={form.motif} onUbah={(v: IdMotif) => ubah('motif', v)} ids={ID_MOTIF} kolom="sm:grid-cols-2 2xl:grid-cols-3">
+            <Kelompok label="Motif pita" nilai={form.motif} onUbah={(v: IdMotif) => ubahTema('motif', v)} ids={ID_MOTIF} kolom="sm:grid-cols-2 2xl:grid-cols-3">
               {(id) => <ContohMotif id={id} />}
             </Kelompok>
             <p className="text-teks-kecil text-tinta-2">Ubin motif digambar sendiri sebagai bentuk sederhana yang terinspirasi motifnya; asal daerah tertera di tiap kartu.</p>
@@ -289,7 +257,7 @@ export function FormDasar({ data, onKotor, sekarang }: Props) {
               bentuk="sampul"
               nilai={form.sampul}
               maksKb={MAKS_GAMBAR_KB.sampul}
-              onUbah={(v) => ubah('sampul', v)}
+              onUbah={(v) => ubahTema('sampul', v)}
               galat={galat.sampul || undefined}
               keterangan={`Foto lanskap desa, disarankan selebar 1600 piksel. Paling besar ${MAKS_GAMBAR_KB.sampul} KB.`}
             />
@@ -297,7 +265,7 @@ export function FormDasar({ data, onKotor, sekarang }: Props) {
               label="Logo"
               nilai={form.logo}
               maksKb={MAKS_GAMBAR_KB.logo}
-              onUbah={(v) => ubah('logo', v)}
+              onUbah={(v) => ubahTema('logo', v)}
               galat={galat.logo || undefined}
               keterangan={`Kosongkan untuk memakai lambang desa. Paling besar ${MAKS_GAMBAR_KB.logo} KB.`}
             />
@@ -340,25 +308,6 @@ export function FormDasar({ data, onKotor, sekarang }: Props) {
           tanggal={formatTanggal(tanggalIsoWib(sekarang ?? new Date()), 'hari')}
         />
       </div>
-      <BilahAksi>
-        {dikunci && (
-          <p role="status" className="mr-auto text-teks-kecil text-merah">
-            {gagalKontras ? 'Perbaiki kontras dulu sebelum menyimpan.' : 'Perbaiki kode warna dulu sebelum menyimpan.'}
-          </p>
-        )}
-        <Tombol
-          isDisabled={!kotor || simpan.isPending}
-          onPress={() => {
-            setForm(data)
-            setGalat({})
-          }}
-        >
-          Batalkan perubahan
-        </Tombol>
-        <Tombol varian="utama" memuat={simpan.isPending} isDisabled={dikunci} onPress={kirim}>
-          Simpan
-        </Tombol>
-      </BilahAksi>
     </>
   )
 }

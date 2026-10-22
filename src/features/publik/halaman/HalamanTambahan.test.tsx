@@ -19,7 +19,7 @@ describe('Halaman tambahan website desa (rencana 7F-1 Tugas 6)', () => {
       judul: 'Sejarah Kampung',
       blok: [susunBlok({ id: 'blk_uji001', jenis: 'teks', isi: { judul: 'Awal mula', paragraf: ['Kampung ini dibuka tahun 1952.'], tautan: null } })],
     }
-    await simpanDraf(TEMA_WARTA_BAWAAN('#1F4E79'), { ...susunanBawaan(), halaman: [halaman] })
+    await simpanDraf(null, { tema: TEMA_WARTA_BAWAAN('#1F4E79'), susunan: { ...susunanBawaan(), halaman: [halaman] } })
     await terbitkan('Tambah halaman.')
     renderPublik(<HalamanTambahan nama="sejarah-kampung" />)
     expect(await screen.findByRole('heading', { level: 1, name: 'Sejarah Kampung' })).toBeInTheDocument()

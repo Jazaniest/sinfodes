@@ -2,8 +2,9 @@ import { describe, expect, it } from 'vitest'
 import { GalatApi } from '@/api/galat'
 import { ambilIdentitasPublik } from '@/api/publik'
 import { ambilSesi } from '@/api/sesi'
-import { ambilSitus, daftarAgenda, daftarArtikel, daftarGaleri, daftarPengumuman, simpanTema } from '@/api/website'
+import { ambilSitus, daftarAgenda, daftarArtikel, daftarGaleri, daftarPengumuman, simpanDraf, terbitkan } from '@/api/website'
 import { pasangTema } from '@/domain/website/galeri-tema'
+import { susunanBawaan } from '@/domain/website/susunan'
 import { TEMA_WARTA_BAWAAN, type TemaDasar } from '@/domain/website/tema'
 import { AKUN_UJI, masukSebagai, pakaiApiTiruan } from '@/test/api-tiruan'
 
@@ -11,6 +12,12 @@ pakaiApiTiruan({ dbSegarTiapUji: true })
 
 const TEMA = TEMA_WARTA_BAWAAN('#1F4E79')
 const PNG_KECIL = `data:image/png;base64,${'A'.repeat(1364)}`
+
+/** Simpan tema lewat alur draf (7F-2): `PUT /website/situs/draf` lalu `terbitkan`. */
+const simpanDanTerbitkan = async (tema: TemaDasar) => {
+  await simpanDraf(null, { tema, susunan: susunanBawaan() })
+  return terbitkan(null)
+}
 
 async function galatDari(janji: Promise<unknown>): Promise<GalatApi> {
   try {
@@ -55,10 +62,10 @@ describe('Website Desa (SPEC §8)', () => {
       sampul: '/demo/foto/sampul-sungai-kampar.jpg', logo: null, warga: { fotoLatar: null, sambutan: null },
     })
   })
-  it('PUT tema sah → 200 dan website publik ikut berubah', async () => {
+  it('PUT draf lalu terbitkan: tema sah dan website publik ikut berubah', async () => {
     masukSebagai(AKUN_UJI.sekdes)
     const tema: TemaDasar = { ...TEMA, warnaUtama: '#2F5D3A', warnaAksen: '#4A6B2F', huruf: 'fraunces', logo: PNG_KECIL, motif: 'mega-mendung' }
-    const baru = await simpanTema(tema)
+    const baru = await simpanDanTerbitkan(tema)
     expect(baru.tema).toEqual(tema)
     expect(baru.oleh).toEqual({ id: 'pgn_hendri', nama: 'Hendri Saputra' })
     expect(baru.diperbarui.startsWith('2026-09-24T09:00')).toBe(true)
@@ -70,29 +77,29 @@ describe('Website Desa (SPEC §8)', () => {
   it('idGaleri dihitung server: tema galeri terpasang ditandai, satu pengaturan diubah → null (7E-2)', async () => {
     masukSebagai(AKUN_UJI.sekdes)
     expect((await ambilSitus()).terbit.tema).toMatchObject({ idGaleri: 'warta', kepala: 'warta', foto: 'bingkai' })
-    const pesisir = await simpanTema(pasangTema(TEMA, 'pesisir'))
+    const pesisir = await simpanDanTerbitkan(pasangTema(TEMA, 'pesisir'))
     expect(pesisir.tema).toMatchObject({ idGaleri: 'pesisir', huruf: 'literata', kepala: 'pita', foto: 'penuh' })
     expect((await ambilIdentitasPublik('sungaisialang')).tema).toMatchObject({ idGaleri: 'pesisir', kepala: 'pita' })
-    const diubah = await simpanTema({ ...pesisir.tema, sudut: 'tajam' })
+    const diubah = await simpanDanTerbitkan({ ...pesisir.tema, sudut: 'tajam' })
     expect(diubah.tema.idGaleri).toBeNull()
     // Isian idGaleri dari klien tidak dipercaya.
-    const palsu = await simpanTema({ ...pesisir.tema, sudut: 'tajam', idGaleri: 'tenun' })
+    const palsu = await simpanDanTerbitkan({ ...pesisir.tema, sudut: 'tajam', idGaleri: 'tenun' })
     expect(palsu.tema.idGaleri).toBeNull()
   })
   it('API menolak walau layar dilewati: #FFD400 → 422 field warnaUtama dengan pesan persis (fokus review 2)', async () => {
     masukSebagai(AKUN_UJI.sekdes)
-    const g = await galatDari(simpanTema({ ...TEMA, warnaUtama: '#FFD400' }))
+    const g = await galatDari(simpanDraf(null, { tema: { ...TEMA, warnaUtama: '#FFD400' }, susunan: susunanBawaan() }))
     expect(g).toMatchObject({ kode: 'VALIDATION', fields: { warnaUtama: 'Kontras warna utama di atas latar 1,3 : 1; perlu paling sedikit 4,5 : 1.' } })
     expect((await ambilSitus()).terbit.tema.warnaUtama).toBe('#1F4E79')
   })
   it('aksen terlalu terang → 422 field warnaAksen', async () => {
     masukSebagai(AKUN_UJI.sekdes)
-    const g = await galatDari(simpanTema({ ...TEMA, warnaAksen: '#F5F5F5' }))
+    const g = await galatDari(simpanDraf(null, { tema: { ...TEMA, warnaAksen: '#F5F5F5' }, susunan: susunanBawaan() }))
     expect(g.fields?.warnaAksen).toMatch(/^Kontras warna aksen di atas latar 1,\d : 1; perlu paling sedikit 3 : 1\.$/)
   })
   it('kode warna rusak, sambutan 121 karakter, dan sampul bukan gambar ditolak dengan pesan persis', async () => {
     masukSebagai(AKUN_UJI.sekdes)
-    const kirim = (t: unknown) => simpanTema(t as TemaDasar)
+    const kirim = (t: unknown) => simpanDraf(null, { tema: t as TemaDasar, susunan: susunanBawaan() })
     expect((await galatDari(kirim({ ...TEMA, warnaUtama: '#12345' }))).fields?.warnaUtama).toBe('Kode warna harus berbentuk #RRGGBB.')
     expect((await galatDari(kirim({ ...TEMA, warga: { fotoLatar: null, sambutan: 'x'.repeat(121) } }))).fields?.['warga.sambutan']).toBe(
       'Kalimat sambutan paling banyak 120 karakter.',
@@ -102,12 +109,12 @@ describe('Website Desa (SPEC §8)', () => {
   })
   it('Kades ditolak', async () => {
     masukSebagai(AKUN_UJI.kades)
-    expect((await galatDari(simpanTema(TEMA))).kode).toBe('FORBIDDEN')
+    expect((await galatDari(simpanDraf(null, { tema: TEMA, susunan: susunanBawaan() }))).kode).toBe('FORBIDDEN')
   })
   it('sesi panel membawa tampilanPanel (aksen dan favicon) yang mengikuti tema', async () => {
     masukSebagai(AKUN_UJI.sekdes)
     expect((await ambilSesi()).tampilanPanel).toEqual({ warnaAksen: '#1F4E79', favicon: null })
-    await simpanTema({ ...TEMA, warnaUtama: '#2F5D3A', warnaAksen: '#4A6B2F' })
+    await simpanDanTerbitkan({ ...TEMA, warnaUtama: '#2F5D3A', warnaAksen: '#4A6B2F' })
     expect((await ambilSesi()).tampilanPanel).toEqual({ warnaAksen: '#4A6B2F', favicon: null })
   })
 })

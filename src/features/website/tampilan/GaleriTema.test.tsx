@@ -1,39 +1,33 @@
-import { screen, waitFor, within } from '@testing-library/react'
+﻿import { configure, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it } from 'vitest'
 import { ambilIdentitasPublik } from '@/api/publik'
-import { simpanTema } from '@/api/website'
+import { simpanDraf, terbitkan } from '@/api/website'
+import { SUSUNAN_BERANDA_TEMA, susunanBawaan } from '@/domain/website/susunan'
 import { TEMA_WARTA_BAWAAN } from '@/domain/website/tema'
 import { ambilDb } from '@/mocks/db'
 import { AKUN_UJI, masukSebagai, pakaiApiTiruan } from '@/test/api-tiruan'
-import { renderPanel } from '@/test/render'
-import { contohSesi } from '@/test/sesi'
+import { renderRute } from '@/test/render'
 import { kosongkanToast } from '@/ui/toast/antrean'
-import { PenampungToast } from '@/ui/toast/PenampungToast'
-import { TabTampilan } from './TabTampilan'
 
 pakaiApiTiruan({ dbSegarTiapUji: true })
+// Render rute penuh bisa melewati 3 detik bawaan saat seluruh suite berjalan paralel di mesin lambat.
+configure({ asyncUtilTimeout: 10_000 })
 afterEach(() => kosongkanToast())
 
 const PNG_KECIL = `data:image/png;base64,${'A'.repeat(1364)}`
 const KALIMAT_KONFIRMASI = 'Warna, huruf, sudut, kepadatan, kepala, foto, dan motif diganti. Logo, sampul, foto latar, dan sambutan tetap.'
-const HILANG = 'Perubahan yang belum disimpan akan hilang.'
+const TOAST_DRAF = 'Tema Pesisir dipasang di draf. Terbitkan untuk menerapkannya.'
 
 function pasang() {
   masukSebagai(AKUN_UJI.operator)
-  renderPanel(
-    <>
-      <TabTampilan />
-      <PenampungToast />
-    </>,
-    contohSesi('operator'),
-  )
+  renderRute('/admin/website/tampilan')
   return userEvent.setup({ applyAccept: false })
 }
 const kartu = async (nama: string) => within(await screen.findByRole('figure', { name: `Tema ${nama}` }))
-const terpasang = () => ambilDb().situs.find((s) => s.desaId === 'desa_sungai_sialang')!.terbit.tema
+const dokumen = () => ambilDb().situs.find((s) => s.desaId === 'desa_sungai_sialang')!
 
-describe('Website Desa › Tampilan › Galeri tema (rencana 7E-2 Tugas 2)', () => {
+describe('Galeri tema ke alur draf (rencana 7F-2 Tugas 2, keputusan 9)', () => {
   it('delapan kartu dengan gambar pratinjau; Warta bertanda Dipakai untuk Sungai Sialang', async () => {
     pasang()
     await screen.findByRole('textbox', { name: 'Kode warna utama' })
@@ -47,60 +41,56 @@ describe('Website Desa › Tampilan › Galeri tema (rencana 7E-2 Tugas 2)', () 
     expect((await kartu('Warta')).getByText('Dipakai')).toBeInTheDocument()
     expect(screen.getAllByText('Dipakai')).toHaveLength(1)
   })
-  it('Pakai tema ini pada Pesisir: dialog dengan teks persis, setuju → toast, tema tersimpan, logo tetap', async () => {
+  it('dialog punya kotak centang susunan yang bawaannya mati; memasang tema masuk draf, publik belum berubah', async () => {
     masukSebagai(AKUN_UJI.operator)
-    await simpanTema({ ...TEMA_WARTA_BAWAAN('#1F4E79'), logo: PNG_KECIL, warga: { fotoLatar: null, sambutan: 'Selamat datang.' } })
+    await simpanDraf(null, {
+      tema: { ...TEMA_WARTA_BAWAAN('#1F4E79'), logo: PNG_KECIL, warga: { fotoLatar: null, sambutan: 'Selamat datang.' } },
+      susunan: susunanBawaan(),
+    })
+    await terbitkan('Awal.')
     const user = pasang()
     await user.click((await kartu('Pesisir')).getByRole('button', { name: /^Pakai tema ini/ }))
     const dialog = await screen.findByRole('alertdialog')
     expect(within(dialog).getByRole('heading', { name: 'Pakai tema Pesisir?' })).toBeInTheDocument()
     expect(within(dialog).getByText(KALIMAT_KONFIRMASI)).toBeInTheDocument()
-    expect(within(dialog).queryByText(HILANG)).not.toBeInTheDocument()
+    expect(within(dialog).getByRole('checkbox', { name: 'Juga pakai susunan beranda tema ini' })).not.toBeChecked()
     await user.click(within(dialog).getByRole('button', { name: 'Pakai tema' }))
-    expect(await screen.findByText('Tema Pesisir dipasang.')).toBeInTheDocument()
-    expect(terpasang()).toMatchObject({ idGaleri: 'pesisir', huruf: 'literata', kepala: 'pita', logo: PNG_KECIL, warga: { sambutan: 'Selamat datang.' } })
-    const publik = await ambilIdentitasPublik('sungaisialang')
-    expect(publik.tema).toMatchObject({ huruf: 'literata', kepala: 'pita', idGaleri: 'pesisir' })
-    await waitFor(() => expect(within(screen.getByRole('figure', { name: 'Tema Pesisir' })).getByText('Dipakai')).toBeInTheDocument())
-    expect(screen.getAllByText('Dipakai')).toHaveLength(1)
+    expect(await screen.findByText(TOAST_DRAF)).toBeInTheDocument()
+    await waitFor(() => expect(dokumen().draf).not.toBeNull())
+    const draf = dokumen().draf
+    expect(draf?.tema).toMatchObject({ idGaleri: 'pesisir', huruf: 'literata', kepala: 'pita', logo: PNG_KECIL, warga: { sambutan: 'Selamat datang.' } })
+    // Susunan beranda tetap milik desa karena kotak susunan tidak dicentang.
+    expect(draf?.susunan.beranda.map((b) => b.id)).toEqual(susunanBawaan().beranda.map((b) => b.id))
+    expect((await ambilIdentitasPublik('sungaisialang')).tema.idGaleri).toBe('warta')
   })
-  it('Batal menutup dialog tanpa menyimpan apa pun', async () => {
+  it('centang "Juga pakai susunan beranda tema ini": susunan beranda diganti, halaman dan menu tetap', async () => {
+    const user = pasang()
+    await user.click((await kartu('Pesisir')).getByRole('button', { name: /^Pakai tema ini/ }))
+    const dialog = await screen.findByRole('alertdialog')
+    await user.click(within(dialog).getByRole('checkbox', { name: 'Juga pakai susunan beranda tema ini' }))
+    await user.click(within(dialog).getByRole('button', { name: 'Pakai tema' }))
+    expect(await screen.findByText(TOAST_DRAF)).toBeInTheDocument()
+    await waitFor(() => expect(dokumen().draf).not.toBeNull())
+    const draf = dokumen().draf
+    expect(draf?.susunan.beranda.map((b) => b.id)).toEqual(SUSUNAN_BERANDA_TEMA.pesisir.map((b) => b.id))
+    expect(draf?.susunan.menu).toEqual(susunanBawaan().menu)
+  })
+  it('Batal menutup dialog tanpa mengubah draf', async () => {
     const user = pasang()
     await user.click((await kartu('Tenun')).getByRole('button', { name: /^Pakai tema ini/ }))
     await user.click(within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Batal' }))
     await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument())
-    expect(terpasang()).toMatchObject({ idGaleri: 'warta', huruf: 'plex' })
+    expect(dokumen().draf).toBeNull()
   })
-  it('formulir kotor: dialog menyebut perubahan yang hilang; setelah setuju formulir memuat tema baru, bukan campuran', async () => {
-    const user = pasang()
-    await screen.findByRole('textbox', { name: 'Kode warna utama' })
-    await user.click(screen.getByRole('radio', { name: /^Rapat/ }))
-    await user.click(screen.getByRole('radio', { name: /^Bulat/ }))
-    await user.click((await kartu('Pesisir')).getByRole('button', { name: /^Pakai tema ini/ }))
-    const dialog = await screen.findByRole('alertdialog')
-    expect(within(dialog).getByText(HILANG)).toBeInTheDocument()
-    await user.click(within(dialog).getByRole('button', { name: 'Pakai tema' }))
-    expect(await screen.findByText('Tema Pesisir dipasang.')).toBeInTheDocument()
-    // Pesisir: kepadatan lega, sudut bulat, huruf Literata, kepala pita, foto penuh.
-    await waitFor(() => expect(screen.getByRole('radio', { name: /^Lega/ })).toBeChecked())
-    expect(screen.getByRole('radio', { name: /^Rapat/ })).not.toBeChecked()
-    expect(screen.getByRole('radio', { name: /^Literata/ })).toBeChecked()
-    expect(screen.getByRole('radio', { name: /^Pita/ })).toBeChecked()
-    expect(screen.getByRole('radio', { name: /^Penuh/ })).toBeChecked()
-    expect(screen.getByRole('button', { name: 'Batalkan perubahan' })).toBeDisabled()
-  })
-  it('mengubah satu pengaturan lalu menyimpan menghapus tanda Dipakai; semua pengaturan tetap dapat diubah', async () => {
+  it('tanda Dipakai mengikuti isian draf: mengubah satu pengaturan langsung menghapusnya', async () => {
     const user = pasang()
     await user.click((await kartu('Tenun')).getByRole('button', { name: /^Pakai tema ini/ }))
     await user.click(within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Pakai tema' }))
-    await screen.findByText('Tema Tenun dipasang.')
+    await screen.findByText('Tema Tenun dipasang di draf. Terbitkan untuk menerapkannya.')
     await waitFor(() => expect(within(screen.getByRole('figure', { name: 'Tema Tenun' })).getByText('Dipakai')).toBeInTheDocument())
     await user.click(screen.getByRole('radio', { name: /^Bulat/ }))
-    // Belum disimpan: tanda masih menunjuk tema yang tersimpan.
-    expect(screen.getAllByText('Dipakai')).toHaveLength(1)
-    await user.click(screen.getByRole('button', { name: 'Simpan' }))
     await waitFor(() => expect(screen.queryByText('Dipakai')).not.toBeInTheDocument())
-    expect(terpasang()).toMatchObject({ idGaleri: null, sudut: 'bulat', huruf: 'archivo' })
+    await waitFor(() => expect(dokumen().draf?.tema).toMatchObject({ idGaleri: null, sudut: 'bulat', huruf: 'archivo' }))
   })
   it('Lihat pratinjau membuka gambar besar; Pakai tema ini dari dialog lanjut ke konfirmasi', async () => {
     const user = pasang()

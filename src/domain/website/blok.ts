@@ -72,6 +72,11 @@ export const LABEL_VARIAN: LabelVarian = {
   pemisah: { motif: 'Motif', garis: 'Garis' },
 }
 
+/** Label varian satu blok, mis. "Daftar" untuk Kabar terbaru varian `daftar`. */
+export function labelVarianBlok(b: Blok): string {
+  return (LABEL_VARIAN as Record<JenisBlok, Record<string, string>>)[b.jenis][b.varian]
+}
+
 /**
  * Blok yang datanya diisi server dari modul terkait (dan bisa kosong sehingga tidak tampil); blok lain hanya memakai `isi`
  * yang tersimpan di susunan.
