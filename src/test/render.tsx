@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { render } from '@testing-library/react'
 import type { ReactElement } from 'react'
 import type { SesiKabupaten } from '@/domain/kabupaten/schema'
@@ -11,10 +12,26 @@ import { SesiKabupatenKonteks } from '@/features/kabupaten/sesi-konteks'
 import { SesiKonsolKonteks } from '@/features/konsol/sesi-konteks'
 import { PublikKonteks } from '@/features/publik/publik-konteks'
 import { SesiWargaKonteks } from '@/features/warga/sesi-konteks'
+import { routeTree } from '@/routeTree.gen'
 import { contohSesiKabupaten } from './kabupaten'
 import { contohSesiKonsol } from './konsol'
 import { contohIdentitasPublik } from './publik'
 import { contohSesiWarga } from './sesi'
+
+/**
+ * Render satu alamat panel memakai rute sungguhan, untuk layar yang membaca atau mengubah search URL lewat `getRouteApi`.
+ * Sesi panelnya dimuat sendiri lewat API tiruan, sama seperti di peramban; PenampungToast sudah dibawa KerangkaAkar.
+ */
+export function renderRute(alamat: string) {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  const router = createRouter({ routeTree, context: { queryClient }, history: createMemoryHistory({ initialEntries: [alamat] }) })
+  const hasil = render(
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>,
+  )
+  return { ...hasil, queryClient, router }
+}
 
 /** Render layar panel admin dengan QueryClient baru (tanpa coba ulang) dan sesi admin. */
 export function renderPanel(ui: ReactElement, sesi: SesiAdmin) {

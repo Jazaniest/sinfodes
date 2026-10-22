@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { pemetaanRegister, variabelTema, type TemaDasar } from '@/domain/website/tema'
 import { FotoWarta } from '@/ui/website/FotoWarta'
 import { FotoKonteks, useBentukFoto } from '@/ui/website/foto-konteks'
@@ -85,11 +85,28 @@ function Cuplikan({ tema, nama, kecamatan, kabupaten, lambang, tanggal }: Props)
   )
 }
 
-type PropsBingkai = Props & { label: string; lebar: number; tinggi: number; skalaAwal: number }
+type PropsBingkai = {
+  label: string
+  lebar: number
+  tinggi: number
+  skalaAwal: number
+  tema: TemaPratinjau
+  /** Tinggi mengikuti isi (pratinjau penyunting), bukan tinggi tetap. */
+  tinggiOtomatis?: boolean
+  /** Isi bisa diklik (pratinjau penyunting); bila tidak, isi dibuat inert seperti cuplikan. */
+  interaktif?: boolean
+  children: ReactNode
+}
 
-function Bingkai({ label, lebar, tinggi, skalaAwal, ...cuplikan }: PropsBingkai) {
+/**
+ * Bingkai pratinjau `transform: scale()` dalam wadah tema. Dipakai cuplikan Tampilan Dasar dan pratinjau susunan
+ * penyunting.
+ */
+export function BingkaiPratinjau({ label, lebar, tinggi, skalaAwal, tema, tinggiOtomatis = false, interaktif = false, children }: PropsBingkai) {
   const wadah = useRef<HTMLDivElement>(null)
+  const isi = useRef<HTMLDivElement>(null)
   const [skala, setSkala] = useState(skalaAwal)
+  const [tinggiIsi, setTinggiIsi] = useState(tinggi)
   useEffect(() => {
     const el = wadah.current
     if (!el || typeof ResizeObserver === 'undefined') return
@@ -99,26 +116,40 @@ function Bingkai({ label, lebar, tinggi, skalaAwal, ...cuplikan }: PropsBingkai)
     pengamat.observe(el)
     return () => pengamat.disconnect()
   }, [lebar])
+  useEffect(() => {
+    const el = isi.current
+    if (!el || !tinggiOtomatis || typeof ResizeObserver === 'undefined') return
+    const ukur = () => setTinggiIsi(el.offsetHeight || tinggi)
+    ukur()
+    const pengamat = new ResizeObserver(ukur)
+    pengamat.observe(el)
+    return () => pengamat.disconnect()
+  }, [tinggi, tinggiOtomatis])
   const gaya = {
-    ...variabelTema(cuplikan.tema),
+    ...variabelTema(tema),
     ...pemetaanRegister(),
     width: lebar,
-    height: tinggi,
+    height: tinggiOtomatis ? undefined : tinggi,
     transform: `scale(${skala})`,
     transformOrigin: 'top left',
   } as CSSProperties
   return (
     <figure className="flex flex-col gap-1.5">
       <figcaption className="text-teks-kecil font-medium text-tinta-2">{label}</figcaption>
-      <div ref={wadah} className="w-full overflow-hidden rounded-2 border border-garis shadow-melayang" style={{ height: tinggi * skala }}>
+      <div
+        ref={wadah}
+        className="w-full overflow-hidden rounded-2 border border-garis shadow-melayang"
+        style={{ height: (tinggiOtomatis ? tinggiIsi : tinggi) * skala }}
+      >
         <div
+          ref={isi}
           data-situs
-          aria-hidden
-          inert
+          aria-hidden={interaktif ? undefined : true}
+          inert={interaktif ? undefined : true}
           className="skala-publik overflow-hidden bg-kertas font-sans text-teks text-tinta"
           style={gaya}
         >
-          <Cuplikan {...cuplikan} />
+          {children}
         </div>
       </div>
     </figure>
@@ -130,8 +161,12 @@ export function Pratinjau(props: Props) {
   return (
     <section aria-label="Pratinjau tampilan website" className="flex flex-col gap-4 self-start xl:sticky xl:top-6">
       <p className="text-label font-medium text-tinta-2 uppercase">Pratinjau</p>
-      <Bingkai {...props} label="HP (390 px)" lebar={390} tinggi={760} skalaAwal={0.6} />
-      <Bingkai {...props} label="Desktop (1280 px)" lebar={1280} tinggi={820} skalaAwal={0.36} />
+      <BingkaiPratinjau label="HP (390 px)" lebar={390} tinggi={760} skalaAwal={0.6} tema={props.tema}>
+        <Cuplikan {...props} />
+      </BingkaiPratinjau>
+      <BingkaiPratinjau label="Desktop (1280 px)" lebar={1280} tinggi={820} skalaAwal={0.36} tema={props.tema}>
+        <Cuplikan {...props} />
+      </BingkaiPratinjau>
       <p className="text-teks-kecil text-tinta-2">
         Template halaman sama untuk semua desa; yang berbeda adalah warna, huruf, sudut, kepadatan, motif, sampul, dan logo.
       </p>

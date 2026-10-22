@@ -1,6 +1,7 @@
 // @vitest-environment node
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
 import { galatSchema } from '@/domain/api'
+import { susunanBawaan } from '@/domain/website/susunan'
 import { muatDb } from '../db'
 import { aturModeJaringan } from '../jaringan'
 import { serverUji } from '../node'
@@ -106,13 +107,21 @@ describe('tampilanWarga di GET /alamat (rencana 7E-1 Tugas 2)', () => {
     warnaUtama: '#1F4E79', warnaAksen: '#1F4E79', latar: 'kertas', huruf: 'plex', sudut: 'tajam', kepadatan: 'lega', motif: 'pucuk-rebung',
     logo: null, sampul: null, warga: { fotoLatar: null, sambutan: 'Selamat datang di layanan Desa Sungai Sialang.' },
   }
-  it('sambutan ikut berubah setelah PUT tema; tidak ada di alamat induk, Konsol, kabupaten', async () => {
+  it('sambutan ikut berubah setelah draf diterbitkan; tidak ada di alamat induk, Konsol, kabupaten', async () => {
     const sebelum = (await (await ambil(url('sungaisialang', '/alamat'))).json()) as { desa: { tampilanWarga: unknown } }
     expect(sebelum.desa.tampilanWarga).toEqual({ warnaUtama: '#1F4E79', logo: null, fotoLatar: null, sambutan: null, huruf: 'plex' })
-    const put = await fetch(url('sungaisialang', '/website/situs/tema'), {
-      method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer demo.pgn_hendri' }, body: JSON.stringify(tema),
+    const put = await fetch(url('sungaisialang', '/website/situs/draf'), {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer demo.pgn_hendri' },
+      body: JSON.stringify({ dasarId: null, tema, susunan: susunanBawaan() }),
     })
     expect(put.status).toBe(200)
+    const terbit = await fetch(url('sungaisialang', '/website/situs/terbitkan'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer demo.pgn_hendri' },
+      body: JSON.stringify({ catatan: null }),
+    })
+    expect(terbit.status).toBe(200)
     const sesudah = (await (await ambil(url('sungaisialang', '/alamat'))).json()) as { desa: { tampilanWarga: { sambutan: string } } }
     expect(sesudah.desa.tampilanWarga.sambutan).toBe('Selamat datang di layanan Desa Sungai Sialang.')
     expect(await (await ambil(url(null, '/alamat'))).json()).toEqual({ jenis: 'induk' })

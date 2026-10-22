@@ -1,44 +1,34 @@
 import { Check } from '@phosphor-icons/react'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
-import { pesanGalat } from '@/api/galat'
-import { kunciWebsite, simpanTema } from '@/api/website'
 import { GALERI_TEMA, pasangTema, type TemaGaleri } from '@/domain/website/galeri-tema'
-import type { TemaDasar } from '@/domain/website/tema'
+import { samaDenganGaleri } from '@/domain/website/galeri-dasar'
+import { SUSUNAN_BERANDA_TEMA } from '@/domain/website/susunan'
 import { cn } from '@/ui/cn'
+import { Checkbox } from '@/ui/isian/Checkbox'
 import { ConfirmDialog } from '@/ui/lapisan/ConfirmDialog'
 import { tampilkanToast } from '@/ui/toast/antrean'
 import { Tombol } from '@/ui/tombol/Tombol'
 import { DialogPratinjauTema } from './DialogPratinjauTema'
+import { useDrafSitus } from './useDrafSitus'
 
-type Props = {
-  /** Tema yang tersimpan (bukan isian formulir yang belum disimpan). */
-  data: TemaDasar
-  /** Formulir punya perubahan yang belum disimpan. */
-  kotor: boolean
-  /** Dipanggil setelah tema tersimpan, supaya formulir memuat tema baru seluruhnya. */
-  onTerpasang: (tema: TemaDasar) => void
-}
-
-/** Galeri tema (SPEC-V0.2 §11.3): delapan kartu dengan pratinjau; memasang tema langsung menyimpannya, pengaturannya tetap bisa diubah. */
-export function GaleriTema({ data, kotor, onTerpasang }: Props) {
-  const queryClient = useQueryClient()
+/** Galeri tema (SPEC-V0.2 11.3): delapan kartu dengan pratinjau; memasang tema mengubah draf, pengaturannya tetap bisa diubah. */
+export function GaleriTema() {
+  const { isi, ubah } = useDrafSitus()
   const [lihat, setLihat] = useState<TemaGaleri | null>(null)
   const [pilih, setPilih] = useState<TemaGaleri | null>(null)
+  const [pakaiSusunan, setPakaiSusunan] = useState(false)
+  if (!isi) return null
 
-  const pasang = useMutation({
-    mutationFn: (tema: TemaGaleri) => simpanTema(pasangTema(data, tema.id)),
-    onSuccess: (baru, tema) => {
-      queryClient.setQueryData(kunciWebsite.situs, { terbit: baru })
-      onTerpasang(baru.tema)
-      setPilih(null)
-      tampilkanToast({ pesan: `Tema ${tema.nama} dipasang.`, nada: 'berhasil' })
-    },
-    onError: (e) => {
-      setPilih(null)
-      tampilkanToast({ pesan: pesanGalat(e), nada: 'galat' })
-    },
-  })
+  const pasang = (tema: TemaGaleri) => {
+    ubah((i) => ({
+      ...i,
+      tema: pasangTema(i.tema, tema.id),
+      ...(pakaiSusunan ? { susunan: { ...i.susunan, beranda: structuredClone(SUSUNAN_BERANDA_TEMA[tema.id]) } } : {}),
+    }))
+    setPilih(null)
+    setPakaiSusunan(false)
+    tampilkanToast({ pesan: `Tema ${tema.nama} dipasang di draf. Terbitkan untuk menerapkannya.`, nada: 'berhasil' })
+  }
 
   return (
     <section aria-labelledby="judul-galeri-tema" className="flex flex-col gap-3">
@@ -52,7 +42,7 @@ export function GaleriTema({ data, kotor, onTerpasang }: Props) {
       </div>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {GALERI_TEMA.map((t) => {
-          const dipakai = data.idGaleri === t.id
+          const dipakai = samaDenganGaleri(isi.tema) === t.id
           return (
             <figure
               key={t.id}
@@ -103,16 +93,23 @@ export function GaleriTema({ data, kotor, onTerpasang }: Props) {
       <ConfirmDialog
         isOpen={pilih !== null}
         onOpenChange={(buka) => {
-          if (!buka && !pasang.isPending) setPilih(null)
+          if (!buka) {
+            setPilih(null)
+            setPakaiSusunan(false)
+          }
         }}
         judul={pilih ? `Pakai tema ${pilih.nama}?` : ''}
         labelSetuju="Pakai tema"
-        memuat={pasang.isPending}
-        onSetuju={() => pilih && pasang.mutate(pilih)}
+        onSetuju={() => {
+          if (pilih) pasang(pilih)
+        }}
       >
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-3">
           <p>Warna, huruf, sudut, kepadatan, kepala, foto, dan motif diganti. Logo, sampul, foto latar, dan sambutan tetap.</p>
-          {kotor && <p className="text-merah">Perubahan yang belum disimpan akan hilang.</p>}
+          <Checkbox isSelected={pakaiSusunan} onChange={setPakaiSusunan}>
+            Juga pakai susunan beranda tema ini
+          </Checkbox>
+          <p className="text-teks-kecil text-tinta-2">Bila dicentang, susunan beranda diganti saran tema. Halaman tambahan dan menu tetap.</p>
         </div>
       </ConfirmDialog>
     </section>

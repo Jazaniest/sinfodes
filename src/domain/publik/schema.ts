@@ -105,6 +105,23 @@ export const blokTampilSchema = z.custom<BlokTampil>((v) => {
   return blok.success && DATA_BLOK[blok.data.jenis].safeParse((v as { data?: unknown }).data).success
 }, 'Blok tidak valid.')
 
+/**
+ * Blok pratinjau penyunting (SPEC-V0.2 11.4, 7F-2): blok siap tampil bertanda `kosong: false`, atau blok bersumber yang
+ * datanya belum ada bertanda `kosong: true` (tidak tampil di website, digambar kotak bergaris putus di pratinjau). Blok
+ * tersembunyi ikut dengan `tersembunyi: true`.
+ */
+export type BlokPratinjau = (BlokTampil & { kosong: false }) | (Blok & { kosong: true; data?: undefined })
+
+export const blokPratinjauSchema = z.custom<BlokPratinjau>((v) => {
+  const tanda = (v as { kosong?: unknown } | null)?.kosong
+  if (typeof tanda !== 'boolean') return false
+  return tanda ? blokSchema.safeParse(v).success : blokTampilSchema.safeParse(v).success
+}, 'Blok pratinjau tidak valid.')
+
+/** `POST /website/situs/pratinjau` (7F-2): blok halaman yang sedang disunting, lengkap dengan tandanya. */
+export const pratinjauSitusSchema = z.object({ blok: z.array(blokPratinjauSchema) })
+export type PratinjauSitus = z.infer<typeof pratinjauSitusSchema>
+
 /** Halaman tambahan website desa (SPEC-V0.2 11.4): judul dan blok susunannya. */
 export const halamanPublikSchema = z.object({ judul: z.string(), blok: z.array(blokTampilSchema) })
 export type HalamanPublik = z.infer<typeof halamanPublikSchema>

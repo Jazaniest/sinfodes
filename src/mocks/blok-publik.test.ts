@@ -62,7 +62,7 @@ describe('Blok publik, halaman tambahan, dan menu (rencana 7F-1 Tugas 3)', () =>
   it('halaman tambahan terbit bisa dibuka di /halaman/{nama}; nama yang tidak ada ditolak 404', async () => {
     masukSebagai(AKUN_UJI.operator)
     const halaman = { id: 'hlm_uji001', nama: 'sejarah-kampung', judul: 'Sejarah Kampung', blok: [susunBlok({ id: 'blk_uji001', jenis: 'teks' })] }
-    await simpanDraf(TEMA, { ...susunanBawaan(), halaman: [halaman] })
+    await simpanDraf(null, { tema: TEMA, susunan: { ...susunanBawaan(), halaman: [halaman] } })
     await terbitkan('Tambah halaman Sejarah Kampung.')
     const hasil = await ambilHalamanTambahan('sungaisialang', 'sejarah-kampung')
     expect(hasil.judul).toBe('Sejarah Kampung')
@@ -76,7 +76,7 @@ describe('Blok publik, halaman tambahan, dan menu (rencana 7F-1 Tugas 3)', () =>
       ...menuBawaan().map((m) => (m.jenis === 'sistem' && m.kunci === 'statistik' ? { ...m, tampil: false } : m)),
       { jenis: 'tautan', label: 'Situs Kecamatan', url: 'https://kecamatan.example.id' },
     ]
-    await simpanDraf(TEMA, { ...susunanBawaan(), menu })
+    await simpanDraf(null, { tema: TEMA, susunan: { ...susunanBawaan(), menu } })
     await terbitkan('Ubah menu.')
     const identitas = await ambilIdentitasPublik('sungaisialang')
     expect(identitas.menu.map((m) => m.label)).toEqual([
@@ -103,7 +103,7 @@ describe('Blok publik, halaman tambahan, dan menu (rencana 7F-1 Tugas 3)', () =>
   it('susunan draf yang belum diterbitkan belum mengubah menu publik', async () => {
     masukSebagai(AKUN_UJI.operator)
     const menu = menuBawaan().map((m) => (m.jenis === 'sistem' && m.kunci === 'potensi' ? { ...m, tampil: false } : m))
-    await simpanDraf(TEMA, { ...susunanBawaan(), menu })
+    await simpanDraf(null, { tema: TEMA, susunan: { ...susunanBawaan(), menu } })
     const identitas = await ambilIdentitasPublik('sungaisialang')
     expect(identitas.menu.map((m) => m.label)).toContain('Potensi')
   })

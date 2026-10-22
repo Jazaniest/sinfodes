@@ -35,7 +35,7 @@ const TULIS: readonly (readonly [string, string, string, string])[] = [
   ['ubah isian surat', 'PATCH', '/permohonan/prm_x', AKUN_UJI.sekdes],
   ['balas pengaduan', 'POST', '/pengaduan/pgd_x/balasan', AKUN_UJI.sekdes],
   ['ubah status pengaduan', 'POST', '/pengaduan/pgd_x/status', AKUN_UJI.sekdes],
-  ['simpan tampilan website', 'PUT', '/website/situs/tema', AKUN_UJI.sekdes],
+  ['simpan tampilan website', 'PUT', '/website/situs/draf', AKUN_UJI.sekdes],
   ['simpan identitas', 'PUT', '/pengaturan/desa', AKUN_UJI.sekdes],
   ['undang pengguna', 'POST', '/pengaturan/pengguna', AKUN_UJI.sekdes],
   ['tandai laporan kabupaten terkirim', 'POST', '/tenggat-laporan/tgt_x/kirim', AKUN_UJI.sekdes],

@@ -4,6 +4,7 @@ import { lencanaAdminSchema } from '@/domain/indeks/lencana'
 import {
   agendaSchema, artikelSchema, fotoGaleriSchema, pengumumanSchema,
 } from '@/domain/website/schema'
+import { pratinjauSitusSchema } from '@/domain/publik/schema'
 import { riwayatSitusSchema, situsSchema, versiSitusSchema } from '@/domain/website/situs'
 import { type Susunan } from '@/domain/website/susunan'
 import type { TemaDasar } from '@/domain/website/tema'
@@ -49,13 +50,15 @@ export function ambilSitus(signal?: AbortSignal) {
   return panggilApi('GET', '/website/situs', { skema: situsSchema, signal })
 }
 export const opsiSitus = () => queryOptions({ queryKey: kunciWebsite.situs, queryFn: ({ signal }) => ambilSitus(signal) })
-export function simpanTema(tema: TemaDasar) {
-  return panggilApi('PUT', '/website/situs/tema', { skema: versiSitusSchema, body: tema })
+
+/** Simpan draf tampilan (tema + susunan); website publik baru berubah setelah `terbitkan`. `dasarId` = ID draf yang dimuat klien. */
+export function simpanDraf(dasarId: string | null, isi: { tema: TemaDasar; susunan: Susunan }) {
+  return panggilApi('PUT', '/website/situs/draf', { skema: versiSitusSchema, body: { dasarId, ...isi } })
 }
 
-/** Simpan draf tampilan (tema + susunan); website publik baru berubah setelah `terbitkan`. */
-export function simpanDraf(tema: TemaDasar, susunan: Susunan) {
-  return panggilApi('PUT', '/website/situs/draf', { skema: versiSitusSchema, body: { tema, susunan } })
+/** Pratinjau satu halaman dari tema dan susunan yang sedang disunting (7F-2), lengkap dengan tanda blok kosong. */
+export function pratinjauSitus(isi: { tema: TemaDasar; susunan: Susunan }, halaman: string) {
+  return panggilApi('POST', '/website/situs/pratinjau', { skema: pratinjauSitusSchema, body: { ...isi, halaman } })
 }
 
 /** Buang draf: kembali ke versi terbit. */

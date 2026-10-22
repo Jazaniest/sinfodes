@@ -17,7 +17,7 @@ import { pastikanLencana } from '../lencana'
 import { perkiraanHariKerja } from '../surat-perkiraan'
 import type { DbDemo } from '../tipe-db'
 import { bacaJson } from '../tulis'
-import { versiTerbit } from './website'
+import { versiTerbit, sumberTerbit } from './website'
 
 /**
  * Website tayang untuk desa yang sudah berjalan, termasuk yang Ditangguhkan, sehingga cek keaslian suratnya selalu jalan. Desa
@@ -43,7 +43,7 @@ function identitas(db: DbDemo, d: Desa): IdentitasPublik {
   return {
     slug: d.slug, nama: d.nama, kecamatan: d.kecamatan, kabupaten: d.kabupaten, provinsi: d.provinsi, alamatKantor: d.alamatKantor,
     kodePos: d.kodePos, surel: d.surel, telepon: d.telepon, jamLayanan: d.jamLayanan, luasKm2: d.luasKm2,
-    tema, favicon: d.lambang ?? null, menu: menuSitus(db, d),
+    tema, favicon: d.lambang ?? null, menu: menuSitus(d, versiTerbit(db, d.id).susunan),
   }
 }
 
@@ -99,7 +99,7 @@ export const handlerPublik = [
       const pengumuman = pengumumanBerlaku(db, desa.id, tanggalIsoWib(new Date()))
       const rekam = db.rekamDesa.find((r) => r.desaId === desa.id)
       const hasil: BerandaPublik = {
-        blok: selesaikanBlok(db, desa, versiTerbit(db, desa.id).susunan.beranda, new Date()),
+        blok: selesaikanBlok(db, desa, versiTerbit(db, desa.id).susunan.beranda, new Date(), sumberTerbit(db, desa.id)),
         // Desa rekaman tanpa kabar terbit maupun pengumuman berlaku memakai website minimal (SPEC-V0.2 13).
         profilSingkat: daftar.length === 0 && pengumuman.length === 0 ? (rekam?.profilSingkat ?? null) : null,
       }

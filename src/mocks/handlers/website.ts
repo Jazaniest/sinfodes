@@ -2,11 +2,12 @@ import { http, HttpResponse } from 'msw'
 import { z } from 'zod'
 import { waktuIsoWib } from '@/domain/format/tanggal'
 import { periksaTema } from '@/domain/website/kontras'
-import { susunanSchema } from '@/domain/website/susunan'
+import { pratinjauSchema, simpanDrafSchema } from '@/domain/website/susunan'
 import type { TemaDasar } from '@/domain/website/tema'
 import type { SitusDesa, VersiRiwayat, VersiSitus } from '@/domain/website/situs'
 import { samaDenganGaleri } from '@/domain/website/galeri-dasar'
 import { temaDasarSchema } from '@/domain/website/tema'
+import { pratinjauBlok, type SumberTampil } from '../blok-publik'
 import { ambilDb, ubahDb } from '../db'
 import { API, balasDaftar, balasGalat, denganJaringan } from '../http'
 import type { DbDemo } from '../tipe-db'
@@ -21,6 +22,12 @@ const balasSemua = <T,>(daftar: readonly T[]) => balasDaftar(daftar, 1, Math.max
 /** Versi terbit situs desa, atau tema Warta bawaan untuk desa yang belum punya dokumen (mis. desa baru dari Konsol). */
 export function versiTerbit(db: DbDemo, desaId: string): VersiSitus {
   return (db.situs.find((x) => x.desaId === desaId) ?? situsBawaan(desaId, db.tanggalAcuan)).terbit
+}
+
+/** Sumber tampilan dari versi terbit, dipakai penyelesaian blok website publik (bukan pratinjau penyunting). */
+export function sumberTerbit(db: DbDemo, desaId: string): SumberTampil {
+  const v = versiTerbit(db, desaId)
+  return { motif: v.tema.motif, sampul: v.tema.sampul, halaman: v.susunan.halaman }
 }
 
 /** Tema valid (skema + kontras server); `idGaleri` dihitung ulang, tidak dipercaya dari klien (fokus review 2). */
@@ -117,24 +124,25 @@ export const handlerWebsite = [
       return HttpResponse.json({ terbit: dok.terbit, draf: dok.draf })
     }),
   ),
-  http.put(
-    `${API}/website/situs/tema`,
+  http.post(
+    `${API}/website/situs/pratinjau`,
     denganJaringan(async ({ request }) => {
       const pengguna = butuhPengelola(request)
       if (pengguna instanceof Response) return pengguna
-      const tema = sahkanTema(await bacaJson(request))
-      if (tema instanceof Response) return tema
-      const diperbarui = waktuIsoWib(new Date())
-      const oleh = pelakuDari(pengguna)
+      const masukan = pratinjauSchema.safeParse(await bacaJson(request))
+      if (!masukan.success) return balasIsianTidakValid(masukan.error)
+      // Kontras tema tidak diperiksa: pratinjau tetap jalan selama warnanya sedang diperbaiki.
+      const tema = temaDasarSchema.safeParse(masukan.data.tema)
+      if (!tema.success) return balasIsianTidakValid(tema.error)
       const db = ambilDb()
-      const ada = db.situs.find((x) => x.desaId === pengguna.desaId)
-      const baru: VersiSitus = { ...(ada?.terbit ?? situsBawaan(pengguna.desaId, db.tanggalAcuan).terbit), tema, diperbarui, oleh }
-      ubahDb((d) => {
-        const dok = d.situs.find((x) => x.desaId === pengguna.desaId)
-        if (dok) dok.terbit = baru
-        else d.situs.push({ desaId: pengguna.desaId, terbit: baru, draf: null, riwayat: [] })
-      })
-      return HttpResponse.json(baru)
+      const desa = db.desa.find((x) => x.id === pengguna.desaId)
+      if (!desa) return balasGalat('NOT_FOUND', 'Desa tidak ditemukan.', 404)
+      const susunan = masukan.data.susunan
+      const blok = masukan.data.halaman === 'beranda' ? susunan.beranda : susunan.halaman.find((h) => h.id === masukan.data.halaman)?.blok
+      if (!blok) return balasGalat('NOT_FOUND', 'Halaman tidak ditemukan.', 404)
+      // Pratinjau memakai tema dan halaman yang sedang disunting, bukan versi terbit.
+      const sumber: SumberTampil = { motif: tema.data.motif, sampul: tema.data.sampul, halaman: susunan.halaman }
+      return HttpResponse.json({ blok: pratinjauBlok(db, desa, blok, new Date(), sumber) })
     }),
   ),
   http.put(
@@ -142,11 +150,16 @@ export const handlerWebsite = [
     denganJaringan(async ({ request }) => {
       const pengguna = butuhPengelola(request)
       if (pengguna instanceof Response) return pengguna
-      const masukan = z.object({ tema: z.unknown(), susunan: susunanSchema }).safeParse(await bacaJson(request))
+      const masukan = simpanDrafSchema.safeParse(await bacaJson(request))
       if (!masukan.success) return balasIsianTidakValid(masukan.error)
+      const db = ambilDb()
+      // Penjaga timpa diam-diam: simpanan ditolak bila draf di server sudah berganti ID (mis. tab lain menyimpan lebih dulu).
+      const drafKini = db.situs.find((x) => x.desaId === pengguna.desaId)?.draf ?? null
+      if (drafKini && drafKini.id !== masukan.data.dasarId) {
+        return balasGalat('CONFLICT', 'Draf diubah di tempat lain. Muat ulang untuk melihat perubahan terbaru.', 409)
+      }
       const tema = sahkanTema(masukan.data.tema)
       if (tema instanceof Response) return tema
-      const db = ambilDb()
       const draf: VersiSitus = {
         id: idVersiBaru(db, pengguna.desaId),
         tema,

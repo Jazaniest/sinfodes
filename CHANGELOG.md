@@ -267,6 +267,22 @@ Pekerjaan v0.2.0 (tahap 7A-7H) dicatat di sini selama berjalan di branch `develo
 - `versiSitusSchema` mendapat `id` (`vrs_{n}`), `susunan`, dan `catatan`; respons `GET /website/situs` kini `{ terbit, draf }`.
 - Data demo naik ke versi 30: setiap situs desa memperoleh susunan beranda dari temanya (Warta untuk Sungai Sialang dan Tanjung Lamo).
 
+### Ditambahkan (7F-2: penyunting susunan, draf, riwayat)
+
+- **Sub-tab Susunan di *Website - Tampilan*** dengan penyunting blok: daftar blok (seret-taruh, tombol *Naik*/*Turun*, *Gandakan*, *Sembunyikan*/*Tampilkan*, *Hapus* dengan konfirmasi bila berisi), katalog 16 jenis blok, panel pengaturan (varian, lebar, isian per jenis, galat skema per isian), dan pratinjau HP 390 px/desktop 1280 px yang bisa diklik untuk memilih blok. Blok yang sumber datanya kosong bertanda *Kosong, tidak tampil di website*; pilihan halaman tersimpan di `?halaman=`.
+- **Menu website** disusun di sub-tab Susunan: urutan dengan *Naik*/*Turun*, saklar *Tampil* (Layanan dan Cek keaslian wajib ada), halaman tambahan bisa dikeluarkan dan dimasukkan kembali, serta *Tambah tautan luar* (paling banyak 2).
+- **Halaman tambahan** ditambah, diubah judul/namanya, dan dihapus dari pemilih halaman; nama diusulkan dari judul, halaman baru berisi satu blok Teks kosong dan langsung masuk menu, dan penghapusan ditolak bila halaman masih menjadi tujuan blok Ajakan.
+- **Alur draf untuk seluruh Tampilan:** perubahan Dasar dan Susunan tersimpan otomatis 1 detik kemudian. Bilah draf berisi status simpan, *Terbitkan* (dengan catatan), *Buang draf*, dan *Riwayat*; laci Riwayat memuat 20 terbitan terakhir dengan *Pulihkan* yang menyalinnya menjadi draf; simpanan yang ditimpa tab lain ditolak 409 dengan banner *Muat ulang*.
+- `POST /website/situs/pratinjau` mengembalikan blok halaman yang sedang disunting beserta tanda `kosong`; hasilnya sama dengan yang akan tampil di website.
+- Dialog pasang tema galeri mendapat kotak centang *Juga pakai susunan beranda tema ini*; hasil pemasangan tema masuk draf, bukan langsung tayang.
+
+### Diubah (7F-2)
+
+- `PUT /website/situs/draf` membutuhkan `dasarId` (ID draf yang dimuat klien, `null` bila mulai dari terbit) dan menolak 409 "Draf diubah di tempat lain" bila draf di server sudah berganti.
+- `PUT /website/situs/tema` dihapus; pengaturan Dasar kini mengalir lewat draf dan tayang lewat *Terbitkan*.
+- Tombol *Simpan* dan *Batalkan perubahan* di Tampilan Dasar dihapus; galat isian ditampilkan langsung pada isian yang bersangkutan, dan isian yang tidak sah menahan simpanan draf.
+- Wadah blok website memperoleh `data-blok`; di pratinjau penyunting, blok tersembunyi digambar redup dan blok kosong menjadi kotak bergaris putus.
+
 ## [0.1.0] - 2026-10-16
 
 Demo tahap 1: frontend sungguhan dengan API tiruan (MSW) dan data dummy Desa Sungai Sialang, Kabupaten Pelalawan.
