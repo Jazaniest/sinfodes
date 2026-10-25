@@ -14,9 +14,11 @@ export function KerangkaPublik() {
   const terkini = useQuery(opsiIdentitasPublik(slug))
   const identitas = terkini.data ?? awal
   const jalur = useRouterState({ select: (s) => s.location.pathname })
+  // Halaman Cek keaslian tidak memakai CSS kustom desa: bukti surat harus tampil apa adanya (SPEC-V0.2 11.5).
+  const cekKeaslian = /\/verifikasi\/?$/.test(jalur)
   return (
     <PublikKonteks value={identitas}>
-      <WebsiteShell identitas={identitas} jalur={jalur} tanggal={formatTanggal(tanggalIsoWib(new Date()), 'hari')}>
+      <WebsiteShell identitas={identitas} jalur={jalur} cekKeaslian={cekKeaslian} tanggal={formatTanggal(tanggalIsoWib(new Date()), 'hari')}>
         <Outlet />
       </WebsiteShell>
     </PublikKonteks>

@@ -52,5 +52,7 @@ export const BAGIAN_KONTRAK = [
   'blok-kontak',
   'blok-lencana',
   'blok-pemisah',
+  // 7G: blok HTML terkurung dibungkus `section data-bagian="blok-html"`.
+  'blok-html',
 ] as const
 export type BagianKontrak = (typeof BAGIAN_KONTRAK)[number]

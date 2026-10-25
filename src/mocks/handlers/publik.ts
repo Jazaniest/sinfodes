@@ -17,7 +17,7 @@ import { pastikanLencana } from '../lencana'
 import { perkiraanHariKerja } from '../surat-perkiraan'
 import type { DbDemo } from '../tipe-db'
 import { bacaJson } from '../tulis'
-import { versiTerbit, sumberTerbit } from './website'
+import { versiTerbit, sumberTerbit, situsDesa } from './website'
 
 /**
  * Website tayang untuk desa yang sudah berjalan, termasuk yang Ditangguhkan, sehingga cek keaslian suratnya selalu jalan. Desa
@@ -38,12 +38,15 @@ export function cariDesaPublik(slug: unknown, request: Request): { db: DbDemo; d
 }
 
 function identitas(db: DbDemo, d: Desa): IdentitasPublik {
-  const { warga, ...tema } = versiTerbit(db, d.id).tema
+  const versi = versiTerbit(db, d.id)
+  const { warga, ...tema } = versi.tema
   void warga // tampilan halaman masuk warga tidak ikut website publik
+  // CSS kustom (7G, sudah terkurung) hanya dikirim ke website publik saat tingkat Lanjut aktif dan kodenya tidak kosong.
+  const cssKustom = situsDesa(db, d.id).lanjut.aktif && versi.cssTerlingkup !== '' ? versi.cssTerlingkup : null
   return {
     slug: d.slug, nama: d.nama, kecamatan: d.kecamatan, kabupaten: d.kabupaten, provinsi: d.provinsi, alamatKantor: d.alamatKantor,
     kodePos: d.kodePos, surel: d.surel, telepon: d.telepon, jamLayanan: d.jamLayanan, luasKm2: d.luasKm2,
-    tema, favicon: d.lambang ?? null, menu: menuSitus(d, versiTerbit(db, d.id).susunan),
+    tema, favicon: d.lambang ?? null, menu: menuSitus(d, versi.susunan), cssKustom,
   }
 }
 

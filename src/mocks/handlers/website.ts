@@ -1,10 +1,12 @@
 import { http, HttpResponse } from 'msw'
 import { z } from 'zod'
 import { waktuIsoWib } from '@/domain/format/tanggal'
+import { PESAN_BLOK_HTML_HILANG } from '@/domain/website/blok'
+import { periksaCss, POLA_MEDIA } from '@/domain/website/css-kustom'
 import { periksaTema } from '@/domain/website/kontras'
 import { pratinjauSchema, simpanDrafSchema } from '@/domain/website/susunan'
 import type { TemaDasar } from '@/domain/website/tema'
-import type { SitusDesa, VersiRiwayat, VersiSitus } from '@/domain/website/situs'
+import type { LanjutSitus, SitusDesa, VersiRiwayat, VersiSitus } from '@/domain/website/situs'
 import { samaDenganGaleri } from '@/domain/website/galeri-dasar'
 import { temaDasarSchema } from '@/domain/website/tema'
 import { pratinjauBlok, type SumberTampil } from '../blok-publik'
@@ -12,7 +14,7 @@ import { ambilDb, ubahDb } from '../db'
 import { API, balasDaftar, balasGalat, denganJaringan } from '../http'
 import type { DbDemo } from '../tipe-db'
 import { situsBawaan } from '../generator/website'
-import { bacaJson, balasIsianTidakValid, butuhKemampuan, pelakuDari } from '../tulis'
+import { bacaJson, balasField, balasIsianTidakValid, butuhKemampuan, pelakuDari } from '../tulis'
 
 const butuhPengelola = (request: Request) => butuhKemampuan(request, 'website.kelola', 'Peran Anda tidak berhak mengelola Website Desa.')
 
@@ -27,7 +29,10 @@ export function versiTerbit(db: DbDemo, desaId: string): VersiSitus {
 /** Sumber tampilan dari versi terbit, dipakai penyelesaian blok website publik (bukan pratinjau penyunting). */
 export function sumberTerbit(db: DbDemo, desaId: string): SumberTampil {
   const v = versiTerbit(db, desaId)
-  return { motif: v.tema.motif, sampul: v.tema.sampul, halaman: v.susunan.halaman }
+  return {
+    motif: v.tema.motif, sampul: v.tema.sampul, halaman: v.susunan.halaman,
+    blokHtml: v.blokHtml, lanjut: situsDesa(db, desaId).lanjut.aktif,
+  }
 }
 
 /** Tema valid (skema + kontras server); `idGaleri` dihitung ulang, tidak dipercaya dari klien (fokus review 2). */
@@ -52,7 +57,8 @@ function idVersiBaru(db: DbDemo, desaId: string): string {
   return `vrs_${nomor + 1}`
 }
 
-const dokumen = (db: DbDemo, desaId: string): SitusDesa => db.situs.find((x) => x.desaId === desaId) ?? situsBawaan(desaId, db.tanggalAcuan)
+/** Dokumen situs desa; desa tanpa dokumen memakai situs bawaan (mis. desa baru dari Konsol). */
+export const situsDesa = (db: DbDemo, desaId: string): SitusDesa => db.situs.find((x) => x.desaId === desaId) ?? situsBawaan(desaId, db.tanggalAcuan)
 
 /** Versi riwayat tanpa gambar data URL besar: `logo`, `sampul`, dan `fotoLatar` diganti penanda `true`/`null`. */
 function kePenanda(v: VersiSitus): VersiRiwayat {
@@ -76,6 +82,8 @@ const skemaCatatan = z.object({
     .nullable()
     .default(null),
 })
+
+const skemaLanjut = z.object({ aktif: z.boolean() })
 
 /** Website Desa (SPEC A8): artikel, pengumuman, agenda, dan galeri hanya lihat; Tampilan bisa disimpan. */
 export const handlerWebsite = [
@@ -120,8 +128,8 @@ export const handlerWebsite = [
     denganJaringan(({ request }) => {
       const pengguna = butuhPengelola(request)
       if (pengguna instanceof Response) return pengguna
-      const dok = dokumen(ambilDb(), pengguna.desaId)
-      return HttpResponse.json({ terbit: dok.terbit, draf: dok.draf })
+      const dok = situsDesa(ambilDb(), pengguna.desaId)
+      return HttpResponse.json({ terbit: dok.terbit, draf: dok.draf, lanjut: dok.lanjut })
     }),
   ),
   http.post(
@@ -140,8 +148,11 @@ export const handlerWebsite = [
       const susunan = masukan.data.susunan
       const blok = masukan.data.halaman === 'beranda' ? susunan.beranda : susunan.halaman.find((h) => h.id === masukan.data.halaman)?.blok
       if (!blok) return balasGalat('NOT_FOUND', 'Halaman tidak ditemukan.', 404)
-      // Pratinjau memakai tema dan halaman yang sedang disunting, bukan versi terbit.
-      const sumber: SumberTampil = { motif: tema.data.motif, sampul: tema.data.sampul, halaman: susunan.halaman }
+      // Pratinjau memakai tema dan halaman yang sedang disunting, bukan versi terbit. Blok `html` milik penyunting
+      // selalu ditampilkan di pratinjau (dan ditandai kosong bila kodenya belum ada), walau tingkat Lanjut mati.
+      const sumber: SumberTampil = {
+        motif: tema.data.motif, sampul: tema.data.sampul, halaman: susunan.halaman, blokHtml: masukan.data.blokHtml, lanjut: true,
+      }
       return HttpResponse.json({ blok: pratinjauBlok(db, desa, blok, new Date(), sumber) })
     }),
   ),
@@ -160,10 +171,23 @@ export const handlerWebsite = [
       }
       const tema = sahkanTema(masukan.data.tema)
       if (tema instanceof Response) return tema
+      // CSS kustom (7G): setiap pelanggaran ditolak 422 dengan pesan berbaris di field `cssKustom` (maksimal 20 pesan).
+      const hasil = await periksaCss(masukan.data.cssKustom, { polaMedia: POLA_MEDIA })
+      if (hasil.masalah.length > 0) {
+        const pesan = hasil.masalah.slice(0, 20).map((m) => m.pesan).join('\n')
+        return balasGalat('VALIDATION', pesan, 422, { cssKustom: pesan })
+      }
+      // Setiap blok `html` wajib menunjuk kode yang ada di daftar `blokHtml` versi ini (keputusan 4 rencana 7G).
+      const merujuk = [...masukan.data.susunan.beranda, ...masukan.data.susunan.halaman.flatMap((h) => h.blok)]
+        .some((b) => b.jenis === 'html' && !masukan.data.blokHtml.some((k) => k.id === b.isi.htmlId))
+      if (merujuk) return balasField('blokHtml', PESAN_BLOK_HTML_HILANG)
       const draf: VersiSitus = {
         id: idVersiBaru(db, pengguna.desaId),
         tema,
         susunan: masukan.data.susunan,
+        cssKustom: masukan.data.cssKustom,
+        cssTerlingkup: hasil.terlingkup ?? '',
+        blokHtml: masukan.data.blokHtml,
         diperbarui: waktuIsoWib(new Date()),
         oleh: pelakuDari(pengguna),
         catatan: null,
@@ -171,7 +195,7 @@ export const handlerWebsite = [
       ubahDb((d) => {
         const ada = d.situs.find((x) => x.desaId === pengguna.desaId)
         if (ada) ada.draf = draf
-        else d.situs.push({ desaId: pengguna.desaId, terbit: situsBawaan(pengguna.desaId, d.tanggalAcuan).terbit, draf, riwayat: [] })
+        else d.situs.push({ ...situsBawaan(pengguna.desaId, d.tanggalAcuan), draf })
       })
       return HttpResponse.json(draf)
     }),
@@ -181,12 +205,35 @@ export const handlerWebsite = [
     denganJaringan(({ request }) => {
       const pengguna = butuhPengelola(request)
       if (pengguna instanceof Response) return pengguna
-      const terbit = dokumen(ambilDb(), pengguna.desaId).terbit
+      const dok = situsDesa(ambilDb(), pengguna.desaId)
       ubahDb((d) => {
         const ada = d.situs.find((x) => x.desaId === pengguna.desaId)
         if (ada) ada.draf = null
       })
-      return HttpResponse.json({ terbit, draf: null })
+      return HttpResponse.json({ terbit: dok.terbit, draf: null, lanjut: dok.lanjut })
+    }),
+  ),
+  http.put(
+    `${API}/website/situs/lanjut`,
+    denganJaringan(async ({ request }) => {
+      const pengguna = butuhPengelola(request)
+      if (pengguna instanceof Response) return pengguna
+      const isian = skemaLanjut.safeParse(await bacaJson(request))
+      if (!isian.success) return balasIsianTidakValid(isian.error)
+      const db = ambilDb()
+      // Saklar tingkat Lanjut (keputusan 8 rencana 7G): menampilkan atau menyembunyikan CSS kustom dan Blok HTML di
+      // website publik tanpa terbit ulang dan tanpa menghapus kode; waktu pengaktifan pertama dicatat sekali.
+      const lama = situsDesa(db, pengguna.desaId).lanjut
+      const lanjut: LanjutSitus = {
+        aktif: isian.data.aktif,
+        pertamaDiaktifkan: lama.pertamaDiaktifkan ?? (isian.data.aktif ? waktuIsoWib(new Date()) : null),
+      }
+      ubahDb((d) => {
+        const ada = d.situs.find((x) => x.desaId === pengguna.desaId)
+        if (ada) ada.lanjut = lanjut
+        else d.situs.push({ ...situsBawaan(pengguna.desaId, d.tanggalAcuan), lanjut })
+      })
+      return HttpResponse.json(lanjut)
     }),
   ),
   http.post(
@@ -196,7 +243,7 @@ export const handlerWebsite = [
       if (pengguna instanceof Response) return pengguna
       const isian = skemaCatatan.safeParse(await bacaJson(request))
       if (!isian.success) return balasIsianTidakValid(isian.error)
-      const dok = dokumen(ambilDb(), pengguna.desaId)
+      const dok = situsDesa(ambilDb(), pengguna.desaId)
       if (!dok.draf) return balasGalat('CONFLICT', 'Tidak ada draf untuk diterbitkan.', 409)
       const terbit: VersiSitus = { ...dok.draf, diperbarui: waktuIsoWib(new Date()), oleh: pelakuDari(pengguna), catatan: isian.data.catatan }
       ubahDb((d) => {
@@ -215,7 +262,7 @@ export const handlerWebsite = [
     denganJaringan(({ request }) => {
       const pengguna = butuhPengelola(request)
       if (pengguna instanceof Response) return pengguna
-      return HttpResponse.json({ data: dokumen(ambilDb(), pengguna.desaId).riwayat.map(kePenanda) })
+      return HttpResponse.json({ data: situsDesa(ambilDb(), pengguna.desaId).riwayat.map(kePenanda) })
     }),
   ),
   http.post(
@@ -224,14 +271,14 @@ export const handlerWebsite = [
       const pengguna = butuhPengelola(request)
       if (pengguna instanceof Response) return pengguna
       const db = ambilDb()
-      const versi = dokumen(db, pengguna.desaId).riwayat.find((v) => v.id === String(params.id))
+      const versi = situsDesa(db, pengguna.desaId).riwayat.find((v) => v.id === String(params.id))
       if (!versi) return balasGalat('NOT_FOUND', 'Versi tidak ditemukan.', 404)
       // Pulihkan menyalin versi lama menjadi draf; website belum berubah sampai diterbitkan.
       const draf: VersiSitus = { ...structuredClone(versi), id: idVersiBaru(db, pengguna.desaId), diperbarui: waktuIsoWib(new Date()) }
       ubahDb((d) => {
         const ada = d.situs.find((x) => x.desaId === pengguna.desaId)
         if (ada) ada.draf = draf
-        else d.situs.push({ desaId: pengguna.desaId, terbit: situsBawaan(pengguna.desaId, d.tanggalAcuan).terbit, draf, riwayat: [] })
+        else d.situs.push({ ...situsBawaan(pengguna.desaId, d.tanggalAcuan), draf })
       })
       return HttpResponse.json(draf)
     }),

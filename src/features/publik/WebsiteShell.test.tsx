@@ -5,9 +5,14 @@ import { contohIdentitasPublik } from '@/test/publik'
 import { FotoWarta } from '@/ui/website/FotoWarta'
 import { WebsiteShell } from './WebsiteShell'
 
-function pasang(jalur: string, ubah: Partial<IdentitasPublik> = {}) {
+function pasang(jalur: string, ubah: Partial<IdentitasPublik> = {}, cekKeaslian = false) {
   return render(
-    <WebsiteShell identitas={{ ...contohIdentitasPublik(), ...ubah }} jalur={jalur} tanggal="Kamis, 24 September 2026">
+    <WebsiteShell
+      identitas={{ ...contohIdentitasPublik(), ...ubah }}
+      jalur={jalur}
+      cekKeaslian={cekKeaslian}
+      tanggal="Kamis, 24 September 2026"
+    >
       <p>Isi halaman</p>
     </WebsiteShell>,
   )
@@ -90,7 +95,7 @@ describe('kerangka website desa (SPEC §9)', () => {
   it('bentuk kepala dan perlakuan foto mengikuti tema (7E-2)', () => {
     const tema = { ...contohIdentitasPublik().tema, kepala: 'pita' as const, foto: 'penuh' as const }
     const { container } = render(
-      <WebsiteShell identitas={{ ...contohIdentitasPublik(), tema }} jalur="/desa/sungaisialang" tanggal="Kamis, 24 September 2026">
+      <WebsiteShell identitas={{ ...contohIdentitasPublik(), tema }} jalur="/desa/sungaisialang" cekKeaslian={false} tanggal="Kamis, 24 September 2026">
         <FotoWarta berkas="/demo/foto/ombak-bono.jpg" alt="" keterangan="Ombak Bono" />
       </WebsiteShell>,
     )
@@ -108,7 +113,7 @@ describe('kerangka website desa (SPEC §9)', () => {
       ],
     }
     render(
-      <WebsiteShell identitas={identitas} jalur="/desa/sungaisialang/halaman/sejarah-kampung" tanggal="Kamis, 24 September 2026">
+      <WebsiteShell identitas={identitas} jalur="/desa/sungaisialang/halaman/sejarah-kampung" cekKeaslian={false} tanggal="Kamis, 24 September 2026">
         <p>Isi halaman</p>
       </WebsiteShell>,
     )
@@ -131,7 +136,7 @@ describe('kerangka website desa (SPEC §9)', () => {
       ],
     }
     render(
-      <WebsiteShell identitas={identitas} jalur="/desa/sungaisialang/halaman/sejarah-kampung" tanggal="Kamis, 24 September 2026">
+      <WebsiteShell identitas={identitas} jalur="/desa/sungaisialang/halaman/sejarah-kampung" cekKeaslian={false} tanggal="Kamis, 24 September 2026">
         <p>Isi halaman</p>
       </WebsiteShell>,
     )
@@ -141,7 +146,7 @@ describe('kerangka website desa (SPEC §9)', () => {
   })
   it('tema bawaan: kepala warta dan foto berbingkai', () => {
     const { container } = render(
-      <WebsiteShell identitas={contohIdentitasPublik()} jalur="/desa/sungaisialang" tanggal="Kamis, 24 September 2026">
+      <WebsiteShell identitas={contohIdentitasPublik()} jalur="/desa/sungaisialang" cekKeaslian={false} tanggal="Kamis, 24 September 2026">
         <FotoWarta berkas="/demo/foto/ombak-bono.jpg" alt="" keterangan="Ombak Bono" />
       </WebsiteShell>,
     )
@@ -162,5 +167,53 @@ describe('kerangka website desa (SPEC §9)', () => {
     expect(container.querySelector('header[data-bentuk="ringkas"]')).toContainElement(nav)
     expect(nav).not.toHaveClass('max-w-5xl')
     expect(nav).not.toHaveClass('mx-auto')
+  })
+})
+
+describe('CSS kustom tingkat Lanjut di kerangka publik (SPEC-V0.2 11.5, 7G)', () => {
+  /** String `cssKustom` dari API; sudah berawalan `:where([data-situs-kustom])` oleh periksaCss (Tugas 1). */
+  const CSS = ':where([data-situs-kustom]) p { color: rgb(255, 0, 0) }'
+
+  it('beranda ber-CSS kustom: <style data-css-kustom> anak wadah, bukan di kepala dokumen', () => {
+    const { container } = pasang('/desa/sungaisialang', { cssKustom: CSS })
+    const wadah = container.querySelector('[data-situs]')
+    expect(wadah).toHaveAttribute('data-situs-kustom')
+    const gaya = wadah?.querySelector(':scope > style[data-css-kustom]')
+    expect(gaya?.textContent).toBe(CSS)
+    expect(document.head.querySelector('style[data-css-kustom]')).toBeNull()
+  })
+
+  it('tanpa CSS kustom: <style> tidak dirender; atribut lingkup tetap dipasang', () => {
+    const { container } = pasang('/desa/sungaisialang', { cssKustom: null })
+    const wadah = container.querySelector('[data-situs]')
+    expect(wadah).toHaveAttribute('data-situs-kustom')
+    expect(wadah?.querySelector('style[data-css-kustom]')).toBeNull()
+  })
+
+  it('halaman Cek keaslian: atribut lingkup dan <style> tidak dipasang', () => {
+    const { container } = pasang('/desa/sungaisialang/verifikasi', { cssKustom: CSS }, true)
+    const wadah = container.querySelector('[data-situs]')
+    expect(wadah).not.toHaveAttribute('data-situs-kustom')
+    expect(wadah?.querySelector('style[data-css-kustom]')).toBeNull()
+  })
+
+  it('CSS kustom hanya berlaku di dalam wadah: p di luar wadah tidak ikut merah', () => {
+    render(
+      <>
+        <p data-testid="luar">Di luar wadah</p>
+        <WebsiteShell
+          identitas={{ ...contohIdentitasPublik(), cssKustom: CSS }}
+          jalur="/desa/sungaisialang"
+          cekKeaslian={false}
+          tanggal="Kamis, 24 September 2026"
+        >
+          <p data-testid="dalam">Di dalam wadah</p>
+        </WebsiteShell>
+      </>,
+    )
+    // Asersi "dalam" memastikan jsdom benar-benar menerapkan aturannya; bila `:where` tidak didukung jsdom, uji ini
+    // gugur dan pemeriksaannya cukup di tingkat string (Tugas 1) plus peramban (Tugas 7) — dicatat sebagai ruling.
+    expect(getComputedStyle(screen.getByTestId('dalam')).color).toBe('rgb(255, 0, 0)')
+    expect(getComputedStyle(screen.getByTestId('luar')).color).not.toBe('rgb(255, 0, 0)')
   })
 })

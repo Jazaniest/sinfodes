@@ -38,9 +38,11 @@ export type Pemeriksaan = {
 
 const PUTIH = '#FFFFFF'
 
-/** Tiga pemeriksaan kontras Tampilan Dasar (SPEC-V0.2 §11.1). Perbandingan memakai rasio asli, tanpa pembulatan. */
-export function periksaTema(t: Pick<TemaDasar, 'warnaUtama' | 'warnaAksen' | 'latar'>): Pemeriksaan[] {
-  const latar = LATAR[t.latar].latar
+/**
+ * Tiga pemeriksaan kontras terhadap warna hex mentah. Dipakai Tampilan Dasar (lewat `periksaTema`) dan
+ * peringatan kontras CSS kustom 7G (yang nilainya hex, bukan id latar).
+ */
+export function periksaWarnaTema(w: { warnaUtama: string; warnaAksen: string; latar: string }): Pemeriksaan[] {
   const butir = (kunci: Pemeriksaan['kunci'], rasio: number, minimum: number, awal: string): Pemeriksaan => {
     const lolos = rasio >= minimum
     return {
@@ -52,10 +54,15 @@ export function periksaTema(t: Pick<TemaDasar, 'warnaUtama' | 'warnaAksen' | 'la
     }
   }
   return [
-    butir('utama-latar', rasioKontras(t.warnaUtama, latar), 4.5, 'warna utama di atas latar'),
-    butir('putih-utama', rasioKontras(PUTIH, t.warnaUtama), 4.5, 'teks putih di atas warna utama'),
-    butir('aksen-latar', rasioKontras(t.warnaAksen, latar), 3, 'warna aksen di atas latar'),
+    butir('utama-latar', rasioKontras(w.warnaUtama, w.latar), 4.5, 'warna utama di atas latar'),
+    butir('putih-utama', rasioKontras(PUTIH, w.warnaUtama), 4.5, 'teks putih di atas warna utama'),
+    butir('aksen-latar', rasioKontras(w.warnaAksen, w.latar), 3, 'warna aksen di atas latar'),
   ]
+}
+
+/** Tiga pemeriksaan kontras Tampilan Dasar (SPEC-V0.2 §11.1). Perbandingan memakai rasio asli, tanpa pembulatan. */
+export function periksaTema(t: Pick<TemaDasar, 'warnaUtama' | 'warnaAksen' | 'latar'>): Pemeriksaan[] {
+  return periksaWarnaTema({ warnaUtama: t.warnaUtama, warnaAksen: t.warnaAksen, latar: LATAR[t.latar].latar })
 }
 
 /** OKLCH (Ottosson 2020): `l` 0-1, `c` kroma, `h` derajat. */

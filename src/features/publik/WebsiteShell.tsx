@@ -16,6 +16,8 @@ import { menuPublikAktif } from './navigasi'
 type Props = {
   identitas: IdentitasPublik
   jalur: string
+  /** Benar bila ini halaman Cek keaslian: atribut lingkup dan CSS kustom tidak dipasang (SPEC-V0.2 11.5). */
+  cekKeaslian: boolean
   /** Tanggal hari ini yang sudah diformat, mis. "Kamis, 24 September 2026". */
   tanggal: string
   children: ReactNode
@@ -25,16 +27,20 @@ type Props = {
  * Kerangka website desa bergaya warta desa (SPEC §9): nameplate berpita motif, menu, isi, dan kaki halaman.
  * Wadah memasang variabel kontrak tema v1 (--desa-*) lalu memetakan token Register yang dipakai komponen website ke
  * variabel itu, sehingga tautan, tombol, huruf, sudut, dan cincin fokus ikut tema desa tanpa komponen ditulis ulang.
+ * CSS kustom desa (7G) disisipkan sebagai `<style>` anak wadah — isinya string terkurung dari API yang sudah diberi
+ * awalan `:where([data-situs-kustom])` oleh `periksaCss`, tidak dirakit di klien — dan tidak dipasang di Cek keaslian.
  */
-export function WebsiteShell({ identitas: d, jalur, tanggal, children }: Props) {
+export function WebsiteShell({ identitas: d, jalur, cekKeaslian, tanggal, children }: Props) {
   const { tema } = d
   useEffect(() => {
     void muatPasanganHuruf(tema.huruf)
   }, [tema.huruf])
   useEffect(() => pasangFavicon(d.favicon, d.nama, tema.warnaUtama), [d.favicon, d.nama, tema.warnaUtama])
   const gaya = { ...variabelTema(tema), ...pemetaanRegister() } as CSSProperties
+  const cssKustom = cekKeaslian ? null : d.cssKustom
   return (
-    <div data-situs className="skala-publik min-h-dvh bg-kertas font-sans text-teks text-tinta" style={gaya}>
+    <div data-situs data-situs-kustom={cekKeaslian ? undefined : ''} className="skala-publik min-h-dvh bg-kertas font-sans text-teks text-tinta" style={gaya}>
+      {cssKustom ? <style data-css-kustom>{cssKustom}</style> : null}
       <a
         href="#isi"
         className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-1 focus:bg-lembar focus:px-3 focus:py-2"

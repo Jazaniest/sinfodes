@@ -283,6 +283,22 @@ Pekerjaan v0.2.0 (tahap 7A-7H) dicatat di sini selama berjalan di branch `develo
 - Tombol *Simpan* dan *Batalkan perubahan* di Tampilan Dasar dihapus; galat isian ditampilkan langsung pada isian yang bersangkutan, dan isian yang tidak sah menahan simpanan draf.
 - Wadah blok website memperoleh `data-blok`; di pratinjau penyunting, blok tersembunyi digambar redup dan blok kosong menjadi kotak bergaris putus.
 
+### Ditambahkan (7G: tampilan Lanjut)
+
+- **Saklar Tingkat Lanjut** per desa di sub-tab Kode (*Website - Tampilan*) dengan kalimat konfirmasi. Saklar mati menyembunyikan CSS kustom dan Blok HTML dari website publik tanpa menghapus isinya; keadaannya disimpan lewat `PUT /website/situs/lanjut`.
+- **CSS kustom terlingkup** (keputusan 1): ditulis operator, diperiksa `css-tree` lebih dulu, lalu ditolak berbaris dengan pesan `Baris {n}: …` bila memuat `@import`, `url()` ke media di luar daftar foto demo, atau aturan yang bisa membuat halaman tidak terbaca. String di dalam `image-set()`, `image()`, `src()`, dan `cross-fade()` diperiksa seperti `url()`; kata `behavior` hanya ditolak sebagai kata sendiri, sehingga `scroll-behavior` dan `overscroll-behavior` tetap sah. Kode yang lolos dibungkus `:where([data-situs-kustom])` dan hanya tayang setelah *Terbitkan*; halaman Cek keaslian tidak memakainya.
+- **Blok HTML terkurung** (keputusan 5): katalog blok ke-17 *Blok HTML* menjalankan kode desa di bingkai `srcdoc` bersandbox `allow-scripts` dengan CSP `default-src 'none'` — tanpa kuki, penyimpanan, jaringan, jendela lain, maupun dokumen induk. Tinggi otomatis mengikuti pesan `sinfodes-tinggi` dari bingkai (keputusan 7) atau tetap 40-3000 px; bila kode di dalam bingkai berpindah halaman, `srcdoc` dipasang ulang (keputusan 6). Kode dikelola di penyunting Blok HTML (paling banyak 10 kode, 64 KB per kode) dan tiap blok wajib menunjuk kode yang ada di daftar (keputusan 4).
+- **Salin prompt AI**: tombol di sub-tab Kode yang menyalin teks berbahasa Indonesia berisi peran, nilai tema sekarang, nama bagian kontrak, aturan CSS dan batas CSP, format jawaban, dan batas ukuran untuk AI pilihan operator. Sinfodes tidak memanggil AI apa pun.
+- **Uji kontrak tema** (`kontrak-tema.test.tsx`): `VERSI_KONTRAK_TEMA` dijaga tetap `kontrak-tema v1`, setiap variabel kontrak dipastikan terpasang di wadah `[data-situs]` dengan nilai tidak kosong, dan setiap nama bagian kontrak dipastikan muncul di halaman beranda, Kabar, atau Cek keaslian.
+
+### Diubah (7G)
+
+- `versiSitusSchema` mendapat `cssKustom`, `cssTerlingkup`, dan `blokHtml`; `GET /website/situs` dan `DELETE /website/situs/draf` kini ikut membawa `lanjut`; `PUT /website/situs/draf` menolak 422 pada isian `cssKustom` dan `blokHtml` untuk kode yang tidak sah.
+- Sub-tab *Website - Tampilan* kini Dasar, Susunan, dan Kode.
+- Nama bagian kontrak tema v1 bertambah `blok-html`.
+- Data demo naik ke versi 31.
+- `panggilApi` menerima skema berupa fungsi pemuat (`SumberSkema`); `api/publik.ts` dan `api/website.ts` memuat skema blok, tema, dan situs lewat `import()` saat respons datang, sehingga skema itu keluar dari JS awal (208.775 B menjadi 202.546 B gzip, di bawah 200 KiB).
+
 ## [0.1.0] - 2026-10-16
 
 Demo tahap 1: frontend sungguhan dengan API tiruan (MSW) dan data dummy Desa Sungai Sialang, Kabupaten Pelalawan.

@@ -71,6 +71,29 @@ describe('panggilApi', () => {
   })
 })
 
+describe('skema dimuat malas', () => {
+  it('skema berupa fungsi dimuat saat panggilan, bukan saat didefinisikan, lalu dipakai memvalidasi', async () => {
+    serverUji.use(http.get('*/api/v1/uji-malas', () => HttpResponse.json({ ok: true })))
+    let dimuat = 0
+    const skema = () => {
+      dimuat++
+      return Promise.resolve(z.object({ ok: z.boolean() }))
+    }
+    expect(dimuat).toBe(0)
+    expect(await panggilApi('GET', '/uji-malas', { skema })).toEqual({ ok: true })
+    expect(dimuat).toBe(1)
+  })
+  it('respons yang tidak sesuai skema malas ditolak, dan galat HTTP tetap menjadi GalatApi', async () => {
+    serverUji.use(
+      http.get('*/api/v1/uji-malas', () => HttpResponse.json({ salah: true })),
+      http.get('*/api/v1/uji-malas-galat', () => HttpResponse.json({ error: { code: 'NOT_FOUND', message: 'Tidak ada.' } }, { status: 404 })),
+    )
+    const skema = () => Promise.resolve(z.object({ ok: z.boolean() }))
+    await expect(panggilApi('GET', '/uji-malas', { skema })).rejects.toThrow()
+    await expect(panggilApi('GET', '/uji-malas-galat', { skema })).rejects.toMatchObject({ kode: 'NOT_FOUND', status: 404 })
+  })
+})
+
 describe('unggah berkas (2A-3)', () => {
   it('FormData dikirim apa adanya: tanpa Content-Type JSON, berkas sampai ke server', async () => {
     let jenis: string | null = null

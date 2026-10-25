@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, renderHook } from '@testing-library/react'
 import type { ReactNode } from 'react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ambilIdentitasPublik } from '@/api/publik'
 import { ambilSitus, daftarRiwayat, simpanDraf, terbitkan } from '@/api/website'
 import { susunanBawaan } from '@/domain/website/susunan'
@@ -18,6 +18,12 @@ pakaiApiTiruan({ dbSegarTiapUji: true })
 
 const TEMA = TEMA_WARTA_BAWAAN('#1F4E79')
 const permintaan: string[] = []
+
+// Skema respons dimuat malas lewat import(); uji ini memakai timer palsu, jadi modulnya dimuat dulu supaya impor pertama
+// (transformasi berkas yang memakan waktu nyata) tidak terjadi di tengah menunggu timer.
+beforeAll(async () => {
+  await Promise.all([import('@/domain/website/situs'), import('@/domain/publik/schema')])
+})
 
 beforeEach(() => {
   vi.useFakeTimers({ toFake: ['Date', 'setTimeout', 'clearTimeout', 'setInterval', 'clearInterval'] })

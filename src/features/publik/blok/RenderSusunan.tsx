@@ -7,6 +7,7 @@ import { BlokAjakan } from './BlokAjakan'
 import { BlokAngka } from './BlokAngka'
 import { BlokApbdes } from './BlokApbdes'
 import { BlokGaleri } from './BlokGaleri'
+import { BlokHtml } from './BlokHtml'
 import { BlokKabar } from './BlokKabar'
 import { BlokKontak } from './BlokKontak'
 import { BlokLayanan } from './BlokLayanan'
@@ -76,6 +77,8 @@ function IsiBlok({ blok, dasar }: { blok: BlokTampil; dasar: string }) {
       return <BlokTeks blok={blok} />
     case 'ajakan':
       return <BlokAjakan blok={blok} />
+    case 'html':
+      return <BlokHtml blok={blok} />
     default:
       return null
   }

@@ -113,10 +113,12 @@ export function situsBawaan(desaId: string, diperbarui: string): SitusDesa {
     desaId,
     terbit: {
       id: 'vrs_1', tema: { ...TEMA_WARTA_BAWAAN('#1F4E79'), motif: 'garis' }, susunan: susunanBawaan(),
+      cssKustom: '', cssTerlingkup: '', blokHtml: [],
       diperbarui, oleh: { id: 'sinfodes', nama: 'Sinfodes' }, catatan: null,
     },
     draf: null,
     riwayat: [],
+    lanjut: { aktif: false, pertamaDiaktifkan: null },
   }
 }
 
@@ -131,10 +133,12 @@ export function situsGaleri(desaId: string, diperbarui: string, id: IdTema): Sit
     desaId,
     terbit: {
       id: 'vrs_1', tema: pasangTema(TEMA_WARTA_BAWAAN('#1F4E79'), id), susunan: susunanTema(id),
+      cssKustom: '', cssTerlingkup: '', blokHtml: [],
       diperbarui, oleh: { id: 'sinfodes', nama: 'Sinfodes' }, catatan: null,
     },
     draf: null,
     riwayat: [],
+    lanjut: { aktif: false, pertamaDiaktifkan: null },
   }
 }
 
@@ -210,12 +214,14 @@ export function bangkitkanWebsite(o: { desa: Desa; dusun: readonly Dusun[]; peng
         id: 'vrs_1',
         tema: { ...TEMA_WARTA_BAWAAN('#1F4E79'), sampul: '/demo/foto/sampul-sungai-kampar.jpg', idGaleri: 'warta' },
         susunan: susunanBawaan(),
+        cssKustom: '', cssTerlingkup: '', blokHtml: [],
         diperbarui: `${geser(-30)}T10:00:00+07:00`,
         oleh: { id: 'pgn_rosmiati', nama: nama('operator') },
         catatan: null,
       },
       draf: null,
       riwayat: [],
+      lanjut: { aktif: false, pertamaDiaktifkan: null },
     },
     profil: { desaId: o.desa.id, ...structuredClone(PROFIL_DEMO) },
     potensi: POTENSI_DEMO.map((p, i) => ({
