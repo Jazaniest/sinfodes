@@ -22,5 +22,6 @@ export function contohIdentitasPublik(): IdentitasPublik {
       { label: 'Layanan', href: `${dasar}/layanan`, luar: false },
       { label: 'Cek surat', href: `${dasar}/verifikasi`, luar: false },
     ],
+    cssKustom: null,
   }
 }

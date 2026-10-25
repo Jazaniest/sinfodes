@@ -1,6 +1,6 @@
 import { getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'
-import type { Blok, JenisBlok } from '@/domain/website/blok'
+import { blokBaru, type Blok, type JenisBlok } from '@/domain/website/blok'
 import type { Susunan } from '@/domain/website/susunan'
 import { cn } from '@/ui/cn'
 import { ConfirmDialog } from '@/ui/lapisan/ConfirmDialog'
@@ -41,7 +41,7 @@ function punyaIsi(b: Blok): boolean {
 export function PenyuntingSusunan() {
   const cari = rute.useSearch()
   const navigate = rute.useNavigate()
-  const { isi, ubah } = useDrafSitus()
+  const { isi, ubah, lanjut } = useDrafSitus()
   const halaman = cari.halaman
   const pratinjau = usePratinjau(isi, halaman)
   const [terpilih, setTerpilih] = useState<string | null>(null)
@@ -144,10 +144,18 @@ export function PenyuntingSusunan() {
       <DialogKatalogBlok
         isOpen={dialogKatalog}
         onOpenChange={setDialogKatalog}
-        onPilih={(jenis: JenisBlok) => {
+        blokHtml={isi.blokHtml}
+        lanjut={lanjut.aktif}
+        onPilih={(jenis: JenisBlok, htmlId?: string) => {
           const hasil = isi ? tambahBlok(isi.susunan, halaman, terpilih, jenis) : null
           if (!hasil) return
-          ubahSusunan(() => hasil.susunan)
+          if (jenis === 'html' && htmlId) {
+            // Blok `html` baru langsung menunjuk kode yang dipilih di katalog; `blokBaru('html', …)` pasti varian html.
+            const baru = blokBaru('html', hasil.id) as Extract<Blok, { jenis: 'html' }>
+            ubahSusunan(() => gantiBlok(hasil.susunan, halaman, { ...baru, isi: { htmlId } }))
+          } else {
+            ubahSusunan(() => hasil.susunan)
+          }
           setTerpilih(hasil.id)
         }}
       />

@@ -1,14 +1,22 @@
 import { queryOptions } from '@tanstack/react-query'
+import type { z } from 'zod'
 import { daftarSchema } from '@/domain/api'
 import { lencanaAdminSchema } from '@/domain/indeks/lencana'
 import {
   agendaSchema, artikelSchema, fotoGaleriSchema, pengumumanSchema,
 } from '@/domain/website/schema'
-import { pratinjauSitusSchema } from '@/domain/publik/schema'
-import { riwayatSitusSchema, situsSchema, versiSitusSchema } from '@/domain/website/situs'
 import { type Susunan } from '@/domain/website/susunan'
 import type { TemaDasar } from '@/domain/website/tema'
+import type { BlokHtml } from '@/domain/website/blok'
 import { panggilApi } from './client'
+
+/**
+ * Skema tampilan website dimuat malas: `domain/website/situs` dan `domain/publik/schema` membawa skema semua jenis blok,
+ * dan loader rute yang mengimpor berkas ini ada di JS awal (anggaran SPEC-DESAIN-FE 13.4).
+ */
+const dariSkemaSitus = <T>(ambil: (m: typeof import('@/domain/website/situs')) => z.ZodType<T>) => () =>
+  import('@/domain/website/situs').then(ambil)
+const skemaPratinjau = () => import('@/domain/publik/schema').then((m) => m.pratinjauSitusSchema)
 
 const daftarArtikelSchema = daftarSchema(artikelSchema)
 const daftarPengumumanSchema = daftarSchema(pengumumanSchema)
@@ -47,39 +55,47 @@ export function daftarGaleri(signal?: AbortSignal) {
 export const opsiGaleri = () => queryOptions({ queryKey: kunciWebsite.galeri, queryFn: ({ signal }) => daftarGaleri(signal) })
 
 export function ambilSitus(signal?: AbortSignal) {
-  return panggilApi('GET', '/website/situs', { skema: situsSchema, signal })
+  return panggilApi('GET', '/website/situs', { skema: dariSkemaSitus((m) => m.situsSchema), signal })
 }
 export const opsiSitus = () => queryOptions({ queryKey: kunciWebsite.situs, queryFn: ({ signal }) => ambilSitus(signal) })
 
-/** Simpan draf tampilan (tema + susunan); website publik baru berubah setelah `terbitkan`. `dasarId` = ID draf yang dimuat klien. */
-export function simpanDraf(dasarId: string | null, isi: { tema: TemaDasar; susunan: Susunan }) {
-  return panggilApi('PUT', '/website/situs/draf', { skema: versiSitusSchema, body: { dasarId, ...isi } })
+/**
+ * Simpan draf tampilan (tema, susunan, CSS kustom, dan Blok HTML 7G); website publik baru berubah setelah `terbitkan`.
+ * `dasarId` = ID draf yang dimuat klien. `cssKustom` dan `blokHtml` bersifat pilihan; bila tidak dikirim, draf diisi kosong.
+ */
+export function simpanDraf(dasarId: string | null, isi: { tema: TemaDasar; susunan: Susunan; cssKustom?: string; blokHtml?: BlokHtml[] }) {
+  return panggilApi('PUT', '/website/situs/draf', { skema: dariSkemaSitus((m) => m.versiSitusSchema), body: { dasarId, ...isi } })
 }
 
 /** Pratinjau satu halaman dari tema dan susunan yang sedang disunting (7F-2), lengkap dengan tanda blok kosong. */
-export function pratinjauSitus(isi: { tema: TemaDasar; susunan: Susunan }, halaman: string) {
-  return panggilApi('POST', '/website/situs/pratinjau', { skema: pratinjauSitusSchema, body: { ...isi, halaman } })
+export function pratinjauSitus(isi: { tema: TemaDasar; susunan: Susunan; cssKustom?: string; blokHtml?: BlokHtml[] }, halaman: string) {
+  return panggilApi('POST', '/website/situs/pratinjau', { skema: skemaPratinjau, body: { ...isi, halaman } })
+}
+
+/** Nyalakan atau matikan tingkat Lanjut (7G): CSS kustom dan Blok HTML tampil di website publik bila aktif. */
+export function aturLanjut(aktif: boolean) {
+  return panggilApi('PUT', '/website/situs/lanjut', { skema: dariSkemaSitus((m) => m.lanjutSitusSchema), body: { aktif } })
 }
 
 /** Buang draf: kembali ke versi terbit. */
 export function buangDraf() {
-  return panggilApi('DELETE', '/website/situs/draf', { skema: situsSchema })
+  return panggilApi('DELETE', '/website/situs/draf', { skema: dariSkemaSitus((m) => m.situsSchema) })
 }
 
 /** Terbitkan draf menjadi versi tayang; versi terbit lama masuk riwayat. */
 export function terbitkan(catatan: string | null) {
-  return panggilApi('POST', '/website/situs/terbitkan', { skema: versiSitusSchema, body: { catatan } })
+  return panggilApi('POST', '/website/situs/terbitkan', { skema: dariSkemaSitus((m) => m.versiSitusSchema), body: { catatan } })
 }
 
 /** 20 terbitan terakhir (terbaru dulu), tanpa gambar data URL. */
 export function daftarRiwayat(signal?: AbortSignal) {
-  return panggilApi('GET', '/website/situs/riwayat', { skema: riwayatSitusSchema, signal })
+  return panggilApi('GET', '/website/situs/riwayat', { skema: dariSkemaSitus((m) => m.riwayatSitusSchema), signal })
 }
 export const opsiRiwayat = () => queryOptions({ queryKey: kunciWebsite.riwayat, queryFn: ({ signal }) => daftarRiwayat(signal) })
 
 /** Salin versi riwayat menjadi draf; website belum berubah sampai diterbitkan. */
 export function pulihkanVersi(id: string) {
-  return panggilApi('POST', `/website/situs/riwayat/${id}/pulihkan`, { skema: versiSitusSchema })
+  return panggilApi('POST', `/website/situs/riwayat/${id}/pulihkan`, { skema: dariSkemaSitus((m) => m.versiSitusSchema) })
 }
 
 const daftarLencanaSchema = daftarSchema(lencanaAdminSchema)

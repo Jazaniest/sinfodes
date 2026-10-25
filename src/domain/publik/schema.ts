@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { lencanaPublikSchema } from '../indeks/lencana'
 import { lapisanPetaSchema } from '../peta/schema'
 import { jenisSuratWargaSchema } from '../warga/ajukan'
-import { blokSchema, type Blok, type JenisBlok } from '../website/blok'
+import { blokSchema, tinggiBlokHtmlSchema, type Blok, type JenisBlok } from '../website/blok'
 import { ID_MOTIF } from '../website/motif'
 import { agendaSchema, KATEGORI_ARTIKEL, KATEGORI_POTENSI, kreditFotoSchema, pengumumanSchema } from '../website/schema'
 import { temaDasarSchema } from '../website/tema'
@@ -29,6 +29,11 @@ export const identitasPublikSchema = desaSchema
     favicon: z.string().nullable(),
     /** Menu website dari susunan terbit, dengan Beranda selalu pertama (7F-1). */
     menu: z.array(itemMenuPublikSchema),
+    /**
+     * CSS kustom desa yang sudah terkurung lingkup (SPEC-V0.2 11.5, 7G); `null` bila tingkat Lanjut mati atau kosong.
+     * Hanya direspons website publik — tidak di Cek keaslian maupun layanan warga.
+     */
+    cssKustom: z.string().nullable(),
   })
 export type IdentitasPublik = z.infer<typeof identitasPublikSchema>
 
@@ -89,6 +94,7 @@ export const DATA_BLOK = {
   kontak: identitasPublikSchema.pick({ nama: true, alamatKantor: true, telepon: true, surel: true, jamLayanan: true }),
   lencana: z.object({ lencana: z.array(lencanaPublikSchema) }),
   pemisah: z.object({ motif: z.enum(ID_MOTIF) }),
+  html: z.object({ nama: z.string(), kode: z.string(), tinggi: tinggiBlokHtmlSchema }),
 } as const satisfies Record<JenisBlok, z.ZodType>
 
 type DataBlok<J extends JenisBlok> = z.infer<(typeof DATA_BLOK)[J]>

@@ -6,10 +6,10 @@ export const ID_LEBAR = ['penuh', 'lebar', 'sempit'] as const
 export type IdLebar = (typeof ID_LEBAR)[number]
 export const LABEL_LEBAR: Readonly<Record<IdLebar, string>> = { penuh: 'Penuh', lebar: 'Lebar', sempit: 'Sempit' }
 
-/** Katalog blok v0.2 (SPEC-V0.2 11.4, tanpa Blok HTML yang datang di 7G). */
+/** Katalog blok v0.2 (SPEC-V0.2 11.4); `html` ditambahkan tahap 7G untuk Blok HTML tingkat Lanjut. */
 export const JENIS_BLOK = [
   'sampul', 'kabar', 'layanan', 'angka', 'apbdes', 'pengumuman-agenda', 'galeri', 'peta',
-  'potensi', 'video', 'sambutan', 'teks', 'ajakan', 'kontak', 'lencana', 'pemisah',
+  'potensi', 'video', 'sambutan', 'teks', 'ajakan', 'kontak', 'lencana', 'pemisah', 'html',
 ] as const
 export type JenisBlok = (typeof JENIS_BLOK)[number]
 
@@ -30,6 +30,7 @@ export const LABEL_JENIS_BLOK: Readonly<Record<JenisBlok, string>> = {
   kontak: 'Kontak & jam layanan',
   lencana: 'Lencana juara',
   pemisah: 'Pemisah motif',
+  html: 'Blok HTML',
 }
 
 export const VARIAN_BLOK = {
@@ -49,6 +50,7 @@ export const VARIAN_BLOK = {
   kontak: ['kolom', 'ringkas'],
   lencana: ['deret', 'daftar'],
   pemisah: ['motif', 'garis'],
+  html: ['bingkai'],
 } as const satisfies Record<JenisBlok, readonly string[]>
 export type VarianBlok<J extends JenisBlok> = (typeof VARIAN_BLOK)[J][number]
 
@@ -70,6 +72,7 @@ export const LABEL_VARIAN: LabelVarian = {
   kontak: { kolom: 'Kolom', ringkas: 'Ringkas' },
   lencana: { deret: 'Deret', daftar: 'Daftar' },
   pemisah: { motif: 'Motif', garis: 'Garis' },
+  html: { bingkai: 'Bingkai' },
 }
 
 /** Label varian satu blok, mis. "Daftar" untuk Kabar terbaru varian `daftar`. */
@@ -79,10 +82,11 @@ export function labelVarianBlok(b: Blok): string {
 
 /**
  * Blok yang datanya diisi server dari modul terkait (dan bisa kosong sehingga tidak tampil); blok lain hanya memakai `isi`
- * yang tersimpan di susunan.
+ * yang tersimpan di susunan. Blok `html` mengambil kode dari daftar `blokHtml` di versi situs.
  */
 export const BLOK_BERSUMBER: ReadonlySet<JenisBlok> = new Set<JenisBlok>([
   'sampul', 'kabar', 'angka', 'apbdes', 'pengumuman-agenda', 'galeri', 'peta', 'potensi', 'ajakan', 'kontak', 'lencana',
+  'html',
 ])
 
 const PESAN_MAKS = (n: number) => `Paling banyak ${n.toLocaleString('id-ID')} karakter.`
@@ -135,10 +139,41 @@ const isiTeksSchema = z.object({
   tautan: z.object({ label: z.string().max(40, PESAN_MAKS(40)), url: urlTautanIsi }).nullable(),
 })
 const isiAjakanSchema = z.object({ judul: z.string().max(120, PESAN_MAKS(120)), tombol: z.string().max(40, PESAN_MAKS(40)), tujuan: z.string() })
+const isiHtmlSchema = z.object({ htmlId: z.string() })
 
 /** `id` blok: `blk_` + 6 karakter atau lebih. */
 export const POLA_ID_BLOK = /^blk_[a-z0-9]{6,}$/
 const idBlok = z.string().regex(POLA_ID_BLOK, 'Kode blok tidak sah.')
+
+/** `id` kode HTML desa (7G): `html_` + 6 karakter atau lebih. */
+export const POLA_ID_BLOK_HTML = /^html_[a-z0-9]{6,}$/
+export const PESAN_BLOK_HTML_HILANG = 'Blok HTML tidak ditemukan.'
+export const PESAN_MAKS_BLOK_HTML = 'Paling banyak 10 blok HTML.'
+const PESAN_NAMA_BLOK_HTML = 'Nama blok HTML wajib diisi.'
+const PESAN_KODE_BLOK_HTML = 'Kode HTML paling besar 64 KB.'
+const PESAN_TINGGI_BLOK_HTML = 'Tinggi 40-3000 px.'
+
+/** Tinggi bingkai Blok HTML: tetap 40-3000 px, atau otomatis mengikuti isi bingkai (dibatasi di pembungkusnya). */
+export const tinggiBlokHtmlSchema = z.discriminatedUnion('mode', [
+  z.object({ mode: z.literal('tetap'), px: z.number().int().min(40, PESAN_TINGGI_BLOK_HTML).max(3000, PESAN_TINGGI_BLOK_HTML) }),
+  z.object({ mode: z.literal('otomatis') }),
+])
+export type TinggiBlokHtml = z.infer<typeof tinggiBlokHtmlSchema>
+
+/**
+ * Satu kode HTML desa di tingkat Lanjut (SPEC-V0.2 11.5, keputusan 4 rencana 7G): disimpan per versi situs, paling banyak
+ * 10, dan dipakai blok susunan `html` lewat `isi.htmlId`. Ukuran kode dihitung byte UTF-8.
+ */
+export const blokHtmlSchema = z.object({
+  id: z.string().regex(POLA_ID_BLOK_HTML, 'Kode blok HTML tidak sah.'),
+  nama: z.string().trim().min(1, PESAN_NAMA_BLOK_HTML).max(60, 'Paling banyak 60 karakter.'),
+  kode: z.string().refine((s) => new TextEncoder().encode(s).length <= 64 * 1024, PESAN_KODE_BLOK_HTML),
+  tinggi: tinggiBlokHtmlSchema,
+})
+export type BlokHtml = z.infer<typeof blokHtmlSchema>
+
+/** Daftar kode HTML di satu versi situs: maksimal 10 (keputusan 4 rencana 7G). */
+export const daftarBlokHtmlSchema = z.array(blokHtmlSchema).max(10, PESAN_MAKS_BLOK_HTML)
 
 const dasarBlok = { id: idBlok, lebar: z.enum(ID_LEBAR), tersembunyi: z.boolean() }
 
@@ -160,6 +195,7 @@ export const blokSchema = z.discriminatedUnion('jenis', [
   z.object({ ...dasarBlok, jenis: z.literal('kontak'), varian: z.enum(VARIAN_BLOK.kontak), isi: isiKosongSchema }),
   z.object({ ...dasarBlok, jenis: z.literal('lencana'), varian: z.enum(VARIAN_BLOK.lencana), isi: isiKosongSchema }),
   z.object({ ...dasarBlok, jenis: z.literal('pemisah'), varian: z.enum(VARIAN_BLOK.pemisah), isi: isiKosongSchema }),
+  z.object({ ...dasarBlok, jenis: z.literal('html'), varian: z.enum(VARIAN_BLOK.html), isi: isiHtmlSchema }),
 ])
 export type Blok = z.infer<typeof blokSchema>
 export type IsiBlok = Blok['isi']
@@ -183,6 +219,8 @@ export function isiBawaan(jenis: JenisBlok): IsiBlok {
       return { judul: '', paragraf: [''], tautan: null }
     case 'ajakan':
       return { judul: '', tombol: '', tujuan: 'layanan' }
+    case 'html':
+      return { htmlId: '' }
     default:
       return {}
   }

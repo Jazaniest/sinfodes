@@ -1,11 +1,18 @@
-import { LABEL_JENIS_BLOK, JENIS_BLOK, type JenisBlok } from '@/domain/website/blok'
+import { useState } from 'react'
+import { LABEL_JENIS_BLOK, JENIS_BLOK, type BlokHtml, type JenisBlok } from '@/domain/website/blok'
+import { Select } from '@/ui/isian/Select'
 import { Dialog } from '@/ui/lapisan/Dialog'
 import { Tombol } from '@/ui/tombol/Tombol'
 
 type Props = {
   isOpen: boolean
   onOpenChange: (buka: boolean) => void
-  onPilih: (jenis: JenisBlok) => void
+  /** `htmlId` terisi untuk blok `html` (7G), menunjuk kode HTML yang dipilih di kartu Blok HTML. */
+  onPilih: (jenis: JenisBlok, htmlId?: string) => void
+  /** Kode HTML yang tersedia (7G). */
+  blokHtml: readonly BlokHtml[]
+  /** Kartu Blok HTML hanya tampil bila tingkat Lanjut aktif dan ada kode (keputusan 8). */
+  lanjut: boolean
 }
 
 /** Keterangan satu kalimat per jenis blok katalog v0.2 (SPEC-V0.2 11.4). */
@@ -26,20 +33,33 @@ const KETERANGAN: Readonly<Record<JenisBlok, string>> = {
   kontak: 'Alamat kantor, telepon, dan jam pelayanan desa.',
   lencana: 'Lencana peringkat Indeks Desa Digital yang diraih desa.',
   pemisah: 'Garis pemisah berhias motif daerah.',
+  html: 'Kode HTML dari sub-tab Kode, tampil dalam bingkai terkurung.',
 }
 
 /** Dialog katalog blok (keputusan 2): memilih jenis blok baru yang ditaruh sesudah blok terpilih. */
-export function DialogKatalogBlok({ isOpen, onOpenChange, onPilih }: Props) {
+export function DialogKatalogBlok({ isOpen, onOpenChange, onPilih, blokHtml, lanjut }: Props) {
+  const [kodeTerpilih, setKodeTerpilih] = useState<string | null>(null)
+  const tampil = JENIS_BLOK.filter((jenis) => jenis !== 'html' || (lanjut && blokHtml.length > 0))
+  const htmlId = kodeTerpilih ?? blokHtml[0]?.id ?? null
+
   return (
     <Dialog isOpen={isOpen} onOpenChange={onOpenChange} judul="Tambah blok" lebar="lebar">
       <ul className="grid gap-2 sm:grid-cols-2">
-        {JENIS_BLOK.map((jenis) => (
+        {tampil.map((jenis) => (
           <li key={jenis} className="flex flex-col gap-1 rounded-1 border border-garis bg-lembar p-2">
+            {jenis === 'html' && (
+              <Select
+                label="Kode HTML"
+                pilihan={blokHtml.map((b) => ({ id: b.id, label: b.nama }))}
+                nilai={htmlId}
+                onUbah={setKodeTerpilih}
+              />
+            )}
             <Tombol
               ukuran="kecil"
               varian="sekunder"
               onPress={() => {
-                onPilih(jenis)
+                onPilih(jenis, jenis === 'html' ? (htmlId ?? undefined) : undefined)
                 onOpenChange(false)
               }}
             >

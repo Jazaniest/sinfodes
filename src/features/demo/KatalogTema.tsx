@@ -24,6 +24,7 @@ export function KatalogTema({ id }: { id: IdTema }) {
       <WebsiteShell
         identitas={identitas}
         jalur={`/desa/${SLUG_PRATINJAU_TEMA}/`}
+        cekKeaslian={false}
         tanggal={formatTanggal(tanggalIsoWib(new Date()), 'hari')}
       >
         <BerandaPublik />

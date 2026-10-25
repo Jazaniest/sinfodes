@@ -7,6 +7,7 @@ import { TabNav } from '@/ui/navigasi/TabNav'
 import { ErrorState } from '@/ui/umpan-balik/ErrorState'
 import { BarisKerangka } from '@/ui/umpan-balik/Skeleton'
 import { KepalaWebsite } from '../TabWebsite'
+import { TabKode } from '../kode/TabKode'
 import { PenyuntingSusunan } from '../susunan/PenyuntingSusunan'
 import { BilahDraf } from './BilahDraf'
 import { FormDasar } from './FormDasar'
@@ -17,14 +18,14 @@ type Props = { onKotor?: (kotor: boolean) => void; sekarang?: Date }
 const rute = getRouteApi('/admin/_panel/website/tampilan')
 
 /**
- * Website Desa - Tampilan (SPEC-V0.2 11.1): sub-tab Dasar dan Susunan berbagi satu keadaan draf dengan bilah draf di atasnya.
- * Sub-tab Kode (7G) menyusul.
+ * Website Desa - Tampilan (SPEC-V0.2 11.1): sub-tab Dasar, Susunan, dan Kode (7G) berbagi satu keadaan draf dengan
+ * bilah draf di atasnya.
  */
 export function TabTampilan({ onKotor, sekarang }: Props) {
   const cari = rute.useSearch()
   const kueri = useQuery(opsiSitus())
   const draf = useKeadaanDrafSitus()
-  const bagian = cari.bagian === 'susunan' ? 'susunan' : 'dasar'
+  const bagian = cari.bagian
 
   useEffect(() => {
     onKotor?.(draf.status !== 'tersimpan')
@@ -38,6 +39,7 @@ export function TabTampilan({ onKotor, sekarang }: Props) {
         items={[
           { label: 'Dasar', href: '/admin/website/tampilan', aktif: bagian === 'dasar' },
           { label: 'Susunan', href: '/admin/website/tampilan?bagian=susunan', aktif: bagian === 'susunan' },
+          { label: 'Kode', href: '/admin/website/tampilan?bagian=kode', aktif: bagian === 'kode' },
         ]}
       />
       {kueri.isError ? (
@@ -47,7 +49,7 @@ export function TabTampilan({ onKotor, sekarang }: Props) {
       ) : (
         <DrafSitusKonteks.Provider value={draf}>
           <BilahDraf />
-          {bagian === 'susunan' ? <PenyuntingSusunan /> : <FormDasar sekarang={sekarang} />}
+          {bagian === 'susunan' ? <PenyuntingSusunan /> : bagian === 'kode' ? <TabKode /> : <FormDasar sekarang={sekarang} />}
         </DrafSitusKonteks.Provider>
       )}
     </div>

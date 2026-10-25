@@ -28,11 +28,11 @@ const ketik = async (user: ReturnType<typeof userEvent.setup>, kotak: HTMLElemen
 }
 
 describe('Website Desa - Tampilan - Dasar di alur draf (rencana 7F-2 Tugas 2)', () => {
-  it('sub-tab Dasar dan Susunan tampil; Kode belum ada', async () => {
+  it('sub-tab Dasar, Susunan, dan Kode tampil', async () => {
     pasang()
     await hexUtama()
     const subtab = screen.getByRole('navigation', { name: 'Bagian tampilan' })
-    expect(within(subtab).getAllByRole('link').map((a) => a.textContent)).toEqual(['Dasar', 'Susunan'])
+    expect(within(subtab).getAllByRole('link').map((a) => a.textContent)).toEqual(['Dasar', 'Susunan', 'Kode'])
   })
   it('warna kuning terang: pesan kontras persis tampil, status perlu diperbaiki, Terbitkan nonaktif', async () => {
     const user = pasang()

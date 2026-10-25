@@ -1,13 +1,15 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { GalatApi } from '@/api/galat'
-import { buangDraf, kunciWebsite, opsiSitus, pulihkanVersi, simpanDraf, terbitkan as terbitkanSitus } from '@/api/website'
+import { aturLanjut as aturLanjutSitus, buangDraf, kunciWebsite, opsiSitus, pulihkanVersi, simpanDraf, terbitkan as terbitkanSitus } from '@/api/website'
+import { daftarBlokHtmlSchema, type BlokHtml } from '@/domain/website/blok'
 import { periksaTema } from '@/domain/website/kontras'
+import type { LanjutSitus } from '@/domain/website/situs'
 import { susunanSchema, type Susunan } from '@/domain/website/susunan'
 import { temaDasarSchema, type TemaDasar } from '@/domain/website/tema'
 
-/** Isi yang sedang disunting di Tampilan: tema Dasar dan susunan blok (SPEC-V0.2 11.4). */
-export type IsiDraf = { tema: TemaDasar; susunan: Susunan }
+/** Isi yang sedang disunting di Tampilan: tema Dasar, susunan blok, CSS kustom, dan Blok HTML (SPEC-V0.2 11.4-11.5). */
+export type IsiDraf = { tema: TemaDasar; susunan: Susunan; cssKustom: string; blokHtml: BlokHtml[] }
 
 /** Status simpan otomatis draf. `bentrok` menghentikan simpanan sampai dimuat ulang. */
 export type StatusDraf = 'tersimpan' | 'menyimpan' | 'gagal' | 'tidak-sah' | 'bentrok'
@@ -26,6 +28,10 @@ export type DrafSitus = {
   buang: () => Promise<void>
   pulihkan: (id: string) => Promise<void>
   muatUlang: () => void
+  /** Keadaan tingkat Lanjut (7G): aktif menyalakan CSS kustom dan Blok HTML di website publik. */
+  lanjut: LanjutSitus
+  /** Nyalakan atau matikan tingkat Lanjut; kode yang tersimpan tidak dihapus. */
+  aturLanjut: (aktif: boolean) => Promise<void>
 }
 
 export const DrafSitusKonteks = createContext<DrafSitus | null>(null)
@@ -39,12 +45,17 @@ export function useDrafSitus(): DrafSitus {
 
 const JEDA_MS = 1000
 
-/** Cek isian sebelum dikirim: skema tema, kontras, dan skema susunan (keputusan 4). */
+/** Bagian versi situs yang disunting di Tampilan. */
+const keIsiDraf = (v: { tema: TemaDasar; susunan: Susunan; cssKustom: string; blokHtml: BlokHtml[] }): IsiDraf => ({
+  tema: v.tema, susunan: v.susunan, cssKustom: v.cssKustom, blokHtml: v.blokHtml,
+})
+
+/** Cek isian sebelum dikirim: skema tema, kontras, skema susunan, dan daftar Blok HTML (keputusan 4). */
 function isianSah(isi: IsiDraf): boolean {
   const tema = temaDasarSchema.safeParse(isi.tema)
   if (!tema.success) return false
   if (periksaTema(tema.data).some((p) => !p.lolos)) return false
-  return susunanSchema.safeParse(isi.susunan).success
+  return susunanSchema.safeParse(isi.susunan).success && daftarBlokHtmlSchema.safeParse(isi.blokHtml).success
 }
 
 /**
@@ -78,11 +89,7 @@ export function useKeadaanDrafSitus(): DrafSitus {
     if (termuat.current || !kueri.data) return
     termuat.current = true
     const { terbit, draf } = kueri.data
-    pasang(
-      draf ? { tema: draf.tema, susunan: draf.susunan } : { tema: terbit.tema, susunan: terbit.susunan },
-      draf?.id ?? null,
-      draf?.diperbarui ?? null,
-    )
+    pasang(keIsiDraf(draf ?? terbit), draf?.id ?? null, draf?.diperbarui ?? null)
   }, [kueri.data, pasang])
 
   const kirim = useCallback(
@@ -149,9 +156,12 @@ export function useKeadaanDrafSitus(): DrafSitus {
   const terbitkan = useCallback(
     async (catatan: string | null) => {
       const tayang = await terbitkanSitus(catatan)
-      queryClient.setQueryData(kunciWebsite.situs, { terbit: tayang, draf: null })
+      // Keadaan saklar tingkat Lanjut tidak berubah oleh penerbitan, jadi hanya terbit dan draf yang diperbarui.
+      queryClient.setQueryData(kunciWebsite.situs, (lama: { terbit: unknown; lanjut?: unknown } | undefined) =>
+        lama ? { ...lama, terbit: tayang, draf: null } : { terbit: tayang, draf: null },
+      )
       void queryClient.invalidateQueries({ queryKey: kunciWebsite.riwayat })
-      pasang({ tema: tayang.tema, susunan: tayang.susunan }, null, null)
+      pasang(keIsiDraf(tayang), null, null)
       bentrok.current = false
       setStatus('tersimpan')
     },
@@ -161,7 +171,7 @@ export function useKeadaanDrafSitus(): DrafSitus {
   const buang = useCallback(async () => {
     const situs = await buangDraf()
     queryClient.setQueryData(kunciWebsite.situs, situs)
-    pasang({ tema: situs.terbit.tema, susunan: situs.terbit.susunan }, null, null)
+    pasang(keIsiDraf(situs.terbit), null, null)
     bentrok.current = false
     setStatus('tersimpan')
   }, [pasang, queryClient])
@@ -172,7 +182,7 @@ export function useKeadaanDrafSitus(): DrafSitus {
       queryClient.setQueryData(kunciWebsite.situs, (lama: { terbit: unknown; draf: unknown } | undefined) =>
         lama ? { ...lama, draf } : lama,
       )
-      const isiPulih: IsiDraf = { tema: draf.tema, susunan: draf.susunan }
+      const isiPulih = keIsiDraf(draf)
       pasang(isiPulih, draf.id, draf.diperbarui)
       bentrok.current = false
       // Versi lama bisa saja gagal kontras hari ini (fokus review 4): tandai perlu diperbaiki.
@@ -186,13 +196,21 @@ export function useKeadaanDrafSitus(): DrafSitus {
     void kueri.refetch().then((r) => {
       const data = r.data
       if (!data) return
-      const isiMuat: IsiDraf = data.draf
-        ? { tema: data.draf.tema, susunan: data.draf.susunan }
-        : { tema: data.terbit.tema, susunan: data.terbit.susunan }
+      const isiMuat = keIsiDraf(data.draf ?? data.terbit)
       pasang(isiMuat, data.draf?.id ?? null, data.draf?.diperbarui ?? null)
       setStatus(isianSah(isiMuat) ? 'tersimpan' : 'tidak-sah')
     })
   }, [kueri, pasang])
+
+  const aturLanjut = useCallback(
+    async (aktif: boolean) => {
+      const baru = await aturLanjutSitus(aktif)
+      queryClient.setQueryData(kunciWebsite.situs, (lama: { terbit: unknown; draf: unknown; lanjut?: unknown } | undefined) =>
+        lama ? { ...lama, lanjut: baru } : lama,
+      )
+    },
+    [queryClient],
+  )
 
   // Meninggalkan halaman saat simpanan masih tertunda tetap mengirim perubahan terakhir (fokus review 2).
   useEffect(
@@ -216,5 +234,7 @@ export function useKeadaanDrafSitus(): DrafSitus {
     buang,
     pulihkan,
     muatUlang,
+    lanjut: kueri.data?.lanjut ?? { aktif: false, pertamaDiaktifkan: null },
+    aturLanjut,
   }
 }

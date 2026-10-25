@@ -4,7 +4,7 @@ import {
   agendaPublikSchema, pengumumanPublikSchema,
   type AngkaDesa, type BlokPratinjau, type BlokTampil, type FotoPublik, type ItemMenuPublik, type RingkasArtikel,
 } from '@/domain/publik/schema'
-import { idVideoYoutube, type Blok } from '@/domain/website/blok'
+import { idVideoYoutube, type Blok, type BlokHtml } from '@/domain/website/blok'
 import type { IdMotif } from '@/domain/website/motif'
 import { KUNCI_HALAMAN_SISTEM, LABEL_HALAMAN_SISTEM, type Susunan } from '@/domain/website/susunan'
 import { statusPengumuman, type Artikel, type Potensi } from '@/domain/website/schema'
@@ -77,11 +77,16 @@ function hrefTujuan(d: Desa, tujuan: string, halaman: readonly { id: string; nam
   return halamanTujuan ? `${dasar}/halaman/${halamanTujuan.nama}` : null
 }
 
-/** Sumber tampilan untuk penyelesaian blok: motif dan sampul tema, serta daftar halaman untuk tujuan blok Ajakan. */
+/**
+ * Sumber tampilan untuk penyelesaian blok: motif dan sampul tema, daftar halaman untuk tujuan blok Ajakan, daftar kode
+ * HTML untuk blok `html`, serta tanda tingkat Lanjut (7G) yang mengatur apakah blok `html` tampil di website publik.
+ */
 export type SumberTampil = {
   motif: IdMotif
   sampul: string | null
   halaman: readonly { id: string; nama: string }[]
+  blokHtml: readonly BlokHtml[]
+  lanjut: boolean
 }
 
 /** Hasil penyelesaian: blok siap tampil, atau blok bertanda `kosong` (hanya untuk mode pratinjau). */
@@ -216,6 +221,14 @@ function selesaikan(
       case 'pemisah':
         push({ ...b, data: { motif: sumber.motif } })
         break
+      case 'html': {
+        // Blok HTML (7G): kodenya diambil dari daftar versi situs; di website publik dilewati saat tingkat Lanjut mati.
+        if (mode === 'terbit' && !sumber.lanjut) break
+        const kode = sumber.blokHtml.find((k) => k.id === b.isi.htmlId)
+        if (kode) push({ ...b, data: { nama: kode.nama, kode: kode.kode, tinggi: kode.tinggi } })
+        else kosong(b)
+        break
+      }
       default:
         push({ ...b, data: undefined })
     }

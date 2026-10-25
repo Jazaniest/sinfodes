@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { blokSchema, PESAN_TAUTAN, PESAN_TUJUAN_AJAKAN, susunBlok, type Blok } from './blok'
+import { blokSchema, daftarBlokHtmlSchema, PESAN_TAUTAN, PESAN_TUJUAN_AJAKAN, susunBlok, type Blok } from './blok'
 import type { IdTema } from './tema'
 
 /** Nama yang tidak boleh dipakai halaman tambahan karena dipakai halaman sistem atau alamat lain (SPEC-V0.2 11.4). */
@@ -223,21 +223,26 @@ export function pasanganBerdampingan<T extends Blok>(blok: readonly T[]): (T | [
 /**
  * Body `PUT /website/situs/draf` (7F-2). `dasarId` adalah ID draf yang dimuat klien (null bila mulai dari terbit); bila
  * server sudah punya draf dengan ID lain, simpanan ditolak 409 supaya perubahan tab lain tidak tertimpa diam-diam.
+ * `cssKustom` dan `blokHtml` (7G) bersifat pilihan: bila tidak dikirim, draf diisi kosong.
  */
 export const simpanDrafSchema = z.object({
   dasarId: z.string().min(1).nullable(),
   tema: z.unknown(),
   susunan: susunanSchema,
+  cssKustom: z.string().default(''),
+  blokHtml: daftarBlokHtmlSchema.default([]),
 })
 export type MasukanSimpanDraf = z.infer<typeof simpanDrafSchema>
 
 /**
  * Body `POST /website/situs/pratinjau` (7F-2): tema dan susunan yang sedang disunting untuk satu halaman (`'beranda'`
  * atau ID halaman tambahan). Kontras tema tidak diperiksa supaya pratinjau tetap jalan selama warnanya sedang diperbaiki.
+ * `blokHtml` (7G) menyertai supaya blok `html` dapat diselesaikan di pratinjau.
  */
 export const pratinjauSchema = z.object({
   tema: z.unknown(),
   susunan: susunanSchema,
   halaman: z.string().min(1, 'Halaman wajib dipilih.'),
+  blokHtml: daftarBlokHtmlSchema.default([]),
 })
 export type MasukanPratinjau = z.infer<typeof pratinjauSchema>
