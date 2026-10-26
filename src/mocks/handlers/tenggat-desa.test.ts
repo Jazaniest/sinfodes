@@ -36,7 +36,7 @@ describe('tenggat laporan di panel desa (SPEC-V0.2 §8.3 butir 4)', () => {
     ubahDb((d) => {
       d.pengguna.push({
         id: 'pgn_uji_siak', desaId: 'desa_tualang_permai', nama: 'Uji Siak', jabatan: 'Kaur Keuangan', peran: 'kaur-keuangan',
-        dusunId: null, email: 'kaur@tualangpermai.desa.id', aktif: true,
+        dusunId: null, email: 'kaur@tualangpermai.desa.id', aktif: true, nip: null,
       })
     })
     masukSebagai('pgn_uji_siak')

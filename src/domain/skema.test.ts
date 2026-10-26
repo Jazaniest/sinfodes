@@ -22,7 +22,7 @@ describe('skema data', () => {
         .success,
     ).toBe(true))
   it('kepala dusun wajib punya dusun', () => {
-    const dasar = { id: 'pgn_x', desaId: 'desa_x', nama: 'Sukardi', jabatan: 'Kepala Dusun II', email: 'x@y.id', aktif: true }
+    const dasar = { id: 'pgn_x', desaId: 'desa_x', nama: 'Sukardi', jabatan: 'Kepala Dusun II', email: 'x@y.id', aktif: true, nip: null }
     expect(penggunaSchema.safeParse({ ...dasar, peran: 'kadus', dusunId: null }).success).toBe(false)
     expect(penggunaSchema.safeParse({ ...dasar, peran: 'kadus', dusunId: 'dsn_ss_2' }).success).toBe(true)
   })

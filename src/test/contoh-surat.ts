@@ -6,7 +6,7 @@ import type { Permohonan } from '@/domain/surat/permohonan'
 export function contohJenis(kode: string): JenisSurat {
   const j = JENIS_SURAT_BAWAAN.find((x) => x.kode === kode)
   if (!j) throw new Error(`Jenis surat ${kode} tidak ada`)
-  return { ...structuredClone(j), id: `js_ss_${kode.toLowerCase()}`, desaId: 'desa_sungai_sialang', asal: 'bawaan', diarsipkan: null }
+  return { ...structuredClone(j), id: `js_ss_${kode.toLowerCase()}`, desaId: 'desa_sungai_sialang', asal: 'bawaan', diarsipkan: null, tataLetak: null }
 }
 
 /** Permohonan Domisili Siti Rahmah yang sedang diproses; ubah field lewat `ubah`. Khusus uji. */

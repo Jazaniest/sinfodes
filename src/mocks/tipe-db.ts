@@ -34,7 +34,7 @@ import type { SitusDesa } from '@/domain/website/situs'
 import type { Desa, Dusun, StatusDesa } from '@/domain/wilayah/schema'
 
 /** Naikkan setiap kali seed atau struktur data berubah; data lama di IndexedDB otomatis diganti (SPEC §12). */
-export const VERSI_DATA = 33
+export const VERSI_DATA = 34
 
 /** Modul yang menyala di satu desa (SPEC-V0.2 12.3). */
 export type ModulDesaDb = ModulDesa & { desaId: string }

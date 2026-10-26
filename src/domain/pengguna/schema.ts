@@ -18,6 +18,8 @@ export const LABEL_PERAN: Readonly<Record<PeranSesi, string>> = {
   bantuan: 'Tim Sinfodes (bantuan)',
 }
 
+export const PESAN_NIP = 'NIP 18 digit angka.'
+
 const penggunaDasar = z.object({
   id: z.string(),
   desaId: z.string(),
@@ -27,6 +29,8 @@ const penggunaDasar = z.object({
   dusunId: z.string().nullable(),
   email: z.string(),
   aktif: z.boolean(),
+  /** NIP penanda tangan untuk blok tanda tangan surat (SPEC-V0.2 12.2); diisi Sekretaris Desa, boleh kosong. */
+  nip: z.string().regex(/^\d{18}$/, PESAN_NIP).nullable(),
 })
 const dusunKadus = { message: 'Kepala dusun wajib punya dusun', path: ['dusunId'] }
 

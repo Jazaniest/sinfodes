@@ -13,7 +13,7 @@ const jenis = (kode: string) => {
 
 /** Jenis lengkap (dengan id, asal, dan arsip) dari bawaan, untuk uji status dan salinan. */
 const lengkap = (kode: string, ubah: Partial<JenisSurat> = {}): JenisSurat => ({
-  ...structuredClone(jenis(kode)), id: `js_x_${kode.toLowerCase()}`, desaId: 'desa_x', asal: 'bawaan', diarsipkan: null, ...ubah,
+  ...structuredClone(jenis(kode)), id: `js_x_${kode.toLowerCase()}`, desaId: 'desa_x', asal: 'bawaan', diarsipkan: null, tataLetak: null, ...ubah,
 })
 
 describe('status dan izin jenis buatan desa (SPEC-V0.2 12.1)', () => {

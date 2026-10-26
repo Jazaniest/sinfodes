@@ -103,7 +103,7 @@ describe('siaran kabupaten di panel desa (SPEC-V0.2 §8.4 Di panel desa)', () =>
     ubahDb((d) => {
       d.pengguna.push({
         id: 'pgn_uji_siak', desaId: 'desa_tualang_permai', nama: 'Uji Siak', jabatan: 'Operator Desa', peran: 'operator', dusunId: null,
-        email: 'uji@tualangpermai.desa.id', aktif: true,
+        email: 'uji@tualangpermai.desa.id', aktif: true, nip: null,
       })
     })
     masukSebagai('pgn_uji_siak')

@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import type { Pengguna, Peran } from '../pengguna/schema'
-import { jabatanBawaan, periksaAturanPengguna, undangPenggunaSchema } from './pengguna'
+import { jabatanBawaan, periksaAturanPengguna, ubahPenggunaSchema, undangPenggunaSchema } from './pengguna'
 
 const p = (id: string, peran: Peran, ubah: Partial<Pengguna> = {}): Pengguna => ({
   id, desaId: 'desa_a', nama: `Nama ${id}`, jabatan: 'Jabatan', peran, dusunId: peran === 'kadus' ? 'dsn_2' : null,
-  email: `${id}@desa.id`, aktif: true, ...ubah,
+  email: `${id}@desa.id`, aktif: true, nip: null, ...ubah,
 })
 const SEMUA = [p('sekdes', 'sekdes'), p('kades', 'kades'), p('op', 'operator'), p('kadus', 'kadus'), p('lain', 'kades', { desaId: 'desa_b' })]
 const [SEKDES, KADES, OPERATOR] = SEMUA
@@ -45,5 +45,12 @@ describe('pengguna desa (SPEC §8)', () => {
     expect(periksaAturanPengguna(SEMUA, 'sekdes', OPERATOR, { ...OPERATOR, peran: 'kadus', dusunId: null })).toMatchObject({
       kode: 'VALIDATION', field: 'dusunId',
     })
+  })
+  it('NIP: 18 digit angka tersimpan, kosong (null) menghapus, 17 digit atau huruf ditolak dengan pesan persis', () => {
+    expect(ubahPenggunaSchema.parse({ nip: '198203152010011004' })).toEqual({ nip: '198203152010011004' })
+    expect(ubahPenggunaSchema.parse({ nip: null })).toEqual({ nip: null })
+    for (const salah of ['19820315201001100', '19820315201001100x', '1982031520100110044']) {
+      expect(ubahPenggunaSchema.safeParse({ nip: salah }).error?.issues[0]).toMatchObject({ path: ['nip'], message: 'NIP 18 digit angka.' })
+    }
   })
 })

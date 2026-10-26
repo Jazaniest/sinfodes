@@ -4,7 +4,7 @@ import { useRef, useState, type ReactNode } from 'react'
 import { GalatApi, pesanGalat } from '@/api/galat'
 import { kunciPengaturan, opsiPenggunaDesa, ubahPengguna, undangPengguna } from '@/api/pengaturan'
 import { galatDariZod } from '@/domain/format/galat-isian'
-import { undangPenggunaSchema } from '@/domain/pengaturan/pengguna'
+import { ubahPenggunaSchema, undangPenggunaSchema } from '@/domain/pengaturan/pengguna'
 import { LABEL_PERAN, PERAN, type Pengguna, type Peran } from '@/domain/pengguna/schema'
 import { namaDusun } from '@/domain/wilayah/alamat'
 import { Cap } from '@/ui/cap/Cap'
@@ -24,7 +24,7 @@ import { KepalaPengaturan } from './TabPengaturan'
 const PILIHAN_PERAN = PERAN.map((p) => ({ id: p, label: LABEL_PERAN[p] }))
 const peranDari = (id: string | null): Peran | null => PERAN.find((p) => p === id) ?? null
 
-type DialogTerbuka = { jenis: 'undang' } | { jenis: 'peran'; pengguna: Pengguna } | { jenis: 'nonaktif'; pengguna: Pengguna } | null
+type DialogTerbuka = { jenis: 'undang' } | { jenis: 'nip'; pengguna: Pengguna } | { jenis: 'peran'; pengguna: Pengguna } | { jenis: 'nonaktif'; pengguna: Pengguna } | null
 
 /** Pengaturan › Pengguna (SPEC §8): undang, ganti peran, nonaktifkan. Hanya Sekretaris Desa (SPEC §5.1). */
 export function PenggunaDesa() {
@@ -45,7 +45,12 @@ export function PenggunaDesa() {
 
   const aksi = (p: Pengguna): ReactNode =>
     p.id === saya.id ? (
-      <span className="text-teks-kecil text-tinta-2">Akun Anda</span>
+      <span className="flex items-center gap-2">
+        <span className="text-teks-kecil text-tinta-2">Akun Anda</span>
+        <Tombol varian="teks" ukuran="kecil" onPress={() => setDialog({ jenis: 'nip', pengguna: p })}>
+          Atur NIP
+        </Tombol>
+      </span>
     ) : (
       <MenuAksi
         placement="bottom end"
@@ -56,6 +61,7 @@ export function PenggunaDesa() {
         }
         items={[
           { id: 'peran', label: 'Ganti peran…', onAction: () => setDialog({ jenis: 'peran', pengguna: p }) },
+          { id: 'nip', label: 'Atur NIP…', onAction: () => setDialog({ jenis: 'nip', pengguna: p }) },
           p.aktif
             ? { id: 'nonaktif', label: 'Nonaktifkan…', bahaya: true, onAction: () => setDialog({ jenis: 'nonaktif', pengguna: p }) }
             : { id: 'aktif', label: 'Aktifkan lagi', onAction: () => aktifkan.mutate(p) },
@@ -76,6 +82,7 @@ export function PenggunaDesa() {
     },
     { id: 'jabatan', judul: 'Jabatan', isi: (p) => p.jabatan },
     { id: 'peran', judul: 'Peran', isi: (p) => LABEL_PERAN[p.peran] },
+    { id: 'nip', judul: 'NIP', isi: (p) => <span className="font-mono">{p.nip ?? '-'}</span> },
     { id: 'status', judul: 'Status', isi: (p) => <Cap varian={p.aktif ? 'aktif' : 'nonaktif'} /> },
     { id: 'aksi', judul: 'Aksi', wajib: true, isi: aksi },
   ]
@@ -118,6 +125,7 @@ export function PenggunaDesa() {
         )}
       />
       {dialog?.jenis === 'undang' && <DialogUndang onTutup={() => setDialog(null)} onBerhasil={segarkan} />}
+      {dialog?.jenis === 'nip' && <DialogNip pengguna={dialog.pengguna} onTutup={() => setDialog(null)} onBerhasil={segarkan} />}
       {dialog?.jenis === 'peran' && <DialogPeran pengguna={dialog.pengguna} onTutup={() => setDialog(null)} onBerhasil={segarkan} />}
       {dialog?.jenis === 'nonaktif' && <DialogNonaktif pengguna={dialog.pengguna} onTutup={() => setDialog(null)} onBerhasil={segarkan} />}
     </div>
@@ -310,5 +318,64 @@ function DialogNonaktif({ pengguna, onTutup, onBerhasil }: PropsDialog & { pengg
     >
       {pengguna.nama} tidak bisa masuk lagi sampai diaktifkan kembali. Data dan riwayat kerjanya tetap tersimpan.
     </ConfirmDialog>
+  )
+}
+
+/** NIP penanda tangan (SPEC-V0.2 12.2): opsional, 18 digit; kosong menghapus. Tampil di blok tanda tangan bila tata letaknya mengaktifkan NIP. */
+function DialogNip({ pengguna, onTutup, onBerhasil }: PropsDialog & { pengguna: Pengguna }) {
+  const [nip, setNip] = useState(pengguna.nip ?? '')
+  const [galat, setGalat] = useState<Record<string, string>>({})
+  const mengirim = useRef(false)
+  const isian = () => ({ nip: nip.trim() === '' ? null : nip.trim() })
+  const simpan = useMutation({
+    mutationFn: () => ubahPengguna(pengguna.id, isian()),
+    onSuccess: (baru) => {
+      onBerhasil()
+      tampilkanToast({ pesan: baru.nip ? `NIP ${baru.nama} disimpan.` : `NIP ${baru.nama} dihapus.`, nada: 'berhasil' })
+      onTutup()
+    },
+    onError: (e) => tanganiGalat(e, setGalat),
+    onSettled: () => {
+      mengirim.current = false
+    },
+  })
+  const tekan = () => {
+    if (mengirim.current) return
+    const hasil = ubahPenggunaSchema.safeParse(isian())
+    if (!hasil.success) {
+      setGalat(galatDariZod(hasil.error))
+      return
+    }
+    mengirim.current = true
+    simpan.mutate()
+  }
+  return (
+    <Dialog
+      isOpen
+      onOpenChange={(buka) => {
+        if (!buka) onTutup()
+      }}
+      judul={`NIP ${pengguna.nama}`}
+      subjudul="Tampil di blok tanda tangan surat bila tata letak surat mengaktifkan NIP. Boleh dikosongkan."
+      aksi={
+        <>
+          <Tombol onPress={onTutup}>Batal</Tombol>
+          <Tombol varian="utama" memuat={simpan.isPending} onPress={tekan}>
+            Simpan
+          </Tombol>
+        </>
+      }
+    >
+      <TextField
+        label="NIP (opsional)"
+        value={nip}
+        onChange={(v) => {
+          setNip(v)
+          setGalat({})
+        }}
+        galat={galat.nip}
+        keterangan="18 digit angka."
+      />
+    </Dialog>
   )
 }

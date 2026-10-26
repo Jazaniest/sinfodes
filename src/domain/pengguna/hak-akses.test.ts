@@ -51,7 +51,7 @@ describe('hak akses (SPEC §5.1)', () => {
   it('kepala dusun dibatasi ke dusunnya, peran lain tidak', () => {
     const dasar: Pengguna = {
       id: 'pgn_x', desaId: 'desa_x', nama: 'Sukardi', jabatan: 'Kepala Dusun II', peran: 'kadus',
-      dusunId: 'dsn_ss_2', email: 'x@y.id', aktif: true,
+      dusunId: 'dsn_ss_2', email: 'x@y.id', aktif: true, nip: null,
     }
     expect(cakupanDusun(dasar)).toBe('dsn_ss_2')
     expect(cakupanDusun({ ...dasar, peran: 'operator', dusunId: null })).toBeNull()

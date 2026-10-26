@@ -8,6 +8,7 @@ import type { DetailPermohonan } from '@/domain/surat/permohonan'
 import { Cap } from '@/ui/cap/Cap'
 import { DescriptionList } from '@/ui/data/DescriptionList'
 import { LembarSurat } from '@/ui/dokumen/LembarSurat'
+import { lebarLembarCm } from '@/ui/dokumen/ukuran-kertas'
 import { PratinjauLembar } from '@/ui/dokumen/PratinjauLembar'
 import { Tautan } from '@/ui/navigasi/Tautan'
 import { PageHeader } from '@/ui/tata-letak/PageHeader'
@@ -97,7 +98,7 @@ export function TumpukanTandaTangan({ sekarang }: { sekarang?: Date }) {
       <PageHeader jejak={JEJAK} judul="Tanda tangan" meta={terbit ? 'Surat baru saja ditandatangani' : `${indeks + 1} dari ${daftar.length}`} />
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_20rem] xl:grid-rows-[auto_1fr]">
         <div className="min-w-0 xl:col-start-1 xl:row-span-2 xl:row-start-1">
-          <PratinjauLembar label="Pratinjau surat">
+          <PratinjauLembar label="Pratinjau surat" lebarCm={lebarLembarCm(lembar.tataLetak)}>
             <LembarSurat {...lembar} penanda={p.terbit ? undefined : <Cap varian="draf" />} />
           </PratinjauLembar>
         </div>

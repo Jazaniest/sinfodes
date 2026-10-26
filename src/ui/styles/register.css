@@ -34,9 +34,10 @@
   --font-sans: 'IBM Plex Sans', system-ui, sans-serif;
   --font-serif: 'IBM Plex Serif', Georgia, serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
-  /* Huruf lembar surat (SPEC §7.5): Tinos setara Times New Roman, Arimo setara Arial. */
+  /* Huruf lembar surat (SPEC §7.5): Tinos setara Times New Roman, Arimo setara Arial, IBM Plex Serif untuk kop yang lebih modern. */
   --font-surat-tinos: 'Tinos', 'Times New Roman', serif;
   --font-surat-arimo: 'Arimo', Arial, sans-serif;
+  --font-surat-plex: 'IBM Plex Serif', Georgia, serif;
 
   --text-*: initial;
   --text-label: 0.6875rem;

@@ -6,7 +6,8 @@ import type { Penduduk } from '@/domain/penduduk/schema'
 import type { Peran } from '@/domain/pengguna/schema'
 import { perluTindakan } from '@/domain/surat/alur'
 import { STATUS_DAFTAR_JENIS, statusJenis, type JenisSurat } from '@/domain/surat/jenis'
-import { pengaturanBawaan, type PengaturanSurat } from '@/domain/surat/pengaturan'
+import { type PengaturanSurat } from '@/domain/surat/pengaturan'
+import { pengaturanBawaan } from '@/domain/surat/pengaturan-bawaan'
 import {
   cariPermohonanSchema, filterPermohonanSchema, STATUS_PERMOHONAN, STATUS_TERBUKA,
   type BarisPermohonan, type DetailPermohonan, type Permohonan, type StatusPermohonan,
@@ -41,9 +42,9 @@ export function detailPermohonan(db: DbDemo, p: Permohonan): DetailPermohonan | 
 }
 
 /** Nama Kepala Desa dan Sekretaris Desa yang sedang menjabat, untuk blok tanda tangan draf. */
-export function namaPejabat(db: DbDemo, desaId: string): { kades: string; sekdes: string } {
-  const nama = (peran: Peran) => db.pengguna.find((u) => u.desaId === desaId && u.peran === peran && u.aktif)?.nama ?? '—'
-  return { kades: nama('kades'), sekdes: nama('sekdes') }
+export function namaPejabat(db: DbDemo, desaId: string): { kades: string; sekdes: string; nipKades: string | null } {
+  const aktif = (peran: Peran) => db.pengguna.find((u) => u.desaId === desaId && u.peran === peran && u.aktif)
+  return { kades: aktif('kades')?.nama ?? '—', sekdes: aktif('sekdes')?.nama ?? '—', nipKades: aktif('kades')?.nip ?? null }
 }
 
 /** Balasan GET detail dan setiap aksi (Tugas 7 tahap 2B-1). */

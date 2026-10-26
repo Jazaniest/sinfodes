@@ -40,6 +40,8 @@ export const desaSchema = z.object({
   kodeSurat: z.string().min(1),
   /** Lambang yang diunggah desa (data URL). Kosong berarti kop memakai lambang tiruan netral (SPEC §7.5). */
   lambang: z.string().nullable().optional(),
+  /** Lambang kabupaten untuk kop dua lambang (SPEC-V0.2 12.2). Kosong berarti lambang tiruan netral berlabel "Lambang kabupaten". */
+  lambangKabupaten: z.string().nullable().optional(),
   status: z.enum(STATUS_DESA),
 })
 export type Desa = z.infer<typeof desaSchema>

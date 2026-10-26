@@ -14,7 +14,6 @@ import { API, balasDaftar, balasGalat, denganJaringan } from '../http'
 import { modulDesaDi } from '../modul'
 import { butuhWarga, type WargaMasuk } from '../sesi-mock'
 import type { DbDemo } from '../tipe-db'
-import { pengaturanDesa } from './surat'
 
 const BATAS_BALITA_BULAN = 60
 const PERMOHONAN_TIDAK_DITEMUKAN = 'Permohonan tidak ditemukan.'
@@ -122,7 +121,6 @@ export const handlerWarga = [
       if (!p) return balasGalat('NOT_FOUND', PERMOHONAN_TIDAK_DITEMUKAN, 404)
       const jenis = db.jenisSurat.find((j) => j.id === p.jenisId)
       if (!jenis) return balasGalat('SERVER', 'Data permohonan tidak utuh.', 500)
-      const { kertas, huruf } = pengaturanDesa(db, p.desaId)
       const detail: DetailPermohonanWarga = {
         permohonan: {
           ...ringkasUntukWarga(db, p),
@@ -133,7 +131,6 @@ export const handlerWarga = [
         },
         jenis: { kode: jenis.kode, nama: jenis.nama, isian: jenis.isian },
         terbit: p.status === 'selesai' ? p.terbit : null,
-        pengaturan: { kertas, huruf },
       }
       return HttpResponse.json(detail)
     }),

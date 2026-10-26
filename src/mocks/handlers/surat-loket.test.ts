@@ -79,7 +79,7 @@ describe('tumpukan tanda tangan (SPEC §7.4 layar 4, fokus review 3)', () => {
     expect(daftar.every((d) => d.permohonan.status === 'perlu-ttd' && d.permohonan.tahap === 'tanda-tangan')).toBe(true)
     const masuk = daftar.map((d) => d.permohonan.masukPada)
     expect(masuk).toEqual([...masuk].sort())
-    expect(daftar[0].pengaturan.kertas).toBe('A4')
+    expect(daftar[0].pengaturan.tataLetak.kertas.ukuran).toBe('A4')
   })
   it('Sekdes hanya melihat jenis yang boleh ditandatangani a.n.; Operator tidak berhak', async () => {
     masukSebagai(AKUN_UJI.sekdes)
@@ -102,8 +102,8 @@ describe('saran isian dari mutasi (SPEC §6.6)', () => {
   it('tanpa mutasi yang cocok → saran kosong, tetap dengan pengaturan surat dan nama pejabat', async () => {
     masukSebagai(AKUN_UJI.operator)
     const saran = await ambilSaranSurat('SKD', 'pdk_siti_rahmah', null)
-    expect(saran).toMatchObject({ mutasi: null, pemohonId: null, isian: {}, pengaturan: { kertas: 'A4' } })
-    expect(saran.pejabat).toEqual({ kades: 'H. Muhammad Nasir', sekdes: 'Hendri Saputra' })
+    expect(saran).toMatchObject({ mutasi: null, pemohonId: null, isian: {}, pengaturan: { tataLetak: { kertas: { ukuran: 'A4' } } } })
+    expect(saran.pejabat).toEqual({ kades: 'H. Muhammad Nasir', sekdes: 'Hendri Saputra', nipKades: null })
   })
 })
 

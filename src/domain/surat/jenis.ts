@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { tanggalValid } from '../format/kalender'
+import { tataLetakSuratSchema } from './tata-letak'
 
 export const JENIS_ISIAN = ['teks', 'angka', 'tanggal', 'pilihan'] as const
 export type JenisIsian = (typeof JENIS_ISIAN)[number]
@@ -49,6 +50,8 @@ export const jenisSuratSchema = z.object({
   asal: z.enum(ASAL_JENIS),
   /** Waktu jenis diarsipkan (ISO WIB); null bila belum. Jenis arsip tidak aktif dan tidak bisa diubah. */
   diarsipkan: z.string().nullable(),
+  /** Pengecualian tata letak untuk jenis ini; null berarti mengikuti tata letak desa (SPEC-V0.2 12.2). */
+  tataLetak: tataLetakSuratSchema.nullable(),
 })
 export type JenisSurat = z.infer<typeof jenisSuratSchema>
 
@@ -150,7 +153,7 @@ export function jenisKosong(desa: { id: string }, kode: string, nama: string): O
     desaId: desa.id, kode, nama, klasifikasi: '470', subjek: 'pemohon', isian: [], bolehAtasNama: true, wajibParaf: false,
     masaBerlakuBulan: null, online: false, syarat: ['KTP-el pemohon'],
     teks: 'Yang bertanda tangan di bawah ini menerangkan bahwa [nama] adalah warga Desa [namaDesa].',
-    aktif: false, asal: 'desa', diarsipkan: null,
+    aktif: false, asal: 'desa', diarsipkan: null, tataLetak: null,
   }
 }
 

@@ -4,6 +4,7 @@ import type { Penduduk } from '@/domain/penduduk/schema'
 import type { PenggunaSesi } from '@/domain/pengguna/schema'
 import { bolehDiarsipkan, bolehDihapus, jenisKosong, salinJenis, tambahJenisSchema, type JenisSurat } from '@/domain/surat/jenis'
 import type { Permohonan } from '@/domain/surat/permohonan'
+import { samaDenganSiap } from '@/domain/surat/tata-letak-siap'
 import { periksaJenisSurat, ubahJenisSuratSchema, type DetailJenisSurat } from '@/domain/surat/ubah-jenis'
 import { dataMilik } from '../cakupan'
 import { ubahDb } from '../db'
@@ -169,6 +170,7 @@ export const handlerJenisSurat = [
       const baru: JenisSurat = {
         ...lama,
         ...m,
+        tataLetak: m.tataLetak === undefined ? lama.tataLetak : m.tataLetak && { ...m.tataLetak, siap: samaDenganSiap(m.tataLetak) },
         nama: (m.nama ?? lama.nama).trim(),
         klasifikasi: (m.klasifikasi ?? lama.klasifikasi).trim(),
         syarat: (m.syarat ?? lama.syarat).map((s) => s.trim()),
