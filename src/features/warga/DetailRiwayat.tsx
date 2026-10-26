@@ -26,9 +26,9 @@ const judulBagian = 'text-label font-medium text-tinta-2 uppercase'
 
 function IsiDetail({ d, sesi }: { d: DetailPermohonanWarga; sesi: SesiWarga }) {
   const [cetak, setCetak] = useState(false)
-  const { permohonan: p, jenis, terbit, pengaturan } = d
+  const { permohonan: p, jenis, terbit } = d
   // Hanya surat TTE yang boleh diunduh; surat bertanda tangan basah diambil di kantor desa.
-  const lembar = p.status === 'selesai' && terbit?.mode === 'tte' ? lembarTerbit(terbit, pengaturan, sesi.desa, asalDesa(sesi.desa.slug)) : null
+  const lembar = p.status === 'selesai' && terbit?.mode === 'tte' ? lembarTerbit(terbit, sesi.desa, asalDesa(sesi.desa.slug)) : null
   const rincian = [
     { label: 'Nomor tiket', nilai: <span className="font-mono">{p.tiket}</span> },
     { label: 'Untuk', nilai: p.untuk.nama },

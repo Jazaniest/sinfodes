@@ -219,7 +219,7 @@ export const handlerKonsol = [
       // Pengaturan › Pengguna (tahap 6C).
       const admin: Pengguna = {
         id: `pgn_${slug.replaceAll('-', '_')}_admin`, desaId: id, nama: 'Admin desa', jabatan: 'Sekretaris Desa', peran: 'sekdes',
-        dusunId: null, email, aktif: true,
+        dusunId: null, email, aktif: true, nip: null,
       }
       ubahDb((d) => {
         d.desa.push(desa)
@@ -298,7 +298,7 @@ export const handlerKonsol = [
         return balasField('email', 'Email ini sudah dipakai akun lain.', 'CONFLICT')
       }
       // Di demo undangan langsung aktif dengan kata sandi demo, sama dengan undangan di Pengaturan › Pengguna (tahap 6C).
-      const baru: Pengguna = { id: idBaru(db, 'pgn'), desaId: desa.id, nama, jabatan: 'Sekretaris Desa', peran: 'sekdes', dusunId: null, email, aktif: true }
+      const baru: Pengguna = { id: idBaru(db, 'pgn'), desaId: desa.id, nama, jabatan: 'Sekretaris Desa', peran: 'sekdes', dusunId: null, email, aktif: true, nip: null }
       ubahDb((d) => {
         d.pengguna.push(baru)
       })

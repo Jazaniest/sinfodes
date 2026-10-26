@@ -313,6 +313,27 @@ Pekerjaan v0.2.0 (tahap 7A-7H) dicatat di sini selama berjalan di branch `develo
 - Sesi admin membawa `modul`; `kemampuanEfektif`, `bolehDi`, `useBoleh`, dan menu panel memperhitungkannya.
 - Data demo naik ke versi 33.
 
+### Ditambahkan (7H-2: tata letak surat)
+
+- **Pengaturan › Tata letak surat** (Operator dan Sekretaris Desa, sesudah Penomoran): tiga tata letak siap pakai (*Standar tata naskah dinas*, *Kop dua lambang*, *Kop rata tengah*) dengan tanda *Dipakai*, lalu pengaturan per bagian.
+  - **Kop**: jumlah dan posisi lambang, 1-5 baris teks dengan sisipan `{kab}`, `{kec}`, `{desa}`, `{alamat}` (markup tampil sebagai teks), dan garis tunggal, ganda, atau tebal-tipis.
+  - **Kertas**: A4 atau F4, margin 10-40 mm. **Huruf**: Tinos, Arimo, atau IBM Plex Serif; 11-13 pt; jarak baris 1, 1,15, atau 1,5.
+  - **Tanda tangan**: posisi kanan atau tengah, urutan unsur (Naik/Turun; tempat-tanggal, jabatan, dan nama wajib), NIP, dan tempat cap (kotak 3 × 3 cm, tidak tercetak di mode TTE).
+  - **QR dan kode verifikasi**: kiri bawah, kanan bawah, atau di bawah tanda tangan. Tidak bisa dimatikan; nomor surat juga selalu tercetak.
+  - Pratinjau lembar langsung di sampingnya (jenis SKTM bawaan, bisa diganti) dengan nomor dan kode verifikasi contoh.
+- **Pengecualian per jenis.** Editor jenis surat mendapat bagian *Tata letak*: *Ikuti tata letak desa* atau *Tata letak khusus untuk jenis ini* (dimulai dari salinan tata letak desa).
+- **Tata letak beku saat terbit.** `terbit.tataLetak`, `terbit.kop` (lambang desa dan kabupaten), dan `terbit.penandatangan.nip` diisi saat tanda tangan; mengganti tata letak, lambang, atau NIP sesudahnya tidak mengubah surat lama (ruang kerja, cetak, dan unduhan warga).
+- **Lambang kabupaten** diunggah di Pengaturan › Identitas; tanpa unggahan, kop dua lambang memakai lambang tiruan netral berlabel *Lambang kabupaten*.
+- **NIP penanda tangan** (opsional, 18 digit) diatur Sekretaris Desa di Pengaturan › Pengguna (*Atur NIP*, juga untuk akunnya sendiri).
+- Endpoint: `GET/PUT /surat/tata-letak`, `PATCH /jenis-surat/:id` menerima `tataLetak`, `PUT /pengaturan/desa` menerima `lambangKabupaten`, `PATCH /pengaturan/pengguna/:id` menerima `nip`. Skema ketat: kunci tambahan, QR yang dimatikan, atau CSS/HTML yang diselipkan ditolak (422).
+
+### Diubah (7H-2)
+
+- `pengaturanSurat.kertas` dan `huruf` pindah ke `pengaturanSurat.tataLetak`; `LembarSurat` menerima `tataLetak` (margin, ukuran huruf, dan jarak baris inline dalam mm dan pt). Tata letak standar menghasilkan kerangka lembar yang sama dengan v0.1.
+- `GET /warga/permohonan/:id` tidak lagi mengirim `pengaturan`; lembar unduhan memakai `terbit.tataLetak`.
+- `PratinjauLembar` menerima `lebarCm` supaya F4 tidak terpotong.
+- Data demo naik ke versi 34.
+
 ## [0.1.0] - 2026-10-16
 
 Demo tahap 1: frontend sungguhan dengan API tiruan (MSW) dan data dummy Desa Sungai Sialang, Kabupaten Pelalawan.

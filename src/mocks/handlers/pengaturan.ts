@@ -7,7 +7,9 @@ import { ubahPenomoranSchema, type Penomoran } from '@/domain/pengaturan/penomor
 import { nomoriSusunan, susunanSama, ubahWilayahSchema, type UbahWilayah, type WilayahDesa } from '@/domain/pengaturan/wilayah'
 import type { PenggunaSesi } from '@/domain/pengguna/schema'
 import { urutBerikutnya } from '@/domain/surat/nomor-surat'
-import { pengaturanBawaan } from '@/domain/surat/pengaturan'
+import { pengaturanBawaan } from '@/domain/surat/pengaturan-bawaan'
+import { tataLetakSuratSchema } from '@/domain/surat/tata-letak'
+import { samaDenganSiap } from '@/domain/surat/tata-letak-siap'
 import { namaDusun } from '@/domain/wilayah/alamat'
 import type { Desa, Dusun } from '@/domain/wilayah/schema'
 import { ambilDb, ubahDb } from '../db'
@@ -33,6 +35,7 @@ function pengaturanDesaDari(db: DbDemo, desa: Desa): PengaturanDesa {
       telepon: desa.telepon,
       jamLayanan: desa.jamLayanan,
       lambang: desa.lambang ?? null,
+      lambangKabupaten: desa.lambangKabupaten ?? null,
     },
     kecamatan: desa.kecamatan.nama,
     kabupaten: desa.kabupaten.nama,
@@ -136,8 +139,34 @@ function penomoranDari(db: DbDemo, desa: Desa): Penomoran {
   }
 }
 
-/** Pengaturan desa (SPEC §8): Identitas, Wilayah, dan Penomoran. Tab Pengguna ada di `pengaturan-pengguna.ts`. */
+/** Pengaturan desa (SPEC §8): Identitas, Wilayah, Penomoran, dan Tata letak surat. Tab Pengguna ada di `pengaturan-pengguna.ts`. */
 export const handlerPengaturan = [
+  http.get(
+    `${API}/surat/tata-letak`,
+    denganJaringan(({ request }) => {
+      const pengguna = butuhPengatur(request)
+      if (pengguna instanceof Response) return pengguna
+      return HttpResponse.json(pengaturanDesa(ambilDb(), pengguna.desaId).tataLetak)
+    }),
+  ),
+  http.put(
+    `${API}/surat/tata-letak`,
+    denganJaringan(async ({ request }) => {
+      const pengguna = butuhPengatur(request)
+      if (pengguna instanceof Response) return pengguna
+      const isian = tataLetakSuratSchema.safeParse(await bacaJson(request))
+      if (!isian.success) return balasIsianTidakValid(isian.error)
+      // Penanda `siap` dihitung server dari isinya, supaya tidak bisa berbohong tentang tata letak siap pakai.
+      const tataLetak = { ...isian.data, siap: samaDenganSiap(isian.data) }
+      // Hanya surat yang ditandatangani sesudah ini yang memakai tata letak baru; surat terbit menyimpan salinannya sendiri.
+      ubahDb((d) => {
+        const ada = d.pengaturanSurat.find((p) => p.desaId === pengguna.desaId)
+        if (ada) ada.tataLetak = tataLetak
+        else d.pengaturanSurat.push({ ...pengaturanBawaan(pengguna.desaId), tataLetak })
+      })
+      return HttpResponse.json(tataLetak)
+    }),
+  ),
   http.get(
     `${API}/pengaturan/desa`,
     denganJaringan(({ request }) => {

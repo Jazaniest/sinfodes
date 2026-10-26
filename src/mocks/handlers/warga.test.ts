@@ -94,7 +94,7 @@ describe('Riwayat warga (SPEC §10)', () => {
     expect(d.jenis.isian.map((i) => i.kunci)).toContain('namaUsaha')
     expect(d.terbit).toBeNull()
   })
-  it('Selesai TTE: lembar surat terbit dikirim beserta ukuran kertas dan hurufnya', async () => {
+  it('Selesai TTE: lembar surat terbit dikirim beserta tata letak yang dibekukan saat terbit', async () => {
     const id = idDomisiliSiti()
     masukSebagai(AKUN_UJI.operator)
     await jalankanAksi(id, 'ajukan-ttd')
@@ -104,7 +104,8 @@ describe('Riwayat warga (SPEC §10)', () => {
     const d = await ambilRiwayatWarga(id)
     expect(d.permohonan).toMatchObject({ status: 'selesai', posisi: 'selesai, surat bisa diunduh', alasanDitolak: null })
     expect(d.terbit).toMatchObject({ mode: 'tte', nomor: d.permohonan.nomor })
-    expect(d.pengaturan).toEqual({ kertas: 'A4', huruf: expect.any(String) })
+    expect(d.terbit?.tataLetak).toMatchObject({ siap: 'standar', kertas: { ukuran: 'A4' } })
+    expect(d).not.toHaveProperty('pengaturan')
   })
   it('Ditolak: alasannya dikirim, di detail maupun di riwayat', async () => {
     const id = idDomisiliSiti()

@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { angkaRomawi } from '../format/romawi'
-import { LABEL_PERAN, PERAN, penggunaSchema, type Pengguna, type Peran } from '../pengguna/schema'
+import { LABEL_PERAN, PERAN, PESAN_NIP, penggunaSchema, type Pengguna, type Peran } from '../pengguna/schema'
 import type { Dusun } from '../wilayah/schema'
 
 const surel = z.string().trim().toLowerCase().regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Alamat surel tidak valid')
@@ -18,8 +18,14 @@ export type UndangPengguna = z.infer<typeof undangPenggunaSchema>
 
 /** PATCH /pengaturan/pengguna/:id: ganti peran (beserta dusunnya), atau nonaktifkan dan aktifkan lagi. */
 export const ubahPenggunaSchema = z
-  .object({ peran: z.enum(PERAN).optional(), dusunId: z.string().nullable().optional(), aktif: z.boolean().optional() })
-  .refine((u) => u.peran !== undefined || u.aktif !== undefined, { message: 'Tidak ada perubahan.' })
+  .object({
+    peran: z.enum(PERAN).optional(),
+    dusunId: z.string().nullable().optional(),
+    aktif: z.boolean().optional(),
+    /** Kosong dikirim sebagai null. */
+    nip: z.string().trim().regex(/^\d{18}$/, PESAN_NIP).nullable().optional(),
+  })
+  .refine((u) => u.peran !== undefined || u.aktif !== undefined || u.nip !== undefined, { message: 'Tidak ada perubahan.' })
 export type UbahPengguna = z.infer<typeof ubahPenggunaSchema>
 
 /** GET /pengaturan/pengguna. */

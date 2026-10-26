@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { contohPermohonan } from '@/test/contoh-surat'
 import { alasanSchema, catatanKembaliSchema, filterPermohonanSchema, permohonanSchema, type Terbit } from './permohonan'
+import { TATA_LETAK_SIAP } from './tata-letak-siap'
 
 const TERBIT: Terbit = {
   nomor: '470/087/SS/IX/2026',
@@ -8,10 +9,12 @@ const TERBIT: Terbit = {
   urut: 87,
   kodeVerifikasi: 'SS-7K3M-Q9TD',
   pada: '2026-09-24T10:00:00+07:00',
-  penandatangan: { id: 'pgn_nasir', nama: 'H. Muhammad Nasir', peran: 'kades' },
+  penandatangan: { id: 'pgn_nasir', nama: 'H. Muhammad Nasir', peran: 'kades', nip: null },
   mode: 'tte',
   berlakuSampai: '2026-12-24',
   lembar: { judul: 'SURAT KETERANGAN DOMISILI', pembuka: 'Yang bertanda tangan …', blok: [], tempatTanggal: 'Sungai Sialang, 24 September 2026' },
+  tataLetak: TATA_LETAK_SIAP.standar,
+  kop: { lambang: null, lambangKabupaten: null },
 }
 
 describe('skema permohonan (SPEC §7.1)', () => {

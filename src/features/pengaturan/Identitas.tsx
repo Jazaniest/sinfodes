@@ -6,6 +6,7 @@ import { kunciPengaturan, opsiPengaturanDesa, simpanIdentitas } from '@/api/peng
 import { kunciSesi } from '@/api/sesi'
 import { MAKS_GAMBAR_KB } from '@/domain/format/gambar'
 import { formDariIdentitas, isianIdentitas, periksaIdentitas, type FormIdentitas, type PengaturanDesa } from '@/domain/pengaturan/identitas'
+import { TATA_LETAK_SIAP } from '@/domain/surat/tata-letak-siap'
 import { useBoleh } from '@/features/admin/useBoleh'
 import { KopSurat } from '@/ui/dokumen/KopSurat'
 import { PratinjauLembar } from '@/ui/dokumen/PratinjauLembar'
@@ -125,6 +126,7 @@ function FormIdentitasDesa({ data, onKotor }: { data: PengaturanDesa; onKotor?: 
     kodePos: form.kodePos,
     surel: form.surel,
     lambang: form.lambang,
+    lambangKabupaten: form.lambangKabupaten,
   }
 
   return (
@@ -245,9 +247,17 @@ function FormIdentitasDesa({ data, onKotor }: { data: PengaturanDesa; onKotor?: 
               galat={galat.lambang}
               keterangan={`PNG, JPG, WebP, atau SVG, paling besar ${MAKS_GAMBAR_KB.lambang} KB. Tanpa lambang, kop memakai lambang tiruan netral.`}
             />
+            <UnggahGambar
+              label="Lambang kabupaten"
+              nilai={form.lambangKabupaten}
+              maksKb={MAKS_GAMBAR_KB.lambang}
+              onUbah={(v) => ubah('lambangKabupaten', v)}
+              galat={galat.lambangKabupaten}
+              keterangan="Dipakai di kop dua lambang. Demo memakai lambang contoh yang netral."
+            />
             <PratinjauLembar label="Pratinjau kop surat">
               <div data-terang className="w-[21cm] bg-lembar px-[2cm] pt-[1.2cm] pb-[0.8cm] font-surat-tinos text-[12pt] text-tinta">
-                <KopSurat kop={kop} />
+                <KopSurat kop={kop} tata={TATA_LETAK_SIAP.standar.kop} />
               </div>
             </PratinjauLembar>
           </div>

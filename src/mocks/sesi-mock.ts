@@ -28,7 +28,7 @@ function penggunaBantuan(request: Request, sesiId: string): PenggunaSesi | null 
   const email = db.penggunaKonsol.find((p) => p.id === temu.sesi.olehId)?.email ?? ''
   return {
     id: `bantuan_${sesiId}`, desaId: temu.akses.desaId, nama: temu.sesi.olehNama, jabatan: 'Tim Sinfodes', peran: 'bantuan',
-    dusunId: null, email, aktif: true,
+    dusunId: null, email, aktif: true, nip: null,
   }
 }
 

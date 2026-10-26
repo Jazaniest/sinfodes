@@ -64,6 +64,7 @@ import { Route as AdminPanelPengaturanLanggananRouteImport } from './routes/admi
 import { Route as AdminPanelPengaturanModulRouteImport } from './routes/admin/_panel/pengaturan/modul'
 import { Route as AdminPanelPengaturanPenggunaRouteImport } from './routes/admin/_panel/pengaturan/pengguna'
 import { Route as AdminPanelPengaturanPenomoranRouteImport } from './routes/admin/_panel/pengaturan/penomoran'
+import { Route as AdminPanelPengaturanTataLetakSuratRouteImport } from './routes/admin/_panel/pengaturan/tata-letak-surat'
 import { Route as AdminPanelPengaturanWilayahRouteImport } from './routes/admin/_panel/pengaturan/wilayah'
 import { Route as AdminPanelSiaranIndexRouteImport } from './routes/admin/_panel/siaran/index'
 import { Route as AdminPanelSiaranSiaranIdRouteImport } from './routes/admin/_panel/siaran/$siaranId'
@@ -412,6 +413,12 @@ const AdminPanelPengaturanPenomoranRoute =
   AdminPanelPengaturanPenomoranRouteImport.update({
     id: '/pengaturan/penomoran',
     path: '/pengaturan/penomoran',
+    getParentRoute: () => AdminPanelRoute,
+  } as any)
+const AdminPanelPengaturanTataLetakSuratRoute =
+  AdminPanelPengaturanTataLetakSuratRouteImport.update({
+    id: '/pengaturan/tata-letak-surat',
+    path: '/pengaturan/tata-letak-surat',
     getParentRoute: () => AdminPanelRoute,
   } as any)
 const AdminPanelPengaturanWilayahRoute =
@@ -827,6 +834,7 @@ export interface FileRoutesByFullPath {
   '/admin/pengaturan/modul': typeof AdminPanelPengaturanModulRoute
   '/admin/pengaturan/pengguna': typeof AdminPanelPengaturanPenggunaRoute
   '/admin/pengaturan/penomoran': typeof AdminPanelPengaturanPenomoranRoute
+  '/admin/pengaturan/tata-letak-surat': typeof AdminPanelPengaturanTataLetakSuratRoute
   '/admin/pengaturan/wilayah': typeof AdminPanelPengaturanWilayahRoute
   '/admin/siaran/$siaranId': typeof AdminPanelSiaranSiaranIdRoute
   '/admin/surat/$id': typeof AdminPanelSuratIdRoute
@@ -943,6 +951,7 @@ export interface FileRoutesByTo {
   '/admin/pengaturan/modul': typeof AdminPanelPengaturanModulRoute
   '/admin/pengaturan/pengguna': typeof AdminPanelPengaturanPenggunaRoute
   '/admin/pengaturan/penomoran': typeof AdminPanelPengaturanPenomoranRoute
+  '/admin/pengaturan/tata-letak-surat': typeof AdminPanelPengaturanTataLetakSuratRoute
   '/admin/pengaturan/wilayah': typeof AdminPanelPengaturanWilayahRoute
   '/admin/siaran/$siaranId': typeof AdminPanelSiaranSiaranIdRoute
   '/admin/surat/$id': typeof AdminPanelSuratIdRoute
@@ -1065,6 +1074,7 @@ export interface FileRoutesById {
   '/admin/_panel/pengaturan/modul': typeof AdminPanelPengaturanModulRoute
   '/admin/_panel/pengaturan/pengguna': typeof AdminPanelPengaturanPenggunaRoute
   '/admin/_panel/pengaturan/penomoran': typeof AdminPanelPengaturanPenomoranRoute
+  '/admin/_panel/pengaturan/tata-letak-surat': typeof AdminPanelPengaturanTataLetakSuratRoute
   '/admin/_panel/pengaturan/wilayah': typeof AdminPanelPengaturanWilayahRoute
   '/admin/_panel/siaran/$siaranId': typeof AdminPanelSiaranSiaranIdRoute
   '/admin/_panel/surat/$id': typeof AdminPanelSuratIdRoute
@@ -1188,6 +1198,7 @@ export interface FileRouteTypes {
     | '/admin/pengaturan/modul'
     | '/admin/pengaturan/pengguna'
     | '/admin/pengaturan/penomoran'
+    | '/admin/pengaturan/tata-letak-surat'
     | '/admin/pengaturan/wilayah'
     | '/admin/siaran/$siaranId'
     | '/admin/surat/$id'
@@ -1304,6 +1315,7 @@ export interface FileRouteTypes {
     | '/admin/pengaturan/modul'
     | '/admin/pengaturan/pengguna'
     | '/admin/pengaturan/penomoran'
+    | '/admin/pengaturan/tata-letak-surat'
     | '/admin/pengaturan/wilayah'
     | '/admin/siaran/$siaranId'
     | '/admin/surat/$id'
@@ -1425,6 +1437,7 @@ export interface FileRouteTypes {
     | '/admin/_panel/pengaturan/modul'
     | '/admin/_panel/pengaturan/pengguna'
     | '/admin/_panel/pengaturan/penomoran'
+    | '/admin/_panel/pengaturan/tata-letak-surat'
     | '/admin/_panel/pengaturan/wilayah'
     | '/admin/_panel/siaran/$siaranId'
     | '/admin/_panel/surat/$id'
@@ -1905,6 +1918,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPanelPengaturanPenomoranRouteImport
       parentRoute: typeof AdminPanelRoute
     }
+    '/admin/_panel/pengaturan/tata-letak-surat': {
+      id: '/admin/_panel/pengaturan/tata-letak-surat'
+      path: '/pengaturan/tata-letak-surat'
+      fullPath: '/admin/pengaturan/tata-letak-surat'
+      preLoaderRoute: typeof AdminPanelPengaturanTataLetakSuratRouteImport
+      parentRoute: typeof AdminPanelRoute
+    }
     '/admin/_panel/pengaturan/wilayah': {
       id: '/admin/_panel/pengaturan/wilayah'
       path: '/pengaturan/wilayah'
@@ -2375,6 +2395,7 @@ interface AdminPanelRouteChildren {
   AdminPanelPengaturanModulRoute: typeof AdminPanelPengaturanModulRoute
   AdminPanelPengaturanPenggunaRoute: typeof AdminPanelPengaturanPenggunaRoute
   AdminPanelPengaturanPenomoranRoute: typeof AdminPanelPengaturanPenomoranRoute
+  AdminPanelPengaturanTataLetakSuratRoute: typeof AdminPanelPengaturanTataLetakSuratRoute
   AdminPanelPengaturanWilayahRoute: typeof AdminPanelPengaturanWilayahRoute
   AdminPanelSiaranSiaranIdRoute: typeof AdminPanelSiaranSiaranIdRoute
   AdminPanelSuratIdRoute: typeof AdminPanelSuratIdRoute
@@ -2434,6 +2455,8 @@ const AdminPanelRouteChildren: AdminPanelRouteChildren = {
   AdminPanelPengaturanModulRoute: AdminPanelPengaturanModulRoute,
   AdminPanelPengaturanPenggunaRoute: AdminPanelPengaturanPenggunaRoute,
   AdminPanelPengaturanPenomoranRoute: AdminPanelPengaturanPenomoranRoute,
+  AdminPanelPengaturanTataLetakSuratRoute:
+    AdminPanelPengaturanTataLetakSuratRoute,
   AdminPanelPengaturanWilayahRoute: AdminPanelPengaturanWilayahRoute,
   AdminPanelSiaranSiaranIdRoute: AdminPanelSiaranSiaranIdRoute,
   AdminPanelSuratIdRoute: AdminPanelSuratIdRoute,

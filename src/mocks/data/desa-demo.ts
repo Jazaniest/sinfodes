@@ -97,10 +97,10 @@ export const DUSUN_DEMO: Dusun[] = [
 
 /** SPEC §12.9 */
 export const PENGGUNA_DEMO: Pengguna[] = [
-  { id: 'pgn_rosmiati', desaId: ID_SUNGAI_SIALANG, nama: 'Rosmiati', jabatan: 'Operator Desa', peran: 'operator', dusunId: null, email: 'rosmiati@sungaisialang.desa.id', aktif: true },
-  { id: 'pgn_hendri', desaId: ID_SUNGAI_SIALANG, nama: 'Hendri Saputra', jabatan: 'Sekretaris Desa', peran: 'sekdes', dusunId: null, email: 'hendri@sungaisialang.desa.id', aktif: true },
-  { id: 'pgn_nasir', desaId: ID_SUNGAI_SIALANG, nama: 'H. Muhammad Nasir', jabatan: 'Kepala Desa', peran: 'kades', dusunId: null, email: 'kades@sungaisialang.desa.id', aktif: true },
-  { id: 'pgn_nurhayati', desaId: ID_SUNGAI_SIALANG, nama: 'Nurhayati', jabatan: 'Kaur Keuangan', peran: 'kaur-keuangan', dusunId: null, email: 'nurhayati@sungaisialang.desa.id', aktif: true },
-  { id: 'pgn_sukardi', desaId: ID_SUNGAI_SIALANG, nama: 'Sukardi', jabatan: 'Kepala Dusun II', peran: 'kadus', dusunId: 'dsn_ss_2', email: 'sukardi@sungaisialang.desa.id', aktif: true },
-  { id: 'pgn_yusri', desaId: ID_TANJUNG_LAMO, nama: 'Yusri', jabatan: 'Operator Desa', peran: 'operator', dusunId: null, email: 'operator@tanjunglamo.desa.id', aktif: true },
+  { id: 'pgn_rosmiati', desaId: ID_SUNGAI_SIALANG, nama: 'Rosmiati', jabatan: 'Operator Desa', peran: 'operator', dusunId: null, email: 'rosmiati@sungaisialang.desa.id', aktif: true, nip: null },
+  { id: 'pgn_hendri', desaId: ID_SUNGAI_SIALANG, nama: 'Hendri Saputra', jabatan: 'Sekretaris Desa', peran: 'sekdes', dusunId: null, email: 'hendri@sungaisialang.desa.id', aktif: true, nip: null },
+  { id: 'pgn_nasir', desaId: ID_SUNGAI_SIALANG, nama: 'H. Muhammad Nasir', jabatan: 'Kepala Desa', peran: 'kades', dusunId: null, email: 'kades@sungaisialang.desa.id', aktif: true, nip: null },
+  { id: 'pgn_nurhayati', desaId: ID_SUNGAI_SIALANG, nama: 'Nurhayati', jabatan: 'Kaur Keuangan', peran: 'kaur-keuangan', dusunId: null, email: 'nurhayati@sungaisialang.desa.id', aktif: true, nip: null },
+  { id: 'pgn_sukardi', desaId: ID_SUNGAI_SIALANG, nama: 'Sukardi', jabatan: 'Kepala Dusun II', peran: 'kadus', dusunId: 'dsn_ss_2', email: 'sukardi@sungaisialang.desa.id', aktif: true, nip: null },
+  { id: 'pgn_yusri', desaId: ID_TANJUNG_LAMO, nama: 'Yusri', jabatan: 'Operator Desa', peran: 'operator', dusunId: null, email: 'operator@tanjunglamo.desa.id', aktif: true, nip: null },
 ]

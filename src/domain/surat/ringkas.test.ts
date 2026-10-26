@@ -2,13 +2,15 @@ import { describe, expect, it } from 'vitest'
 import { contohPermohonan } from '@/test/contoh-surat'
 import type { Permohonan, Terbit } from './permohonan'
 import { ringkasSuratTerbit } from './ringkas'
+import { TATA_LETAK_SIAP } from './tata-letak-siap'
 
 // Kamis, 24 September 2026 pukul 09.00 WIB.
 const SEKARANG = new Date('2026-09-24T02:00:00Z')
 const terbit = (pada: string): Terbit => ({
   nomor: '470/001/SS/IX/2026', tahun: 2026, urut: 1, kodeVerifikasi: 'SS-AAAA-AAAA', pada,
-  penandatangan: { id: 'pgn_nasir', nama: 'H. Muhammad Nasir', peran: 'kades' }, mode: 'tte', berlakuSampai: null,
+  penandatangan: { id: 'pgn_nasir', nama: 'H. Muhammad Nasir', peran: 'kades', nip: null }, mode: 'tte', berlakuSampai: null,
   lembar: { judul: 'X', pembuka: 'Y', blok: [], tempatTanggal: 'Z' },
+  tataLetak: TATA_LETAK_SIAP.standar, kop: { lambang: null, lambangKabupaten: null },
 })
 const surat = (masukPada: string, pada: string, ubah: Partial<Permohonan> = {}) =>
   contohPermohonan({ status: 'selesai', masukPada, terbit: terbit(pada), ...ubah })

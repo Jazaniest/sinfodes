@@ -58,7 +58,7 @@ describe('PUT /pengaturan/wilayah: susunan desa tanpa penduduk (tahap 6C)', () =
     ubahDb((d) => {
       d.pengguna.push({
         id: 'pgn_kadus_lamo', desaId: 'desa_tanjung_lamo', nama: 'Bahar', jabatan: 'Kepala Dusun II', peran: 'kadus', dusunId: 'dsn_tl_2',
-        email: 'bahar@tanjunglamo.desa.id', aktif: true,
+        email: 'bahar@tanjunglamo.desa.id', aktif: true, nip: null,
       })
     })
     expect(await galatDari(simpanWilayah({ ...awal, dusun: [awal.dusun[0]] }))).toMatchObject({

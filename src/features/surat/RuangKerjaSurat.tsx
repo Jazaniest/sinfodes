@@ -14,6 +14,7 @@ import { Cap } from '@/ui/cap/Cap'
 import { DescriptionList } from '@/ui/data/DescriptionList'
 import { Timeline } from '@/ui/data/Timeline'
 import { LembarSurat } from '@/ui/dokumen/LembarSurat'
+import { lebarLembarCm } from '@/ui/dokumen/ukuran-kertas'
 import { NomorSurat } from '@/ui/dokumen/NomorSurat'
 import { PratinjauLembar } from '@/ui/dokumen/PratinjauLembar'
 import { Nik } from '@/ui/domain/Nik'
@@ -206,7 +207,7 @@ export function RuangKerjaSurat({ id, sekarang, onKotor }: Props) {
           meta={`${d.pemohon.nama} · No. ${String(p.noUrut).padStart(3, '0')} · masuk ${formatTanggal(p.masukPada, 'pendek')} pukul ${formatJam(p.masukPada)} · ${LABEL_KANAL[p.kanal]}`}
         />
         <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
-          <PratinjauLembar label="Pratinjau surat">
+          <PratinjauLembar label="Pratinjau surat" lebarCm={lebarLembarCm(lembar.tataLetak)}>
             <LembarSurat {...lembar} penanda={penanda} />
           </PratinjauLembar>
           <aside

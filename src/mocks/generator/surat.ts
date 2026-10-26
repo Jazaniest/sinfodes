@@ -11,6 +11,7 @@ import type { JenisSurat } from '@/domain/surat/jenis'
 import { susunLembar } from '@/domain/surat/lembar'
 import { FORMAT_NOMOR_BAWAAN, formatNomorSurat } from '@/domain/surat/nomor-surat'
 import type { EntriRiwayatSurat, Kanal, KejadianSurat, Lampiran, Permohonan } from '@/domain/surat/permohonan'
+import { salinTataLetak, TATA_LETAK_SIAP } from '@/domain/surat/tata-letak-siap'
 import { buatKodeVerifikasi } from '@/domain/surat/verifikasi'
 import { berlakuSampai } from '@/domain/surat/waktu'
 import { alamatLengkap } from '@/domain/wilayah/alamat'
@@ -116,6 +117,7 @@ export function bangkitkanSurat(acak: Acak, o: Opsi): HasilSurat {
     desaId,
     asal: 'bawaan',
     diarsipkan: null,
+    tataLetak: null,
   }))
   const jenisKode = (kode: string) => {
     const j = jenisSurat.find((x) => x.kode === kode)
@@ -488,13 +490,16 @@ export function bangkitkanSurat(acak: Acak, o: Opsi): HasilSurat {
     const nomor = formatNomorSurat(FORMAT_NOMOR_BAWAAN, { klasifikasi: j.klasifikasi, kodeJenis: j.kode, urut, kodeDesa: o.desa.kodeSurat, tanggal })
     p.terbit = {
       nomor, tahun, urut, kodeVerifikasi: kode, pada: iso(ttd.ms),
-      penandatangan: { id: ttd.oleh.id, nama: ttd.oleh.nama, peran: ttd.oleh.peran === 'sekdes' ? 'sekdes' : 'kades' },
+      penandatangan: { id: ttd.oleh.id, nama: ttd.oleh.nama, peran: ttd.oleh.peran === 'sekdes' ? 'sekdes' : 'kades', nip: ttd.oleh.nip },
       mode: 'tte',
       berlakuSampai: berlakuSampai(tanggal, j.masaBerlakuBulan),
       lembar: susunLembar({
         jenis: j, isian: p.isian, pemohon: penduduk(p.pemohonId), subjek: p.subjekId ? penduduk(p.subjekId) : null,
         mutasi: o.mutasi.find((m) => m.id === p.mutasiId) ?? null, desa: o.desa, dusun: o.dusun, tanggal,
       }),
+      // Surat demo terbit dengan tata letak standar yang berlaku sebelum 7H-2, jadi tampilannya tidak berubah.
+      tataLetak: salinTataLetak(TATA_LETAK_SIAP.standar),
+      kop: { lambang: o.desa.lambang ?? null, lambangKabupaten: o.desa.lambangKabupaten ?? null },
     }
     const catatan = p.riwayat.find((r) => r.kejadian === 'tandatangani')
     if (catatan) catatan.catatan = nomor

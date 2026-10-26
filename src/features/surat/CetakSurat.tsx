@@ -17,7 +17,7 @@ export function CetakSurat({ lembar, onSelesai }: { lembar: PropsLembarSurat; on
     sudahDicetak.current = true
     window.print()
   }, [])
-  const ukuran = lembar.kertas === 'F4' ? '215mm 330mm' : 'A4'
+  const ukuran = lembar.tataLetak.kertas.ukuran === 'F4' ? '215mm 330mm' : 'A4'
   return (
     <section aria-label="Lembar cetak" className="hidden print:block">
       <style>{`@page { size: ${ukuran}; margin: 0; }`}</style>

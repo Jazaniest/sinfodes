@@ -5,11 +5,13 @@ import {
   isianTambahanSchema, jenisDenganPakaiSchema, PENANDA_TABEL, SISIPAN_UMUM, sisipanDalamTeks, type IsianTambahan, type JenisSurat,
 } from './jenis'
 import { pengaturanSuratSchema } from './pengaturan'
+import { pejabatSchema } from './permohonan'
+import { tataLetakSuratSchema } from './tata-letak'
 
 /** Bagian jenis surat yang disunting di halaman ubah (SPEC §7.4 layar 6). Saklar aktif dan online ada di daftar. */
 export type FormJenisSurat = Pick<
   JenisSurat,
-  'nama' | 'klasifikasi' | 'bolehAtasNama' | 'wajibParaf' | 'masaBerlakuBulan' | 'syarat' | 'isian' | 'teks'
+  'nama' | 'klasifikasi' | 'bolehAtasNama' | 'wajibParaf' | 'masaBerlakuBulan' | 'syarat' | 'isian' | 'teks' | 'tataLetak'
 >
 
 export const formDariJenis = (j: JenisSurat): FormJenisSurat => ({
@@ -21,6 +23,7 @@ export const formDariJenis = (j: JenisSurat): FormJenisSurat => ({
   syarat: [...j.syarat],
   isian: j.isian.map((d) => ({ ...d, pilihan: d.pilihan ? [...d.pilihan] : null })),
   teks: j.teks,
+  tataLetak: j.tataLetak ? structuredClone(j.tataLetak) : null,
 })
 
 /**
@@ -39,6 +42,8 @@ export const ubahJenisSuratSchema = z
     syarat: z.array(z.string().max(100)).max(15),
     isian: z.array(isianTambahanSchema.extend({ label: z.string().max(60), pilihan: z.array(z.string().max(60)).max(12).nullable() })).max(12),
     teks: z.string().max(4000),
+    /** Null mengembalikan jenis ini ke tata letak desa (SPEC-V0.2 12.2). */
+    tataLetak: tataLetakSuratSchema.nullable(),
   })
   .partial()
 export type UbahJenisSurat = z.infer<typeof ubahJenisSuratSchema>
@@ -125,6 +130,6 @@ export const detailJenisSuratSchema = z.object({
     isian: z.record(z.string(), z.string()),
   }),
   pengaturan: pengaturanSuratSchema,
-  pejabat: z.object({ kades: z.string(), sekdes: z.string() }),
+  pejabat: pejabatSchema,
 })
 export type DetailJenisSurat = z.infer<typeof detailJenisSuratSchema>

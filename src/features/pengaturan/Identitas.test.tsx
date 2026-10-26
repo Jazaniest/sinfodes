@@ -32,12 +32,12 @@ describe('Pengaturan › Identitas (SPEC §8)', () => {
     pasang('operator')
     expect(await screen.findByRole('textbox', { name: /Nama desa/ })).toHaveValue('Sungai Sialang')
     expect(screen.getByText('H. Muhammad Nasir')).toBeInTheDocument()
-    expect(tab()).toEqual(['Identitas', 'Wilayah', 'Penomoran'])
+    expect(tab()).toEqual(['Identitas', 'Wilayah', 'Penomoran', 'Tata letak surat'])
   })
   it('Sekretaris Desa melihat tab Pengguna, Modul, Langganan, dan Akses Sinfodes (SPEC-V0.2 §5.3, §10, §12.3)', async () => {
     pasang('sekdes')
     await screen.findByRole('textbox', { name: /Nama desa/ })
-    expect(tab()).toEqual(['Identitas', 'Wilayah', 'Pengguna', 'Penomoran', 'Modul', 'Langganan', 'Akses Sinfodes'])
+    expect(tab()).toEqual(['Identitas', 'Wilayah', 'Pengguna', 'Penomoran', 'Tata letak surat', 'Modul', 'Langganan', 'Akses Sinfodes'])
   })
   it('pratinjau kop mengikuti alamat yang diketik; Simpan menyimpan dan memberi toast (fokus review 5)', async () => {
     const user = pasang()
@@ -69,5 +69,15 @@ describe('Pengaturan › Identitas (SPEC §8)', () => {
     const kop = screen.getByRole('region', { name: 'Pratinjau kop surat' })
     await waitFor(() => expect(kop.querySelector('img')?.getAttribute('src')).toMatch(/^data:image\/png;base64,/))
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
+  it('lambang kabupaten: gambar tersimpan di data desa lewat Simpan', async () => {
+    const user = pasang()
+    await screen.findByRole('textbox', { name: /Nama desa/ })
+    const masukan = document.querySelectorAll<HTMLInputElement>('input[type="file"]')[1]
+    await user.upload(masukan, new File([new Uint8Array([137, 80, 78, 71])], 'kabupaten.png', { type: 'image/png' }))
+    expect(await screen.findByAltText('Lambang kabupaten yang dipilih')).toBeInTheDocument()
+    expect(screen.getByText('Dipakai di kop dua lambang. Demo memakai lambang contoh yang netral.')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Simpan' }))
+    await waitFor(() => expect(desaDemo()?.lambangKabupaten).toMatch(/^data:image\/png;base64,/))
   })
 })

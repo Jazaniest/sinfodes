@@ -8,6 +8,7 @@ import type { DetailJenisSurat } from '@/domain/surat/ubah-jenis'
 import { Cap } from '@/ui/cap/Cap'
 import { DescriptionList } from '@/ui/data/DescriptionList'
 import { LembarSurat } from '@/ui/dokumen/LembarSurat'
+import { lebarLembarCm } from '@/ui/dokumen/ukuran-kertas'
 import { PratinjauLembar } from '@/ui/dokumen/PratinjauLembar'
 import { PageHeader } from '@/ui/tata-letak/PageHeader'
 import { tampilkanToast } from '@/ui/toast/antrean'
@@ -87,7 +88,7 @@ export function JenisArsip({ detail, sekarang }: { detail: DetailJenisSurat; sek
           { label: 'Isian tambahan', nilai: j.isian.length > 0 ? j.isian.map((d) => d.label).join(', ') : null },
         ]}
       />
-      <PratinjauLembar label="Pratinjau surat">
+      <PratinjauLembar label="Pratinjau surat" lebarCm={lebarLembarCm(lembar.tataLetak)}>
         <LembarSurat {...lembar} penanda={<Cap varian="draf" />} />
       </PratinjauLembar>
     </div>

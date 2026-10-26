@@ -31,7 +31,7 @@ describe('data surat demo (SPEC §12.6)', () => {
       db.jenisSurat.filter((j) => j.desaId === 'desa_sungai_sialang').map((j) => j.id),
     )
     expect(katalogBaru.every((j) => !j.aktif)).toBe(true)
-    expect(db.pengaturanSurat.map((p) => [p.desaId, p.kertas, p.modeTandaTangan])).toEqual([
+    expect(db.pengaturanSurat.map((p) => [p.desaId, p.tataLetak.kertas.ukuran, p.modeTandaTangan])).toEqual([
       ['desa_sungai_sialang', 'A4', 'tte'],
       ['desa_tanjung_lamo', 'A4', 'tte'],
     ])

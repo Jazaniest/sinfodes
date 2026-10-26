@@ -1,7 +1,7 @@
 import type { IsianTambahan, JenisSurat } from './jenis'
 import type { Desa } from '../wilayah/schema'
 
-type Bawaan = Omit<JenisSurat, 'id' | 'desaId' | 'asal' | 'diarsipkan'>
+type Bawaan = Omit<JenisSurat, 'id' | 'desaId' | 'asal' | 'diarsipkan' | 'tataLetak'>
 
 const isian = (kunci: string, label: string, opsi: Partial<Omit<IsianTambahan, 'kunci' | 'label'>> = {}): IsianTambahan => ({
   kunci,
@@ -205,6 +205,6 @@ export const JENIS_SURAT_BAWAAN: readonly Bawaan[] = [
 export function katalogDesaBaru(desa: Pick<Desa, 'id' | 'slug'>): JenisSurat[] {
   const awalan = desa.id.replace(/^desa_/, '')
   return JENIS_SURAT_BAWAAN.map((j) => ({
-    ...structuredClone(j), id: `js_${awalan}_${j.kode.toLowerCase()}`, desaId: desa.id, aktif: false, asal: 'bawaan', diarsipkan: null,
+    ...structuredClone(j), id: `js_${awalan}_${j.kode.toLowerCase()}`, desaId: desa.id, aktif: false, asal: 'bawaan', diarsipkan: null, tataLetak: null,
   }))
 }

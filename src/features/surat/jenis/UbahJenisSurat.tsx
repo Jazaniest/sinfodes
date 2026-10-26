@@ -6,9 +6,13 @@ import { segarkanSurat } from '@/api/segarkan'
 import { kunciSurat, opsiDetailJenisSurat, ubahJenisSurat } from '@/api/surat'
 import { asalDesa } from '@/app/alamat'
 import { formatAngka } from '@/domain/format/angka'
+import { galatDariZod } from '@/domain/format/galat-isian'
+import { tataLetakSuratSchema } from '@/domain/surat/tata-letak'
+import { salinTataLetak } from '@/domain/surat/tata-letak-siap'
 import { formDariJenis, periksaJenisSurat, type DetailJenisSurat, type FormJenisSurat } from '@/domain/surat/ubah-jenis'
 import { Cap } from '@/ui/cap/Cap'
 import { LembarSurat } from '@/ui/dokumen/LembarSurat'
+import { lebarLembarCm } from '@/ui/dokumen/ukuran-kertas'
 import { PratinjauLembar } from '@/ui/dokumen/PratinjauLembar'
 import { fokusIsianSalah } from '@/ui/hooks/fokus-isian'
 import { Checkbox } from '@/ui/isian/Checkbox'
@@ -26,6 +30,7 @@ import { EmptyState } from '@/ui/umpan-balik/EmptyState'
 import { ErrorState } from '@/ui/umpan-balik/ErrorState'
 import { BarisKerangka } from '@/ui/umpan-balik/Skeleton'
 import { useSesiAdmin } from '../../admin/sesi-konteks'
+import { PenyuntingTataLetak } from '../../pengaturan/TataLetakSurat'
 import { dataLembar } from '../lembar'
 import { EditorIsian } from './EditorIsian'
 import { EditorTeks } from './EditorTeks'
@@ -43,6 +48,7 @@ const BAGIAN = [
   { id: 'jenis-berlaku', judul: 'Masa berlaku' },
   { id: 'jenis-syarat', judul: 'Syarat' },
   { id: 'jenis-isian', judul: 'Isian tambahan' },
+  { id: 'jenis-tata-letak', judul: 'Tata letak' },
   { id: 'jenis-teks', judul: 'Teks surat' },
 ]
 
@@ -131,9 +137,14 @@ function FormJenis({ detail, onSelesai, onKotor, sekarang }: Omit<Props, 'id'> &
       mengirim.current = false
     },
   })
+  const galatTataLetak = (): Record<string, string> => {
+    if (!form.tataLetak) return {}
+    const hasil = tataLetakSuratSchema.safeParse(form.tataLetak)
+    return hasil.success ? {} : Object.fromEntries(Object.entries(galatDariZod(hasil.error)).map(([k, v]) => [`tataLetak.${k}`, v]))
+  }
   const kirim = () => {
     if (mengirim.current) return
-    const g = periksaJenisSurat(form)
+    const g = { ...periksaJenisSurat(form), ...galatTataLetak() }
     if (Object.keys(g).length > 0) {
       tandai(g)
       return
@@ -265,7 +276,32 @@ function FormJenis({ detail, onSelesai, onKotor, sekarang }: Omit<Props, 'id'> &
             }}
           />
         </BagianIsian>
-        <BagianIsian id="jenis-teks" nomor={6} judul="Teks surat">
+        <BagianIsian id="jenis-tata-letak" nomor={6} judul="Tata letak">
+          <div className="flex flex-col gap-4 sm:col-span-2">
+            <RadioGroup
+              label="Tata letak surat jenis ini"
+              arah="menurun"
+              pilihan={[
+                { id: 'ikut', label: 'Ikuti tata letak desa' },
+                { id: 'khusus', label: 'Tata letak khusus untuk jenis ini' },
+              ]}
+              nilai={form.tataLetak ? 'khusus' : 'ikut'}
+              keterangan="Tata letak khusus dimulai dari salinan tata letak desa. Pratinjau di bagian Teks surat ikut berubah."
+              onUbah={(id) => {
+                ubah('tataLetak', id === 'khusus' ? salinTataLetak(detail.pengaturan.tataLetak) : null)
+                setGalat((lama) => Object.fromEntries(Object.entries(lama).filter(([k]) => !k.startsWith('tataLetak.'))))
+              }}
+            />
+            {form.tataLetak && (
+              <PenyuntingTataLetak
+                nilai={form.tataLetak}
+                onUbah={(t) => ubah('tataLetak', t)}
+                galat={Object.fromEntries(Object.entries(galat).filter(([k]) => k.startsWith('tataLetak.')).map(([k, v]) => [k.slice('tataLetak.'.length), v]))}
+              />
+            )}
+          </div>
+        </BagianIsian>
+        <BagianIsian id="jenis-teks" nomor={7} judul="Teks surat">
           <div className="flex flex-col gap-6 sm:col-span-2">
             <EditorTeks
               teks={form.teks}
@@ -282,7 +318,7 @@ function FormJenis({ detail, onSelesai, onKotor, sekarang }: Omit<Props, 'id'> &
                   ? 'Pratinjau memakai data contoh, karena desa belum punya data penduduk.'
                   : `Pratinjau memakai permohonan terakhir jenis ini, atas nama ${detail.contoh.pemohon.nama}.`}
               </p>
-              <PratinjauLembar label="Pratinjau surat">
+              <PratinjauLembar label="Pratinjau surat" lebarCm={lebarLembarCm(lembar.tataLetak)}>
                 <LembarSurat {...lembar} penanda={<Cap varian="draf" />} />
               </PratinjauLembar>
             </div>

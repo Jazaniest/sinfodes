@@ -12,6 +12,7 @@ import {
   AKSI_SURAT, ajukanTtdSchema, alasanSchema, catatanKembaliSchema, tandaTanganSchema, ubahPermohonanSchema,
   type AksiSurat, type KejadianSurat, type Permohonan,
 } from '@/domain/surat/permohonan'
+import { tataLetakBerlaku } from '@/domain/surat/tata-letak-siap'
 import { buatKodeVerifikasi } from '@/domain/surat/verifikasi'
 import { berlakuSampai } from '@/domain/surat/waktu'
 import { dataMilik } from '../cakupan'
@@ -191,8 +192,11 @@ export const handlerSuratAksi = [
             Object.assign(p, { status: 'selesai', tahap: null, ditutupPada: waktu })
             p.terbit = {
               nomor, tahun, urut, kodeVerifikasi: kode, pada: waktu,
-              penandatangan: { id: pengguna.id, nama: pengguna.nama, peran: pengguna.peran === 'kades' ? 'kades' : 'sekdes' },
+              penandatangan: { id: pengguna.id, nama: pengguna.nama, peran: pengguna.peran === 'kades' ? 'kades' : 'sekdes', nip: pengguna.nip },
               mode, berlakuSampai: berlakuSampai(tanggal, jenis.masaBerlakuBulan), lembar,
+              // Tata letak dan lambang dibekukan: mengganti keduanya kemudian tidak mengubah surat ini (SPEC-V0.2 12.2).
+              tataLetak: structuredClone(tataLetakBerlaku(jenis, pengaturanDesa(db, p.desaId))),
+              kop: { lambang: desa.lambang ?? null, lambangKabupaten: desa.lambangKabupaten ?? null },
             }
             catatRiwayatSurat(d, p, 'tandatangani', oleh, waktu, nomor)
             catatAktivitas(d, {
