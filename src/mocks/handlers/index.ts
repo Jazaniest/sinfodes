@@ -24,6 +24,7 @@ import { handlerPenggunaKabupaten } from './kabupaten-pengguna'
 import { handlerPortalKabupaten } from './kabupaten-portal'
 import { handlerKonsolKabupaten } from './konsol-kabupaten'
 import { handlerJenisSurat } from './jenis-surat'
+import { handlerModul } from './modul'
 import { handlerKeluarga } from './keluarga'
 import { handlerKesehatan } from './kesehatan'
 import { handlerKeluargaTulis } from './keluarga-tulis'
@@ -59,7 +60,7 @@ import { handlerWebsite } from './website'
 export const handlers = [
   ...handlerAlamat, ...handlerInduk, ...handlerArsip,
   ...handlerSesi, ...handlerBeranda, ...handlerCari, ...handlerPenduduk, ...handlerPendudukTulis, ...handlerKeluarga,
-  ...handlerKeluargaTulis, ...handlerMutasi, ...handlerStatistik, ...handlerLaporan, ...handlerImpor, ...handlerJenisSurat,
+  ...handlerKeluargaTulis, ...handlerMutasi, ...handlerStatistik, ...handlerLaporan, ...handlerImpor, ...handlerJenisSurat, ...handlerModul,
   ...handlerSuratLoket, ...handlerSurat, ...handlerSuratAksi,
   ...handlerNotifikasi, ...handlerPengaduan, ...handlerBansos, ...handlerKesehatan,
   ...handlerKeuangan, ...handlerPembangunan, ...handlerTataKelola,

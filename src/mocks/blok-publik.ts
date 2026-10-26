@@ -229,6 +229,10 @@ function selesaikan(
         else kosong(b)
         break
       }
+      case 'layanan':
+        // Pintu Jadwal posyandu ikut modul Kesehatan desa (SPEC-V0.2 12.3).
+        push({ ...b, data: { posyandu: db.modulDesa.find((m) => m.desaId === desa.id)?.kesehatan ?? false } })
+        break
       default:
         push({ ...b, data: undefined })
     }

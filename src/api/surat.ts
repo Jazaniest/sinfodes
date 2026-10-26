@@ -1,7 +1,7 @@
 import { queryOptions } from '@tanstack/react-query'
 import { z } from 'zod'
 import { daftarSchema } from '@/domain/api'
-import { jenisDenganPakaiSchema } from '@/domain/surat/jenis'
+import { jenisDenganPakaiSchema, jenisSuratSchema, type StatusJenis, type TambahJenis } from '@/domain/surat/jenis'
 import {
   barisPermohonanSchema, detailPermohonanSchema, jumlahPermohonanSchema, saranSuratSchema,
   type AksiSurat, type BuatPermohonan, type FilterPermohonan, type PeriodePermohonan,
@@ -26,8 +26,30 @@ export const kunciSurat = {
   saran: (jenis: string, pemohon: string | null, subjek: string | null) => ['permohonan', 'saran', jenis, pemohon, subjek] as const,
 }
 
-export function daftarJenisSurat(signal?: AbortSignal) {
-  return panggilApi('GET', '/jenis-surat', { skema: daftarJenisSchema, signal })
+/** Tanpa `status`, semua jenis desa (aktif, dihentikan, dan diarsipkan). */
+export function daftarJenisSurat(signal?: AbortSignal, status?: StatusJenis) {
+  return panggilApi('GET', '/jenis-surat', { skema: daftarJenisSchema, query: { status }, signal })
+}
+
+const hapusSchema = z.object({ id: z.string() })
+
+/** Jenis surat buatan desa, kosong atau salinan jenis lain; mati sampai desa menyalakannya (SPEC-V0.2 12.1). */
+export function tambahJenisSurat(masukan: TambahJenis) {
+  return panggilApi('POST', '/jenis-surat', { skema: jenisSuratSchema, body: masukan })
+}
+
+/** Hanya jenis buatan desa yang belum pernah dipakai; yang sudah dipakai ditolak dan harus diarsipkan. */
+export function hapusJenisSurat(id: string) {
+  return panggilApi('DELETE', `/jenis-surat/${encodeURIComponent(id)}`, { skema: hapusSchema })
+}
+
+export function arsipkanJenisSurat(id: string) {
+  return panggilApi('POST', `/jenis-surat/${encodeURIComponent(id)}/arsipkan`, { skema: jenisSuratSchema })
+}
+
+/** Mengosongkan arsip; jenisnya tetap mati sampai desa menyalakannya. */
+export function aktifkanLagiJenisSurat(id: string) {
+  return panggilApi('POST', `/jenis-surat/${encodeURIComponent(id)}/aktifkan-lagi`, { skema: jenisSuratSchema })
 }
 
 export const opsiJenisSurat = () =>

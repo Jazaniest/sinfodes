@@ -114,6 +114,8 @@ export function bangkitkanSurat(acak: Acak, o: Opsi): HasilSurat {
     ...structuredClone(j),
     id: `js_${o.desa.kodeSurat.toLowerCase()}_${j.kode.toLowerCase()}`,
     desaId,
+    asal: 'bawaan',
+    diarsipkan: null,
   }))
   const jenisKode = (kode: string) => {
     const j = jenisSurat.find((x) => x.kode === kode)

@@ -7,6 +7,7 @@ import {
   type HasilVerifikasi, type IdentitasPublik, type KreditFotoPublik, type LayananPublik,
 } from '@/domain/publik/schema'
 import { hitungBerlaku, kodeSah, rapikanKode, samarkanNama } from '@/domain/publik/verifikasi'
+import { dilayani } from '@/domain/surat/jenis'
 import { namaDusun } from '@/domain/wilayah/alamat'
 import type { Desa } from '@/domain/wilayah/schema'
 import { ambilDb, ubahDb } from '../db'
@@ -14,6 +15,7 @@ import { menuSitus, pengumumanBerlaku, ringkas, selesaikanBlok, terbit } from '.
 import { API, balasDaftar, balasGalat, denganJaringan } from '../http'
 import { desaKonteks, konteksPermintaan, tanpaKonteks } from '../konteks-permintaan'
 import { pastikanLencana } from '../lencana'
+import { modulDesaDi } from '../modul'
 import { perkiraanHariKerja } from '../surat-perkiraan'
 import type { DbDemo } from '../tipe-db'
 import { bacaJson } from '../tulis'
@@ -140,10 +142,11 @@ export const handlerPublik = [
       const hariIni = tanggalIsoWib(sekarang)
       const hasil: LayananPublik = {
         jenisSurat: db.jenisSurat
-          .filter((j) => j.desaId === desa.id && j.online && j.aktif)
+          .filter((j) => j.desaId === desa.id && j.online && dilayani(j))
           .map((j) => ({ id: j.id, kode: j.kode, nama: j.nama, syarat: j.syarat, perkiraanHariKerja: perkiraanHariKerja(db, j.id, sekarang) })),
+        // Modul Kesehatan mati: jadwal posyandu tidak tampil, datanya tetap tersimpan (SPEC-V0.2 12.3).
         posyandu: db.posyandu
-          .filter((p) => p.desaId === desa.id)
+          .filter((p) => p.desaId === desa.id && modulDesaDi(desa.id).kesehatan)
           .map((p) => ({ p, dusun: db.dusun.find((d) => d.id === p.dusunId) }))
           .sort((a, b) => (a.dusun?.nomor ?? 0) - (b.dusun?.nomor ?? 0))
           .map(({ p, dusun }) => ({

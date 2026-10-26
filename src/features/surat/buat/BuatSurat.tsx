@@ -5,7 +5,7 @@ import { opsiPenduduk } from '@/api/penduduk'
 import { segarkanSurat } from '@/api/segarkan'
 import { buatPermohonan, opsiJenisSurat, opsiSaranSurat } from '@/api/surat'
 import { asalDesa } from '@/app/alamat'
-import { periksaIsian } from '@/domain/surat/jenis'
+import { dilayani, periksaIsian } from '@/domain/surat/jenis'
 import { periksaPemohon } from '@/domain/surat/pemohon'
 import { Cap } from '@/ui/cap/Cap'
 import { LembarSurat } from '@/ui/dokumen/LembarSurat'
@@ -60,7 +60,7 @@ export function BuatSurat({ cari, onUbahCari, onSelesai, onKotor, sekarang }: Pr
   const [galat, setGalat] = useState<Record<string, string>>({})
 
   const daftarJenis = useQuery(opsiJenisSurat())
-  const jenis = daftarJenis.data?.data.find((j) => j.kode === cari.jenis && j.aktif) ?? null
+  const jenis = daftarJenis.data?.data.find((j) => j.kode === cari.jenis && dilayani(j)) ?? null
   const saran = useQuery({ ...opsiSaranSurat(cari.jenis ?? '', cari.pemohon ?? null, cari.subjek ?? null), enabled: jenis !== null })
   const idPemohon = cari.pemohon ?? saran.data?.pemohonId ?? null
   const pemohon = useQuery({ ...opsiPenduduk(idPemohon ?? ''), enabled: idPemohon !== null })

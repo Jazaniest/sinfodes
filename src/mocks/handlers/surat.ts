@@ -1,10 +1,11 @@
 import { http, HttpResponse } from 'msw'
+import { z } from 'zod'
 import { tanggalIsoWib } from '@/domain/format/tanggal'
 import { cocokPenduduk } from '@/domain/penduduk/cari'
 import type { Penduduk } from '@/domain/penduduk/schema'
 import type { Peran } from '@/domain/pengguna/schema'
 import { perluTindakan } from '@/domain/surat/alur'
-import type { JenisSurat } from '@/domain/surat/jenis'
+import { STATUS_DAFTAR_JENIS, statusJenis, type JenisSurat } from '@/domain/surat/jenis'
 import { pengaturanBawaan, type PengaturanSurat } from '@/domain/surat/pengaturan'
 import {
   cariPermohonanSchema, filterPermohonanSchema, STATUS_PERMOHONAN, STATUS_TERBUKA,
@@ -13,7 +14,7 @@ import {
 import { dataMilik } from '../cakupan'
 import { API, balasDaftar, balasGalat, denganJaringan } from '../http'
 import type { DbDemo } from '../tipe-db'
-import { bacaJson, balasIsianTidakValid, butuhKemampuan } from '../tulis'
+import { bacaJson, balasField, balasIsianTidakValid, butuhKemampuan } from '../tulis'
 
 const HARI_MS = 86_400_000
 export const PERMOHONAN_TIDAK_DITEMUKAN = 'Permohonan tidak ditemukan.'
@@ -89,6 +90,10 @@ export function hitungPakai(permohonan: readonly Permohonan[]): Map<string, numb
   for (const p of permohonan) if (p.masukPada.slice(0, 10) >= awal) pakai.set(p.jenisId, (pakai.get(p.jenisId) ?? 0) + 1)
   return pakai
 }
+/** ID jenis yang pernah dipakai permohonan mana pun di desa itu, kapan pun (bukan hanya 12 bulan): dasar "hapus atau arsipkan". */
+export function idJenisDipakai(db: DbDemo, desaId: string): Set<string> {
+  return new Set(db.permohonan.filter((p) => p.desaId === desaId).map((p) => p.jenisId))
+}
 const terbuka = (s: StatusPermohonan) => STATUS_TERBUKA.includes(s)
 const dalamPeriode = (p: Permohonan, awal: string) => terbuka(p.status) || p.masukPada.slice(0, 10) >= awal
 const urutkan = (status: StatusPermohonan) => (a: Permohonan, b: Permohonan) =>
@@ -104,9 +109,14 @@ export const handlerSurat = [
     denganJaringan(({ request }) => {
       const pengguna = butuhPembaca(request)
       if (pengguna instanceof Response) return pengguna
-      const { jenisSurat, permohonan } = dataMilik(pengguna)
+      const status = z.enum(STATUS_DAFTAR_JENIS).nullable().safeParse(new URL(request.url).searchParams.get('status'))
+      if (!status.success) return balasField('status', 'Status jenis surat tidak dikenal.')
+      const { db, jenisSurat, permohonan } = dataMilik(pengguna)
       const pakai = hitungPakai(permohonan)
-      const daftar = jenisSurat.map((j) => ({ ...j, jumlahPakai: pakai.get(j.id) ?? 0 }))
+      const dipakai = idJenisDipakai(db, pengguna.desaId)
+      const daftar = jenisSurat
+        .filter((j) => status.data === null || statusJenis(j) === status.data)
+        .map((j) => ({ ...j, jumlahPakai: pakai.get(j.id) ?? 0, dipakai: dipakai.has(j.id) }))
       return balasDaftar(daftar, 1, Math.max(daftar.length, 1))
     }),
   ),

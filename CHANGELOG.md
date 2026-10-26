@@ -299,6 +299,20 @@ Pekerjaan v0.2.0 (tahap 7A-7H) dicatat di sini selama berjalan di branch `develo
 - Data demo naik ke versi 31.
 - `panggilApi` menerima skema berupa fungsi pemuat (`SumberSkema`); `api/publik.ts` dan `api/website.ts` memuat skema blok, tema, dan situs lewat `import()` saat respons datang, sehingga skema itu keluar dari JS awal (208.775 B menjadi 202.546 B gzip, di bawah 200 KiB).
 
+### Ditambahkan (7H-1: jenis surat buatan desa, modul Posyandu)
+
+- **Jenis surat buatan desa.** Tombol *Tambah jenis surat* di Layanan Surat › Jenis Surat membuka dialog: mulai dari kosong, atau salin dari jenis desa itu (termasuk yang diarsipkan; salinan dalam, jadi mengubah salinan tidak mengubah sumber). Kode 2-5 huruf kapital dan unik di desa, termasuk terhadap jenis arsip. Jenis baru berasal `desa`, belum dilayani, dan editornya langsung terbuka.
+- **Hapus, arsipkan, aktifkan lagi.** Hanya jenis buatan desa. Hapus hanya bila belum pernah dipakai permohonan apa pun (selebihnya 409 `Jenis ini sudah pernah dipakai. Arsipkan saja.`, dan layar menawarkan *Arsipkan*). Jenis arsip tidak bisa dipilih untuk surat baru dari loket maupun layanan warga (409 `Jenis surat ini tidak tersedia.`) dan tidak bisa diubah (409), tetapi surat lamanya tetap tampil, permohonan yang sedang berjalan tetap bisa ditandatangani, dan kode verifikasinya tetap sah di Cek keaslian. *Aktifkan lagi* mengosongkan arsip; layanannya tetap mati sampai desa menyalakannya. Jenis bawaan tidak bisa dihapus atau diarsipkan (422).
+- **Daftar Jenis Surat**: penyaring *Semua · Aktif · Dihentikan · Diarsipkan* (di URL `?status=`), penanda *Buatan desa*, dan menu *Aksi* per baris. Jenis arsip dibuka sebagai tampilan baca dengan banner dan tombol *Aktifkan lagi*.
+- **Pengaturan › Modul** (khusus Sekretaris Desa, kemampuan baru `modul.kelola`): saklar *Kesehatan (Posyandu)*. Dimatikan: menu Kesehatan hilang, `GET /kesehatan/*` menjawab 403 `Modul Kesehatan tidak aktif di desa ini.` (layar yang sedang terbuka menampilkan keterangan, bukan halaman kosong), jadwal posyandu hilang dari Layanan website, Layanan cepat, Beranda warga, dan Beranda Kepala Dusun. Data tidak dihapus. Bawaan: Sungai Sialang dan desa fiktif rekaman menyala; Tanjung Lamo dan desa yang ditambah lewat Konsol mati.
+- **Konsol**: tab Keaktifan desa menampilkan *Modul aktif*.
+
+### Diubah (7H-1)
+
+- `JenisSurat` mendapat `asal` (`bawaan` atau `desa`) dan `diarsipkan`; `GET /jenis-surat` menambah `dipakai` per baris dan menerima `?status=`.
+- Sesi admin membawa `modul`; `kemampuanEfektif`, `bolehDi`, `useBoleh`, dan menu panel memperhitungkannya.
+- Data demo naik ke versi 33.
+
 ## [0.1.0] - 2026-10-16
 
 Demo tahap 1: frontend sungguhan dengan API tiruan (MSW) dan data dummy Desa Sungai Sialang, Kabupaten Pelalawan.

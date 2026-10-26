@@ -29,6 +29,7 @@ import { useSesiAdmin } from '../../admin/sesi-konteks'
 import { dataLembar } from '../lembar'
 import { EditorIsian } from './EditorIsian'
 import { EditorTeks } from './EditorTeks'
+import { JenisArsip } from './JenisArsip'
 
 type Props = { id: string; onSelesai: () => void; onKotor?: (kotor: boolean) => void; sekarang?: Date }
 
@@ -62,6 +63,7 @@ export function UbahJenisSurat({ id, ...lain }: Props) {
     }
     return <ErrorState pesan={pesanGalat(kueri.error)} onCobaLagi={() => void kueri.refetch()} />
   }
+  if (kueri.data.jenis.diarsipkan !== null) return <JenisArsip key={kueri.data.jenis.id} detail={kueri.data} sekarang={lain.sekarang} />
   return <FormJenis key={kueri.data.jenis.id} detail={kueri.data} {...lain} />
 }
 

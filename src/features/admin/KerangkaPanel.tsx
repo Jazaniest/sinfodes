@@ -29,7 +29,7 @@ export function KerangkaPanel() {
   const queryClient = useQueryClient()
   const [cariTerbuka, setCariTerbuka] = useState(false)
   // KerangkaPanel yang menyediakan konteks sesi, jadi tidak bisa memakai useBoleh(); aturannya sama (bolehDi).
-  const boleh = (kemampuan: Kemampuan) => bolehDi(sesi.pengguna.peran, sesi.desa.status, kemampuan)
+  const boleh = (kemampuan: Kemampuan) => bolehDi(sesi.pengguna.peran, sesi.desa.status, kemampuan, sesi.modul)
   // Angka menu Layanan Surat; ikut dimuat ulang setiap kali permohonan berubah (segarkanSurat).
   const jumlahSurat = useQuery({ ...opsiJumlahPermohonan(), enabled: boleh('surat.lihat') })
   // Angka menu Pengaduan; ikut dimuat ulang setiap kali pengaduan dibalas atau statusnya berubah (segarkanPengaduan).

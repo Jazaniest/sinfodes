@@ -87,7 +87,7 @@ function IsiNavigasi({ sesi, jalur, onCari, onKeluar, onPilih, hitungan, mode, u
         <kbd className="shrink-0 font-mono text-label">Ctrl K</kbd>
       </Button>
       <nav aria-label="Menu utama" className="flex-1 overflow-y-auto">
-        {menuUntuk(pengguna.peran, desa.status).map((k) => (
+        {menuUntuk(pengguna.peran, desa.status, sesi.modul).map((k) => (
           <div key={k.judul ?? 'utama'} className="mb-4">
             {k.judul && <p className="mb-1 px-2 text-label font-medium text-tinta-2 uppercase">{k.judul}</p>}
             <ul>
@@ -102,7 +102,7 @@ function IsiNavigasi({ sesi, jalur, onCari, onKeluar, onPilih, hitungan, mode, u
       </nav>
       <nav aria-label="Menu lain" className="border-t border-garis pt-3">
         <ul>
-          {menuBawahUntuk(pengguna.peran, desa.status).map((i) => (
+          {menuBawahUntuk(pengguna.peran, desa.status, sesi.modul).map((i) => (
             <li key={i.href}>
               <TautanMenu item={i} jalur={jalur} onPilih={onPilih} hitungan={hitungan} />
             </li>

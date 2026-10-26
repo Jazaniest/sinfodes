@@ -213,6 +213,8 @@ export function bangkitkanDb(sekarang: Date): DbDemo {
     ukuranIndeks: ukuranRekam,
     lencana: [],
     periodeLencana: [],
+    // Sungai Sialang dan desa fiktif rekaman memakai Posyandu; desa Persiapan (Tanjung Lamo) memulai tanpa modul (SPEC-V0.2 12.3).
+    modulDesa: semuaDesa.map((d) => ({ desaId: d.id, kesehatan: !DESA_DEMO.some((x) => x.id === d.id && x.status === 'Persiapan') })),
   }
   // Tanpa PRNG: tagihan v0.1 dikonversi apa adanya, lalu tagihan contoh ditambahkan (rencana 7D-1 Tugas 2).
   db.tagihan = konversiTagihanLama(konsol.tagihanLama, db)

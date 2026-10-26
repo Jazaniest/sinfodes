@@ -1,6 +1,7 @@
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { arsipkanJenisSurat, tambahJenisSurat } from '@/api/surat'
 import { ambilDb } from '@/mocks/db'
 import { AKUN_DESA_BARU_UJI, AKUN_UJI, masukSebagai, pakaiApiTiruan, SEKARANG_UJI } from '@/test/api-tiruan'
 import { renderPanel } from '@/test/render'
@@ -136,5 +137,23 @@ describe('isian tambahan, chip sisipan, dan pratinjau (SPEC §7.4 layar 6)', () 
     await user.click(teks)
     await user.click(screen.getByRole('button', { name: 'Sisipkan Tabel rincian' }))
     expect((teks as HTMLTextAreaElement).value.endsWith('\n\n[tabelRincian]')).toBe(true)
+  })
+})
+
+describe('jenis arsip (SPEC-V0.2 12.1)', () => {
+  it('hanya-baca dengan banner persis dan pratinjau; Aktifkan lagi membuka editor biasa', async () => {
+    masukSebagai(AKUN_UJI.operator)
+    const j = await tambahJenisSurat({ dari: null, kode: 'SPK', nama: 'Surat Pengantar Kerja' })
+    await arsipkanJenisSurat(j.id)
+    const { user } = pasang(j.id)
+    expect(await screen.findByRole('heading', { level: 1, name: 'Surat Pengantar Kerja Diarsipkan' })).toBeInTheDocument()
+    expect(screen.getByText('Jenis ini diarsipkan. Surat lamanya tetap sah. Aktifkan lagi untuk mengubahnya.')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Simpan' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('textbox', { name: 'Nama surat' })).not.toBeInTheDocument()
+    expect(screen.getByRole('region', { name: 'Pratinjau surat' })).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Aktifkan lagi' }))
+    expect(await screen.findByRole('textbox', { name: 'Nama surat' })).toHaveValue('Surat Pengantar Kerja')
+    expect(screen.queryByText(/^Jenis ini diarsipkan\./)).not.toBeInTheDocument()
+    expect(ambilDb().jenisSurat.find((x) => x.id === j.id)).toMatchObject({ diarsipkan: null, aktif: false })
   })
 })

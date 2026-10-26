@@ -2,13 +2,14 @@ import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import type { FilterBalita } from '@/domain/kesehatan/schema'
+import { ubahDb } from '@/mocks/db'
 import { AKUN_UJI, masukSebagai, pakaiApiTiruan, SEKARANG_UJI } from '@/test/api-tiruan'
 import { renderPanel } from '@/test/render'
 import { contohSesi } from '@/test/sesi'
 import { FILTER_BALITA_BAWAAN } from './filter-url'
 import { Kesehatan } from './Kesehatan'
 
-pakaiApiTiruan()
+pakaiApiTiruan({ dbSegarTiapUji: true })
 
 function pasang(filter: Partial<FilterBalita> = {}, peran: 'operator' | 'kadus' = 'operator') {
   masukSebagai(peran === 'kadus' ? AKUN_UJI.kadus : AKUN_UJI.operator)
@@ -24,6 +25,19 @@ async function barisAlif() {
   if (!baris) throw new Error('Muhammad Alif tidak ada di tabel')
   return baris
 }
+
+describe('Kesehatan saat modul dimatikan (SPEC-V0.2 12.3, fokus review 4)', () => {
+  it('sesi belum dimuat ulang tetapi server menjawab 403: keterangan modul tidak aktif, bukan halaman kosong', async () => {
+    ubahDb((d) => {
+      const m = d.modulDesa.find((x) => x.desaId === 'desa_sungai_sialang')
+      if (m) m.kesehatan = false
+    })
+    pasang({}, 'kadus')
+    expect(await screen.findByRole('heading', { name: 'Modul Kesehatan tidak aktif' })).toBeInTheDocument()
+    expect(screen.getByText('Modul Kesehatan tidak aktif di desa ini.')).toBeInTheDocument()
+    expect(screen.queryByRole('grid', { name: 'Posyandu' })).not.toBeInTheDocument()
+  })
+})
 
 describe('Kesehatan (SPEC §8)', () => {
   it('posyandu: jadwal bulan ini dan jumlah balita; baris posyandu menyaring balita', async () => {

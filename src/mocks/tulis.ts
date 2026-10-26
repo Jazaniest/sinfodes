@@ -4,10 +4,12 @@ import { galatDariZod } from '@/domain/format/galat-isian'
 import type { Pelaku } from '@/domain/mutasi/schema'
 import type { Perubahan } from '@/domain/penduduk/perubahan'
 import type { Penduduk } from '@/domain/penduduk/schema'
+import { PESAN_MODUL_KESEHATAN_MATI } from '@/domain/pengaturan/modul'
 import { boleh, bolehDi, type Kemampuan } from '@/domain/pengguna/hak-akses'
 import type { PenggunaSesi } from '@/domain/pengguna/schema'
 import type { Dusun } from '@/domain/wilayah/schema'
 import { balasGalat } from './http'
+import { modulDesaDi } from './modul'
 import { hanyaMembaca, PESAN_PANEL_DITANGGUHKAN, statusDesaDi } from './penangguhan'
 import { butuhPengguna } from './sesi-mock'
 import type { DbDemo } from './tipe-db'
@@ -20,6 +22,10 @@ export function butuhKemampuan(request: Request, kemampuan: Kemampuan, pesan: st
   const pengguna = butuhPengguna(request)
   if (pengguna instanceof Response) return pengguna
   if (!boleh(pengguna.peran, kemampuan)) return balasGalat('FORBIDDEN', pesan, 403)
+  // Modul Kesehatan mati: semua endpoint Kesehatan menutup, termasuk untuk peran yang berhak (SPEC-V0.2 12.3).
+  if (kemampuan === 'kesehatan.lihat' && !modulDesaDi(pengguna.desaId).kesehatan) {
+    return balasGalat('FORBIDDEN', PESAN_MODUL_KESEHATAN_MATI, 403)
+  }
   if (!hanyaMembaca(request) && !bolehDi(pengguna.peran, statusDesaDi(pengguna.desaId), kemampuan)) {
     return balasGalat('FORBIDDEN', PESAN_PANEL_DITANGGUHKAN, 403)
   }
@@ -64,6 +70,7 @@ export function idBaru(db: DbDemo, awalan: string): string {
   const terpakai = new Set<string>()
   for (const daftar of [
     db.penduduk, db.keluarga, db.mutasi, db.riwayat, db.aktivitas, db.laporanData, db.impor, db.permohonan, db.suratMasuk, db.notifikasi,
+    db.jenisSurat,
     db.pengaduan, db.aksesBantuan, db.tenggatLaporan, db.siaran,
   ]) {
     for (const x of daftar) terpakai.add(x.id)

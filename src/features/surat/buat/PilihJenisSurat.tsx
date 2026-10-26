@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Button } from 'react-aria-components'
 import { formatAngka } from '@/domain/format/angka'
 import { cocokNama } from '@/domain/penduduk/cari'
-import type { JenisDenganPakai } from '@/domain/surat/jenis'
+import { dilayani, type JenisDenganPakai } from '@/domain/surat/jenis'
 import { cn } from '@/ui/cn'
 import { SearchField } from '@/ui/isian/SearchField'
 import { Tombol } from '@/ui/tombol/Tombol'
@@ -16,7 +16,7 @@ const fokus = 'outline-none data-[focus-visible]:outline-2 data-[focus-visible]:
 export function PilihJenisSurat({ daftar, terpilih, onPilih }: Props) {
   const [kata, setKata] = useState('')
   const urut = daftar
-    .filter((j) => j.aktif && (kata.trim() === '' || cocokNama(`${j.nama} ${j.kode}`, kata)))
+    .filter((j) => dilayani(j) && (kata.trim() === '' || cocokNama(`${j.nama} ${j.kode}`, kata)))
     .sort((a, b) => b.jumlahPakai - a.jumlahPakai || a.nama.localeCompare(b.nama, 'id'))
   return (
     <div className="flex flex-col gap-4">

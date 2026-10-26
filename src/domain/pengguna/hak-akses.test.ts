@@ -58,6 +58,39 @@ describe('hak akses (SPEC §5.1)', () => {
   })
 })
 
+describe('modul desa (SPEC-V0.2 12.3, rencana 7H-1 Tugas 1)', () => {
+  it('modul.kelola hanya untuk Sekretaris Desa', () => {
+    for (const [peran, harap] of [
+      ['sekdes', true], ['operator', false], ['kades', false], ['kaur-keuangan', false], ['kadus', false], ['bantuan', false],
+    ] as const) {
+      expect(boleh(peran, 'modul.kelola'), peran).toBe(harap)
+    }
+  })
+  it('Kesehatan mati: kesehatan.lihat dicabut dari semua peran, kemampuan lain tetap', () => {
+    for (const peran of Object.keys(HAK_AKSES) as (keyof typeof HAK_AKSES)[]) {
+      const efektif = kemampuanEfektif(peran, 'Aktif', { kesehatan: false })
+      expect(efektif.has('kesehatan.lihat'), peran).toBe(false)
+      expect([...efektif].sort(), peran).toEqual([...HAK_AKSES[peran]].filter((k) => k !== 'kesehatan.lihat').sort())
+    }
+  })
+  it('Kesehatan nyala: sama dengan HAK_AKSES; bolehDi mengikuti modul', () => {
+    expect([...kemampuanEfektif('kadus', 'Aktif', { kesehatan: true })].sort()).toEqual([...HAK_AKSES.kadus].sort())
+    expect(bolehDi('kadus', 'Aktif', 'kesehatan.lihat', { kesehatan: true })).toBe(true)
+    expect(bolehDi('kadus', 'Aktif', 'kesehatan.lihat', { kesehatan: false })).toBe(false)
+    expect(bolehDi('kadus', 'Aktif', 'pengaduan.lihat', { kesehatan: false })).toBe(true)
+  })
+  it('modul mati dan desa Ditangguhkan bekerja bersama', () => {
+    const efektif = kemampuanEfektif('sekdes', 'Ditangguhkan', { kesehatan: false })
+    expect(efektif.has('kesehatan.lihat')).toBe(false)
+    expect(efektif.has('penduduk.ubah')).toBe(false)
+    expect(efektif.has('penduduk.lihat')).toBe(true)
+  })
+  it('modul.kelola dicabut saat Ditangguhkan (mengubah data desa)', () => {
+    expect(bolehDi('sekdes', 'Aktif', 'modul.kelola')).toBe(true)
+    expect(bolehDi('sekdes', 'Ditangguhkan', 'modul.kelola')).toBe(false)
+  })
+})
+
 describe('desa Ditangguhkan (SPEC-V0.2 §10.5, rencana 7D-2 Tugas 4)', () => {
   it('Sekretaris Desa: tidak ada satu pun kemampuan tulis, tetapi Langganan, Akses Sinfodes, dan semua kemampuan lihat tetap', () => {
     const efektif = kemampuanEfektif('sekdes', 'Ditangguhkan')

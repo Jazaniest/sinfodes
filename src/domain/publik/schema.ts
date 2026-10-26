@@ -80,7 +80,8 @@ export type RingkasPotensi = z.infer<typeof ringkasPotensiSchema>
 export const DATA_BLOK = {
   sampul: z.object({ nama: z.string(), sampul: fotoPublikSchema.nullable() }),
   kabar: z.object({ artikel: z.array(ringkasArtikelSchema) }),
-  layanan: z.undefined(),
+  /** `posyandu` false bila modul Kesehatan desa mati (SPEC-V0.2 12.3): pintu Jadwal posyandu tidak tampil. Tanpa data = tampil. */
+  layanan: z.object({ posyandu: z.boolean() }).optional(),
   angka: z.object({ nama: z.string(), angka: angkaDesaSchema, sampul: fotoPublikSchema.nullable() }),
   apbdes: z.object({ tahun: z.number().int(), pendapatan: anggaranRealisasiSchema, belanja: anggaranRealisasiSchema }),
   'pengumuman-agenda': z.object({ pengumuman: z.array(pengumumanPublikSchema), agenda: z.array(agendaPublikSchema) }),
