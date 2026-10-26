@@ -1,3 +1,4 @@
+import type { ModulDesa } from '@/domain/pengaturan/modul'
 import { bolehDi, type Kemampuan } from '@/domain/pengguna/hak-akses'
 import type { StatusDesa } from '@/domain/wilayah/schema'
 import type { PeranSesi } from '@/domain/pengguna/schema'
@@ -70,8 +71,8 @@ export const MENU_BAWAH: readonly ItemMenu[] = [
  * Menu di bawah garis yang boleh dibuka peran ini; yang tidak berhak disembunyikan (SPEC §5.1). Kepala Desa dan Kaur Keuangan
  * tidak mengelola pengaturan, tetapi membuka Langganan (SPEC-V0.2 §10): menu Pengaturannya langsung ke halaman itu.
  */
-export function menuBawahUntuk(peran: PeranSesi, status: StatusDesa = 'Aktif'): ItemMenu[] {
-  const boleh = (k: Kemampuan) => bolehDi(peran, status, k)
+export function menuBawahUntuk(peran: PeranSesi, status: StatusDesa = 'Aktif', modul?: ModulDesa): ItemMenu[] {
+  const boleh = (k: Kemampuan) => bolehDi(peran, status, k, modul)
   return MENU_BAWAH.flatMap((i) => {
     if (i.kemampuan === null || boleh(i.kemampuan)) return [i]
     if (i.label === 'Pengaturan' && boleh('langganan.lihat')) {
@@ -86,10 +87,10 @@ export function menuBawahUntuk(peran: PeranSesi, status: StatusDesa = 'Aktif'): 
 
 /**
  * Menu yang tidak berhak diakses disembunyikan, bukan dinonaktifkan (SPEC §5.1). Selama desa Ditangguhkan, menu yang butuh
- * kemampuan tulis (mis. Website Desa) ikut hilang (SPEC-V0.2 §10.5).
+ * kemampuan tulis (mis. Website Desa) ikut hilang (SPEC-V0.2 §10.5); modul Kesehatan yang mati menyembunyikan menu Kesehatan (§12.3).
  */
-export function menuUntuk(peran: PeranSesi, status: StatusDesa = 'Aktif'): KelompokMenu[] {
-  return MENU_ADMIN.map((k) => ({ ...k, item: k.item.filter((i) => i.kemampuan === null || bolehDi(peran, status, i.kemampuan)) })).filter(
+export function menuUntuk(peran: PeranSesi, status: StatusDesa = 'Aktif', modul?: ModulDesa): KelompokMenu[] {
+  return MENU_ADMIN.map((k) => ({ ...k, item: k.item.filter((i) => i.kemampuan === null || bolehDi(peran, status, i.kemampuan, modul)) })).filter(
     (k) => k.item.length > 0,
   )
 }

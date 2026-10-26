@@ -23,6 +23,9 @@ export type IsianTambahan = z.infer<typeof isianTambahanSchema>
 export const SUBJEK_SURAT = ['pemohon', 'kelahiran', 'kematian'] as const
 export type SubjekSurat = (typeof SUBJEK_SURAT)[number]
 
+export const ASAL_JENIS = ['bawaan', 'desa'] as const
+export type AsalJenis = (typeof ASAL_JENIS)[number]
+
 /** SPEC §7.3. Klasifikasi, penandatangan, masa berlaku, syarat, isian, dan teks bisa diubah desa. */
 export const jenisSuratSchema = z.object({
   id: z.string(),
@@ -42,11 +45,19 @@ export const jenisSuratSchema = z.object({
   /** Paragraf dipisah baris kosong; sisipan ditulis [nama], [keperluan], dan seterusnya. */
   teks: z.string().min(1),
   aktif: z.boolean(),
+  /** Bawaan Sinfodes tidak bisa dihapus atau diarsipkan; jenis buatan desa bisa (SPEC-V0.2 12.1). */
+  asal: z.enum(ASAL_JENIS),
+  /** Waktu jenis diarsipkan (ISO WIB); null bila belum. Jenis arsip tidak aktif dan tidak bisa diubah. */
+  diarsipkan: z.string().nullable(),
 })
 export type JenisSurat = z.infer<typeof jenisSuratSchema>
 
 /** Jenis surat beserta pemakaiannya 12 bulan terakhir: urutan langkah 1 Buat surat dan halaman Jenis Surat. */
-export const jenisDenganPakaiSchema = jenisSuratSchema.extend({ jumlahPakai: z.number().int().min(0) })
+export const jenisDenganPakaiSchema = jenisSuratSchema.extend({
+  jumlahPakai: z.number().int().min(0),
+  /** Pernah dipakai permohonan mana pun, kapan pun (bukan hanya 12 bulan): jenis yang sudah dipakai tidak bisa dihapus, hanya diarsipkan. */
+  dipakai: z.boolean(),
+})
 export type JenisDenganPakai = z.infer<typeof jenisDenganPakaiSchema>
 
 /** Sisipan yang selalu tersedia; setiap isian tambahan menambah sisipan sesuai `kunci`-nya (SPEC §7.3). */
@@ -102,6 +113,52 @@ export function periksaIsian(jenis: Pick<JenisSurat, 'isian'>, isian: Readonly<R
     }
   }
   return galat
+}
+
+/** Status di daftar Jenis Surat: arsip mengalahkan saklar aktif (jenis arsip selalu mati). */
+export const STATUS_DAFTAR_JENIS = ['aktif', 'dihentikan', 'diarsipkan'] as const
+export type StatusJenis = (typeof STATUS_DAFTAR_JENIS)[number]
+
+export function statusJenis(jenis: Pick<JenisSurat, 'aktif' | 'diarsipkan'>): StatusJenis {
+  if (jenis.diarsipkan !== null) return 'diarsipkan'
+  return jenis.aktif ? 'aktif' : 'dihentikan'
+}
+
+/** Jenis yang boleh dipakai membuat permohonan baru, dari loket maupun layanan warga: menyala dan tidak diarsipkan. */
+export const dilayani = (jenis: Pick<JenisSurat, 'aktif' | 'diarsipkan'>): boolean => jenis.aktif && jenis.diarsipkan === null
+
+/** Hanya jenis buatan desa yang belum pernah dipakai permohonan apa pun (SPEC-V0.2 12.1); selebihnya diarsipkan. */
+export function bolehDihapus(jenis: Pick<JenisSurat, 'asal'>, dipakai: boolean): boolean {
+  return jenis.asal === 'desa' && !dipakai
+}
+
+export function bolehDiarsipkan(jenis: Pick<JenisSurat, 'asal' | 'diarsipkan'>): boolean {
+  return jenis.asal === 'desa' && jenis.diarsipkan === null
+}
+
+/** Isian dialog Tambah jenis surat. `dari` null = mulai dari kosong; selain itu id jenis desa yang disalin. */
+export const tambahJenisSchema = z.object({
+  dari: z.string().nullable(),
+  kode: z.string().regex(/^[A-Z]{2,5}$/, 'Kode 2-5 huruf kapital.'),
+  nama: z.string().trim().min(1, 'Nama jenis surat wajib diisi.'),
+})
+export type TambahJenis = z.infer<typeof tambahJenisSchema>
+
+/** Jenis baru yang kosong: siap diedit, mati sampai desa menyalakannya (SPEC-V0.2 12.1). Sisipan memakai daftar `SISIPAN_UMUM`. */
+export function jenisKosong(desa: { id: string }, kode: string, nama: string): Omit<JenisSurat, 'id'> {
+  return {
+    desaId: desa.id, kode, nama, klasifikasi: '470', subjek: 'pemohon', isian: [], bolehAtasNama: true, wajibParaf: false,
+    masaBerlakuBulan: null, online: false, syarat: ['KTP-el pemohon'],
+    teks: 'Yang bertanda tangan di bawah ini menerangkan bahwa [nama] adalah warga Desa [namaDesa].',
+    aktif: false, asal: 'desa', diarsipkan: null,
+  }
+}
+
+/** Salinan dalam dari `sumber` dengan identitas baru; mengubah salinan tidak mengubah sumber. Mati, buatan desa, tidak diarsipkan. */
+export function salinJenis(sumber: JenisSurat, kode: string, nama: string): Omit<JenisSurat, 'id'> {
+  const salinan: Partial<JenisSurat> = structuredClone(sumber)
+  delete salinan.id
+  return { ...(salinan as Omit<JenisSurat, 'id'>), kode, nama, aktif: false, asal: 'desa', diarsipkan: null }
 }
 
 /** Dua isian sama bila setiap kuncinya sama setelah spasi tepi dibuang; kunci yang hilang dianggap kosong. */

@@ -9,6 +9,7 @@ import {
   type PeriksaAlamat,
   type RingkasanKonsol, type SesiKonsol,
 } from '@/domain/konsol/schema'
+import { MODUL_BAWAAN_DESA_BARU, modulAktif } from '@/domain/pengaturan/modul'
 import type { Pengguna } from '@/domain/pengguna/schema'
 import { katalogDesaBaru } from '@/domain/surat/bawaan'
 import { wilayahKecamatan } from '@/domain/wilayah/kode-wilayah'
@@ -44,6 +45,7 @@ export function detailDesa(db: DbDemo, desa: Desa, sekarang: Date): DetailDesaKo
     // Undangan dari Konsol hanya untuk desa berdata panel; desa contoh (rekaman) tidak punya akun sungguhan.
     bisaUndangSekdes: !db.rekamDesa.some((r) => r.desaId === desa.id) && a.kontak.sekdes === null,
     aliasAlamat: db.aliasAlamat.filter((x) => x.desaId === desa.id).map((x) => x.label),
+    modulAktif: modulAktif(db.modulDesa.find((m) => m.desaId === desa.id) ?? MODUL_BAWAAN_DESA_BARU),
     penyimpananKb: a.penyimpananKb, masukPerMinggu: a.masukPerMinggu,
     aksesBantuan: bantuan ? { sampai: bantuan.sampai, sembunyikanDataPribadi: bantuan.sembunyikanDataPribadi } : null,
     langganan: l ? { paket: l.paket, periodeTagihan: l.periodeTagihan, mulai: l.mulai, sampai: l.sampai } : { paket: 'Dasar', periodeTagihan: 'triwulan', mulai: null, sampai: null },
@@ -225,6 +227,8 @@ export const handlerKonsol = [
         d.langganan.push({ desaId: id, paket, periodeTagihan: 'triwulan', mulai: null, sampai: null })
         // Katalog bawaan, semuanya belum dilayani: desa memilihnya di langkah persiapan terakhir (tahap 6C).
         d.jenisSurat.push(...katalogDesaBaru(desa))
+        // Desa baru memulai tanpa modul Kesehatan; Sekretaris Desa menyalakannya di Pengaturan › Modul (SPEC-V0.2 12.3).
+        d.modulDesa.push({ desaId: id, ...MODUL_BAWAAN_DESA_BARU })
       })
       return HttpResponse.json({ id, nama, email }, { status: 201 })
     }),

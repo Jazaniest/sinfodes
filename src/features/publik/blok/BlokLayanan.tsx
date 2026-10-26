@@ -15,7 +15,7 @@ export function BlokLayanan({ blok, dasar }: Props) {
     { judul: 'Cek keaslian surat', keterangan: 'Pindai QR atau ketik kodenya', href: `${dasar}/verifikasi`, ikon: <SealCheck {...IKON} /> },
     { judul: 'Sampaikan pengaduan', keterangan: 'Dibaca dan dibalas petugas desa', href: '/warga/pengaduan/baru', ikon: <ChatCircleText {...IKON} /> },
     { judul: 'Jadwal posyandu', keterangan: 'Di setiap dusun', href: `${dasar}/layanan#posyandu`, ikon: <Baby {...IKON} /> },
-  ]
+  ].filter((l) => l.judul !== 'Jadwal posyandu' || blok.data?.posyandu !== false)
   return (
     <WadahBlok blok={blok}>
       <Rubrik id={blok.id} judul="Layanan cepat">

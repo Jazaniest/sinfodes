@@ -5,10 +5,10 @@ import { contohJenis } from '@/test/contoh-surat'
 import { PilihJenisSurat } from './PilihJenisSurat'
 
 const DAFTAR = [
-  { ...contohJenis('SKU'), jumlahPakai: 120 },
-  { ...contohJenis('SKD'), jumlahPakai: 165 },
-  { ...contohJenis('SKBN'), jumlahPakai: 14 },
-  { ...contohJenis('SKH'), jumlahPakai: 20, aktif: false },
+  { ...contohJenis('SKU'), jumlahPakai: 120, dipakai: true },
+  { ...contohJenis('SKD'), jumlahPakai: 165, dipakai: true },
+  { ...contohJenis('SKBN'), jumlahPakai: 14, dipakai: true },
+  { ...contohJenis('SKH'), jumlahPakai: 20, dipakai: true, aktif: false },
 ]
 const butir = () => within(screen.getByRole('list', { name: 'Jenis surat' })).getAllByRole('listitem')
 

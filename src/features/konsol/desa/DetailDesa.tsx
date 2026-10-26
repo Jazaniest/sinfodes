@@ -162,6 +162,7 @@ function TabKeaktifan({ d }: { d: DetailDesaKonsol }) {
         items={[
           { label: 'Terakhir dipakai', nilai: d.aktivitasTerakhir ? formatWaktuLog(d.aktivitasTerakhir) : <span className={redup}>Belum ada</span> },
           { label: 'Akun aktif', nilai: `${formatAngka(d.penggunaAktif)} akun masuk dalam 30 hari terakhir` },
+          { label: 'Modul aktif', nilai: d.modulAktif.length > 0 ? d.modulAktif.join(', ') : '-' },
           { label: 'Penyimpanan berkas', nilai: formatUkuranKb(d.penyimpananKb) },
         ]}
       />

@@ -57,6 +57,16 @@ describe('Detail desa Konsol (SPEC §11)', () => {
     await user.click(screen.getByRole('checkbox', { name: 'Lihat sebagai tabel' }))
     expect(screen.getByRole('table', { name: 'Masuk panel per minggu' })).toHaveTextContent('21 Sep 2026')
   })
+  it('Keaktifan: modul aktif disebut; desa tanpa modul menampilkan tanda hubung (SPEC-V0.2 12.3)', async () => {
+    pasang('desa_sungai_sialang', 'keaktifan')
+    expect(await screen.findByText('Kesehatan (Posyandu)')).toBeInTheDocument()
+    expect(screen.getByText('Modul aktif')).toBeInTheDocument()
+  })
+  it('Keaktifan Tanjung Lamo: Modul aktif -', async () => {
+    pasang('desa_tanjung_lamo', 'keaktifan')
+    const label = await screen.findByText('Modul aktif')
+    expect(label.nextElementSibling).toHaveTextContent(/^-$/)
+  })
   it('Keaktifan desa tanpa masuk: keterangan, bukan grafik kosong (fokus review 4)', async () => {
     pasang('desa_tanjung_lamo', 'keaktifan')
     expect(await screen.findByText('Belum ada yang masuk panel dalam 12 minggu terakhir.')).toBeInTheDocument()

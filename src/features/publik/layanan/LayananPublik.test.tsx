@@ -1,10 +1,11 @@
 import { screen, waitFor, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
+import { ubahDb } from '@/mocks/db'
 import { pakaiApiTiruan } from '@/test/api-tiruan'
 import { renderPublik } from '@/test/render'
 import { LayananPublik } from './LayananPublik'
 
-pakaiApiTiruan()
+pakaiApiTiruan({ dbSegarTiapUji: true })
 
 describe('Layanan website desa (SPEC §9)', () => {
   it('surat yang bisa diajukan online beserta syarat dan perkiraan waktu; tombol ke layanan mandiri', async () => {
@@ -24,6 +25,16 @@ describe('Layanan website desa (SPEC §9)', () => {
     expect(posyandu).toHaveAttribute('id', 'posyandu')
     expect(within(posyandu).getAllByRole('listitem')).toHaveLength(4)
     expect(posyandu).toHaveTextContent('Posyandu Melati · Dusun I Kampung Tengah')
+  })
+  it('modul Kesehatan mati: bagian Jadwal posyandu tidak tampil, bagian lain tetap (SPEC-V0.2 12.3)', async () => {
+    ubahDb((d) => {
+      const m = d.modulDesa.find((x) => x.desaId === 'desa_sungai_sialang')
+      if (m) m.kesehatan = false
+    })
+    renderPublik(<LayananPublik />)
+    await screen.findByRole('region', { name: 'Jam layanan kantor desa' })
+    expect(screen.queryByRole('region', { name: 'Jadwal posyandu' })).not.toBeInTheDocument()
+    expect(screen.getByRole('region', { name: 'Surat yang bisa diajukan online' })).toBeInTheDocument()
   })
   it('dibuka dengan #posyandu dari Beranda: menggulir ke jadwal posyandu sesudah datanya dimuat', async () => {
     // jsdom tidak punya scrollIntoView; navigasi berjangkar terjadi sebelum data Layanan tersedia.

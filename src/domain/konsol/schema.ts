@@ -83,6 +83,8 @@ export const detailDesaKonsolSchema = barisDesaKonsolSchema.extend({
   persiapan: persiapanSchema,
   /** Alamat lama desa ini (SPEC-V0.2 §4.2), urut seperti tersimpan. */
   aliasAlamat: z.array(z.string()),
+  /** Nama modul yang menyala di desa ini (SPEC-V0.2 12.3), bagian Keaktifan; kosong bila belum ada. Bukan isi data desa. */
+  modulAktif: z.array(z.string()),
   /** Pemakaian penyimpanan berkas desa, dalam KB. */
   penyimpananKb: jumlah,
   /** Akses bantuan yang sedang diberikan desa kepada Tim Sinfodes (SPEC-V0.2 §5.3), atau null. */

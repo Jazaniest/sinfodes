@@ -8,10 +8,10 @@ import { useBoleh } from './useBoleh'
 
 const berkas = import.meta.glob('/src/features/**/*.{ts,tsx}', { query: '?raw', import: 'default', eager: true }) as Record<string, string>
 
-function pakai(peran: Parameters<typeof contohSesi>[0], status: SesiAdmin['desa']['status']) {
+function pakai(peran: Parameters<typeof contohSesi>[0], status: SesiAdmin['desa']['status'], modul?: SesiAdmin['modul']) {
   const sesi = contohSesi(peran)
   const pembungkus = ({ children }: { children: ReactNode }) => (
-    <SesiAdminKonteks value={{ ...sesi, desa: { ...sesi.desa, status } }}>{children}</SesiAdminKonteks>
+    <SesiAdminKonteks value={{ ...sesi, desa: { ...sesi.desa, status }, modul }}>{children}</SesiAdminKonteks>
   )
   return renderHook(() => useBoleh(), { wrapper: pembungkus }).result.current
 }
@@ -29,6 +29,12 @@ describe('useBoleh (rencana 7D-2 Tugas 4)', () => {
     expect(boleh('penduduk.lihat')).toBe(true)
     expect(boleh('langganan.bayar')).toBe(true)
     expect(boleh('akses-sinfodes.kelola')).toBe(true)
+  })
+  it('modul Kesehatan dari sesi: mati mencabut kesehatan.lihat; tanpa modul atau menyala tetap (SPEC-V0.2 12.3)', () => {
+    expect(pakai('kadus', 'Aktif', { kesehatan: false })('kesehatan.lihat')).toBe(false)
+    expect(pakai('kadus', 'Aktif', { kesehatan: false })('pengaduan.lihat')).toBe(true)
+    expect(pakai('kadus', 'Aktif', { kesehatan: true })('kesehatan.lihat')).toBe(true)
+    expect(pakai('kadus', 'Aktif')('kesehatan.lihat')).toBe(true)
   })
   it('penjaga: layar tidak memeriksa hak akses dengan boleh(peran, …) langsung, karena itu melewati penangguhan', () => {
     const pelanggar = Object.entries(berkas)

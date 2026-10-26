@@ -11,6 +11,7 @@ import { ringkasSuratTerbit } from '@/domain/surat/ringkas'
 import { hariKerjaBerlalu } from '@/domain/surat/waktu'
 import { dataMilik } from '../cakupan'
 import { API, denganJaringan } from '../http'
+import { modulDesaDi } from '../modul'
 import { pengingatTagihanDesa } from '../pengingat-tagihan'
 import { pengingatTenggatDesa } from '../pengingat-tenggat'
 import { bekukanBulanTutup } from '../indeks'
@@ -105,7 +106,7 @@ export const handlerBeranda = [
               : null,
         pengaduanTerbaru: pengguna.peran === 'kades' || pengguna.peran === 'kadus' ? pengaduanTerbaru : null,
         posyandu:
-          pengguna.peran === 'kadus' && posyandu
+          pengguna.peran === 'kadus' && posyandu && modulDesaDi(pengguna.desaId).kesehatan
             ? { nama: posyandu.nama, tempat: posyandu.tempat, jadwal: jadwalBerikut(posyandu.jadwal, hariIni) }
             : null,
         apbdes: apbdes

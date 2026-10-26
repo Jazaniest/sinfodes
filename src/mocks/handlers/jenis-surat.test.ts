@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { GalatApi } from '@/api/galat'
-import { ambilAntrianTtd, ambilJenisSurat, ambilPermohonan, buatPermohonan, daftarJenisSurat, jalankanAksi, ubahJenisSurat } from '@/api/surat'
+import { verifikasiSurat } from '@/api/publik'
+import {
+  aktifkanLagiJenisSurat, ambilAntrianTtd, ambilJenisSurat, ambilPermohonan, arsipkanJenisSurat, buatPermohonan, daftarJenisSurat,
+  hapusJenisSurat, jalankanAksi, tambahJenisSurat, ubahJenisSurat,
+} from '@/api/surat'
 import type { UbahJenisSurat } from '@/domain/surat/ubah-jenis'
 import { ambilDb } from '@/mocks/db'
 import { AKUN_DESA_BARU_UJI, AKUN_UJI, masukSebagai, pakaiApiTiruan } from '@/test/api-tiruan'
@@ -58,7 +62,7 @@ describe('jenis surat: detail dan ubah (SPEC §7.4 layar 6)', () => {
     const g = await galatDari(
       buatPermohonan({ jenisId: 'js_ss_skd', pemohonId: 'pdk_siti_rahmah', subjekId: null, mutasiId: null, isian: { keperluan: 'x' }, ajukan: false }),
     )
-    expect(g.fields).toEqual({ jenisId: 'Jenis surat tidak ditemukan atau sedang tidak dilayani.' })
+    expect(g).toMatchObject({ status: 409, message: 'Jenis surat ini tidak tersedia.', fields: { jenisId: 'Jenis surat ini tidak tersedia.' } })
     const lama = ambilDb().permohonan.find((p) => p.jenisId === 'js_ss_skd' && p.status === 'diproses')
     expect((await jalankanAksi(lama?.id ?? '-', 'ajukan-ttd', { isian: lama?.isian })).permohonan.status).toBe('perlu-ttd')
   })
@@ -115,5 +119,199 @@ describe('jenis surat desa baru (tahap 6C)', () => {
   it('Sungai Sialang tetap memakai permohonan sungguhan sebagai contoh', async () => {
     masukSebagai(AKUN_UJI.operator)
     expect((await ambilJenisSurat('js_ss_skd')).contoh.tiruan).toBe(false)
+  })
+})
+
+const PESAN_TIDAK_ADA = 'Jenis surat tidak ditemukan.'
+
+/** Jenis buatan desa yang sudah menyala dan sudah punya satu permohonan berjalan (belum diajukan ke penandatangan). */
+async function jenisDesaDipakai(kode = 'SPK') {
+  const j = await tambahJenisSurat({ dari: null, kode, nama: 'Surat Pengantar Kerja' })
+  await ubahJenisSurat(j.id, { aktif: true })
+  const dibuat = await buatPermohonan({ jenisId: j.id, pemohonId: 'pdk_siti_rahmah', subjekId: null, mutasiId: null, isian: {}, ajukan: false })
+  return { j, p: dibuat.permohonan }
+}
+
+describe('jenis surat buatan desa: tambah (SPEC-V0.2 12.1)', () => {
+  it('dari kosong: asal desa, mati, belum diarsipkan, isi awal sesuai keputusan 2', async () => {
+    masukSebagai(AKUN_UJI.operator)
+    const j = await tambahJenisSurat({ dari: null, kode: 'SPK', nama: ' Surat Pengantar Kerja ' })
+    expect(j).toMatchObject({
+      kode: 'SPK', nama: 'Surat Pengantar Kerja', asal: 'desa', aktif: false, diarsipkan: null, desaId: 'desa_sungai_sialang',
+      klasifikasi: '470', subjek: 'pemohon', syarat: ['KTP-el pemohon'], isian: [],
+    })
+    expect(ambilDb().jenisSurat.find((x) => x.id === j.id)).toEqual(j)
+    expect((await ambilJenisSurat(j.id)).jenis).toMatchObject({ kode: 'SPK', dipakai: false, jumlahPakai: 0 })
+  })
+  it('salin dari SKTM: isian dan teks sama; mengubah salinan tidak mengubah sumber (fokus review 5)', async () => {
+    masukSebagai(AKUN_UJI.operator)
+    const sumber = structuredClone(ambilDb().jenisSurat.find((x) => x.id === 'js_ss_sktm'))
+    const salinan = await tambahJenisSurat({ dari: 'js_ss_sktm', kode: 'SKTK', nama: 'Surat Keterangan Tidak Kuat' })
+    expect(salinan).toMatchObject({ asal: 'desa', aktif: false, diarsipkan: null, isian: sumber?.isian, teks: sumber?.teks, syarat: sumber?.syarat })
+    expect(salinan.id).not.toBe('js_ss_sktm')
+    await ubahJenisSurat(salinan.id, { teks: 'Teks salinan [nama].', syarat: ['KTP'] })
+    expect(ambilDb().jenisSurat.find((x) => x.id === 'js_ss_sktm')).toEqual(sumber)
+  })
+  it('salin dari jenis arsip diizinkan; hasilnya tidak ikut diarsipkan', async () => {
+    masukSebagai(AKUN_UJI.operator)
+    const asal = await tambahJenisSurat({ dari: null, kode: 'SPK', nama: 'Surat Pengantar Kerja' })
+    await arsipkanJenisSurat(asal.id)
+    const salinan = await tambahJenisSurat({ dari: asal.id, kode: 'SPKB', nama: 'Surat Pengantar Kerja Baru' })
+    expect(salinan).toMatchObject({ diarsipkan: null, aktif: false, asal: 'desa' })
+  })
+  it('kode ganda dengan jenis aktif, mati, maupun arsip → 422 persis (fokus review 3)', async () => {
+    masukSebagai(AKUN_UJI.operator)
+    const arsip = await tambahJenisSurat({ dari: null, kode: 'ARS', nama: 'Surat Arsip' })
+    await arsipkanJenisSurat(arsip.id)
+    for (const kode of ['SKD', 'ARS']) {
+      const g = await galatDari(tambahJenisSurat({ dari: null, kode, nama: 'Surat Lain' }))
+      expect(g).toMatchObject({ kode: 'VALIDATION', status: 422, fields: { kode: 'Kode sudah dipakai jenis surat lain.' } })
+    }
+    await ubahJenisSurat('js_ss_skd', { aktif: false })
+    expect((await galatDari(tambahJenisSurat({ dari: null, kode: 'SKD', nama: 'Surat Lain' }))).fields).toEqual({
+      kode: 'Kode sudah dipakai jenis surat lain.',
+    })
+  })
+  it('kode dipakai per desa: desa lain boleh memakai kode yang tidak ada di katalognya', async () => {
+    masukSebagai(AKUN_DESA_BARU_UJI)
+    expect((await galatDari(tambahJenisSurat({ dari: null, kode: 'SKD', nama: 'Surat Domisili' }))).fields).toEqual({
+      kode: 'Kode sudah dipakai jenis surat lain.',
+    })
+    const j = await tambahJenisSurat({ dari: null, kode: 'SPK', nama: 'Surat Pengantar Kerja' })
+    expect(j.desaId).toBe('desa_tanjung_lamo')
+  })
+  it('kode dan nama tidak sah ditolak per kolom; sumber salinan milik desa lain atau tidak ada → 404', async () => {
+    masukSebagai(AKUN_UJI.operator)
+    const g = await galatDari(tambahJenisSurat({ dari: null, kode: 'ab', nama: ' ' }))
+    expect(g).toMatchObject({ kode: 'VALIDATION', status: 422, fields: { kode: 'Kode 2-5 huruf kapital.', nama: 'Nama jenis surat wajib diisi.' } })
+    for (const dari of ['js_tanjung_lamo_skd', 'js_tidak_ada']) {
+      expect(await galatDari(tambahJenisSurat({ dari, kode: 'SPK', nama: 'Surat Pengantar Kerja' }))).toMatchObject({
+        kode: 'NOT_FOUND', status: 404, message: PESAN_TIDAK_ADA,
+      })
+    }
+    expect(ambilDb().jenisSurat.some((j) => j.kode === 'SPK')).toBe(false)
+  })
+  it('hanya Operator dan Sekdes; Kades dan Kepala Dusun → 403', async () => {
+    for (const akun of [AKUN_UJI.kades, AKUN_UJI.kadus]) {
+      masukSebagai(akun)
+      expect((await galatDari(tambahJenisSurat({ dari: null, kode: 'SPK', nama: 'Surat Pengantar Kerja' }))).kode).toBe('FORBIDDEN')
+    }
+    masukSebagai(AKUN_UJI.sekdes)
+    expect((await tambahJenisSurat({ dari: null, kode: 'SPK', nama: 'Surat Pengantar Kerja' })).asal).toBe('desa')
+  })
+})
+
+describe('jenis surat buatan desa: hapus, arsipkan, aktifkan lagi (SPEC-V0.2 12.1)', () => {
+  it('hapus jenis desa yang belum dipakai → hilang; GET sesudahnya 404', async () => {
+    masukSebagai(AKUN_UJI.operator)
+    const j = await tambahJenisSurat({ dari: null, kode: 'SPK', nama: 'Surat Pengantar Kerja' })
+    await hapusJenisSurat(j.id)
+    expect((await galatDari(ambilJenisSurat(j.id))).kode).toBe('NOT_FOUND')
+    expect(ambilDb().jenisSurat.some((x) => x.id === j.id)).toBe(false)
+  })
+  it('hapus jenis bawaan → 422; hapus jenis desa yang sudah dipakai → 409; keduanya tetap ada', async () => {
+    masukSebagai(AKUN_UJI.operator)
+    expect(await galatDari(hapusJenisSurat('js_ss_skd'))).toMatchObject({
+      kode: 'VALIDATION', status: 422, message: 'Jenis bawaan tidak bisa dihapus atau diarsipkan.',
+    })
+    const { j } = await jenisDesaDipakai()
+    expect(await galatDari(hapusJenisSurat(j.id))).toMatchObject({
+      kode: 'CONFLICT', status: 409, message: 'Jenis ini sudah pernah dipakai. Arsipkan saja.',
+    })
+    expect(ambilDb().jenisSurat.filter((x) => x.id === 'js_ss_skd' || x.id === j.id)).toHaveLength(2)
+    expect((await ambilJenisSurat(j.id)).jenis).toMatchObject({ dipakai: true, jumlahPakai: 1 })
+  })
+  it('arsipkan: diarsipkan terisi, mati, PATCH sesudahnya → 409; jenis bawaan tak bisa diarsipkan', async () => {
+    masukSebagai(AKUN_UJI.operator)
+    const { j } = await jenisDesaDipakai()
+    const arsip = await arsipkanJenisSurat(j.id)
+    expect(arsip.diarsipkan).toMatch(/^2026-09-24T/)
+    expect(arsip.aktif).toBe(false)
+    expect(await galatDari(ubahJenisSurat(j.id, { nama: 'Nama Baru' }))).toMatchObject({
+      kode: 'CONFLICT', status: 409, message: 'Jenis ini diarsipkan. Aktifkan lagi sebelum mengubahnya.',
+    })
+    expect(ambilDb().jenisSurat.find((x) => x.id === j.id)?.nama).toBe('Surat Pengantar Kerja')
+    expect(await galatDari(arsipkanJenisSurat('js_ss_skd'))).toMatchObject({
+      kode: 'VALIDATION', status: 422, message: 'Jenis bawaan tidak bisa dihapus atau diarsipkan.',
+    })
+    expect((await galatDari(arsipkanJenisSurat(j.id))).status).toBe(409)
+  })
+  it('aktifkan lagi: diarsipkan null dan aktif tetap false; boleh diubah lagi', async () => {
+    masukSebagai(AKUN_UJI.operator)
+    const { j } = await jenisDesaDipakai()
+    await arsipkanJenisSurat(j.id)
+    const lagi = await aktifkanLagiJenisSurat(j.id)
+    expect(lagi).toMatchObject({ diarsipkan: null, aktif: false })
+    expect((await ubahJenisSurat(j.id, { nama: 'Nama Baru' })).jenis.nama).toBe('Nama Baru')
+    expect((await galatDari(aktifkanLagiJenisSurat(j.id))).status).toBe(409)
+  })
+  it('jenis desa lain atau tidak ada → 404 untuk hapus, arsipkan, aktifkan lagi', async () => {
+    masukSebagai(AKUN_DESA_BARU_UJI)
+    for (const aksi of [hapusJenisSurat, arsipkanJenisSurat, aktifkanLagiJenisSurat]) {
+      expect(await galatDari(aksi('js_ss_skd'))).toMatchObject({ kode: 'NOT_FOUND', status: 404, message: PESAN_TIDAK_ADA })
+    }
+    expect(ambilDb().jenisSurat.some((x) => x.id === 'js_ss_skd')).toBe(true)
+  })
+  it('Kades dan Kepala Dusun → 403 untuk hapus, arsipkan, aktifkan lagi', async () => {
+    masukSebagai(AKUN_UJI.operator)
+    const j = await tambahJenisSurat({ dari: null, kode: 'SPK', nama: 'Surat Pengantar Kerja' })
+    for (const akun of [AKUN_UJI.kades, AKUN_UJI.kadus]) {
+      masukSebagai(akun)
+      for (const aksi of [hapusJenisSurat, arsipkanJenisSurat, aktifkanLagiJenisSurat]) {
+        expect((await galatDari(aksi(j.id))).kode).toBe('FORBIDDEN')
+      }
+    }
+  })
+  it('jenis arsip tidak bisa membuat permohonan baru dari loket', async () => {
+    masukSebagai(AKUN_UJI.operator)
+    const { j } = await jenisDesaDipakai()
+    await arsipkanJenisSurat(j.id)
+    const g = await galatDari(buatPermohonan({ jenisId: j.id, pemohonId: 'pdk_siti_rahmah', subjekId: null, mutasiId: null, isian: {}, ajukan: false }))
+    expect(g).toMatchObject({ status: 409, message: 'Jenis surat ini tidak tersedia.' })
+  })
+  it('permohonan yang sedang berjalan saat jenisnya diarsipkan tetap bisa diselesaikan dan ditandatangani (fokus review 1)', async () => {
+    masukSebagai(AKUN_UJI.operator)
+    const { j, p } = await jenisDesaDipakai()
+    await arsipkanJenisSurat(j.id)
+    expect((await jalankanAksi(p.id, 'ajukan-ttd', { isian: {} })).permohonan.status).toBe('perlu-ttd')
+    masukSebagai(AKUN_UJI.kades)
+    const hasil = await jalankanAksi(p.id, 'tandatangani', { passphrase: 'sialang2026' })
+    expect(hasil.permohonan.status).toBe('selesai')
+    expect(ambilDb().permohonan.find((x) => x.id === p.id)?.terbit).not.toBeNull()
+  })
+  it('surat yang terbit dari jenis arsip tetap bisa diverifikasi di Cek keaslian (fokus review 2)', async () => {
+    masukSebagai(AKUN_UJI.operator)
+    const { j, p } = await jenisDesaDipakai()
+    await jalankanAksi(p.id, 'ajukan-ttd', { isian: {} })
+    masukSebagai(AKUN_UJI.kades)
+    await jalankanAksi(p.id, 'tandatangani', { passphrase: 'sialang2026' })
+    masukSebagai(AKUN_UJI.operator)
+    await arsipkanJenisSurat(j.id)
+    const terbit = ambilDb().permohonan.find((x) => x.id === p.id)?.terbit
+    const h = await verifikasiSurat('sungaisialang', terbit?.kodeVerifikasi ?? '-')
+    expect(h).toMatchObject({ jenis: 'Surat Pengantar Kerja', nomor: terbit?.nomor, berlaku: { status: 'berlaku' } })
+  })
+})
+
+describe('daftar jenis surat: dipakai dan penyaring status (SPEC-V0.2 12.1 butir 6)', () => {
+  it('setiap baris punya dipakai (pernah dipakai permohonan apa pun); SKD dipakai', async () => {
+    masukSebagai(AKUN_UJI.operator)
+    const { data } = await daftarJenisSurat()
+    expect(data.find((x) => x.id === 'js_ss_skd')?.dipakai).toBe(true)
+    for (const x of data) expect(x.dipakai, x.kode).toBe(ambilDb().permohonan.some((p) => p.jenisId === x.id))
+  })
+  it('?status memilah aktif, dihentikan, dan diarsipkan; tanpa status memuat semuanya', async () => {
+    masukSebagai(AKUN_UJI.operator)
+    const arsip = await tambahJenisSurat({ dari: null, kode: 'ARS', nama: 'Surat Arsip' })
+    await arsipkanJenisSurat(arsip.id)
+    await tambahJenisSurat({ dari: null, kode: 'MTI', nama: 'Surat Mati' })
+    await ubahJenisSurat('js_ss_skd', { aktif: false })
+    const kode = async (status?: 'aktif' | 'dihentikan' | 'diarsipkan') =>
+      (await daftarJenisSurat(undefined, status)).data.map((j) => j.kode).sort()
+    expect(await kode('diarsipkan')).toEqual(['ARS'])
+    expect(await kode('dihentikan')).toEqual(['MTI', 'SKD'])
+    expect(await kode('aktif')).not.toContain('SKD')
+    expect((await kode('aktif')).length).toBe(11)
+    expect((await kode()).length).toBe(14)
   })
 })

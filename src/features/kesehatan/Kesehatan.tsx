@@ -1,18 +1,20 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
-import { pesanGalat } from '@/api/galat'
+import { GalatApi, pesanGalat } from '@/api/galat'
 import { opsiBalita, opsiPosyandu } from '@/api/kesehatan'
 import { formatAngka } from '@/domain/format/angka'
 import { formatTanggal, tanggalIsoWib } from '@/domain/format/tanggal'
 import {
   LABEL_STATUS_GIZI, STATUS_GIZI, teksJadwal, type BarisBalita, type FilterBalita, type RingkasPosyandu,
 } from '@/domain/kesehatan/schema'
+import { PESAN_MODUL_KESEHATAN_MATI } from '@/domain/pengaturan/modul'
 import { namaDusun } from '@/domain/wilayah/alamat'
 import { Cap } from '@/ui/cap/Cap'
 import { ChipFilter } from '@/ui/data/ChipFilter'
 import { DataTable, type KolomTabel } from '@/ui/data/DataTable'
 import { Pagination } from '@/ui/data/Pagination'
 import { Select } from '@/ui/isian/Select'
+import { Tautan } from '@/ui/navigasi/Tautan'
 import { PageHeader } from '@/ui/tata-letak/PageHeader'
 import { Tombol } from '@/ui/tombol/Tombol'
 import { EmptyState } from '@/ui/umpan-balik/EmptyState'
@@ -117,6 +119,18 @@ export function Kesehatan({ filter, onUbahFilter, sekarang }: Props) {
         aksi={<Tombol onPress={() => onUbahFilter({ posyandu: undefined, status: undefined, page: 1 })}>Hapus saringan</Tombol>}
       />
     )
+
+  // Modul dimatikan sesudah sesi dimuat (menunya baru hilang saat sesi dimuat ulang): server menjawab 403, layar menerangkannya.
+  if (posyandu.error instanceof GalatApi && posyandu.error.kode === 'FORBIDDEN' && posyandu.error.message === PESAN_MODUL_KESEHATAN_MATI) {
+    return (
+      <EmptyState
+        judulHalaman
+        judul="Modul Kesehatan tidak aktif"
+        keterangan={PESAN_MODUL_KESEHATAN_MATI}
+        aksi={<Tautan href="/admin">Kembali ke Beranda</Tautan>}
+      />
+    )
+  }
 
   return (
     <div className="flex flex-col gap-6">

@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { modulDesaSchema } from '../pengaturan/modul'
 import { desaSchema, dusunSchema } from '../wilayah/schema'
 
 /** Lima peran akun desa (SPEC §5.1); hanya ini yang bisa diundang di Pengaturan › Pengguna. */
@@ -46,6 +47,8 @@ export const sesiAdminSchema = z.object({
   dusun: z.array(dusunSchema),
   /** Identitas desa di panel (rencana 7E-1): warna aksen untuk garis atas dan favicon (lambang desa, atau null untuk monogram). */
   tampilanPanel: z.object({ warnaAksen: z.string(), favicon: z.string().nullable() }).optional(),
+  /** Modul desa yang menyala (SPEC-V0.2 12.3); tanpa isian berarti semua menyala. Selalu dikirim server. */
+  modul: modulDesaSchema.optional(),
   /** Hanya untuk sesi bantuan Tim Sinfodes: batas waktu akses dan apakah data pribadi warga disamarkan (SPEC-V0.2 §5.3). */
   bantuan: z.object({ sampai: z.iso.datetime({ offset: true }), sembunyikanDataPribadi: z.boolean() }).nullable().optional(),
 })

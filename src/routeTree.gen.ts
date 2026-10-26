@@ -61,6 +61,7 @@ import { Route as AdminPanelPengaduanIdRouteImport } from './routes/admin/_panel
 import { Route as AdminPanelPengaturanIndexRouteImport } from './routes/admin/_panel/pengaturan/index'
 import { Route as AdminPanelPengaturanAksesSinfodesRouteImport } from './routes/admin/_panel/pengaturan/akses-sinfodes'
 import { Route as AdminPanelPengaturanLanggananRouteImport } from './routes/admin/_panel/pengaturan/langganan'
+import { Route as AdminPanelPengaturanModulRouteImport } from './routes/admin/_panel/pengaturan/modul'
 import { Route as AdminPanelPengaturanPenggunaRouteImport } from './routes/admin/_panel/pengaturan/pengguna'
 import { Route as AdminPanelPengaturanPenomoranRouteImport } from './routes/admin/_panel/pengaturan/penomoran'
 import { Route as AdminPanelPengaturanWilayahRouteImport } from './routes/admin/_panel/pengaturan/wilayah'
@@ -393,6 +394,12 @@ const AdminPanelPengaturanLanggananRoute =
   AdminPanelPengaturanLanggananRouteImport.update({
     id: '/pengaturan/langganan',
     path: '/pengaturan/langganan',
+    getParentRoute: () => AdminPanelRoute,
+  } as any)
+const AdminPanelPengaturanModulRoute =
+  AdminPanelPengaturanModulRouteImport.update({
+    id: '/pengaturan/modul',
+    path: '/pengaturan/modul',
     getParentRoute: () => AdminPanelRoute,
   } as any)
 const AdminPanelPengaturanPenggunaRoute =
@@ -817,6 +824,7 @@ export interface FileRoutesByFullPath {
   '/admin/pengaduan/$id': typeof AdminPanelPengaduanIdRoute
   '/admin/pengaturan/akses-sinfodes': typeof AdminPanelPengaturanAksesSinfodesRoute
   '/admin/pengaturan/langganan': typeof AdminPanelPengaturanLanggananRoute
+  '/admin/pengaturan/modul': typeof AdminPanelPengaturanModulRoute
   '/admin/pengaturan/pengguna': typeof AdminPanelPengaturanPenggunaRoute
   '/admin/pengaturan/penomoran': typeof AdminPanelPengaturanPenomoranRoute
   '/admin/pengaturan/wilayah': typeof AdminPanelPengaturanWilayahRoute
@@ -932,6 +940,7 @@ export interface FileRoutesByTo {
   '/admin/pengaduan/$id': typeof AdminPanelPengaduanIdRoute
   '/admin/pengaturan/akses-sinfodes': typeof AdminPanelPengaturanAksesSinfodesRoute
   '/admin/pengaturan/langganan': typeof AdminPanelPengaturanLanggananRoute
+  '/admin/pengaturan/modul': typeof AdminPanelPengaturanModulRoute
   '/admin/pengaturan/pengguna': typeof AdminPanelPengaturanPenggunaRoute
   '/admin/pengaturan/penomoran': typeof AdminPanelPengaturanPenomoranRoute
   '/admin/pengaturan/wilayah': typeof AdminPanelPengaturanWilayahRoute
@@ -1053,6 +1062,7 @@ export interface FileRoutesById {
   '/admin/_panel/pengaduan/$id': typeof AdminPanelPengaduanIdRoute
   '/admin/_panel/pengaturan/akses-sinfodes': typeof AdminPanelPengaturanAksesSinfodesRoute
   '/admin/_panel/pengaturan/langganan': typeof AdminPanelPengaturanLanggananRoute
+  '/admin/_panel/pengaturan/modul': typeof AdminPanelPengaturanModulRoute
   '/admin/_panel/pengaturan/pengguna': typeof AdminPanelPengaturanPenggunaRoute
   '/admin/_panel/pengaturan/penomoran': typeof AdminPanelPengaturanPenomoranRoute
   '/admin/_panel/pengaturan/wilayah': typeof AdminPanelPengaturanWilayahRoute
@@ -1175,6 +1185,7 @@ export interface FileRouteTypes {
     | '/admin/pengaduan/$id'
     | '/admin/pengaturan/akses-sinfodes'
     | '/admin/pengaturan/langganan'
+    | '/admin/pengaturan/modul'
     | '/admin/pengaturan/pengguna'
     | '/admin/pengaturan/penomoran'
     | '/admin/pengaturan/wilayah'
@@ -1290,6 +1301,7 @@ export interface FileRouteTypes {
     | '/admin/pengaduan/$id'
     | '/admin/pengaturan/akses-sinfodes'
     | '/admin/pengaturan/langganan'
+    | '/admin/pengaturan/modul'
     | '/admin/pengaturan/pengguna'
     | '/admin/pengaturan/penomoran'
     | '/admin/pengaturan/wilayah'
@@ -1410,6 +1422,7 @@ export interface FileRouteTypes {
     | '/admin/_panel/pengaduan/$id'
     | '/admin/_panel/pengaturan/akses-sinfodes'
     | '/admin/_panel/pengaturan/langganan'
+    | '/admin/_panel/pengaturan/modul'
     | '/admin/_panel/pengaturan/pengguna'
     | '/admin/_panel/pengaturan/penomoran'
     | '/admin/_panel/pengaturan/wilayah'
@@ -1869,6 +1882,13 @@ declare module '@tanstack/react-router' {
       path: '/pengaturan/langganan'
       fullPath: '/admin/pengaturan/langganan'
       preLoaderRoute: typeof AdminPanelPengaturanLanggananRouteImport
+      parentRoute: typeof AdminPanelRoute
+    }
+    '/admin/_panel/pengaturan/modul': {
+      id: '/admin/_panel/pengaturan/modul'
+      path: '/pengaturan/modul'
+      fullPath: '/admin/pengaturan/modul'
+      preLoaderRoute: typeof AdminPanelPengaturanModulRouteImport
       parentRoute: typeof AdminPanelRoute
     }
     '/admin/_panel/pengaturan/pengguna': {
@@ -2352,6 +2372,7 @@ interface AdminPanelRouteChildren {
   AdminPanelPengaduanIdRoute: typeof AdminPanelPengaduanIdRoute
   AdminPanelPengaturanAksesSinfodesRoute: typeof AdminPanelPengaturanAksesSinfodesRoute
   AdminPanelPengaturanLanggananRoute: typeof AdminPanelPengaturanLanggananRoute
+  AdminPanelPengaturanModulRoute: typeof AdminPanelPengaturanModulRoute
   AdminPanelPengaturanPenggunaRoute: typeof AdminPanelPengaturanPenggunaRoute
   AdminPanelPengaturanPenomoranRoute: typeof AdminPanelPengaturanPenomoranRoute
   AdminPanelPengaturanWilayahRoute: typeof AdminPanelPengaturanWilayahRoute
@@ -2410,6 +2431,7 @@ const AdminPanelRouteChildren: AdminPanelRouteChildren = {
   AdminPanelPengaturanAksesSinfodesRoute:
     AdminPanelPengaturanAksesSinfodesRoute,
   AdminPanelPengaturanLanggananRoute: AdminPanelPengaturanLanggananRoute,
+  AdminPanelPengaturanModulRoute: AdminPanelPengaturanModulRoute,
   AdminPanelPengaturanPenggunaRoute: AdminPanelPengaturanPenggunaRoute,
   AdminPanelPengaturanPenomoranRoute: AdminPanelPengaturanPenomoranRoute,
   AdminPanelPengaturanWilayahRoute: AdminPanelPengaturanWilayahRoute,

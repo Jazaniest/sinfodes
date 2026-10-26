@@ -94,6 +94,20 @@ describe('RenderSusunan (rencana 7F-1 Tugas 4)', () => {
       }
     }
   })
+  it('Layanan cepat: pintu Jadwal posyandu tampil, kecuali modul Kesehatan mati (SPEC-V0.2 12.3)', () => {
+    const pintu = (data: unknown) => {
+      const blok = { ...buatBlok('layanan', 'kisi'), data } as BlokTampil
+      const { container, unmount } = renderPublik(<RenderSusunan blok={[blok]} dasar={DASAR} />)
+      const teks = container.textContent ?? ''
+      unmount()
+      return teks
+    }
+    expect(pintu({ posyandu: true })).toContain('Jadwal posyandu')
+    expect(pintu(undefined)).toContain('Jadwal posyandu')
+    const mati = pintu({ posyandu: false })
+    expect(mati).not.toContain('Jadwal posyandu')
+    for (const tetap of ['Ajukan surat online', 'Cek keaslian surat', 'Sampaikan pengaduan']) expect(mati).toContain(tetap)
+  })
   it('kelima jenis bagian 2 dengan variannya merender bagian data-bagian yang benar', () => {
     const jenis: JenisBlok[] = ['galeri', 'peta', 'potensi', 'video', 'sambutan']
     for (const j of jenis) {

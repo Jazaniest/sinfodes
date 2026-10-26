@@ -9,6 +9,22 @@ const item = (nama: string): ItemMenu => {
   return i
 }
 
+describe('menu dan modul desa (SPEC-V0.2 12.3)', () => {
+  const kesehatan = (peran: Peran, modul?: { kesehatan: boolean }) =>
+    menuUntuk(peran, 'Aktif', modul).flatMap((k) => k.item.map((i) => i.label)).includes('Kesehatan')
+  it('Kesehatan mati: menu Kesehatan hilang untuk semua peran yang biasanya melihatnya', () => {
+    for (const peran of ['operator', 'sekdes', 'kades', 'kadus'] as const) {
+      expect(kesehatan(peran), peran).toBe(true)
+      expect(kesehatan(peran, { kesehatan: true }), peran).toBe(true)
+      expect(kesehatan(peran, { kesehatan: false }), peran).toBe(false)
+    }
+  })
+  it('menu lain tidak ikut hilang saat Kesehatan mati', () =>
+    expect(menuUntuk('kadus', 'Aktif', { kesehatan: false }).flatMap((k) => k.item.map((i) => i.label))).toEqual(
+      menuUntuk('kadus').flatMap((k) => k.item.map((i) => i.label)).filter((l) => l !== 'Kesehatan'),
+    ))
+})
+
 describe('menu admin (SPEC §5.1, §5.2)', () => {
   it('operator: semua menu yang sudah dibangun, menurut kelompok SPEC §5.2', () =>
     expect(label('operator')).toEqual([

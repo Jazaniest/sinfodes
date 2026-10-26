@@ -60,21 +60,24 @@ export function LayananPublik() {
               </dl>
               <p className="text-tinta-2">{identitas.alamatKantor}</p>
             </Rubrik>
-            <Rubrik id="posyandu" judul="Jadwal posyandu">
-              <ul className="flex flex-col gap-3">
-                {kueri.data.posyandu.map((p) => (
-                  <li key={p.nama} className="flex flex-col">
-                    <p className="font-medium">
-                      {p.nama} · {p.dusun}
-                    </p>
-                    <p className="text-teks-kecil text-tinta-2">{p.tempat}</p>
-                    <p className="text-teks-kecil">
-                      Berikutnya {formatTanggal(p.jadwal, 'hari')} <span className="text-tinta-2">({p.aturan})</span>
-                    </p>
-                  </li>
-                ))}
-              </ul>
-            </Rubrik>
+            {/* Kosong bila modul Kesehatan desa mati (SPEC-V0.2 12.3). */}
+            {kueri.data.posyandu.length > 0 && (
+              <Rubrik id="posyandu" judul="Jadwal posyandu">
+                <ul className="flex flex-col gap-3">
+                  {kueri.data.posyandu.map((p) => (
+                    <li key={p.nama} className="flex flex-col">
+                      <p className="font-medium">
+                        {p.nama} · {p.dusun}
+                      </p>
+                      <p className="text-teks-kecil text-tinta-2">{p.tempat}</p>
+                      <p className="text-teks-kecil">
+                        Berikutnya {formatTanggal(p.jadwal, 'hari')} <span className="text-tinta-2">({p.aturan})</span>
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              </Rubrik>
+            )}
           </div>
         </>
       )}

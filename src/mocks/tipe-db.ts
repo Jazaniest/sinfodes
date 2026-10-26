@@ -22,6 +22,7 @@ import type { Pengaduan } from '@/domain/pengaduan/schema'
 import type { Kegiatan } from '@/domain/pembangunan/schema'
 import type { Riwayat } from '@/domain/penduduk/riwayat'
 import type { Penduduk } from '@/domain/penduduk/schema'
+import type { ModulDesa } from '@/domain/pengaturan/modul'
 import type { Pengguna } from '@/domain/pengguna/schema'
 import type { PetaDesa } from '@/domain/peta/schema'
 import type { SuratMasuk } from '@/domain/surat/arsip'
@@ -33,7 +34,10 @@ import type { SitusDesa } from '@/domain/website/situs'
 import type { Desa, Dusun, StatusDesa } from '@/domain/wilayah/schema'
 
 /** Naikkan setiap kali seed atau struktur data berubah; data lama di IndexedDB otomatis diganti (SPEC §12). */
-export const VERSI_DATA = 31
+export const VERSI_DATA = 33
+
+/** Modul yang menyala di satu desa (SPEC-V0.2 12.3). */
+export type ModulDesaDb = ModulDesa & { desaId: string }
 
 /** Satu perubahan status desa oleh Tim Sinfodes (SPEC-V0.2 §7, §10.5), dengan alasannya. */
 export type RiwayatStatusDesa = {
@@ -254,4 +258,6 @@ export type DbDemo = {
   /** Lencana juara dan kunci `musim:kode` periode tutup yang sudah diproses (SPEC-V0.2 §9.6). */
   lencana: Lencana[]
   periodeLencana: string[]
+  /** Modul yang dinyalakan Sekretaris Desa, satu baris per desa (SPEC-V0.2 12.3). */
+  modulDesa: ModulDesaDb[]
 }

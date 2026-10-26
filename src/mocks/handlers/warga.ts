@@ -11,6 +11,7 @@ import {
 import { statusPengumuman } from '@/domain/website/schema'
 import { ambilDb } from '../db'
 import { API, balasDaftar, balasGalat, denganJaringan } from '../http'
+import { modulDesaDi } from '../modul'
 import { butuhWarga, type WargaMasuk } from '../sesi-mock'
 import type { DbDemo } from '../tipe-db'
 import { pengaturanDesa } from './surat'
@@ -51,7 +52,7 @@ function posyanduKeluarga(db: DbDemo, w: WargaMasuk, sekarang: Date): BerandaWar
     .map((p) => ({ id: p.id, nama: p.nama, umurBulan: hitungUmur(p.tanggalLahir, sekarang).bulan }))
     .filter((b) => b.umurBulan < BATAS_BALITA_BULAN)
   const pos = db.posyandu.find((x) => x.dusunId === w.penduduk.dusunId)
-  if (balita.length === 0 || !pos) return null
+  if (balita.length === 0 || !pos || !modulDesaDi(w.penduduk.desaId).kesehatan) return null
   return { nama: pos.nama, tempat: pos.tempat, jadwal: jadwalBerikut(pos.jadwal, tanggalIsoWib(sekarang)), balita }
 }
 

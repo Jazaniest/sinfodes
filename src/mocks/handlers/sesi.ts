@@ -7,6 +7,7 @@ import { KATA_SANDI_DEMO } from '../data/desa-demo'
 import { ambilDb, ubahDb } from '../db'
 import { API, balasGalat, denganJaringan } from '../http'
 import { desaKonteks, konteksPermintaan, tanpaKonteks } from '../konteks-permintaan'
+import { modulDesaDi } from '../modul'
 import { butuhPengguna, penggunaDariPermintaan, tokenUntuk } from '../sesi-mock'
 import { idBaru } from '../tulis'
 import { versiTerbit } from './website'
@@ -23,7 +24,9 @@ function sesiUntuk(pengguna: PenggunaSesi) {
   const desa = db.desa.find((d) => d.id === pengguna.desaId)
   if (!desa) return null
   const tampilanPanel = { warnaAksen: versiTerbit(db, desa.id).tema.warnaAksen, favicon: desa.lambang ?? null }
-  const sesi = { jenis: 'admin' as const, pengguna, desa, dusun: db.dusun.filter((d) => d.desaId === desa.id), tampilanPanel }
+  const sesi = {
+    jenis: 'admin' as const, pengguna, desa, dusun: db.dusun.filter((d) => d.desaId === desa.id), tampilanPanel, modul: modulDesaDi(desa.id),
+  }
   if (pengguna.peran !== 'bantuan') return sesi
   const akses = cariSesiBantuan(db, pengguna.id.replace(/^bantuan_/, ''))?.akses
   return akses ? { ...sesi, bantuan: { sampai: akses.sampai, sembunyikanDataPribadi: akses.sembunyikanDataPribadi } } : null

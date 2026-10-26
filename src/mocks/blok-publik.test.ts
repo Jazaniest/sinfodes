@@ -8,7 +8,7 @@ import { menuBawaan, susunanBawaan, type ItemMenu } from '@/domain/website/susun
 import { TEMA_WARTA_BAWAAN } from '@/domain/website/tema'
 import type { BlokTampil } from '@/domain/publik/schema'
 import { ID_SUNGAI_SIALANG } from '@/mocks/data/desa-demo'
-import { ambilDb } from '@/mocks/db'
+import { ambilDb, ubahDb } from '@/mocks/db'
 import { AKUN_UJI, masukSebagai, pakaiApiTiruan } from '@/test/api-tiruan'
 
 pakaiApiTiruan({ dbSegarTiapUji: true })
@@ -36,6 +36,15 @@ describe('Blok publik, halaman tambahan, dan menu (rencana 7F-1 Tugas 3)', () =>
       'lencana:deret:penuh', 'kabar:sorotan:penuh', 'layanan:kisi:penuh', 'kabar:daftar:lebar',
       'pengumuman-agenda:bertumpuk:sempit', 'angka:kalimat:penuh', 'apbdes:batang:penuh', 'potensi:kartu:penuh',
     ])
+  })
+  it('blok Layanan cepat membawa penanda posyandu: menyala selama modul Kesehatan menyala, mati bersamanya (SPEC-V0.2 12.3)', async () => {
+    const layanan = async () => (await ambilBerandaPublik('sungaisialang')).blok.find((b) => b.jenis === 'layanan')
+    expect((await layanan())?.data).toEqual({ posyandu: true })
+    ubahDb((d) => {
+      const m = d.modulDesa.find((x) => x.desaId === ID_SUNGAI_SIALANG)
+      if (m) m.kesehatan = false
+    })
+    expect((await layanan())?.data).toEqual({ posyandu: false })
   })
   it('dua blok kabar berturut-turut memuat artikel berbeda; cakupan daftar 5 artikel terbaru termasuk yang jadi sorotan', async () => {
     const hasil = await ambilBerandaPublik('sungaisialang')
