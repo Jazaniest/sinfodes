@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { SkenarioDemo } from './SkenarioDemo'
 
 describe('daftar skenario di halaman demo (SPEC §3.6)', () => {
-  it('enam skenario dengan langkah bernomor; tombol meneruskan akun dan tujuannya', async () => {
+  it('tujuh skenario dengan langkah bernomor; tombol meneruskan akun dan tujuannya', async () => {
     const onJalankan = vi.fn()
     render(<SkenarioDemo onJalankan={onJalankan} sedang={null} />)
     expect(screen.getAllByRole('heading', { level: 3 }).map((h) => h.textContent)).toEqual([
@@ -14,6 +14,7 @@ describe('daftar skenario di halaman demo (SPEC §3.6)', () => {
       '4. Siaran kabupaten',
       '5. Tagihan langganan',
       '6. Ganti tema website',
+      '7. Akses bantuan Sinfodes',
     ])
     const sktm = screen.getByRole('list', { name: 'Langkah SKTM dari HP sampai verifikasi QR' })
     expect(within(sktm).getAllByRole('listitem')).toHaveLength(5)

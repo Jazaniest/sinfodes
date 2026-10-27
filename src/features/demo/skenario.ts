@@ -18,8 +18,11 @@ export type Skenario = { id: string; judul: string; ringkas: string; langkah: re
 
 const SITI: MasukSkenario = { bagian: 'warga', pendudukId: 'pdk_siti_rahmah' }
 const OPERATOR: MasukSkenario = { bagian: 'admin', peran: 'operator' }
+const SEKDES: MasukSkenario = { bagian: 'admin', peran: 'sekdes' }
 const PUBLIK: MasukSkenario = { bagian: 'publik' }
 const SS: TujuanAlamat = { jenis: 'desa', label: 'sungaisialang' }
+/** ID desa demo, ditulis di sini supaya kode fitur tidak mengimpor data demo (anggaran JS awal). */
+const ID_SUNGAI_SIALANG = 'desa_sungai_sialang'
 const KAB_PELALAWAN: TujuanAlamat = { jenis: 'kabupaten', label: 'kab-pelalawan' }
 const ADMIN_PELALAWAN: MasukSkenario = { bagian: 'kabupaten', id: 'kab_fajar' }
 const KAUR_KEUANGAN: MasukSkenario = { bagian: 'admin', peran: 'kaur-keuangan' }
@@ -144,6 +147,26 @@ export const SKENARIO_DEMO: readonly Skenario[] = [
         tombol: [{ label: 'Operator: Tampilan', masuk: OPERATOR, tujuan: SS, jalur: '/admin/website/tampilan' }],
       },
       { teks: 'Lihat hasilnya di website', tombol: [{ label: 'Website Sungai Sialang', masuk: PUBLIK, tujuan: SS, jalur: '/' }] },
+    ],
+  },
+  {
+    id: 'akses-bantuan',
+    judul: 'Akses bantuan Sinfodes',
+    ringkas: 'Sekretaris Desa memberi akses sementara, Tim Sinfodes masuk dengan data pribadi tersamar, lalu desa melihat jejaknya.',
+    langkah: [
+      {
+        teks: 'Beri akses sementara',
+        tombol: [{ label: 'Sekdes: Akses Sinfodes', masuk: SEKDES, tujuan: SS, jalur: '/admin/pengaturan/akses-sinfodes' }],
+      },
+      {
+        teks: 'Masuk sebagai bantuan',
+        // Tombol "Buka panel desa (lihat saja)" ada di tab Keaktifan Detail desa.
+        tombol: [{ label: 'Dina: Detail desa', masuk: TIM_SINFODES, tujuan: { jenis: 'konsol' }, jalur: `/konsol/desa/${ID_SUNGAI_SIALANG}?tab=keaktifan` }],
+      },
+      {
+        teks: 'Lihat halaman yang dibuka',
+        tombol: [{ label: 'Sekdes: riwayat akses', masuk: SEKDES, tujuan: SS, jalur: '/admin/pengaturan/akses-sinfodes' }],
+      },
     ],
   },
 ]
