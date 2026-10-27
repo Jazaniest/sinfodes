@@ -4,6 +4,11 @@ Semua perubahan penting Sinfodes dicatat di sini. Formatnya mengikuti [Keep a Ch
 
 ## [Belum dirilis]
 
+### Diubah (tahap 8A)
+
+- **Repositori menjadi monorepo pnpm.** Frontend pindah ke `apps/web` tanpa perubahan perilaku. Perintah dari akar (`pnpm dev`, `build`, `typecheck`, `lint`, `test`) tetap sama, dan `pnpm-lock.yaml` hanya memindahkan pengimpor `.` ke `apps/web`.
+- Uji `panduan-demo` kini mencari `PANDUAN-DEMO.md` dari akar workspace lewat `akarRepo()`, dan tidak lagi lolos diam-diam bila berkas tidak ditemukan dari folder kerja.
+
 ## [0.2.0] - 2026-10-26
 
 Rilis ini mengubah Sinfodes dari satu desa demo menjadi platform multi-desa yang utuh. Lima hal terbesarnya:

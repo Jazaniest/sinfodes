@@ -1,2 +1,9 @@
+packages:
+  - apps/*
+  - packages/*
+publicHoistPattern:
+  - '*eslint*'
+  - '*prettier*'
+  - '@types/*'
 onlyBuiltDependencies:
   - msw
