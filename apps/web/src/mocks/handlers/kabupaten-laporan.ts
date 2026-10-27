@@ -9,9 +9,9 @@ import { statusKirim } from '@/domain/kabupaten/tenggat'
 import { ambilDb } from '../db'
 import { bekukanBulanTutup, podiumKabupaten } from '../indeks'
 import { API, balasGalat, denganJaringan } from '../http'
-import { apbdesDesa, bergabungPada, desaDiKabupaten, desaSasaranKabupaten, realisasiSampai, suratTerbitBulan } from '../kabupaten-angka'
+import { apbdesDesa, bergabungPada, desaDiKabupaten, desaSasaranKabupaten, realisasiSampai, suratTerbitBulan } from '@sinfodes/demo/kabupaten-angka'
 import { butuhKemampuanKabupaten } from '../sesi-mock'
-import type { DbDemo } from '../tipe-db'
+import type { DbDemo } from '@sinfodes/demo/tipe-db'
 
 const butuhPembaca = (request: Request) => butuhKemampuanKabupaten(request, 'kab.lihat', 'Akun ini tidak berhak membuka dasbor kabupaten.')
 const urut = (a: DesaRingkas, b: DesaRingkas) => a.kecamatan.localeCompare(b.kecamatan, 'id') || a.nama.localeCompare(b.nama, 'id')

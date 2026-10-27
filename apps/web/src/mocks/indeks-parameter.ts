@@ -1,5 +1,5 @@
 import { MUSIM, bulanPeriode, periodeBerjalan, periodeTerakhirTutup, uraiPeriode, type Musim, type Periode } from '@/domain/indeks/periode'
-import { bulanAwalIndeks } from './indeks-dasar'
+import { bulanAwalIndeks } from '@sinfodes/demo/indeks-dasar'
 
 export const PILIHAN_TIDAK_DIKENAL = 'Pilihan tidak dikenal.'
 export const adalah = <T extends string>(daftar: readonly T[], nilai: string | null): nilai is T => nilai !== null && (daftar as readonly string[]).includes(nilai)

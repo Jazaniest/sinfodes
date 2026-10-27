@@ -12,7 +12,7 @@ import type { Desa } from '@/domain/wilayah/schema'
 import { apbdesTerbaru } from './handlers/keuangan'
 import { lapisanDesa } from './handlers/tata-kelola'
 import { keLencanaPublik, lencanaTampil } from './lencana'
-import type { DbDemo } from './tipe-db'
+import type { DbDemo } from '@sinfodes/demo/tipe-db'
 
 /** Foto kurasi dari galeri beserta keterangan dan kreditnya; null bila berkasnya belum tersedia. */
 export function fotoDari(db: DbDemo, desaId: string, berkas: string | null): FotoPublik | null {

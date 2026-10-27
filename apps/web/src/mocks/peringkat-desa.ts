@@ -3,9 +3,9 @@ import { alasanBukanPeserta, susunSaran, type KartuPeringkat, type PeringkatDesa
 import { daftarPeriode, labelPeriode, periodeBerjalan, periodeSebelumnya, periodeTerakhirTutup, bulanPeriode, tutupPada, type Musim, type Periode } from '@/domain/indeks/periode'
 import type { Desa } from '@/domain/wilayah/schema'
 import { tanggalIsoWib } from '@/domain/format/tanggal'
-import { bulanAwalIndeks } from './indeks-dasar'
-import { hasilDesaKabupaten, hasilDesaPeriode, hitunganSaran, susunPapan } from './indeks-hitung'
-import type { DbDemo } from './tipe-db'
+import { bulanAwalIndeks } from '@sinfodes/demo/indeks-dasar'
+import { hasilDesaKabupaten, hasilDesaPeriode, hitunganSaran, susunPapan } from '@sinfodes/demo/indeks-hitung'
+import type { DbDemo } from '@sinfodes/demo/tipe-db'
 
 /** Desa yang ikut peringkat di panel: hanya yang berstatus Aktif (SPEC-V0.2 §9.2). */
 export const desaPeserta = (desa: Desa): boolean => desa.status === 'Aktif'

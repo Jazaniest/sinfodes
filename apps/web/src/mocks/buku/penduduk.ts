@@ -6,7 +6,7 @@ import { barisBukuInduk, KOLOM_BUKU_INDUK } from '@/domain/penduduk/buku-induk'
 import { HUBUNGAN_KELUARGA } from '@/domain/penduduk/enum'
 import type { BarisPenduduk, Penduduk } from '@/domain/penduduk/schema'
 import { alamatLengkap, namaDusun } from '@/domain/wilayah/alamat'
-import type { DbDemo } from '../tipe-db'
+import type { DbDemo } from '@sinfodes/demo/tipe-db'
 import { konteksWilayah, waktuTerakhir, type PenyusunBuku } from './tipe'
 
 const jenisKelamin = (p: Pick<Penduduk, 'jenisKelamin'>) => (p.jenisKelamin === 'L' ? 'Laki-laki' : 'Perempuan')

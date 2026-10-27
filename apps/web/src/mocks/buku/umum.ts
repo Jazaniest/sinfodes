@@ -3,7 +3,7 @@ import { formatAngka } from '@/domain/format/angka'
 import { formatTanggal } from '@/domain/format/tanggal'
 import { teksMasaBakti } from '@/domain/lembaga/schema'
 import { namaDusun } from '@/domain/wilayah/alamat'
-import type { DbDemo } from '../tipe-db'
+import type { DbDemo } from '@sinfodes/demo/tipe-db'
 import { konteksWilayah, waktuTerakhir, type PenyusunBuku } from './tipe'
 
 const asetDesa = (db: DbDemo, desaId: string) => db.aset.filter((a) => a.desaId === desaId).sort((a, b) => a.kode.localeCompare(b.kode))

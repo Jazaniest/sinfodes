@@ -4,7 +4,7 @@ import type { DetailKeluarga, Keluarga } from '@/domain/keluarga/schema'
 import type { Pelaku } from '@/domain/mutasi/schema'
 import type { HubunganKeluarga } from '@/domain/penduduk/enum'
 import type { Penduduk } from '@/domain/penduduk/schema'
-import type { DbDemo } from './tipe-db'
+import type { DbDemo } from '@sinfodes/demo/tipe-db'
 import { catatRiwayat } from './tulis'
 
 /** Nomor KK baru: kode wilayah desa + tanggal terbit hari ini + nomor urut 8001-9999 yang belum dipakai (SPEC §12.5). */

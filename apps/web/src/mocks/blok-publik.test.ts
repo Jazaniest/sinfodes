@@ -7,7 +7,7 @@ import { susunBlok } from '@/domain/website/blok'
 import { menuBawaan, susunanBawaan, type ItemMenu } from '@/domain/website/susunan'
 import { TEMA_WARTA_BAWAAN } from '@/domain/website/tema'
 import type { BlokTampil } from '@/domain/publik/schema'
-import { ID_SUNGAI_SIALANG } from '@/mocks/data/desa-demo'
+import { ID_SUNGAI_SIALANG } from '@sinfodes/demo/data/desa-demo'
 import { ambilDb, ubahDb } from '@/mocks/db'
 import { AKUN_UJI, masukSebagai, pakaiApiTiruan } from '@/test/api-tiruan'
 

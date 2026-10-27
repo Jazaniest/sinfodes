@@ -13,7 +13,7 @@ import { ambilDb } from '../db'
 import { API, balasDaftar, balasGalat, denganJaringan } from '../http'
 import { modulDesaDi } from '../modul'
 import { butuhWarga, type WargaMasuk } from '../sesi-mock'
-import type { DbDemo } from '../tipe-db'
+import type { DbDemo } from '@sinfodes/demo/tipe-db'
 
 const BATAS_BALITA_BULAN = 60
 const PERMOHONAN_TIDAK_DITEMUKAN = 'Permohonan tidak ditemukan.'

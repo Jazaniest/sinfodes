@@ -9,7 +9,7 @@ import { API, balasGalat, denganJaringan } from '../http'
 import { angkaKonsolDesa } from '../konsol-angka'
 import { butuhPenggunaKonsol } from '../sesi-mock'
 import { buatTagihan } from '../tagihan'
-import { terapkanTagihanBaru } from '../tagihan-hitung'
+import { terapkanTagihanBaru } from '@sinfodes/demo/tagihan-hitung'
 import { bacaJson, balasIsianTidakValid } from '../tulis'
 import { detailDesa } from './konsol'
 

@@ -1,6 +1,6 @@
 import type { Peran, SesiAdmin } from '@/domain/pengguna/schema'
 import type { SesiWarga } from '@/domain/warga/sesi'
-import { DESA_DEMO, DUSUN_DEMO, ID_SUNGAI_SIALANG, ID_TANJUNG_LAMO, PENGGUNA_DEMO } from '@/mocks/data/desa-demo'
+import { DESA_DEMO, DUSUN_DEMO, ID_SUNGAI_SIALANG, ID_TANJUNG_LAMO, PENGGUNA_DEMO } from '@sinfodes/demo/data/desa-demo'
 
 /** Sesi admin Desa Sungai Sialang untuk satu peran (akun demo SPEC §12.9). Khusus uji. */
 export function contohSesi(peran: Peran = 'operator'): SesiAdmin {

@@ -5,7 +5,7 @@ import { JENIS_LEMBAGA, LABEL_LEMBAGA, teksMasaBakti, type JenisLembaga } from '
 import { LABEL_STATUS_KEGIATAN, LABEL_SUMBER_DANA, type BarisKegiatan } from '@/domain/pembangunan/schema'
 import { namaDusun } from '@/domain/wilayah/alamat'
 import { barisKegiatan } from '../handlers/pembangunan'
-import type { DbDemo } from '../tipe-db'
+import type { DbDemo } from '@sinfodes/demo/tipe-db'
 import { konteksWilayah, selisih, waktuTerakhir, type PenyusunBuku } from './tipe'
 
 /** APBDes tahun terbaru dari basis data yang diberikan (penyusun tidak membaca basis data global). */

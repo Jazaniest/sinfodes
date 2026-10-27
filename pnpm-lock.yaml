@@ -61,6 +61,12 @@ importers:
       '@phosphor-icons/react':
         specifier: ^2.1.10
         version: 2.1.10(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@sinfodes/demo':
+        specifier: workspace:*
+        version: link:../../packages/demo
+      '@sinfodes/kontrak':
+        specifier: workspace:*
+        version: link:../../packages/kontrak
       '@tailwindcss/vite':
         specifier: ^4.3.3
         version: 4.3.3(vite@8.3.0(@types/node@24.13.6)(jiti@2.7.0))
@@ -152,6 +158,62 @@ importers:
       jsdom:
         specifier: ^30.1.1
         version: 30.1.1
+      typescript:
+        specifier: ~6.0.2
+        version: 6.0.3
+      typescript-eslint:
+        specifier: ^8.69.0
+        version: 8.70.1(eslint@10.11.0(jiti@2.7.0))(typescript@6.0.3)
+      vite:
+        specifier: ^8.3.0
+        version: 8.3.0(@types/node@24.13.6)(jiti@2.7.0)
+      vitest:
+        specifier: ^5.0.1
+        version: 5.0.1(@types/node@24.13.6)(jsdom@30.1.1)(msw@2.15.0(@types/node@24.13.6)(typescript@6.0.3))(vite@8.3.0(@types/node@24.13.6)(jiti@2.7.0))
+
+  packages/demo:
+    dependencies:
+      '@sinfodes/kontrak':
+        specifier: workspace:*
+        version: link:../kontrak
+    devDependencies:
+      '@eslint/js':
+        specifier: ^10.0.1
+        version: 10.0.1(eslint@10.11.0(jiti@2.7.0))
+      eslint:
+        specifier: ^10.10.0
+        version: 10.11.0(jiti@2.7.0)
+      typescript:
+        specifier: ~6.0.2
+        version: 6.0.3
+      typescript-eslint:
+        specifier: ^8.69.0
+        version: 8.70.1(eslint@10.11.0(jiti@2.7.0))(typescript@6.0.3)
+      vite:
+        specifier: ^8.3.0
+        version: 8.3.0(@types/node@24.13.6)(jiti@2.7.0)
+      vitest:
+        specifier: ^5.0.1
+        version: 5.0.1(@types/node@24.13.6)(jsdom@30.1.1)(msw@2.15.0(@types/node@24.13.6)(typescript@6.0.3))(vite@8.3.0(@types/node@24.13.6)(jiti@2.7.0))
+
+  packages/kontrak:
+    dependencies:
+      css-tree:
+        specifier: ^3.2.1
+        version: 3.2.1
+      zod:
+        specifier: ^4.6.5
+        version: 4.6.5
+    devDependencies:
+      '@eslint/js':
+        specifier: ^10.0.1
+        version: 10.0.1(eslint@10.11.0(jiti@2.7.0))
+      '@types/css-tree':
+        specifier: ^3.2.0
+        version: 3.2.0
+      eslint:
+        specifier: ^10.10.0
+        version: 10.11.0(jiti@2.7.0)
       typescript:
         specifier: ~6.0.2
         version: 6.0.3

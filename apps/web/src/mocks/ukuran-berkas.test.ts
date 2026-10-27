@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest'
-import type { DbDemo } from './tipe-db'
+import type { DbDemo } from '@sinfodes/demo/tipe-db'
 import { ukuranBerkasDesa } from './ukuran-berkas'
 
 it('ukuran berkas desa: ukuranKb bersarang dan gambar data URL milik desa itu saja (SPEC-V0.2 §5.1)', () => {

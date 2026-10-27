@@ -9,7 +9,7 @@ import { periksaJenisSurat, ubahJenisSuratSchema, type DetailJenisSurat } from '
 import { dataMilik } from '../cakupan'
 import { ubahDb } from '../db'
 import { API, balasGalat, denganJaringan } from '../http'
-import type { DbDemo } from '../tipe-db'
+import type { DbDemo } from '@sinfodes/demo/tipe-db'
 import { bacaJson, balasField, balasIsianTidakValid, butuhKemampuan, idBaru } from '../tulis'
 import { hitungPakai, idJenisDipakai, namaPejabat, pengaturanDesa } from './surat'
 

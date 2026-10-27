@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { GalatApi } from '@/api/galat'
 import { daftarPenggunaDesa, ubahPengguna, undangPengguna } from '@/api/pengaturan'
 import { masuk } from '@/api/sesi'
-import { KATA_SANDI_DEMO } from '@/mocks/data/desa-demo'
+import { KATA_SANDI_DEMO } from '@sinfodes/demo/data/desa-demo'
 import { AKUN_UJI, masukSebagai, pakaiApiTiruan } from '@/test/api-tiruan'
 
 pakaiApiTiruan({ dbSegarTiapUji: true })

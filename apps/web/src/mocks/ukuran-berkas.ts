@@ -1,4 +1,4 @@
-import type { DbDemo } from './tipe-db'
+import type { DbDemo } from '@sinfodes/demo/tipe-db'
 
 /** Ukuran gambar data URL dalam byte: panjang base64 × 3/4. */
 const byteDataUrl = (teks: string): number => {

@@ -1,6 +1,6 @@
 import type { IdentitasPublik } from '@/domain/publik/schema'
 import { TEMA_WARTA_BAWAAN } from '@/domain/website/tema'
-import { DESA_DEMO, ID_SUNGAI_SIALANG } from '@/mocks/data/desa-demo'
+import { DESA_DEMO, ID_SUNGAI_SIALANG } from '@sinfodes/demo/data/desa-demo'
 
 /** Identitas website Desa Sungai Sialang dengan tampilan bawaannya. Khusus uji. */
 export function contohIdentitasPublik(): IdentitasPublik {

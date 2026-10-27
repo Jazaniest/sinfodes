@@ -1,8 +1,8 @@
 // Unduh foto demo hasil kurasi (SPEC §9, K8) dari Wikimedia Commons ke public/demo/foto/, lalu tulis KREDIT.md.
-// Jalankan sekali dari akar proyek: node scripts/unduh-foto-demo.mjs
+// Jalankan sekali dari folder apps/web: node scripts/unduh-foto-demo.mjs
 import { mkdir, writeFile } from 'node:fs/promises'
-import { LEBAR_FOTO } from '../src/domain/website/foto.ts'
-import { FOTO_DEMO, halamanCommons } from '../src/mocks/data/foto-demo.ts'
+import { LEBAR_FOTO } from '../../../packages/kontrak/src/website/foto.ts'
+import { FOTO_DEMO, halamanCommons } from '../../../packages/demo/src/data/foto-demo.ts'
 
 const TUJUAN = new URL('../public/demo/foto/', import.meta.url)
 const AGEN = 'SinfodesDemo/1.0 (unduh foto demo berlisensi bebas)'

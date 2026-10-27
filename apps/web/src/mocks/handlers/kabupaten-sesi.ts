@@ -1,12 +1,12 @@
 import { http, HttpResponse } from 'msw'
 import { z } from 'zod'
 import type { PenggunaKabupaten, SesiKabupaten } from '@/domain/kabupaten/schema'
-import { KATA_SANDI_DEMO } from '../data/desa-demo'
+import { KATA_SANDI_DEMO } from '@sinfodes/demo/data/desa-demo'
 import { ambilDb } from '../db'
 import { API, balasGalat, denganJaringan } from '../http'
 import { konteksPermintaan, tanpaKonteks } from '../konteks-permintaan'
 import { butuhPenggunaKabupaten, tokenKabupatenUntuk } from '../sesi-mock'
-import type { DbDemo } from '../tipe-db'
+import type { DbDemo } from '@sinfodes/demo/tipe-db'
 import { bacaJson } from '../tulis'
 
 const masukSchema = z.object({ email: z.string().trim().toLowerCase().min(1), kataSandi: z.string().min(1) })

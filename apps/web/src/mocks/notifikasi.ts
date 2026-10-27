@@ -1,6 +1,6 @@
 import type { Notifikasi } from '@/domain/notifikasi/schema'
 import { boleh, type Kemampuan } from '@/domain/pengguna/hak-akses'
-import type { DbDemo } from './tipe-db'
+import type { DbDemo } from '@sinfodes/demo/tipe-db'
 import { idBaru } from './tulis'
 
 type Kiriman = Pick<Notifikasi, 'desaId' | 'jenis' | 'judul' | 'isi' | 'waktu' | 'rujukan'> & {

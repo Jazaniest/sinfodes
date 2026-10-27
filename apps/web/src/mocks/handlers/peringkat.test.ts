@@ -4,10 +4,10 @@ import { ambilPeringkat } from '@/api/peringkat'
 import { KATEGORI_DESA } from '@/domain/indeks/kategori'
 import type { Pengaduan } from '@/domain/pengaduan/schema'
 import { AKUN_DESA_BARU_UJI, AKUN_UJI, masukSebagai, pakaiApiTiruan, SEKARANG_UJI } from '@/test/api-tiruan'
-import { ID_SUNGAI_SIALANG } from '../data/desa-demo'
+import { ID_SUNGAI_SIALANG } from '@sinfodes/demo/data/desa-demo'
 import { ambilDb, ubahDb } from '../db'
 import { papanKabupaten } from '../indeks'
-import { desaDiKabupaten } from '../kabupaten-angka'
+import { desaDiKabupaten } from '@sinfodes/demo/kabupaten-angka'
 
 pakaiApiTiruan({ dbSegarTiapUji: true })
 

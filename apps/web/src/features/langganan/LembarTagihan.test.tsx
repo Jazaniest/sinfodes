@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { REKENING_SINFODES } from '@/app/kontak-sinfodes'
 import type { TagihanCetak } from '@/domain/langganan/schema'
-import { buatTagihan } from '@/mocks/tagihan-hitung'
+import { buatTagihan } from '@sinfodes/demo/tagihan-hitung'
 import { LembarTagihan } from './LembarTagihan'
 
 function contoh(ubah: Partial<TagihanCetak> = {}): TagihanCetak {

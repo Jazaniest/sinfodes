@@ -5,7 +5,7 @@ import type { Notifikasi } from '@/domain/notifikasi/schema'
 import { boleh } from '@/domain/pengguna/hak-akses'
 import type { PenggunaSesi } from '@/domain/pengguna/schema'
 import type { Desa } from '@/domain/wilayah/schema'
-import type { DbDemo, TenggatLaporan } from './tipe-db'
+import type { DbDemo, TenggatLaporan } from '@sinfodes/demo/tipe-db'
 
 /** Batas pengingat di Beranda (SPEC-V0.2 §8.3 butir 4): mulai H-14, sampai desa menandai terkirim. */
 const MULAI_PENGINGAT_HARI = 14

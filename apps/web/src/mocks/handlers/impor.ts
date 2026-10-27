@@ -8,10 +8,10 @@ import { konfirmasiImporSchema, type LaporanImpor } from '@/domain/impor/schema'
 import type { Keluarga } from '@/domain/keluarga/schema'
 import type { Penduduk } from '@/domain/penduduk/schema'
 import { dataMilik } from '../cakupan'
-import { berkasContoh, NAMA_BERKAS_CONTOH } from '../data/impor-contoh'
+import { berkasContoh, NAMA_BERKAS_CONTOH } from '@sinfodes/demo/data/impor-contoh'
 import { ubahDb } from '../db'
 import { API, balasGalat, denganJaringan } from '../http'
-import type { DbDemo } from '../tipe-db'
+import type { DbDemo } from '@sinfodes/demo/tipe-db'
 import { bacaJson, balasIsianTidakValid, butuhPengubah, catatAktivitas, idBaru, pelakuDari } from '../tulis'
 
 const MAKS_BAIT = 10 * 1024 * 1024

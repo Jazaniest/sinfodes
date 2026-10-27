@@ -4,7 +4,7 @@ import { daftarProgramBansos } from '@/api/bansos'
 import { ambilDataGabungan } from '@/api/kabupaten'
 import { barisCsvGabungan, KOLOM_GABUNGAN } from '@/domain/kabupaten/data-gabungan'
 import { ambilDb } from '@/mocks/db'
-import { komposisiDesa } from '@/mocks/kabupaten-angka'
+import { komposisiDesa } from '@sinfodes/demo/kabupaten-angka'
 import { AKUN_KABUPATEN_UJI, AKUN_UJI, masukKabupatenSebagai, masukSebagai, pakaiApiTiruan, SEKARANG_UJI } from '@/test/api-tiruan'
 
 pakaiApiTiruan()

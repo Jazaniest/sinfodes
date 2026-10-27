@@ -1,6 +1,6 @@
 import { LANGKAH_PERSIAPAN, type LangkahPersiapan, type Persiapan } from '@/domain/wilayah/persiapan'
 import type { Desa } from '@/domain/wilayah/schema'
-import type { DbDemo } from './tipe-db'
+import type { DbDemo } from '@sinfodes/demo/tipe-db'
 
 /** Langkah persiapan desa (SPEC §5.3), dihitung dari data panelnya. Dipakai Beranda desa dan Konsol. */
 export function persiapanDesa(db: DbDemo, desa: Desa): Persiapan {

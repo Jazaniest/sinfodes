@@ -10,7 +10,7 @@ import type { Notifikasi } from '@/domain/notifikasi/schema'
 import { boleh } from '@/domain/pengguna/hak-akses'
 import type { PenggunaSesi } from '@/domain/pengguna/schema'
 import type { Tagihan } from '@/domain/langganan/tagihan'
-import type { DbDemo } from './tipe-db'
+import type { DbDemo } from '@sinfodes/demo/tipe-db'
 
 const HARI_MS = 86_400_000
 const geser = (iso: string, hari: number): string => new Date(Date.parse(`${iso}T00:00:00Z`) + hari * HARI_MS).toISOString().slice(0, 10)

@@ -1,5 +1,5 @@
 import type { SesiKonsol } from '@/domain/konsol/schema'
-import { PENGGUNA_KONSOL_DEMO } from '@/mocks/data/desa-konsol'
+import { PENGGUNA_KONSOL_DEMO } from '@sinfodes/demo/data/desa-konsol'
 
 /** Sesi Konsol demo Tim Sinfodes (SPEC §12.9). Khusus uji. */
 export function contohSesiKonsol(): SesiKonsol {

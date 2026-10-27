@@ -6,7 +6,7 @@ import { ambilDb } from '../db'
 import { API, balasGalat, denganJaringan } from '../http'
 import { bekukanBulanTutup, bulanAwalIndeks, kategoriProvinsi, papanKabupaten, peringkatProvinsi } from '../indeks'
 import { adalah, PILIHAN_TIDAK_DIKENAL, uraiMusimPeriode } from '../indeks-parameter'
-import { desaDiKabupaten } from '../kabupaten-angka'
+import { desaDiKabupaten } from '@sinfodes/demo/kabupaten-angka'
 import { butuhKemampuanKabupaten } from '../sesi-mock'
 
 /** Papan Indeks dan peringkat (SPEC-V0.2 §9.4, §9.5): desa di kabupaten sesi, ditambah podium kabupaten se-provinsi. */

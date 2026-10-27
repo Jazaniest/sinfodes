@@ -4,10 +4,10 @@ import { bulat1 } from '@/domain/indeks/kategori'
 import { bulanPeriode, type Periode } from '@/domain/indeks/periode'
 import type { Pengaduan } from '@/domain/pengaduan/schema'
 import { pakaiApiTiruan, SEKARANG_UJI } from '@/test/api-tiruan'
-import { ID_SUNGAI_SIALANG } from './data/desa-demo'
+import { ID_SUNGAI_SIALANG } from '@sinfodes/demo/data/desa-demo'
 import { ambilDb, ubahDb } from './db'
 import { aktifSepanjang, barisUkuran, bekukanBulanTutup, hasilDesaPeriode, papanKabupaten, peringkatProvinsi, podiumKabupaten, ukuranBulanPanel } from './indeks'
-import { bergabungPada, desaDiKabupaten } from './kabupaten-angka'
+import { bergabungPada, desaDiKabupaten } from '@sinfodes/demo/kabupaten-angka'
 
 pakaiApiTiruan({ dbSegarTiapUji: true })
 

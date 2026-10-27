@@ -2,7 +2,7 @@ import { HttpResponse, type JsonBodyType } from 'msw'
 import { waktuIsoWib } from '@/domain/format/tanggal'
 import { samarkanNomor16 } from '@/domain/penduduk/nomor16'
 import { ambilDb, ubahDb } from './db'
-import type { AksesBantuan, DbDemo, SesiBantuan } from './tipe-db'
+import type { AksesBantuan, DbDemo, SesiBantuan } from '@sinfodes/demo/tipe-db'
 
 /**
  * Sesi bantuan Tim Sinfodes di panel desa (SPEC-V0.2 §5.3): lihat saja, setiap GET tercatat, dan NIK serta nomor KK disamarkan

@@ -516,11 +516,12 @@ Desa berstatus *Persiapan* menampilkan **lima langkah persiapan** di Beranda, le
 - **Variabel lingkungan:** `VITE_DEMO`, `VITE_DOMAIN_INDUK` (bawaan `sinfodes.localhost`), dan `VITE_API_BASE`, diatur di `apps/web/.env`.
 - **Susunan repositori:** monorepo pnpm. Perintah di atas dijalankan dari akar repositori dan diteruskan ke `apps/web`. Skrip di `apps/web/scripts/` dijalankan dari folder `apps/web`.
 - **Struktur kode:**
-  - `apps/web/src/domain/`: aturan bisnis dan skema;
+  - `packages/kontrak/src/`: aturan bisnis dan skema (di web diimpor sebagai `@/domain/...`);
+  - `packages/demo/src/`: pembangkit dan data demo (di web diimpor sebagai `@sinfodes/demo/...`);
   - `apps/web/src/api/`: pemanggil API;
   - `apps/web/src/features/`: layar;
   - `apps/web/src/ui/`: komponen dasar;
-  - `apps/web/src/mocks/`: API tiruan dan pembangkit data;
+  - `apps/web/src/mocks/`: API tiruan (penangan, basis data di peramban);
   - `apps/web/src/routes/`: rute.
 - **Anggaran JavaScript awal:** paling besar 200 KiB (gzip), diukur dari berkas JS yang dirujuk `index.html`.
 - **Riwayat perubahan:** `CHANGELOG.md`.

@@ -1,6 +1,6 @@
-import { bangkitkanDb } from './generator'
+import { bangkitkanDb } from '@sinfodes/demo/generator'
 import type { Penyimpanan } from './penyimpanan'
-import { VERSI_DATA, type DbDemo } from './tipe-db'
+import { VERSI_DATA, type DbDemo } from '@sinfodes/demo/tipe-db'
 
 export const KUNCI_DB = 'sinfodes.demo.db'
 

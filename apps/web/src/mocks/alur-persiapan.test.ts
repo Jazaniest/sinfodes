@@ -10,7 +10,7 @@ import { daftarJenisSurat, ubahJenisSurat } from '@/api/surat'
 import type { IdentitasDesa } from '@/domain/pengaturan/identitas'
 import type { UbahWilayah } from '@/domain/pengaturan/wilayah'
 import { jumlahSelesai, langkahBerikut } from '@/domain/wilayah/persiapan'
-import { ID_TANJUNG_LAMO } from '@/mocks/data/desa-demo'
+import { ID_TANJUNG_LAMO } from '@sinfodes/demo/data/desa-demo'
 import { AKUN_DESA_BARU_UJI, AKUN_KONSOL_UJI, AKUN_UJI, masukKonsolSebagai, masukSebagai, pakaiApiTiruan } from '@/test/api-tiruan'
 
 pakaiApiTiruan({ dbSegarTiapUji: true })
