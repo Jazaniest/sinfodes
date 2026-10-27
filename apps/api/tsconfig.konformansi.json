@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "lib": ["ES2023", "DOM"],
+    "types": ["node", "vite/client"]
+  },
+  "include": ["test/api-nyata.ts", "test/toples-cookie.ts", "test/konformansi"],
+  "exclude": []
+}

@@ -4,6 +4,32 @@ Semua perubahan penting Sinfodes dicatat di sini. Formatnya mengikuti [Keep a Ch
 
 ## [Belum dirilis]
 
+### Ditambahkan (tahap 8C)
+
+- **Server pertama, `apps/api` (Hono, PostgreSQL, Drizzle),** dengan satu irisan vertikal yang menjawab kontrak yang sama dengan API tiruan: `GET /api/v1/alamat`, `POST /sesi/masuk`, `GET /sesi`, `POST /sesi/keluar`, `GET /penduduk`, `POST /penduduk/cari`, dan `GET /penduduk/ringkasan`. Rute lain belum ada dan menjawab `NOT_FOUND`. Cara menyalakannya ada di `apps/api/README.md`.
+- **Frontend mode nyata** (`pnpm dev:nyata`, `VITE_DEMO=false`): `/api` diteruskan ke server lewat proksi pengembangan dengan `Host` asli, tanpa MSW. Masuk sebagai akun semai menampilkan daftar penduduk dari PostgreSQL; pencarian, muat ulang, dan keluar berjalan.
+- **Basis data.**
+  - Lima peran PostgreSQL dengan login dan kolam koneksi sendiri; peran aplikasi bukan pemilik tabel dan tidak punya `SUPERUSER` atau `BYPASSRLS`.
+  - Data desa dilindungi RLS (`ENABLE` dan `FORCE`) dengan konteks desa yang disetel lokal pada transaksi, sehingga tidak tersisa di koneksi yang dipakai ulang.
+  - Migrasi SQL tulisan tangan dengan pelari kecil sendiri (checksum, hanya maju), kolasi ICU, batas waktu pernyataan.
+  - `db:siapkan`, `db:migrasi`, dan `db:semai` (memindahkan dunia demo ke PostgreSQL; menolak staging dan produksi tanpa bendera eksplisit).
+- **Keamanan dasar.**
+  - NIK, nomor KK, dan telepon dienkripsi di aplikasi (AES-256-GCM, kunci data dibungkus kunci utama, `kid` ikut sandi); pencarian persis lewat indeks HMAC.
+  - Kata sandi argon2id; masuk menjawab sama persis untuk email tak dikenal, kata sandi salah, akun nonaktif, dan akun desa lain.
+  - Sesi cookie `__Host-panel` (`HttpOnly`, `Secure`, `SameSite=Lax`), token acak 256 bit yang hanya disimpan sebagai hash, batas 2 jam menganggur dan 12 jam mutlak.
+  - CSRF lewat `Origin` dan `Sec-Fetch-Site`, batas laju masuk per IP dan per email, jejak audit masuk, header keamanan, log JSON berpenyamaran.
+  - Berkas rahasia diabaikan git; server menolak mulai di staging dan produksi bila rahasia tampak seperti nilai contoh.
+- **Uji.**
+  - Basis data cetakan dikloning per berkas uji; uji meta memeriksa RLS, hak per peran, penggolongan tabel, dan indeks.
+  - `pakaiApiNyata` menjalankan modul `api/*` web terhadap server sungguhan, dengan kembaran uji irisan dari API tiruan (perbedaan sengaja ditandai `Perbedaan sengaja:`).
+  - Daftar 2.812 jiwa dan pencarian selesai sekitar 0,1 detik pada mesin pengembangan.
+
+### Diubah (tahap 8C)
+
+- `hasilMasukSchema` pindah ke `@sinfodes/kontrak` dengan `token` opsional (server nyata tidak mengirimnya). Di web, `masuk` dan `tukarTiketBantuan` memberi penanda lokal `kuki` bila jawaban tanpa token, dan `panggilApi` tidak mengirim `Authorization` untuk penanda itu.
+- Konstanta uji `SEKARANG_UJI`, `AKUN_UJI`, dan `AKUN_DESA_BARU_UJI` pindah ke `@sinfodes/demo/uji-akun`; `api-tiruan.ts` mengekspornya ulang.
+- Beda sengaja dari API tiruan, dicatat di uji konformansi: akun desa lain dengan kata sandi benar dijawab sama dengan kata sandi salah (tanpa petunjuk alamat); baris penduduk dengan kunci urut sama berurutan menurut ID; preset "Pendatang tahun ini" ditolak sampai tabel mutasi ada (8E).
+
 ### Diubah (tahap 8B)
 
 - **Skema dan aturan domain menjadi paket `@sinfodes/kontrak`** (`packages/kontrak`), dan **pembangkit data demo menjadi paket `@sinfodes/demo`** (`packages/demo`). Keduanya paket sumber tanpa langkah build, disiapkan supaya server di tahap berikutnya memakai skema yang sama. Tidak ada perubahan perilaku.

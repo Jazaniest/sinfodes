@@ -5,7 +5,7 @@ import { z } from 'zod'
 import { muatDb } from '@/mocks/db'
 import { serverUji } from '@/mocks/node'
 import { penyimpananMemori } from '@/mocks/penyimpanan'
-import { aturTokenSesi, panggilApi } from './client'
+import { aturTokenSesi, panggilApi, SESI_KUKI } from './client'
 import { GalatApi } from './galat'
 import { daftarPenduduk } from './penduduk'
 import { ambilSesi, masuk } from './sesi'
@@ -68,6 +68,42 @@ describe('panggilApi', () => {
     )
     await panggilApi('GET', '/uji-publik', { skema: z.object({ ok: z.boolean() }), sesi: null })
     expect(otorisasi).toBeNull()
+  })
+})
+
+describe('penanda sesi cookie (mode nyata, SPEC-V0.3 §8.1)', () => {
+  const tangkapOtorisasi = () => {
+    const hasil: { nilai: string | null | 'belum dipanggil' } = { nilai: 'belum dipanggil' }
+    serverUji.use(
+      http.get('*/api/v1/uji-otorisasi', ({ request }) => {
+        hasil.nilai = request.headers.get('Authorization')
+        return HttpResponse.json({ ok: true })
+      }),
+    )
+    return hasil
+  }
+  const skemaOk = z.object({ ok: z.boolean() })
+
+  it('token bernilai SESI_KUKI tidak dikirim sebagai Authorization: sesi hidup di cookie, bukan di skrip', async () => {
+    const otorisasi = tangkapOtorisasi()
+    aturTokenSesi(SESI_KUKI)
+    await panggilApi('GET', '/uji-otorisasi', { skema: skemaOk })
+    expect(otorisasi.nilai).toBeNull()
+  })
+
+  it('token lain tetap dikirim sebagai Bearer', async () => {
+    const otorisasi = tangkapOtorisasi()
+    aturTokenSesi('demo.pgn_rosmiati')
+    await panggilApi('GET', '/uji-otorisasi', { skema: skemaOk })
+    expect(otorisasi.nilai).toBe('Bearer demo.pgn_rosmiati')
+  })
+
+  it('masuk dengan jawaban tanpa token memberi penanda kuki; jawaban dengan token membawanya apa adanya', async () => {
+    const sesi = (await masuk(OPERATOR, 'demo')).sesi
+    serverUji.use(http.post('*/api/v1/sesi/masuk', () => HttpResponse.json({ sesi })))
+    expect((await masuk(OPERATOR, 'demo')).token).toBe(SESI_KUKI)
+    serverUji.use(http.post('*/api/v1/sesi/masuk', () => HttpResponse.json({ token: 'demo.pgn_rosmiati', sesi })))
+    expect((await masuk(OPERATOR, 'demo')).token).toBe('demo.pgn_rosmiati')
   })
 })
 
