@@ -35,7 +35,7 @@ function akunAda(m: MasukSkenario): boolean {
 }
 
 describe('skenario terpandu (SPEC §3.6, §13.5)', () => {
-  it('skenario terpandu: SKTM 5 langkah, kelahiran 3 langkah, pemantauan, Siaran kabupaten 3 langkah, Tagihan 3 langkah, dan Ganti tema 2 langkah (SPEC-V0.2 §13)', () => {
+  it('tujuh skenario terpandu berurutan; Akses bantuan 3 langkah (SPEC-V0.2 §13, rencana Penutup v0.2 keputusan 2)', () => {
     expect(SKENARIO_DEMO.map((s) => [s.judul, s.langkah.length])).toEqual([
       ['SKTM dari HP sampai verifikasi QR', 5],
       ['Mencatat kelahiran', 3],
@@ -43,6 +43,7 @@ describe('skenario terpandu (SPEC §3.6, §13.5)', () => {
       ['Siaran kabupaten', 3],
       ['Tagihan langganan', 3],
       ['Ganti tema website', 2],
+      ['Akses bantuan Sinfodes', 3],
     ])
     expect(SKENARIO_DEMO.every((s) => s.langkah.every((l) => l.tombol.length > 0))).toBe(true)
   })
@@ -87,6 +88,17 @@ describe('skenario terpandu (SPEC §3.6, §13.5)', () => {
     expect(tombol.map((t) => tautanSkenario(t, akunUji))).toEqual([
       'http://sungaisialang.sinfodes.localhost:3000/admin/website/tampilan?demo=pgn_rosmiati',
       'http://sungaisialang.sinfodes.localhost:3000/',
+    ])
+  })
+  it('skenario Akses bantuan: Sekdes beri akses, Dina masuk dari tab Keaktifan Detail desa, Sekdes lihat jejak (rencana Penutup v0.2 keputusan 1)', () => {
+    const akses = SKENARIO_DEMO.find((s) => s.id === 'akses-bantuan')
+    expect(akses?.ringkas).toBe('Sekretaris Desa memberi akses sementara, Tim Sinfodes masuk dengan data pribadi tersamar, lalu desa melihat jejaknya.')
+    expect(akses?.langkah.map((l) => l.teks)).toEqual(['Beri akses sementara', 'Masuk sebagai bantuan', 'Lihat halaman yang dibuka'])
+    const tombol = akses!.langkah.map((l) => l.tombol[0])
+    expect(tombol.map((t) => tautanSkenario(t, akunUji))).toEqual([
+      'http://sungaisialang.sinfodes.localhost:3000/admin/pengaturan/akses-sinfodes?demo=pgn_hendri',
+      'http://konsol.sinfodes.localhost:3000/konsol/desa/desa_sungai_sialang?tab=keaktifan&demo=kns_dina',
+      'http://sungaisialang.sinfodes.localhost:3000/admin/pengaturan/akses-sinfodes?demo=pgn_hendri',
     ])
   })
   it('setiap tombol memakai akun yang ada di data demo (fokus review 5)', () => {

@@ -4,7 +4,17 @@ Semua perubahan penting Sinfodes dicatat di sini. Formatnya mengikuti [Keep a Ch
 
 ## [Belum dirilis]
 
-Pekerjaan v0.2.0 (tahap 7A-7H) dicatat di sini selama berjalan di branch `develop`.
+## [0.2.0] - 2026-10-26
+
+Rilis ini mengubah Sinfodes dari satu desa demo menjadi platform multi-desa yang utuh. Lima hal terbesarnya:
+
+- **Alamat subdomain.** Desa, kabupaten, dan Konsol masing-masing punya alamat sendiri, mis. `sungaisialang.sinfodes.localhost`. Sesi terpisah per alamat, dan Konsol tidak lagi memuat isi data desa.
+- **Kabupaten.** Kabupaten mitra punya portal publik dan dasbor: pemantauan, Dana Desa, peta, data gabungan, laporan bulanan, dan siaran ke desa.
+- **Peringkat.** Indeks Desa Digital, sembilan kategori peringkat, lencana juara, dan podium publik.
+- **Tagihan.** Langganan manual dengan nominal unik, bukti transfer, verifikasi di Konsol, kwitansi, dan penangguhan desa.
+- **Tampilan desa.** Tema galeri, penyusun blok, CSS kustom, dan Blok HTML terkurung. Surat ikut berkembang: jenis surat buatan desa, tata letak surat, dan modul Posyandu.
+
+Pekerjaannya dicatat per tahap (7A-7H) di bawah ini, lalu penutupnya.
 
 ### Ditambahkan (7A-1: alamat subdomain)
 
@@ -334,6 +344,18 @@ Pekerjaan v0.2.0 (tahap 7A-7H) dicatat di sini selama berjalan di branch `develo
 - `PratinjauLembar` menerima `lebarCm` supaya F4 tidak terpotong.
 - Data demo naik ke versi 34.
 
+### Ditambahkan (Penutup v0.2)
+
+- **Skenario terpandu *Akses bantuan Sinfodes*** di Coba demo, yang ketujuh: Sekretaris Desa memberi akses sementara, Tim Sinfodes membuka Detail desa dan masuk dengan data pribadi tersamar, lalu desa melihat halaman yang dibuka di riwayat akses.
+- **Uji alur demo v0.2** (`src/mocks/alur-demo-v02.test.ts`): enam alur berurutan pada satu dunia demo tanpa reset antaruji.
+  - Alamat dan sesi, kabupaten, peringkat, tagihan, tampilan, dan surat.
+  - Alur tagihan berjalan di atas hasil alur siaran, sehingga notifikasi tagihan dan siaran pada pengguna yang sama ikut teruji.
+- **`PANDUAN-DEMO.md` ditulis ulang** untuk v0.2: peta alamat subdomain, akun per alamat, toolbar dan dunia demo bersama, data demo, isi aplikasi per bagian, tujuh skenario terpandu, langkah hosting wildcard (`*.demo.sinfodes.com`), dan batasan demo. Akun, skenario, dan jalur di dalamnya dijaga uji (`src/mocks/panduan-demo.test.ts`).
+
+### Diubah (Penutup v0.2)
+
+- Versi paket menjadi `0.2.0`.
+
 ## [0.1.0] - 2026-10-16
 
 Demo tahap 1: frontend sungguhan dengan API tiruan (MSW) dan data dummy Desa Sungai Sialang, Kabupaten Pelalawan.
@@ -372,5 +394,6 @@ Demo tahap 1: frontend sungguhan dengan API tiruan (MSW) dan data dummy Desa Sun
   - Undangan Sekretaris Desa dan Pemantauan wilayah.
 - **Skenario terpandu dan tiga alur demo**, diuji otomatis.
 
-[Belum dirilis]: https://github.com/Jazaniest/sinfodes/compare/v0.1.0...HEAD
+[Belum dirilis]: https://github.com/Jazaniest/sinfodes/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/Jazaniest/sinfodes/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/Jazaniest/sinfodes/releases/tag/v0.1.0
