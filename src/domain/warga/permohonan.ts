@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { jenisSuratSchema } from '../surat/jenis'
-import { pengaturanSuratSchema, type ModeTandaTangan } from '../surat/pengaturan'
+import type { ModeTandaTangan } from '../surat/pengaturan'
 import {
   entriRiwayatSuratSchema, STATUS_PERMOHONAN, STATUS_TERBUKA, TAHAP_TTD, terbitSchema,
   type EntriRiwayatSurat, type KejadianSurat, type Permohonan,
@@ -35,8 +35,8 @@ export const detailPermohonanWargaSchema = z.object({
     diambilPada: waktu.nullable(),
   }),
   jenis: jenisSuratSchema.pick({ kode: true, nama: true, isian: true }),
+  /** Lembar memakai `terbit.tataLetak` dan `terbit.kop`, jadi unduhan warga sama dengan surat saat terbit. */
   terbit: terbitSchema.nullable(),
-  pengaturan: pengaturanSuratSchema.pick({ kertas: true, huruf: true }),
 })
 export type DetailPermohonanWarga = z.infer<typeof detailPermohonanWargaSchema>
 

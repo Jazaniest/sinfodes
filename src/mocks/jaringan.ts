@@ -26,7 +26,7 @@ export function aturModeJaringan(mode: ModeJaringan): void {
   }
 }
 
-/** Jeda simulasi: normal 150–400 ms, lambat (3G) 1,5–3 detik (SPEC §3.6). */
+/** Jeda simulasi: normal 150-400 ms, lambat (3G) 1,5-3 detik (SPEC §3.6). */
 export function jedaUntuk(mode: ModeJaringan): number {
   switch (mode) {
     case 'instan':

@@ -2,10 +2,10 @@ import { describe, expect, it } from 'vitest'
 import { filterPenerimaSchema, labelTahap, tahanPenyaluran, tahapBerikutnya, type TahapBansos } from './schema'
 
 const TAHAP: TahapBansos[] = [
-  { ke: 1, periode: 'Januari–Maret', jadwal: '2026-03-31' },
-  { ke: 2, periode: 'April–Juni', jadwal: '2026-06-30' },
-  { ke: 3, periode: 'Juli–September', jadwal: '2026-09-30' },
-  { ke: 4, periode: 'Oktober–Desember', jadwal: '2026-12-15' },
+  { ke: 1, periode: 'Januari-Maret', jadwal: '2026-03-31' },
+  { ke: 2, periode: 'April-Juni', jadwal: '2026-06-30' },
+  { ke: 3, periode: 'Juli-September', jadwal: '2026-09-30' },
+  { ke: 4, periode: 'Oktober-Desember', jadwal: '2026-12-15' },
 ]
 
 describe('aturan bantuan sosial (SPEC §8, §12.6)', () => {

@@ -1,17 +1,37 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { render } from '@testing-library/react'
 import type { ReactElement } from 'react'
+import type { SesiKabupaten } from '@/domain/kabupaten/schema'
 import type { SesiKonsol } from '@/domain/konsol/schema'
 import type { SesiAdmin } from '@/domain/pengguna/schema'
 import type { IdentitasPublik } from '@/domain/publik/schema'
 import type { SesiWarga } from '@/domain/warga/sesi'
 import { SesiAdminKonteks } from '@/features/admin/sesi-konteks'
+import { SesiKabupatenKonteks } from '@/features/kabupaten/sesi-konteks'
 import { SesiKonsolKonteks } from '@/features/konsol/sesi-konteks'
 import { PublikKonteks } from '@/features/publik/publik-konteks'
 import { SesiWargaKonteks } from '@/features/warga/sesi-konteks'
+import { routeTree } from '@/routeTree.gen'
+import { contohSesiKabupaten } from './kabupaten'
 import { contohSesiKonsol } from './konsol'
 import { contohIdentitasPublik } from './publik'
 import { contohSesiWarga } from './sesi'
+
+/**
+ * Render satu alamat panel memakai rute sungguhan, untuk layar yang membaca atau mengubah search URL lewat `getRouteApi`.
+ * Sesi panelnya dimuat sendiri lewat API tiruan, sama seperti di peramban; PenampungToast sudah dibawa KerangkaAkar.
+ */
+export function renderRute(alamat: string) {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  const router = createRouter({ routeTree, context: { queryClient }, history: createMemoryHistory({ initialEntries: [alamat] }) })
+  const hasil = render(
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>,
+  )
+  return { ...hasil, queryClient, router }
+}
 
 /** Render layar panel admin dengan QueryClient baru (tanpa coba ulang) dan sesi admin. */
 export function renderPanel(ui: ReactElement, sesi: SesiAdmin) {
@@ -52,6 +72,17 @@ export function renderKonsol(ui: ReactElement, sesi: SesiKonsol = contohSesiKons
   const hasil = render(
     <QueryClientProvider client={queryClient}>
       <SesiKonsolKonteks value={sesi}>{ui}</SesiKonsolKonteks>
+    </QueryClientProvider>,
+  )
+  return { ...hasil, queryClient }
+}
+
+/** Render layar dasbor kabupaten dengan QueryClient baru (tanpa coba ulang) dan sesi kabupaten. */
+export function renderKabupaten(ui: ReactElement, sesi: SesiKabupaten = contohSesiKabupaten()) {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  const hasil = render(
+    <QueryClientProvider client={queryClient}>
+      <SesiKabupatenKonteks value={sesi}>{ui}</SesiKabupatenKonteks>
     </QueryClientProvider>,
   )
   return { ...hasil, queryClient }

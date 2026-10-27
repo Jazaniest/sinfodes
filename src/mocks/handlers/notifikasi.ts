@@ -1,13 +1,16 @@
 import { http, HttpResponse } from 'msw'
 import { tandaiDibacaSchema, type KotakNotifikasi } from '@/domain/notifikasi/schema'
-import type { Pengguna } from '@/domain/pengguna/schema'
+import type { PenggunaSesi } from '@/domain/pengguna/schema'
 import { ambilDb, ubahDb } from '../db'
 import { API, denganJaringan } from '../http'
+import { notifikasiTagihanBaru } from '../pengingat-tagihan'
+import { notifikasiTenggatBaru } from '../pengingat-tenggat'
 import { butuhPengguna } from '../sesi-mock'
+import { pastikanTagihan } from '../tagihan'
 import { bacaJson, balasIsianTidakValid } from '../tulis'
 
 /** 50 notifikasi terbaru milik pengguna dan jumlah yang belum dibaca (angka menu Notifikasi). */
-function kotakMilik(pengguna: Pengguna): KotakNotifikasi {
+function kotakMilik(pengguna: PenggunaSesi): KotakNotifikasi {
   const milik = ambilDb()
     .notifikasi.filter((n) => n.penggunaId === pengguna.id)
     .sort((a, b) => b.waktu.localeCompare(a.waktu))
@@ -21,6 +24,16 @@ export const handlerNotifikasi = [
     denganJaringan(({ request }) => {
       const pengguna = butuhPengguna(request)
       if (pengguna instanceof Response) return pengguna
+      // Pengingat tenggat laporan ke kabupaten yang ambangnya sudah tercapai (SPEC-V0.2 §8.3 butir 4).
+      const sekarang = new Date()
+      pastikanTagihan(sekarang)
+      // Pengingat tagihan langganan (SPEC-V0.2 §10): H-14, H-7, H-1, dan hari jatuh tempo.
+      const baru = [...notifikasiTenggatBaru(ambilDb(), pengguna, sekarang), ...notifikasiTagihanBaru(ambilDb(), pengguna, sekarang)]
+      if (baru.length > 0) {
+        ubahDb((d) => {
+          d.notifikasi.push(...baru)
+        })
+      }
       return HttpResponse.json(kotakMilik(pengguna))
     }),
   ),

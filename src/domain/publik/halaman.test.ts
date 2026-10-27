@@ -15,8 +15,8 @@ describe('aturan halaman website desa (SPEC §9)', () => {
   it('ringkasan lembaga: pengurus pertama beserta jabatannya, dan jumlah pengurus', () => {
     expect(
       ringkasLembaga([
-        { jabatan: 'Ketua', nama: 'Siti Aminah', masaBakti: '2021–2029' },
-        { jabatan: 'Sekretaris', nama: 'Wan Salmah', masaBakti: '2021–2029' },
+        { jabatan: 'Ketua', nama: 'Siti Aminah', masaBakti: '2021-2029' },
+        { jabatan: 'Sekretaris', nama: 'Wan Salmah', masaBakti: '2021-2029' },
       ]),
     ).toBe('Siti Aminah (Ketua) · 2 pengurus')
     expect(ringkasLembaga([{ jabatan: 'Kepala Satuan Linmas', nama: 'Sutrisno', masaBakti: 'sejak 2024' }])).toBe('Sutrisno (Kepala Satuan Linmas)')
@@ -45,7 +45,7 @@ describe('aturan halaman website desa (SPEC §9)', () => {
   it('statistik publik hanya angka agregat: tanpa kunci filter daftar penduduk dan tanpa KTP-el (fokus review 3)', () => {
     const s: StatistikPenduduk = {
       dusun: null, jiwa: 10, laki: 6, perempuan: 4, kk: 3,
-      piramida: [{ label: '0–4', umurMin: 0, umurMax: 4, laki: 1, perempuan: 2 }],
+      piramida: [{ label: '0-4', umurMin: 0, umurMax: 4, laki: 1, perempuan: 2 }],
       perDusun: [{ kunci: '1', label: 'Dusun I Kampung Tengah', jumlah: 10 }],
       agama: [{ kunci: 'Islam', label: 'Islam', jumlah: 9 }, { kunci: null, label: 'Belum diisi', jumlah: 1 }],
       pendidikan: [], pekerjaan: [], perkawinan: [],

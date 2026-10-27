@@ -7,13 +7,12 @@ import {
 import { opsiCari } from '@/api/cari'
 import { cocokNama, kataAngka, kataCukup } from '@/domain/penduduk/cari'
 import { kelompokkanNik } from '@/domain/penduduk/nik'
-import { boleh } from '@/domain/pengguna/hak-akses'
-import type { Peran } from '@/domain/pengguna/schema'
+import type { Kemampuan } from '@/domain/pengguna/hak-akses'
 import { LABEL_STATUS } from '@/domain/surat/permohonan'
 import { useTunda } from '@/ui/hooks/useTunda'
 import { HALAMAN_CARI } from './halaman'
 
-type Props = { isOpen: boolean; onOpenChange: (buka: boolean) => void; peran: Peran }
+type Props = { isOpen: boolean; onOpenChange: (buka: boolean) => void; boleh: (kemampuan: Kemampuan) => boolean }
 
 const kelasKepala = 'px-5 pt-3 pb-1 text-label font-medium text-tinta-2 uppercase'
 
@@ -36,13 +35,13 @@ function ItemHasil({ id, href, judul, keterangan }: { id: string; href: string; 
 }
 
 /** Pencarian cepat Ctrl+K (SPEC §5.4): penduduk, keluarga, surat (nomor), permohonan (nama pemohon), dan halaman. */
-export function PencarianCepat({ isOpen, onOpenChange, peran }: Props) {
+export function PencarianCepat({ isOpen, onOpenChange, boleh }: Props) {
   const [kata, setKata] = useState('')
   const kataTunda = useTunda(kata.trim(), 250)
-  const bolehCari = boleh(peran, 'penduduk.lihat') && kataCukup(kataTunda)
+  const bolehCari = boleh('penduduk.lihat') && kataCukup(kataTunda)
   const hasil = useQuery({ ...opsiCari(kataTunda), enabled: isOpen && bolehCari })
   const halaman = HALAMAN_CARI.filter(
-    (h) => (h.kemampuan === null || boleh(peran, h.kemampuan)) && (kata.trim() === '' || cocokNama(h.label, kata)),
+    (h) => (h.kemampuan === null || boleh(h.kemampuan)) && (kata.trim() === '' || cocokNama(h.label, kata)),
   )
   const penduduk = bolehCari ? (hasil.data?.penduduk ?? []) : []
   const keluarga = bolehCari ? (hasil.data?.keluarga ?? []) : []
@@ -88,7 +87,7 @@ export function PencarianCepat({ isOpen, onOpenChange, peran }: Props) {
       isOpen={isOpen}
       onOpenChange={ubahBuka}
       isDismissable
-      className="fixed inset-0 z-50 flex items-start justify-center bg-tinta/30 px-4 pt-[12vh]"
+      className="fixed inset-0 z-50 flex items-start justify-center bg-tirai px-4 pt-[12vh]"
     >
       <Modal className="w-full max-w-xl rounded-2 border border-garis bg-lembar shadow-melayang outline-none">
         <Dialog aria-label="Pencarian cepat" className="outline-none">

@@ -2,8 +2,8 @@ import type { Map as PetaMapLibre, MapOptions } from 'maplibre-gl'
 import type { JenisLapisan, LapisanPeta, Titik } from '@/domain/peta/schema'
 
 // maplibre-gl 6 tidak mengekspor tipe spesifikasi gaya; diturunkan dari API-nya supaya tanpa pustaka tambahan.
-type StyleSpecification = Exclude<MapOptions['style'], string | undefined>
-type FilterSpecification = NonNullable<Parameters<PetaMapLibre['setFilter']>[1]>
+export type StyleSpecification = Exclude<MapOptions['style'], string | undefined>
+export type FilterSpecification = NonNullable<Parameters<PetaMapLibre['setFilter']>[1]>
 
 /** Warna Register (src/ui/styles/register.css) untuk peta kertas. MapLibre butuh warna literal, bukan variabel CSS. */
 export const WARNA_PETA = {
@@ -69,27 +69,35 @@ export function saringId(id: string): FilterSpecification {
   return ['==', ['get', 'id'], id]
 }
 
+/** Sumber tile dasar, dipakai juga peta kabupaten. */
+export const sumberDasar = (): StyleSpecification['sources'][string] => ({ type: 'vector', url: SUMBER_DASAR, attribution: ATRIBUSI })
+
 /**
- * Gaya peta kertas tanpa label nama tempat (SPEC §8): tile dasar hanya untuk air, sungai, tutupan lahan, dan jalan;
- * tidak ada lapisan `symbol`, jadi tidak perlu glyph atau sprite. Di atasnya lapisan desa sendiri.
+ * Lapisan peta kertas tanpa label nama tempat (SPEC §8): tile dasar hanya untuk air, sungai, tutupan lahan, dan jalan;
+ * tidak ada lapisan `symbol`, jadi tidak perlu glyph atau sprite. Dipakai Peta Desa dan peta kabupaten.
  */
+export const lapisanDasar = (): StyleSpecification['layers'] => [
+  { id: 'latar', type: 'background', paint: { 'background-color': WARNA_PETA.kertas } },
+  { id: 'tutupan', type: 'fill', source: 'dasar', 'source-layer': 'landcover', paint: { 'fill-color': WARNA_PETA.tutupan, 'fill-opacity': 0.7 } },
+  { id: 'air', type: 'fill', source: 'dasar', 'source-layer': 'water', paint: { 'fill-color': WARNA_PETA.air } },
+  { id: 'sungai', type: 'line', source: 'dasar', 'source-layer': 'waterway', paint: { 'line-color': WARNA_PETA.sungai, 'line-width': 1.5 } },
+  { id: 'jalan-tepi', type: 'line', source: 'dasar', 'source-layer': 'transportation', paint: { 'line-color': WARNA_PETA.tepiJalan, 'line-width': 3.5 } },
+  { id: 'jalan', type: 'line', source: 'dasar', 'source-layer': 'transportation', paint: { 'line-color': WARNA_PETA.jalan, 'line-width': 1.5 } },
+]
+
+/** Gaya Peta Desa (SPEC §8): peta kertas, lalu lapisan desa sendiri. */
 export function gayaPeta(l: LapisanPeta): StyleSpecification {
   const f = fiturPeta(l)
   return {
     version: 8,
     sources: {
-      dasar: { type: 'vector', url: SUMBER_DASAR, attribution: ATRIBUSI },
+      dasar: sumberDasar(),
       dusun: { type: 'geojson', data: f.dusun },
       fasilitas: { type: 'geojson', data: f.fasilitas },
       kegiatan: { type: 'geojson', data: f.kegiatan },
     },
     layers: [
-      { id: 'latar', type: 'background', paint: { 'background-color': WARNA_PETA.kertas } },
-      { id: 'tutupan', type: 'fill', source: 'dasar', 'source-layer': 'landcover', paint: { 'fill-color': WARNA_PETA.tutupan, 'fill-opacity': 0.7 } },
-      { id: 'air', type: 'fill', source: 'dasar', 'source-layer': 'water', paint: { 'fill-color': WARNA_PETA.air } },
-      { id: 'sungai', type: 'line', source: 'dasar', 'source-layer': 'waterway', paint: { 'line-color': WARNA_PETA.sungai, 'line-width': 1.5 } },
-      { id: 'jalan-tepi', type: 'line', source: 'dasar', 'source-layer': 'transportation', paint: { 'line-color': WARNA_PETA.tepiJalan, 'line-width': 3.5 } },
-      { id: 'jalan', type: 'line', source: 'dasar', 'source-layer': 'transportation', paint: { 'line-color': WARNA_PETA.jalan, 'line-width': 1.5 } },
+      ...lapisanDasar(),
       { id: 'dusun-isi', type: 'fill', source: 'dusun', paint: { 'fill-color': WARNA_PETA.dusunIsi, 'fill-opacity': 0.06 } },
       { id: 'dusun-garis', type: 'line', source: 'dusun', paint: { 'line-color': WARNA_PETA.batas, 'line-width': 1.5, 'line-dasharray': [3, 2] } },
       { id: 'dusun-terpilih', type: 'line', source: 'dusun', filter: saringId(''), paint: { 'line-color': WARNA_PETA.terpilih, 'line-width': 3 } },

@@ -17,7 +17,10 @@ import { BarisKerangka } from '@/ui/umpan-balik/Skeleton'
 import { useSesiAdmin } from '../admin/sesi-konteks'
 import { PembangunanBerjalan, RealisasiApbdes } from './BagianTataKelola'
 import { DaftarPersiapan } from './DaftarPersiapan'
+import { KartuPeringkat } from '../peringkat/KartuPeringkat'
 import { isiSuratSaya, isiTindakan, kalimatKeadaan } from './kalimat'
+import { PengingatTagihan } from './PengingatTagihan'
+import { PengingatTenggat } from './PengingatTenggat'
 
 const judulBagian = 'text-label font-medium text-tinta-2 uppercase'
 
@@ -107,10 +110,12 @@ export function Beranda({ sekarang = new Date() }: { sekarang?: Date }) {
       ) : kueri.isError ? (
         <ErrorState pesan={pesanGalat(kueri.error)} onCobaLagi={() => void kueri.refetch()} />
       ) : kueri.data.persiapan ? (
-        <DaftarPersiapan persiapan={kueri.data.persiapan} peran={pengguna.peran} />
+        <DaftarPersiapan persiapan={kueri.data.persiapan} />
       ) : (
         <>
           {kueri.data.suratSaya && <SuratSaya surat={kueri.data.suratSaya} />}
+          {kueri.data.pengingatTagihan && <PengingatTagihan pengingat={kueri.data.pengingatTagihan} />}
+          {kueri.data.pengingatTenggat && <PengingatTenggat daftar={kueri.data.pengingatTenggat} />}
           {kueri.data.tindakan && (
             <section aria-labelledby="judul-tindakan">
               <h2 id="judul-tindakan" className={judulBagian}>
@@ -180,6 +185,7 @@ export function Beranda({ sekarang = new Date() }: { sekarang?: Date }) {
           {kueri.data.apbdes && (pengguna.peran === 'kades' || pengguna.peran === 'kaur-keuangan') && (
             <RealisasiApbdes apbdes={kueri.data.apbdes} tampilan={pengguna.peran === 'kades' ? 'bidang' : 'lengkap'} />
           )}
+          {kueri.data.peringkat && <KartuPeringkat kartu={kueri.data.peringkat} />}
           {kueri.data.pengaduanTerbaru && !dusunKeadaan && (
             <PengaduanTerbaru judul={judulPengaduan} daftar={kueri.data.pengaduanTerbaru} sekarang={sekarang} />
           )}

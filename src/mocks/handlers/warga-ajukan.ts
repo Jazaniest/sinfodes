@@ -1,6 +1,6 @@
 import { http, HttpResponse } from 'msw'
 import { hitungUmur, waktuIsoWib } from '@/domain/format/tanggal'
-import { periksaIsian, saringIsian } from '@/domain/surat/jenis'
+import { dilayani, periksaIsian, saringIsian } from '@/domain/surat/jenis'
 import { periksaPemohon } from '@/domain/surat/pemohon'
 import type { Permohonan } from '@/domain/surat/permohonan'
 import {
@@ -11,6 +11,7 @@ import { ambilDb, ubahDb } from '../db'
 import { API, balasGalat, denganJaringan } from '../http'
 import { bacaMultipart, catatKiriman, kirimanSebelumnya } from '../kiriman-warga'
 import { kirimNotifikasi } from '../notifikasi'
+import { tolakBilaLayananDitutup } from '../penangguhan'
 import { butuhWarga } from '../sesi-mock'
 import { perkiraanHariKerja } from '../surat-perkiraan'
 import { balasField, balasIsianTidakValid, catatAktivitas, idBaru } from '../tulis'
@@ -26,7 +27,7 @@ export const handlerWargaAjukan = [
       const db = ambilDb()
       const sekarang = new Date()
       const data: JenisSuratWarga[] = db.jenisSurat
-        .filter((j) => j.desaId === w.penduduk.desaId && j.online && j.aktif)
+        .filter((j) => j.desaId === w.penduduk.desaId && j.online && dilayani(j))
         .map((j) => ({
           id: j.id, kode: j.kode, nama: j.nama, subjek: j.subjek, isian: j.isian, syarat: j.syarat,
           perkiraanHariKerja: perkiraanHariKerja(db, j.id, sekarang),
@@ -39,6 +40,8 @@ export const handlerWargaAjukan = [
     denganJaringan(async ({ request }) => {
       const w = butuhWarga(request)
       if (w instanceof Response) return w
+      const ditutup = tolakBilaLayananDitutup(w.penduduk.desaId)
+      if (ditutup) return ditutup
       const { data, berkas } = await bacaMultipart(request)
       const masukan = kirimPermohonanWargaSchema.safeParse(data)
       if (!masukan.success) return balasIsianTidakValid(masukan.error)
@@ -50,8 +53,10 @@ export const handlerWargaAjukan = [
       const sudahAda = lama ? db.permohonan.find((x) => x.id === lama.rujukanId) : undefined
       if (sudahAda) return HttpResponse.json({ id: sudahAda.id, tiket: nomorTiket(sudahAda) })
 
-      const jenis = db.jenisSurat.find((j) => j.id === m.jenisId && j.desaId === desaId && j.online && j.aktif)
+      const jenis = db.jenisSurat.find((j) => j.id === m.jenisId && j.desaId === desaId)
       if (!jenis) return balasField('jenisId', 'Jenis surat ini tidak bisa diajukan online. Datang ke kantor desa.')
+      if (!dilayani(jenis)) return balasField('jenisId', 'Jenis surat ini tidak tersedia.', 'CONFLICT')
+      if (!jenis.online) return balasField('jenisId', 'Jenis surat ini tidak bisa diajukan online. Datang ke kantor desa.')
       // Hanya untuk anggota KK sendiri yang masih hidup (fokus review 3).
       const sekarang = new Date()
       const anggota = db.penduduk.filter((p) => p.keluargaId === w.penduduk.keluargaId && p.statusDasar === 'Hidup')

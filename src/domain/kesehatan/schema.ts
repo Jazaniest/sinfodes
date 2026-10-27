@@ -41,7 +41,7 @@ export type RingkasPosyandu = z.infer<typeof ringkasPosyanduSchema>
 export const pengukuranSchema = z.object({ tanggal: z.iso.date(), beratKg: z.number().positive(), tinggiCm: z.number().positive() })
 export type Pengukuran = z.infer<typeof pengukuranSchema>
 
-/** Balita (0–4 tahun) beserta pengukurannya. `id` adalah ID penduduk. */
+/** Balita (0-4 tahun) beserta pengukurannya. `id` adalah ID penduduk. */
 export const barisBalitaSchema = z.object({
   id: z.string(),
   nama: z.string(),

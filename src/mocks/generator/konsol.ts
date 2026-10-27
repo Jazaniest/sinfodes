@@ -1,16 +1,18 @@
+import { usulanAlamatDesa } from '@/domain/alamat/alamat'
 import { daftarBulanTerakhir, tanggalIsoWib, waktuIsoWib } from '@/domain/format/tanggal'
 import { daftarMingguTerakhir, labelTriwulan, slugDesa } from '@/domain/konsol/aturan'
-import { HARGA_TRIWULAN, type Langganan, type Paket, type PenggunaKonsol, type Tagihan } from '@/domain/konsol/schema'
+import { HARGA_TRIWULAN, type Langganan, type Paket, type PenggunaKonsol } from '@/domain/konsol/schema'
 import type { Pengguna } from '@/domain/pengguna/schema'
 import { bertitik, wilayahKecamatan } from '@/domain/wilayah/kode-wilayah'
 import type { Desa } from '@/domain/wilayah/schema'
-import { DESA_KONSOL, NAMA_KADES, NAMA_OPERATOR, NAMA_SEKDES, PAKET_DESA_DEMO, PENGGUNA_KONSOL_DEMO, type RencanaDesaKonsol } from '../data/desa-konsol'
+import { DESA_KONSOL, DESA_KONSOL_TAMBAHAN, NAMA_KADES, NAMA_OPERATOR, NAMA_SEKDES, PAKET_DESA_DEMO, PENGGUNA_KONSOL_DEMO, type RencanaDesaKonsol } from '../data/desa-konsol'
 import type { Acak } from '../prng'
 import type { MasukPanel, RekamDesa } from '../tipe-db'
+import { belanjaBulananFiktif, komposisiFiktif } from './rekam-kabupaten'
 
 const HARI_MS = 86_400_000
 const JAM_LAYANAN = [
-  { hari: 'Senin–Kamis', buka: '08.00', tutup: '15.00' },
+  { hari: 'Senin-Kamis', buka: '08.00', tutup: '15.00' },
   { hari: 'Jumat', buka: '08.00', tutup: '11.30' },
 ]
 
@@ -22,9 +24,13 @@ function tambahBulan(t: string, n: number): string {
 }
 const akhirTriwulan = (t: string) => tambahHari(tambahBulan(awalTriwulan(t), 3), -1)
 
+/** Bentuk tagihan v0.1; hanya dipakai untuk dikonversi ke `Tagihan` baru oleh `generator/tagihan.ts` (7D-1). */
+export type TagihanLama = { nomor: string; periode: string; jumlah: number; terbit: string; jatuhTempo: string; dibayar: string | null }
+export type TagihanLamaDesa = { desaId: string; tagihan: TagihanLama[] }
+
 /** Tagihan per triwulan dari triwulan `mulai` sampai triwulan `batas`; yang jatuh temponya lewat sudah dibayar, kecuali `menunggak`. */
-function tagihanTriwulan(acak: Acak, o: { paket: Paket; mulai: string; batas: string; hariIni: string; nomorDesa: string; menunggak: boolean }): Tagihan[] {
-  const daftar: Tagihan[] = []
+function tagihanTriwulan(acak: Acak, o: { paket: Paket; mulai: string; batas: string; hariIni: string; nomorDesa: string; menunggak: boolean }): TagihanLama[] {
+  const daftar: TagihanLama[] = []
   for (let q = awalTriwulan(o.mulai); q <= awalTriwulan(o.batas); q = tambahBulan(q, 3)) {
     const jatuhTempo = tambahHari(q, 30)
     daftar.push({
@@ -84,7 +90,7 @@ function rentangPakai(acak: Acak, r: RencanaDesaKonsol, acuan: Date): { mulai: n
 
 type AngkaPemantauanRekam = Pick<RekamDesa, 'waktuLayananJam' | 'waktuTanggapanJam' | 'apbdes'>
 /** Rekaman tanpa angka Pemantauan dan tanpa Sekretaris Desa; keduanya dari aliran acaknya sendiri (tahap 6B dan 6C). */
-type RekamDasar = Omit<RekamDesa, keyof AngkaPemantauanRekam | 'kontak'> & { kontak: Omit<RekamDesa['kontak'], 'sekdes'> }
+type RekamDasar = Omit<RekamDesa, keyof AngkaPemantauanRekam | 'kontak' | 'belanjaBulanan' | 'komposisi'> & { kontak: Omit<RekamDesa['kontak'], 'sekdes'> }
 
 function rekamDesa(acak: Acak, r: RencanaDesaKonsol, desa: Desa, acuan: Date): RekamDasar {
   const hariIni = tanggalIsoWib(acuan)
@@ -133,29 +139,33 @@ function rekamDesa(acak: Acak, r: RencanaDesaKonsol, desa: Desa, acuan: Date): R
   }
 }
 
-function langgananDesa(acak: Acak, o: { desa: Desa; paket: Paket; rencana: RencanaDesaKonsol | null; acuan: Date; nomorDesa: string }): Langganan {
+function langgananDesa(
+  acak: Acak,
+  o: { desa: Desa; paket: Paket; rencana: RencanaDesaKonsol | null; acuan: Date; nomorDesa: string },
+): { langganan: Langganan; tagihanLama: TagihanLama[] } {
   const hariIni = tanggalIsoWib(o.acuan)
-  const dasar = { desaId: o.desa.id, paket: o.paket }
+  const dasar = { desaId: o.desa.id, paket: o.paket, periodeTagihan: 'triwulan' } as const
   const diam = o.rencana?.diam ?? 0
   switch (o.desa.status) {
     case 'Persiapan':
-      return { ...dasar, mulai: null, sampai: null, tagihan: [] }
+      return { langganan: { ...dasar, mulai: null, sampai: null }, tagihanLama: [] }
     case 'Uji coba': {
       const mulai = tambahHari(hariIni, -Math.max(diam + 10, acak.bulat(25, 55)))
-      return { ...dasar, mulai, sampai: tambahHari(mulai, 60), tagihan: [] }
+      return { langganan: { ...dasar, mulai, sampai: tambahHari(mulai, 60) }, tagihanLama: [] }
     }
     case 'Ditangguhkan': {
       const mulai = awalTriwulan(tambahHari(hariIni, -700))
       const sampai = akhirTriwulan(tambahHari(hariIni, -diam - 40))
-      return { ...dasar, mulai, sampai, tagihan: tagihanTriwulan(acak, { paket: o.paket, mulai, batas: sampai, hariIni, nomorDesa: o.nomorDesa, menunggak: false }) }
+      return {
+        langganan: { ...dasar, mulai, sampai },
+        tagihanLama: tagihanTriwulan(acak, { paket: o.paket, mulai, batas: sampai, hariIni, nomorDesa: o.nomorDesa, menunggak: false }),
+      }
     }
     case 'Aktif': {
       const mulai = awalTriwulan(tambahHari(hariIni, -acak.bulat(200, 900)))
       return {
-        ...dasar,
-        mulai,
-        sampai: akhirTriwulan(hariIni),
-        tagihan: tagihanTriwulan(acak, { paket: o.paket, mulai, batas: hariIni, hariIni, nomorDesa: o.nomorDesa, menunggak: o.rencana?.menunggak === true }),
+        langganan: { ...dasar, mulai, sampai: akhirTriwulan(hariIni) },
+        tagihanLama: tagihanTriwulan(acak, { paket: o.paket, mulai, batas: hariIni, hariIni, nomorDesa: o.nomorDesa, menunggak: o.rencana?.menunggak === true }),
       }
     }
   }
@@ -188,33 +198,50 @@ export function sekdesFiktif(acak: Acak, desa: Desa, langkahSelesai: number): Re
 }
 
 /**
- * Data Konsol (SPEC §11, §12.8): 38 desa fiktif dengan angka pemakaiannya, langganan dan tagihan semua desa, dan akun konsol.
+ * Data Konsol (SPEC §11, §12.8): 38 desa fiktif (45 dengan tujuh desa tambahan 7C-1) dengan angka pemakaiannya, langganan dan tagihan semua desa, dan akun konsol.
  * `desaPanel` adalah desa yang punya data panel (Sungai Sialang, Tanjung Lamo); angkanya dihitung langsung, bukan dari sini.
  */
 export function bangkitkanKonsol(
   acak: Acak,
-  o: { acuan: Date; desaPanel: readonly Desa[]; acakPemantauan: Acak; acakKontak: Acak },
-): { desa: Desa[]; rekam: RekamDesa[]; langganan: Langganan[]; penggunaKonsol: PenggunaKonsol[] } {
-  const desa = DESA_KONSOL.map((r, i) => desaFiktif(r, i))
+  o: { acuan: Date; desaPanel: readonly Desa[]; acakPemantauan: Acak; acakKontak: Acak; acakBelanja: Acak; acakKomposisi: Acak; acakTambahan?: Acak },
+): { desa: Desa[]; rekam: RekamDesa[]; langganan: Langganan[]; tagihanLama: TagihanLamaDesa[]; penggunaKonsol: PenggunaKonsol[] } {
+  // Alamat subdomain (SPEC-V0.2 §4.2) dibagikan berurutan setelah desa panel; ID tetap dari slug v0.1 supaya stabil.
+  const terpakai = new Set(o.desaPanel.map((d) => d.slug))
+  // Desa tambahan (7C-1) diproses setelah 38 desa lama dan memakai aliran acaknya sendiri; tanpa `acakTambahan` tidak ada.
+  const rencana: readonly RencanaDesaKonsol[] = o.acakTambahan ? [...DESA_KONSOL, ...DESA_KONSOL_TAMBAHAN] : DESA_KONSOL
+  const acakDesa = (i: number, lama: Acak): Acak => (i < DESA_KONSOL.length ? lama : o.acakTambahan!)
+  const desa = rencana.map((r, i) => {
+    const d = desaFiktif(r, i)
+    const slug = usulanAlamatDesa({ nama: d.nama, kecamatan: d.kecamatan.nama, kabupaten: d.kabupaten.nama }, terpakai)
+    if (!slug) throw new Error(`Alamat untuk desa ${d.nama} habis`)
+    terpakai.add(slug)
+    return { ...d, slug }
+  })
   const nomor = (i: number) => String(i + 1).padStart(3, '0')
-  const langganan = [
+  const hasilLangganan = [
     ...o.desaPanel.map((d, i) => langgananDesa(acak, { desa: d, paket: PAKET_DESA_DEMO[d.id] ?? 'Dasar', rencana: null, acuan: o.acuan, nomorDesa: nomor(i) })),
-    ...DESA_KONSOL.map((r, i) =>
-      langgananDesa(acak, { desa: desa[i], paket: r.paket, rencana: r, acuan: o.acuan, nomorDesa: nomor(o.desaPanel.length + i) }),
+    ...rencana.map((r, i) =>
+      langgananDesa(acakDesa(i, acak), { desa: desa[i], paket: r.paket, rencana: r, acuan: o.acuan, nomorDesa: nomor(o.desaPanel.length + i) }),
     ),
   ]
+  const langganan = hasilLangganan.map((h) => h.langganan)
+  const tagihanLama = hasilLangganan.map((h) => ({ desaId: h.langganan.desaId, tagihan: h.tagihanLama }))
   return {
     desa,
-    // Aliran acak terpisah: angka Pemantauan (6B) dan Sekretaris Desa (6C) tidak menggeser angka rekaman lain.
-    rekam: DESA_KONSOL.map((r, i) => {
-      const dasar = rekamDesa(acak, r, desa[i], o.acuan)
+    // Aliran acak terpisah: angka Pemantauan (6B), Sekretaris Desa (6C), belanja bulanan dan komposisi (7B-2) tidak menggeser angka lain.
+    rekam: rencana.map((r, i) => {
+      const dasar = rekamDesa(acakDesa(i, acak), r, desa[i], o.acuan)
+      const pemantauan = angkaPemantauanFiktif(acakDesa(i, o.acakPemantauan), r)
       return {
         ...dasar,
-        ...angkaPemantauanFiktif(o.acakPemantauan, r),
-        kontak: { ...dasar.kontak, sekdes: sekdesFiktif(o.acakKontak, desa[i], dasar.langkahSelesai) },
+        ...pemantauan,
+        kontak: { ...dasar.kontak, sekdes: sekdesFiktif(acakDesa(i, o.acakKontak), desa[i], dasar.langkahSelesai) },
+        belanjaBulanan: belanjaBulananFiktif(acakDesa(i, o.acakBelanja), pemantauan.apbdes, o.acuan),
+        komposisi: komposisiFiktif(acakDesa(i, o.acakKomposisi), dasar.jiwa, r.status),
       }
     }),
     langganan,
+    tagihanLama,
     penggunaKonsol: PENGGUNA_KONSOL_DEMO.map((p) => structuredClone(p)),
   }
 }

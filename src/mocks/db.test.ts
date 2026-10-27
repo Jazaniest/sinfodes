@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ambilDb, KUNCI_DB, muatDb, resetDb, simpanSekarang, ubahDb } from './db'
+import { ambilDb, KUNCI_DB, muatDb, muatUlangDb, resetDb, simpanSekarang, ubahDb } from './db'
 import { penyimpananMemori } from './penyimpanan'
 import { VERSI_DATA, type DbDemo } from './tipe-db'
 
@@ -44,5 +44,24 @@ describe('basis data tiruan (SPEC §12.7)', () => {
     expect(baru.tanggalAcuan).toBe('2026-10-01T09:00:00+07:00')
     expect(baru.penduduk[0].catatan).toBeNull()
     expect(ambilDb()).toBe(baru)
+  })
+  it('muatUlangDb memuat data yang ditulis tab lain lewat hub (SPEC-V0.2 §4.6)', async () => {
+    const s = penyimpananMemori()
+    await muatDb(s, ACUAN)
+    const dariTabLain = structuredClone(ambilDb())
+    dariTabLain.tanggalAcuan = '2026-10-01T09:00:00+07:00'
+    await s.tulis(KUNCI_DB, dariTabLain)
+    expect(await muatUlangDb()).toBe(true)
+    expect(ambilDb().tanggalAcuan).toBe('2026-10-01T09:00:00+07:00')
+  })
+  it('muatUlangDb tidak menimpa tulisan lokal yang masih tertunda (fokus review 4)', async () => {
+    const s = penyimpananMemori()
+    await muatDb(s, ACUAN)
+    ubahDb((d) => {
+      d.tanggalAcuan = 'lokal'
+    })
+    expect(await muatUlangDb()).toBe(false)
+    expect(ambilDb().tanggalAcuan).toBe('lokal')
+    await simpanSekarang()
   })
 })

@@ -1,5 +1,5 @@
 import { boleh } from '../pengguna/hak-akses'
-import type { Peran } from '../pengguna/schema'
+import type { PeranSesi } from '../pengguna/schema'
 import type { JenisSurat } from './jenis'
 import { AKSI_SURAT, type AksiSurat, type KejadianSurat, type Permohonan, type TahapTtd } from './permohonan'
 
@@ -29,7 +29,7 @@ export function statusMengizinkan(aksi: AksiSurat, p: Keadaan): boolean {
 }
 
 /** Peran yang berhak (SPEC §5.1, §7.4). Sekdes menandatangani a.n. Kepala Desa hanya bila jenis suratnya mengizinkan. */
-export function peranMengizinkan(aksi: AksiSurat, peran: Peran, jenis: Pick<JenisSurat, 'bolehAtasNama'>): boolean {
+export function peranMengizinkan(aksi: AksiSurat, peran: PeranSesi, jenis: Pick<JenisSurat, 'bolehAtasNama'>): boolean {
   switch (aksi) {
     case 'proses':
     case 'tolak':
@@ -49,7 +49,7 @@ export function peranMengizinkan(aksi: AksiSurat, peran: Peran, jenis: Pick<Jeni
   }
 }
 
-export function aksiTersedia(p: Keadaan, jenis: Pick<JenisSurat, 'bolehAtasNama'>, peran: Peran): AksiSurat[] {
+export function aksiTersedia(p: Keadaan, jenis: Pick<JenisSurat, 'bolehAtasNama'>, peran: PeranSesi): AksiSurat[] {
   return AKSI_SURAT.filter((a) => peranMengizinkan(a, peran, jenis) && statusMengizinkan(a, p))
 }
 
@@ -58,7 +58,7 @@ export function tahapAwalTtd(jenis: Pick<JenisSurat, 'wajibParaf'>): TahapTtd {
 }
 
 /** Angka di samping menu Layanan Surat: yang perlu ditindaklanjuti peran aktif (SPEC §5.2, §5.3). */
-export function perluTindakan(peran: Peran, daftar: readonly Pick<Permohonan, 'status' | 'tahap' | 'dikembalikan'>[]): number {
+export function perluTindakan(peran: PeranSesi, daftar: readonly Pick<Permohonan, 'status' | 'tahap' | 'dikembalikan'>[]): number {
   let jumlah = 0
   for (const p of daftar) {
     const pengolah = p.status === 'menunggu' || (p.status === 'diproses' && p.dikembalikan !== null)

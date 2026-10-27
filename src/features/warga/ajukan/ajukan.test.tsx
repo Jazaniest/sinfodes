@@ -25,7 +25,7 @@ async function unggah(user: UserEvent, syarat: string, nama: string) {
   await within(screen.getByRole('group', { name: syarat })).findByText(nama.replace(/\.[^.]+$/, '.jpg'))
 }
 
-/** Langkah 1–3 untuk Domisili Siti sendiri. */
+/** Langkah 1-3 untuk Domisili Siti sendiri. */
 async function sampaiLampiran(user: UserEvent) {
   await user.click(await screen.findByRole('button', { name: /Surat Keterangan Domisili \(SKD\)/ }))
   expect(await screen.findByRole('heading', { level: 1, name: 'Untuk siapa surat ini?' })).toBeInTheDocument()

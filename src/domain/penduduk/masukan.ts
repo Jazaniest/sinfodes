@@ -36,7 +36,7 @@ export const biodataSchema = z.object({
   statusPerkawinan: z.enum(STATUS_PERKAWINAN).nullable(),
   statusPenduduk: z.enum(STATUS_PENDUDUK),
   ktpEl: z.enum(KTP_EL),
-  telepon: z.string().regex(/^08\d{8,11}$/, 'Nomor telepon diawali 08, 10–13 angka').nullable(),
+  telepon: z.string().regex(/^08\d{8,11}$/, 'Nomor telepon diawali 08, 10-13 angka').nullable(),
   catatan: z.string().trim().max(500).nullable(),
 })
 export type Biodata = z.infer<typeof biodataSchema>

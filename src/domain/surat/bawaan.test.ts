@@ -10,7 +10,7 @@ describe('jenis surat bawaan (SPEC §7.3)', () => {
       'SKD', 'SKTM', 'SKU', 'SPCK', 'SKL', 'SKM', 'SPP', 'SKP', 'SPN', 'SKBN', 'SKBM', 'SKH',
     ])
     for (const j of JENIS_SURAT_BAWAAN) {
-      const lengkap = { ...j, id: `js_ss_${j.kode.toLowerCase()}`, desaId: 'desa_sungai_sialang' }
+      const lengkap = { ...j, id: `js_ss_${j.kode.toLowerCase()}`, desaId: 'desa_sungai_sialang', asal: 'bawaan', diarsipkan: null, tataLetak: null }
       expect(jenisSuratSchema.parse(lengkap)).toEqual(lengkap)
     }
   })

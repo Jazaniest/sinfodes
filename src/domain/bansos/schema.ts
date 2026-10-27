@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { angkaRomawi } from '../format/romawi'
+import { POLA_NOMOR16_TAMPIL } from '../penduduk/nomor16'
 
 export const STATUS_PENYALURAN = ['tersalur', 'belum-diambil', 'dijadwalkan', 'ditahan'] as const
 export type StatusPenyaluran = (typeof STATUS_PENYALURAN)[number]
@@ -37,12 +38,12 @@ export const penerimaBansosSchema = z.object({
   desaId: z.string(),
   programId: z.string(),
   keluargaId: z.string(),
-  nomorKk: z.string().regex(/^\d{16}$/),
+  nomorKk: z.string().regex(POLA_NOMOR16_TAMPIL),
   dusunId: z.string(),
   rw: nomor3,
   rt: nomor3,
   atasNama: z.object({ pendudukId: z.string(), nama: z.string() }),
-  /** Desil DTSEN; penerima di desa demo berada di desil 1–4. */
+  /** Desil DTSEN; penerima di desa demo berada di desil 1-4. */
   desil: z.number().int().min(1).max(4),
   penyaluran: z.array(z.enum(STATUS_PENYALURAN)).min(1),
   /** Diisi saat penerimanya meninggal atau pindah (SPEC §6.6). */

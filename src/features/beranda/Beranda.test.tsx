@@ -1,5 +1,5 @@
 import { screen, within } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { opsiBeranda } from '@/api/beranda'
 import { aturModeJaringan } from '@/mocks/jaringan'
 import { AKUN_DESA_BARU_UJI, AKUN_UJI, masukSebagai, pakaiApiTiruan, SEKARANG_UJI } from '@/test/api-tiruan'
@@ -8,6 +8,16 @@ import { contohSesi, contohSesiDesaBaru } from '@/test/sesi'
 import { Beranda } from './Beranda'
 
 pakaiApiTiruan()
+
+describe('Beranda: kartu Peringkat (rencana 7C-2 Tugas 3)', () => {
+  it('Kepala Desa Sungai Sialang: kartu Peringkat bulan terakhir tutup dengan tautan Buka Peringkat', async () => {
+    masukSebagai(AKUN_UJI.kades)
+    renderPanel(<Beranda sekarang={SEKARANG_UJI} />, contohSesi('kades'))
+    const kartu = await screen.findByRole('region', { name: 'Peringkat · Agustus 2026' })
+    expect(within(kartu).getByRole('link', { name: 'Buka Peringkat' })).toHaveAttribute('href', '/admin/peringkat')
+    expect(kartu).toHaveTextContent(/Juara Umum: (peringkat \d+( bersama)? dari \d+ di Kabupaten Pelalawan|.+)/)
+  })
+})
 
 describe('Beranda (SPEC §5.3)', () => {
   it('operator: sapaan, perlu ditindaklanjuti, buku hari ini, keadaan desa', async () => {
@@ -90,7 +100,8 @@ describe('Beranda (SPEC §5.3)', () => {
   it('operator: pengaduan belum dibalas, dan butir pengaduan di Buku hari ini membuka pengaduannya (3A)', async () => {
     masukSebagai(AKUN_UJI.operator)
     renderPanel(<Beranda sekarang={SEKARANG_UJI} />, contohSesi('operator'))
-    expect(await screen.findByRole('link', { name: '2 pengaduan belum dibalas' })).toHaveAttribute('href', '/admin/pengaduan')
+    const tindakan = await screen.findByRole('region', { name: 'Perlu ditindaklanjuti' })
+    expect(within(tindakan).getByRole('link', { name: '2 pengaduan belum dibalas' })).toHaveAttribute('href', '/admin/pengaduan')
     const buku = screen.getByRole('region', { name: 'Buku hari ini' })
     expect(within(buku).getByRole('link', { name: /^Pengaduan masuk · Lampu jalan mati/ }).getAttribute('href')).toMatch(
       /^\/admin\/pengaduan\/adu_/,
@@ -124,7 +135,7 @@ describe('Beranda (SPEC §5.3)', () => {
     expect(within(apbdes).getAllByRole('meter')).toHaveLength(5)
     const berjalan = screen.getByRole('region', { name: 'Pembangunan yang sedang berjalan' })
     expect(within(berjalan).getAllByRole('link').map((a) => a.textContent)).toEqual([
-      'Semenisasi jalan lingkungan Dusun III', 'Sumur bor air bersih Dusun IV', 'Titian kayu penghubung Dusun II–IV',
+      'Semenisasi jalan lingkungan Dusun III', 'Sumur bor air bersih Dusun IV', 'Titian kayu penghubung Dusun II-IV',
     ])
     expect(within(berjalan).getAllByRole('meter', { name: 'Progres fisik' })[0]).toHaveAttribute('aria-valuetext', '70,0%')
   })
@@ -175,5 +186,66 @@ describe('Beranda desa berstatus Persiapan (SPEC §5.3)', () => {
   })
   it('Beranda selalu dimuat ulang saat dibuka: progres persiapan langsung segar (fokus review 5)', () => {
     expect(opsiBeranda().staleTime).toBe(0)
+  })
+})
+
+describe('Beranda: pengingat tenggat laporan (SPEC-V0.2 §8.3 butir 4)', () => {
+  it('pengingat tenggat laporan ke kabupaten untuk pemegang keuangan.lihat (SPEC-V0.2 §8.3 butir 4)', async () => {
+    masukSebagai(AKUN_UJI.kades)
+    renderPanel(<Beranda sekarang={SEKARANG_UJI} />, contohSesi('kades'))
+    const kotak = await screen.findByRole('region', { name: 'Tenggat laporan ke Kabupaten Pelalawan' })
+    const tautan = within(kotak).getByRole('link', { name: 'Laporan realisasi Dana Desa tahap II 2026 · 30 September 2026 · 6 hari lagi' })
+    expect(tautan).toHaveAttribute('href', '/admin/keuangan#laporan-kabupaten')
+  })
+  it('Kepala Dusun tidak mendapat pengingat tenggat', async () => {
+    masukSebagai(AKUN_UJI.kadus)
+    renderPanel(<Beranda sekarang={SEKARANG_UJI} />, contohSesi('kadus'))
+    await screen.findByRole('heading', { name: 'Keadaan Dusun II Sialang Jaya' })
+    expect(screen.queryByRole('region', { name: /Tenggat laporan/ })).not.toBeInTheDocument()
+  })
+})
+
+describe('Beranda: pita tagihan langganan (rencana 7D-1 Tugas 4)', () => {
+  const pada = (tanggal: string) => vi.setSystemTime(new Date(`${tanggal}T03:00:00Z`))
+
+  it('H-14: kalimat persis dengan nominal dan tautan Buka Langganan', async () => {
+    masukSebagai(AKUN_UJI.kades)
+    pada('2026-10-01')
+    try {
+      renderPanel(<Beranda sekarang={new Date('2026-10-01T03:00:00Z')} />, contohSesi('kades'))
+      const pita = await screen.findByRole('region', { name: 'Tagihan langganan' })
+      expect(pita).toHaveTextContent(/^Tagihan Triwulan IV 2026 sebesar Rp3\.000\.\d{3} jatuh tempo 14 hari lagi, 15 Oktober 2026\.Buka Langganan$/)
+      expect(within(pita).getByRole('link', { name: 'Buka Langganan' })).toHaveAttribute('href', '/admin/pengaturan/langganan')
+    } finally {
+      vi.setSystemTime(SEKARANG_UJI)
+    }
+  })
+  it('lewat jatuh tempo: kalimat lewat, nada peringatan', async () => {
+    masukSebagai(AKUN_UJI.kaurKeuangan)
+    pada('2026-10-20')
+    try {
+      renderPanel(<Beranda sekarang={new Date('2026-10-20T03:00:00Z')} />, contohSesi('kaur-keuangan'))
+      const pita = await screen.findByRole('region', { name: 'Tagihan langganan' })
+      expect(pita).toHaveTextContent(/lewat jatuh tempo sejak 15 Oktober 2026\./)
+    } finally {
+      vi.setSystemTime(SEKARANG_UJI)
+    }
+  })
+  it('tanggal uji (21 hari sebelum jatuh tempo) dan Operator: tanpa pita', async () => {
+    masukSebagai(AKUN_UJI.kades)
+    const { unmount } = renderPanel(<Beranda sekarang={SEKARANG_UJI} />, contohSesi('kades'))
+    await screen.findByRole('region', { name: 'Tenggat laporan ke Kabupaten Pelalawan' })
+    expect(screen.queryByRole('region', { name: 'Tagihan langganan' })).not.toBeInTheDocument()
+    unmount()
+    pada('2026-10-10')
+    try {
+      masukSebagai(AKUN_UJI.operator)
+      renderPanel(<Beranda sekarang={new Date('2026-10-10T03:00:00Z')} />, contohSesi('operator'))
+      await screen.findByRole('heading', { name: /Selamat/ })
+      await screen.findByRole('link', { name: /penduduk datanya belum lengkap/ })
+      expect(screen.queryByRole('region', { name: 'Tagihan langganan' })).not.toBeInTheDocument()
+    } finally {
+      vi.setSystemTime(SEKARANG_UJI)
+    }
   })
 })

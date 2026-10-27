@@ -5,7 +5,7 @@ import { FotoWarta } from '@/ui/website/FotoWarta'
 
 type Props = {
   a: RingkasArtikel
-  /** Alamat dasar website, mis. "/desa/sungai-sialang". */
+  /** Alamat dasar website, mis. "/desa/sungaisialang". */
   dasar: string
   /** Tingkat judul: 3 di bawah rubrik Beranda, 2 di halaman Kabar. */
   tingkat?: 2 | 3

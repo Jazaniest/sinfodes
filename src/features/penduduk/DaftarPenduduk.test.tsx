@@ -37,7 +37,7 @@ describe('Daftar penduduk (SPEC §6.2)', () => {
     expect(await screen.findByText(/^2\.812 jiwa · diperbarui hari ini \d{2}\.\d{2}$/)).toBeInTheDocument()
     const tabel = await screen.findByRole('grid', { name: 'Daftar penduduk' })
     expect(within(tabel).getAllByRole('row')).toHaveLength(26)
-    expect(screen.getByText('1–25 dari 2.812')).toBeInTheDocument()
+    expect(screen.getByText('1-25 dari 2.812')).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: /Berikutnya/ }))
     expect(onUbahFilter).toHaveBeenCalledWith({ page: 2 })
   })

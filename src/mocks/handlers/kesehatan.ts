@@ -2,7 +2,7 @@ import { http } from 'msw'
 import { hitungUmur, tanggalIsoWib } from '@/domain/format/tanggal'
 import { filterBalitaSchema, jadwalBerikut, jadwalPosyandu, type BarisBalita, type RingkasPosyandu } from '@/domain/kesehatan/schema'
 import type { Penduduk } from '@/domain/penduduk/schema'
-import type { Pengguna } from '@/domain/pengguna/schema'
+import type { PenggunaSesi } from '@/domain/pengguna/schema'
 import { dataMilik } from '../cakupan'
 import { API, balasDaftar, denganJaringan } from '../http'
 import { balasIsianTidakValid, butuhKemampuan } from '../tulis'
@@ -10,10 +10,10 @@ import { balasIsianTidakValid, butuhKemampuan } from '../tulis'
 const butuhPembaca = (request: Request) => butuhKemampuan(request, 'kesehatan.lihat', 'Peran Anda tidak berhak membuka data Kesehatan.')
 
 /**
- * Balita dihitung saat diminta: penduduk hidup berumur 0–4 tahun dalam cakupan pengguna, digabung dengan pengukurannya.
+ * Balita dihitung saat diminta: penduduk hidup berumur 0-4 tahun dalam cakupan pengguna, digabung dengan pengukurannya.
  * Bayi yang baru dicatat langsung muncul (belum diukur); balita yang meninggal atau pindah langsung hilang.
  */
-function kesehatanMilik(pengguna: Pengguna, sekarang: Date) {
+function kesehatanMilik(pengguna: PenggunaSesi, sekarang: Date) {
   const { db, dusun, penduduk, dusunSaja } = dataMilik(pengguna)
   const posyandu = db.posyandu
     .filter((p) => p.desaId === pengguna.desaId && (dusunSaja === null || p.dusunId === dusunSaja))

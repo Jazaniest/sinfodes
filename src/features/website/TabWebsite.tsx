@@ -1,12 +1,13 @@
 import type { ReactNode } from 'react'
+import { DOMAIN_INDUK } from '@/app/alamat'
 import { domainDesa } from '@/domain/surat/verifikasi'
 import { TabNav } from '@/ui/navigasi/TabNav'
 import { PageHeader } from '@/ui/tata-letak/PageHeader'
 import { useSesiAdmin } from '../admin/sesi-konteks'
 
-type Aktif = 'artikel' | 'pengumuman' | 'agenda' | 'galeri' | 'tampilan'
+type Aktif = 'artikel' | 'pengumuman' | 'agenda' | 'galeri' | 'tampilan' | 'lencana'
 
-/** Tab Website Desa (SPEC §8): Artikel · Pengumuman · Agenda · Galeri · Tampilan. */
+/** Tab Website Desa (SPEC §8): Artikel · Pengumuman · Agenda · Galeri · Tampilan · Lencana. */
 export function TabWebsite({ aktif }: { aktif: Aktif }) {
   return (
     <TabNav
@@ -17,6 +18,7 @@ export function TabWebsite({ aktif }: { aktif: Aktif }) {
         { label: 'Agenda', href: '/admin/website/agenda', aktif: aktif === 'agenda' },
         { label: 'Galeri', href: '/admin/website/galeri', aktif: aktif === 'galeri' },
         { label: 'Tampilan', href: '/admin/website/tampilan', aktif: aktif === 'tampilan' },
+        { label: 'Lencana', href: '/admin/website/lencana', aktif: aktif === 'lencana' },
       ]}
     />
   )
@@ -29,7 +31,7 @@ export function KepalaWebsite({ aktif, meta }: { aktif: Aktif; meta?: ReactNode 
     <PageHeader
       jejak={[{ label: 'Publikasi' }]}
       judul="Website Desa"
-      meta={meta ?? `Tampil di ${domainDesa(desa.slug)}`}
+      meta={meta ?? `Tampil di ${domainDesa(desa.slug, DOMAIN_INDUK)}`}
       tab={<TabWebsite aktif={aktif} />}
     />
   )

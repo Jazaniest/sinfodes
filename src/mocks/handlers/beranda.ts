@@ -11,8 +11,15 @@ import { ringkasSuratTerbit } from '@/domain/surat/ringkas'
 import { hariKerjaBerlalu } from '@/domain/surat/waktu'
 import { dataMilik } from '../cakupan'
 import { API, denganJaringan } from '../http'
+import { modulDesaDi } from '../modul'
+import { pengingatTagihanDesa } from '../pengingat-tagihan'
+import { pengingatTenggatDesa } from '../pengingat-tenggat'
+import { bekukanBulanTutup } from '../indeks'
+import { pastikanLencana } from '../lencana'
+import { kartuPeringkatDesa } from '../peringkat-desa'
 import { persiapanDesa } from '../persiapan'
 import { butuhPengguna } from '../sesi-mock'
+import { pastikanTagihan } from '../tagihan'
 import { apbdesTerbaru } from './keuangan'
 import { barisKegiatan } from './pembangunan'
 
@@ -22,6 +29,9 @@ export const handlerBeranda = [
     denganJaringan(({ request }) => {
       const pengguna = butuhPengguna(request)
       if (pengguna instanceof Response) return pengguna
+      bekukanBulanTutup(new Date())
+      pastikanLencana(new Date())
+      pastikanTagihan(new Date())
       const milik = dataMilik(pengguna)
       const desa = milik.db.desa.find((d) => d.id === pengguna.desaId)
       const sekarang = new Date()
@@ -96,7 +106,7 @@ export const handlerBeranda = [
               : null,
         pengaduanTerbaru: pengguna.peran === 'kades' || pengguna.peran === 'kadus' ? pengaduanTerbaru : null,
         posyandu:
-          pengguna.peran === 'kadus' && posyandu
+          pengguna.peran === 'kadus' && posyandu && modulDesaDi(pengguna.desaId).kesehatan
             ? { nama: posyandu.nama, tempat: posyandu.tempat, jadwal: jadwalBerikut(posyandu.jadwal, hariIni) }
             : null,
         apbdes: apbdes
@@ -108,8 +118,11 @@ export const handlerBeranda = [
             }
           : null,
         pembangunan: lihatPembangunan ? pembangunan : null,
+        pengingatTenggat: boleh(pengguna.peran, 'keuangan.lihat') ? pengingatTenggatDesa(milik.db, desa, hariIni) : null,
+        pengingatTagihan: boleh(pengguna.peran, 'langganan.lihat') ? pengingatTagihanDesa(milik.db, pengguna.desaId, hariIni) : null,
         // Langkahnya dihitung dari data panel, sama dengan tab Persiapan di Konsol (fokus review 5).
         persiapan: desa?.status === 'Persiapan' ? persiapanDesa(milik.db, desa) : null,
+        peringkat: desa ? kartuPeringkatDesa(milik.db, desa, sekarang) : null,
         keadaan: {
           cakupan: milik.dusunSaja === null ? 'desa' : 'dusun',
           dusunId: milik.dusunSaja,

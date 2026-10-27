@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { GalatApi } from '@/api/galat'
 import { daftarJenisSuratWarga, daftarRiwayatWarga, kirimPermohonanWarga } from '@/api/warga'
 import type { KirimPermohonanWarga } from '@/domain/warga/ajukan'
-import { ambilDb } from '@/mocks/db'
+import { ambilDb, ubahDb } from '@/mocks/db'
 import { AKUN_WARGA_UJI, masukSebagaiWarga, pakaiApiTiruan } from '@/test/api-tiruan'
 
 pakaiApiTiruan({ dbSegarTiapUji: true })
@@ -87,6 +87,18 @@ describe('Ajukan surat dari layanan warga (SPEC §10)', () => {
     )
     const skl = kirimanSkd({ jenisId: idJenis('SKL'), untukId: 'pdk_muhammad_alif', isian: {}, lampiran: [] })
     expect((await galatDari(kirimPermohonanWarga(skl, []))).fields.untukId).toBe('Surat kelahiran hanya untuk bayi di bawah 12 bulan.')
+  })
+  it('jenis yang dihentikan atau diarsipkan tidak tampil di daftar dan ditolak 409 saat diajukan (SPEC-V0.2 12.1)', async () => {
+    masukSebagaiWarga(AKUN_WARGA_UJI.siti)
+    for (const ubah of [{ aktif: false }, { aktif: false, diarsipkan: '2026-09-20T09:00:00+07:00' }]) {
+      ubahDb((d) => {
+        const j = d.jenisSurat.find((x) => x.id === idJenis('SKD'))
+        if (j) Object.assign(j, { aktif: true, diarsipkan: null }, ubah)
+      })
+      expect((await daftarJenisSuratWarga()).map((j) => j.kode)).not.toContain('SKD')
+      const g = await galatDari(kirimPermohonanWarga(kirimanSkd(), FOTO_SKD()))
+      expect(g).toMatchObject({ status: 409, message: 'Jenis surat ini tidak tersedia.', fields: { jenisId: 'Jenis surat ini tidak tersedia.' } })
+    }
   })
   it('isian wajib, foto syarat wajib, dan berkas bukan foto ditandai jelas', async () => {
     masukSebagaiWarga(AKUN_WARGA_UJI.siti)

@@ -1,8 +1,12 @@
 import { tanggalIsoWib } from '@/domain/format/tanggal'
 import type { Pengguna, Peran } from '@/domain/pengguna/schema'
 import type {
-  Agenda, Artikel, FotoGaleri, KategoriArtikel, Pengumuman, Potensi, ProfilDesa, TampilanWebsite, Umkm,
+  Agenda, Artikel, FotoGaleri, KategoriArtikel, Pengumuman, Potensi, ProfilDesa, Umkm,
 } from '@/domain/website/schema'
+import type { SitusDesa } from '@/domain/website/situs'
+import { pasangTema } from '@/domain/website/galeri-dasar'
+import { menuBawaan, SUSUNAN_BERANDA_TEMA, susunanBawaan, type Susunan } from '@/domain/website/susunan'
+import { TEMA_WARTA_BAWAAN, type IdTema } from '@/domain/website/tema'
 import type { Desa, Dusun } from '@/domain/wilayah/schema'
 import { NASKAH_ARTIKEL } from '../data/artikel-demo'
 import { POTENSI_DEMO, PROFIL_DEMO, UMKM_DEMO } from '../data/profil-demo'
@@ -59,13 +63,13 @@ const PENGUMUMAN: readonly { judul: string; isi: string; mulai: number; sampai: 
   },
   {
     judul: 'Pelayanan Surat Ditutup Saat Musyawarah Desa',
-    isi: 'Pelayanan surat di kantor desa ditutup pukul 08.00–12.00 karena seluruh perangkat mengikuti musyawarah desa.',
+    isi: 'Pelayanan surat di kantor desa ditutup pukul 08.00-12.00 karena seluruh perangkat mengikuti musyawarah desa.',
     mulai: -30, sampai: -29,
   },
 ]
 
 const AGENDA: readonly { judul: string; hari: number; mulai: string; selesai: string | null; tempat: string }[] = [
-  { judul: 'Gotong Royong Parit RT 006–007', hari: 4, mulai: '07.30', selesai: '10.00', tempat: 'Parit RT 006, Dusun II' },
+  { judul: 'Gotong Royong Parit RT 006-007', hari: 4, mulai: '07.30', selesai: '10.00', tempat: 'Parit RT 006, Dusun II' },
   // Sejalan dengan artikel "Penyaluran BLT Tahap III Dijadwalkan 30 September" pada tanggal demo 24 September.
   { judul: 'Penyaluran BLT Dana Desa Tahap III', hari: 6, mulai: '09.00', selesai: '12.00', tempat: 'Kantor Desa' },
   { judul: 'Musyawarah Desa Penyusunan RKPDes 2027', hari: 8, mulai: '09.00', selesai: '13.00', tempat: 'Balai Desa' },
@@ -100,13 +104,51 @@ const jadiSlug = (teks: string) =>
 
 const nomor2 = (i: number) => String(i + 1).padStart(2, '0')
 
+/**
+ * Situs bawaan desa selain Sungai Sialang (Tanjung Lamo dan desa fiktif): tema Warta dengan aksen Biru tinta. Motif Garis
+ * seperti tampilan bawaan v0.1, sehingga website desa lain tampil sama seperti sebelumnya. Tanpa PRNG.
+ */
+export function situsBawaan(desaId: string, diperbarui: string): SitusDesa {
+  return {
+    desaId,
+    terbit: {
+      id: 'vrs_1', tema: { ...TEMA_WARTA_BAWAAN('#1F4E79'), motif: 'garis' }, susunan: susunanBawaan(),
+      cssKustom: '', cssTerlingkup: '', blokHtml: [],
+      diperbarui, oleh: { id: 'sinfodes', nama: 'Sinfodes' }, catatan: null,
+    },
+    draf: null,
+    riwayat: [],
+    lanjut: { aktif: false, pertamaDiaktifkan: null },
+  }
+}
+
+/** Situs desa fiktif dengan tema galeri `id` (SPEC-V0.2 §13): Warta bawaan tanpa logo dan sampul, lalu tema dipasang. */
+/** Susunan beranda tema galeri `id` dengan menu bawaan (migrasi 7F-1). */
+export function susunanTema(id: IdTema): Susunan {
+  return { beranda: [...SUSUNAN_BERANDA_TEMA[id]], halaman: [], menu: menuBawaan() }
+}
+
+export function situsGaleri(desaId: string, diperbarui: string, id: IdTema): SitusDesa {
+  return {
+    desaId,
+    terbit: {
+      id: 'vrs_1', tema: pasangTema(TEMA_WARTA_BAWAAN('#1F4E79'), id), susunan: susunanTema(id),
+      cssKustom: '', cssTerlingkup: '', blokHtml: [],
+      diperbarui, oleh: { id: 'sinfodes', nama: 'Sinfodes' }, catatan: null,
+    },
+    draf: null,
+    riwayat: [],
+    lanjut: { aktif: false, pertamaDiaktifkan: null },
+  }
+}
+
 /** Isi Website Desa demo (SPEC §12.6). Tetap, tanpa PRNG; tanggal relatif terhadap tanggal acuan. */
 export function bangkitkanWebsite(o: { desa: Desa; dusun: readonly Dusun[]; pengguna: readonly Pengguna[]; acuan: Date }): {
   artikel: Artikel[]
   pengumuman: Pengumuman[]
   agenda: Agenda[]
   galeri: FotoGaleri[]
-  tampilan: TampilanWebsite
+  situs: SitusDesa
   profil: ProfilDesa
   potensi: Potensi[]
   umkm: Umkm[]
@@ -159,19 +201,27 @@ export function bangkitkanWebsite(o: { desa: Desa; dusun: readonly Dusun[]; peng
         tersedia: asal !== undefined,
         kredit: asal
           ? {
-              judulAsli: asal.judulCommons, sumber: halamanCommons(asal.judulCommons), pembuat: asal.pembuat,
-              lisensi: asal.lisensi, tautanLisensi: asal.tautanLisensi,
-            }
+            judulAsli: asal.judulCommons, sumber: halamanCommons(asal.judulCommons), pembuat: asal.pembuat,
+            lisensi: asal.lisensi, tautanLisensi: asal.tautanLisensi,
+          }
           : null,
       }
     }),
-    tampilan: {
+    situs: {
       desaId: o.desa.id,
-      aksen: 'biru-tinta',
-      motif: 'pucuk-rebung',
-      sampul: '/demo/foto/sampul-sungai-kampar.jpg',
-      logo: null,
-      diperbarui: `${geser(-30)}T10:00:00+07:00`,
+      // Tampilan v0.1 (Biru tinta, Pucuk rebung, sampul Sungai Kampar, tanpa logo) menjadi tema Dasar.
+      terbit: {
+        id: 'vrs_1',
+        tema: { ...TEMA_WARTA_BAWAAN('#1F4E79'), sampul: '/demo/foto/sampul-sungai-kampar.jpg', idGaleri: 'warta' },
+        susunan: susunanBawaan(),
+        cssKustom: '', cssTerlingkup: '', blokHtml: [],
+        diperbarui: `${geser(-30)}T10:00:00+07:00`,
+        oleh: { id: 'pgn_rosmiati', nama: nama('operator') },
+        catatan: null,
+      },
+      draf: null,
+      riwayat: [],
+      lanjut: { aktif: false, pertamaDiaktifkan: null },
     },
     profil: { desaId: o.desa.id, ...structuredClone(PROFIL_DEMO) },
     potensi: POTENSI_DEMO.map((p, i) => ({

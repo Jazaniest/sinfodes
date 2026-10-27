@@ -22,7 +22,7 @@ describe('Statistik penduduk (SPEC §6.7)', { timeout: 20_000 }, () => {
       'href',
       '/admin/kependudukan/penduduk?agama=Islam',
     )
-    expect(screen.getByRole('link', { name: /^60–64 tahun, laki-laki: / })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /^60-64 tahun, laki-laki: / })).toHaveAttribute(
       'href',
       '/admin/kependudukan/penduduk?jk=L&umurMin=60&umurMax=64',
     )
@@ -42,7 +42,7 @@ describe('Statistik penduduk (SPEC §6.7)', { timeout: 20_000 }, () => {
     expect(within(tabel).getByRole('link', { name: 'Islam' })).toHaveAttribute('href', '/admin/kependudukan/penduduk?agama=Islam')
     await user.click(screen.getByRole('button', { name: 'Unduh CSV' }))
     expect(unduhBerkas).toHaveBeenCalledWith(
-      'statistik-penduduk-sungai-sialang-2026-09-24.csv',
+      'statistik-penduduk-sungaisialang-2026-09-24.csv',
       expect.stringMatching(new RegExp(`^${BOM}Statistik penduduk;Desa Sungai Sialang\\r\\nJiwa;2812\\r\\n`)),
     )
   })

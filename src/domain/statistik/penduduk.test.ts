@@ -31,8 +31,8 @@ describe('hitungStatistik (SPEC §6.7)', () => {
     expect(s).toMatchObject({ dusun: null, jiwa: 4, laki: 2, perempuan: 2, kk: 2 }))
   it('piramida 16 kelompok; 75+ tanpa batas atas', () => {
     expect(s.piramida).toHaveLength(16)
-    expect(s.piramida.find((k) => k.label === '35–39')).toMatchObject({ laki: 1, perempuan: 0 })
-    expect(s.piramida.find((k) => k.label === '30–34')).toMatchObject({ laki: 0, perempuan: 1 })
+    expect(s.piramida.find((k) => k.label === '35-39')).toMatchObject({ laki: 1, perempuan: 0 })
+    expect(s.piramida.find((k) => k.label === '30-34')).toMatchObject({ laki: 0, perempuan: 1 })
     expect(s.piramida.at(-1)).toEqual({ label: '75+', umurMin: 75, umurMax: null, laki: 0, perempuan: 1 })
   })
   it('per dusun; agama menurut urutan enum; nilai kosong jadi "Belum diisi"', () => {

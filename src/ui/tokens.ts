@@ -30,6 +30,40 @@ export const warna = {
 
 export type NamaWarna = keyof typeof warna
 
+/**
+ * Palet gelap Register (SPEC-V0.2 §11.2, rencana 7E-2): versi gelap setiap token, dipasang lewat `html[data-mode='gelap']`.
+ * Harus sama dengan blok `:root[data-mode='gelap']` di register.css (diuji). `putih` adalah teks di atas warna isi, jadi ia
+ * ikut menjadi gelap supaya tetap kontras di atas biru, hijau, merah, dan stempel yang kini terang.
+ */
+export const TOKEN_GELAP: Readonly<Record<NamaWarna, string>> = {
+  kertas: '#14181C',
+  'kertas-2': '#1B2026',
+  lembar: '#1A1F24',
+  garis: '#2E353C',
+  'garis-input': '#6B747D',
+  tinta: '#E8E6E1',
+  'tinta-2': '#B3B9BF',
+  'tinta-3': '#9AA1A8',
+  biru: '#8DB8E0',
+  'biru-tua': '#B2CFEB',
+  'biru-muda': '#1E2D3B',
+  oker: '#E0B252',
+  'oker-muda': '#30281A',
+  stempel: '#BFA6E8',
+  'stempel-muda': '#27213A',
+  hijau: '#79C9A2',
+  'hijau-muda': '#17291F',
+  merah: '#EE8B7A',
+  'merah-muda': '#352220',
+  putih: '#101418',
+  kapur: '#20262C',
+  'seri-1': '#8DB8E0',
+  'seri-2': '#D4AE72',
+  'seri-3': '#9DB4C9',
+  'seri-4': '#9AA1A8',
+  'seri-5': '#6FB5A6',
+}
+
 /** Pasangan [depan, latar, minimum] yang wajib lolos WCAG 2.2 AA (SPEC §4.1). */
 export const pasanganKontras: ReadonlyArray<readonly [NamaWarna, NamaWarna, number]> = [
   ['tinta', 'kertas', 4.5],

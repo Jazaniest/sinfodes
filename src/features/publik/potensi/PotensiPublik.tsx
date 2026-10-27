@@ -74,7 +74,7 @@ export function PotensiPublik() {
   const kueri = useQuery(opsiPotensiPublik(identitas.slug))
   useGulirKeJangkar(kueri.isSuccess)
   return (
-    <div className="flex flex-col gap-10">
+    <div className="flex flex-col gap-[var(--desa-jarak,2.5rem)]">
       <div className="flex flex-col gap-2">
         <h1 className="font-serif text-judul-halaman font-medium">Potensi desa</h1>
         <p className="max-w-[56ch] text-tinta-2">
@@ -90,7 +90,7 @@ export function PotensiPublik() {
             {kueri.data.potensi.length === 0 ? (
               <p className="text-tinta-2">Potensi desa belum ditulis.</p>
             ) : (
-              <div className="flex flex-col gap-10">
+              <div className="flex flex-col gap-[var(--desa-jarak,2.5rem)]">
                 {kueri.data.potensi.map((p) => (
                   <BagianPotensi key={p.id} p={p} />
                 ))}

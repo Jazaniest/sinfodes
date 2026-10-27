@@ -16,7 +16,7 @@ import { daftarFilterAktif, HAPUS_SEMUA_FILTER } from './filter-url'
 
 const SEMUA = 'semua'
 const LABEL_URUT: Readonly<Record<UrutanPenduduk, string>> = {
-  nama: 'Nama (A–Z)',
+  nama: 'Nama (A-Z)',
   umur: 'Umur (termuda dulu)',
   dusun: 'Dusun dan RT',
   diubah: 'Terakhir diubah',
@@ -138,7 +138,7 @@ function FilterLainnya({ filter, dusun, istilah, onTerapkan }: PropsLainnya) {
     const min = bacaUmur(umurMin)
     const max = bacaUmur(umurMax)
     if (!umurSah(min) || !umurSah(max)) {
-      setGalatUmur('Umur harus angka bulat 0–150.')
+      setGalatUmur('Umur harus angka bulat 0-150.')
       return
     }
     if (min !== undefined && max !== undefined && min > max) {

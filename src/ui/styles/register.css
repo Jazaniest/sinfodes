@@ -34,9 +34,10 @@
   --font-sans: 'IBM Plex Sans', system-ui, sans-serif;
   --font-serif: 'IBM Plex Serif', Georgia, serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
-  /* Huruf lembar surat (SPEC §7.5): Tinos setara Times New Roman, Arimo setara Arial. */
+  /* Huruf lembar surat (SPEC §7.5): Tinos setara Times New Roman, Arimo setara Arial, IBM Plex Serif untuk kop yang lebih modern. */
   --font-surat-tinos: 'Tinos', 'Times New Roman', serif;
   --font-surat-arimo: 'Arimo', Arial, sans-serif;
+  --font-surat-plex: 'IBM Plex Serif', Georgia, serif;
 
   --text-*: initial;
   --text-label: 0.6875rem;
@@ -69,6 +70,9 @@
   --spacing-kontrol: 2.5rem;
   --spacing-tombol: 2.25rem;
   --spacing-pilihan: 0px;
+
+  /* Tirai di belakang dialog dan laci. */
+  --color-tirai: rgb(27 38 49 / 0.3);
 
   --shadow-*: initial;
   --shadow-melayang: 0 8px 24px rgb(27 38 49 / 0.14);
@@ -120,6 +124,116 @@
   --spacing-kontrol: 3rem;
   --spacing-tombol: 3rem;
   --spacing-pilihan: 3rem;
+}
+
+/* Mode gelap pribadi (SPEC-V0.2 §11.2): hanya dipasang kerangka panel desa, dasbor kabupaten, dan Konsol. Website publik dan
+   layanan warga tidak pernah memasangnya. Nilai harus sama dengan TOKEN_GELAP di src/ui/tokens.ts (diuji). */
+:root[data-mode='gelap'] {
+  color-scheme: dark;
+  --color-kertas: #14181C;
+  --color-kertas-2: #1B2026;
+  --color-lembar: #1A1F24;
+  --color-garis: #2E353C;
+  --color-garis-input: #6B747D;
+  --color-tinta: #E8E6E1;
+  --color-tinta-2: #B3B9BF;
+  --color-tinta-3: #9AA1A8;
+  --color-biru: #8DB8E0;
+  --color-biru-tua: #B2CFEB;
+  --color-biru-muda: #1E2D3B;
+  --color-oker: #E0B252;
+  --color-oker-muda: #30281A;
+  --color-stempel: #BFA6E8;
+  --color-stempel-muda: #27213A;
+  --color-hijau: #79C9A2;
+  --color-hijau-muda: #17291F;
+  --color-merah: #EE8B7A;
+  --color-merah-muda: #352220;
+  --color-putih: #101418;
+  --color-kapur: #20262C;
+  --color-seri-1: #8DB8E0;
+  --color-seri-2: #D4AE72;
+  --color-seri-3: #9DB4C9;
+  --color-seri-4: #9AA1A8;
+  --color-seri-5: #6FB5A6;
+  --color-tirai: rgb(0 0 0 / 0.6);
+  --shadow-melayang: 0 8px 24px rgb(0 0 0 / 0.5);
+}
+
+/* Isi yang selalu terang di dalam panel gelap: pratinjau website desa dan lembar cetak (surat, laporan, tagihan, kwitansi). */
+:root[data-mode='gelap'] [data-situs],
+:root[data-mode='gelap'] [data-terang] {
+  color-scheme: light;
+  --color-kertas: #F6F4EE;
+  --color-kertas-2: #ECE8DD;
+  --color-lembar: #FFFEFA;
+  --color-garis: #DDD7CA;
+  --color-garis-input: #8F877A;
+  --color-tinta: #1B2631;
+  --color-tinta-2: #5A636C;
+  --color-tinta-3: #6E767E;
+  --color-biru: #1F4E79;
+  --color-biru-tua: #183F62;
+  --color-biru-muda: #E6EEF5;
+  --color-oker: #8A6212;
+  --color-oker-muda: #F5ECD7;
+  --color-stempel: #5B3F8C;
+  --color-stempel-muda: #EEE8F5;
+  --color-hijau: #28704F;
+  --color-hijau-muda: #E3F1E8;
+  --color-merah: #A03A2C;
+  --color-merah-muda: #F6E4E0;
+  --color-putih: #FFFFFF;
+  --color-kapur: #F3F1EA;
+  --color-seri-1: #1F4E79;
+  --color-seri-2: #9C7A45;
+  --color-seri-3: #6B8BA8;
+  --color-seri-4: #6E767E;
+  --color-seri-5: #3D7A6E;
+  --color-tirai: rgb(27 38 49 / 0.3);
+  --shadow-melayang: 0 8px 24px rgb(27 38 49 / 0.14);
+}
+
+/* Sidebar Konsol bernuansa tinta gelap di kedua mode: token tinta, kapur, dan oker-muda dibalik hanya di dalamnya. */
+:root[data-mode='gelap'] [data-sisi-konsol] {
+  --color-tinta: #0B0E11;
+  --color-kapur: #E8E6E1;
+  --color-oker-muda: #E0B252;
+}
+
+/* Cetak selalu terang. */
+@media print {
+  :root[data-mode='gelap'] {
+    color-scheme: light;
+    --color-kertas: #F6F4EE;
+    --color-kertas-2: #ECE8DD;
+    --color-lembar: #FFFEFA;
+    --color-garis: #DDD7CA;
+    --color-garis-input: #8F877A;
+    --color-tinta: #1B2631;
+    --color-tinta-2: #5A636C;
+    --color-tinta-3: #6E767E;
+    --color-biru: #1F4E79;
+    --color-biru-tua: #183F62;
+    --color-biru-muda: #E6EEF5;
+    --color-oker: #8A6212;
+    --color-oker-muda: #F5ECD7;
+    --color-stempel: #5B3F8C;
+    --color-stempel-muda: #EEE8F5;
+    --color-hijau: #28704F;
+    --color-hijau-muda: #E3F1E8;
+    --color-merah: #A03A2C;
+    --color-merah-muda: #F6E4E0;
+    --color-putih: #FFFFFF;
+    --color-kapur: #F3F1EA;
+    --color-seri-1: #1F4E79;
+    --color-seri-2: #9C7A45;
+    --color-seri-3: #6B8BA8;
+    --color-seri-4: #6E767E;
+    --color-seri-5: #3D7A6E;
+    --color-tirai: rgb(27 38 49 / 0.3);
+    --shadow-melayang: 0 8px 24px rgb(27 38 49 / 0.14);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

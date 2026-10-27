@@ -15,10 +15,10 @@ describe('pembangunan demo (SPEC §12.6)', () => {
   it('7 kegiatan sesuai SPEC: nama, progres fisik, dan status yang mengikuti progresnya', () => {
     expect(db.kegiatan.map((k) => [k.nama, k.progresFisik, k.status])).toEqual([
       ['Semenisasi jalan lingkungan Dusun III', 70, 'berjalan'],
-      ['Drainase RT 006–007', 100, 'selesai'],
+      ['Drainase RT 006-007', 100, 'selesai'],
       ['Rehabilitasi Posyandu Kenanga', 100, 'selesai'],
       ['Sumur bor air bersih Dusun IV', 40, 'berjalan'],
-      ['Titian kayu penghubung Dusun II–IV', 15, 'berjalan'],
+      ['Titian kayu penghubung Dusun II-IV', 15, 'berjalan'],
       ['Lampu jalan tenaga surya', 100, 'selesai'],
       ['Pelantar perahu nelayan', 0, 'perencanaan'],
     ])

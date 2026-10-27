@@ -1,7 +1,7 @@
 import type { IsianTambahan, JenisSurat } from './jenis'
 import type { Desa } from '../wilayah/schema'
 
-type Bawaan = Omit<JenisSurat, 'id' | 'desaId'>
+type Bawaan = Omit<JenisSurat, 'id' | 'desaId' | 'asal' | 'diarsipkan' | 'tataLetak'>
 
 const isian = (kunci: string, label: string, opsi: Partial<Omit<IsianTambahan, 'kunci' | 'label'>> = {}): IsianTambahan => ({
   kunci,
@@ -200,9 +200,11 @@ export const JENIS_SURAT_BAWAAN: readonly Bawaan[] = [
 
 /**
  * Katalog desa baru (tahap 6C): 12 jenis bawaan, semuanya belum dilayani. Desa memilih sendiri jenis yang dilayaninya di
- * langkah persiapan "Pilih jenis surat yang dilayani" (SPEC §5.3). ID memakai slug desa, yang unik di seluruh Sinfodes.
+ * langkah persiapan "Pilih jenis surat yang dilayani" (SPEC §5.3). ID memakai ID desa, yang unik dan tidak berubah walau alamat desa diganti.
  */
 export function katalogDesaBaru(desa: Pick<Desa, 'id' | 'slug'>): JenisSurat[] {
-  const awalan = desa.slug.replaceAll('-', '_')
-  return JENIS_SURAT_BAWAAN.map((j) => ({ ...structuredClone(j), id: `js_${awalan}_${j.kode.toLowerCase()}`, desaId: desa.id, aktif: false }))
+  const awalan = desa.id.replace(/^desa_/, '')
+  return JENIS_SURAT_BAWAAN.map((j) => ({
+    ...structuredClone(j), id: `js_${awalan}_${j.kode.toLowerCase()}`, desaId: desa.id, aktif: false, asal: 'bawaan', diarsipkan: null, tataLetak: null,
+  }))
 }

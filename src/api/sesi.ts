@@ -4,15 +4,12 @@ import { sesiAdminSchema } from '@/domain/pengguna/schema'
 import { panggilApi } from './client'
 
 export const hasilMasukSchema = z.object({ token: z.string(), sesi: sesiAdminSchema })
-export const hasilKenaliSchema = z.object({
-  desa: z.object({ nama: z.string(), kecamatan: z.string(), kabupaten: z.string() }).nullable(),
-})
-
-/** Langkah pertama halaman masuk: kenali akun, lalu tampilkan desanya (SPEC §5.6). */
-export const kenali = (email: string) => panggilApi('POST', '/sesi/kenali', { skema: hasilKenaliSchema, body: { email } })
-
 export const masuk = (email: string, kataSandi: string) =>
   panggilApi('POST', '/sesi/masuk', { skema: hasilMasukSchema, body: { email, kataSandi } })
+
+/** Tukar tiket bantuan dari Konsol menjadi sesi panel lihat saja (SPEC-V0.2 §5.3). Tanpa token: sesi lama tidak ikut. */
+export const tukarTiketBantuan = (tiket: string) =>
+  panggilApi('POST', '/sesi/bantuan', { skema: hasilMasukSchema, body: { tiket }, sesi: null })
 
 export const ambilSesi = (signal?: AbortSignal) => panggilApi('GET', '/sesi', { skema: sesiAdminSchema, signal })
 

@@ -4,6 +4,7 @@ import { bersihkanWhatsapp, periksaPinBaru, periksaWhatsapp } from '@/domain/war
 import { lupaPinSchema, masukWargaSchema, ubahAkunWargaSchema, type SesiWarga } from '@/domain/warga/sesi'
 import { ambilDb, ubahDb } from '../db'
 import { API, balasGalat, denganJaringan } from '../http'
+import { desaKonteks, konteksPermintaan, tanpaKonteks } from '../konteks-permintaan'
 import { butuhWarga, tokenWargaUntuk, type WargaMasuk } from '../sesi-mock'
 import type { DbDemo } from '../tipe-db'
 import { bacaJson, balasIsianTidakValid } from '../tulis'
@@ -58,8 +59,15 @@ export const handlerWargaSesi = [
       const { nik, pin } = isian.data
       const sekarang = new Date()
       const db = ambilDb()
+      const k = konteksPermintaan(request)
+      const desaAlamat = tanpaKonteks(k) ? null : desaKonteks(db, k)
+      // Desa Persiapan belum melayani warga (SPEC-V0.2 §4.1); dijawab sebelum NIK diperiksa, sama untuk NIK mana pun.
+      if (desaAlamat?.status === 'Persiapan') return balasGalat('FORBIDDEN', 'Layanan warga desa ini belum dibuka.', 403)
       if (terkunci(db, nik, sekarang)) return balasGalat('RATE_LIMITED', PESAN_TERKUNCI, 429)
-      const penduduk = db.penduduk.find((p) => p.nik === nik && p.statusDasar === 'Hidup')
+      // NIK warga desa lain di alamat ini dijawab sama dengan NIK tidak dikenal, tanpa petunjuk desa (SPEC-V0.2 §4.3).
+      const penduduk = db.penduduk.find(
+        (p) => p.nik === nik && p.statusDasar === 'Hidup' && (tanpaKonteks(k) || p.desaId === desaAlamat?.id),
+      )
       const akun = penduduk ? db.akunWarga.find((a) => a.pendudukId === penduduk.id) : undefined
       if (!penduduk || !akun || akun.pin !== pin) {
         // NIK tidak terdaftar dan PIN salah dijawab sama, dan sama-sama dihitung (fokus review 2).

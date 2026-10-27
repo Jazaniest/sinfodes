@@ -1,5 +1,7 @@
-import { boleh, type Kemampuan } from '@/domain/pengguna/hak-akses'
-import type { Peran } from '@/domain/pengguna/schema'
+import type { ModulDesa } from '@/domain/pengaturan/modul'
+import { bolehDi, type Kemampuan } from '@/domain/pengguna/hak-akses'
+import type { StatusDesa } from '@/domain/wilayah/schema'
+import type { PeranSesi } from '@/domain/pengguna/schema'
 
 /** Kunci angka di samping menu: jumlah yang perlu ditindaklanjuti peran aktif (SPEC §5.2). */
 export type KunciHitungan = 'surat' | 'pengaduan' | 'notifikasi'
@@ -15,7 +17,13 @@ export type KelompokMenu = { judul: string | null; item: ItemMenu[] }
 
 /** SPEC §5.2. Hanya modul yang sudah dibangun; modul lain ditambahkan di tahapnya masing-masing. */
 export const MENU_ADMIN: readonly KelompokMenu[] = [
-  { judul: null, item: [{ label: 'Beranda', href: '/admin', kemampuan: null, awalan: '/admin', hitungan: null }] },
+  {
+    judul: null,
+    item: [
+      { label: 'Beranda', href: '/admin', kemampuan: null, awalan: '/admin', hitungan: null },
+      { label: 'Peringkat', href: '/admin/peringkat', kemampuan: null, awalan: '/admin/peringkat', hitungan: null },
+    ],
+  },
   {
     judul: 'Pelayanan',
     item: [
@@ -49,23 +57,40 @@ export const MENU_ADMIN: readonly KelompokMenu[] = [
 ]
 
 /** Angka menu Pengaduan: pengaduan Baru, hanya untuk peran yang bisa menanggapi. Kepala Desa melihat menu tanpa angka. */
-export const angkaPengaduan = (peran: Peran, baru: number | undefined): number | undefined =>
-  boleh(peran, 'pengaduan.tanggapi') ? baru : undefined
+export const angkaPengaduan = (peran: PeranSesi, baru: number | undefined, status: StatusDesa = 'Aktif'): number | undefined =>
+  bolehDi(peran, status, 'pengaduan.tanggapi') ? baru : undefined
 
-/** Menu di bawah garis (SPEC §5.2). */
+/** Menu di bawah garis (SPEC §5.2). Siaran kabupaten (SPEC-V0.2 §8.4) di antara Pengaturan dan Notifikasi, tanpa angka. */
 export const MENU_BAWAH: readonly ItemMenu[] = [
   { label: 'Pengaturan', href: '/admin/pengaturan', kemampuan: 'pengaturan.kelola', awalan: '/admin/pengaturan', hitungan: null },
+  { label: 'Siaran kabupaten', href: '/admin/siaran', kemampuan: 'siaran.lihat', awalan: '/admin/siaran', hitungan: null },
   { label: 'Notifikasi', href: '/admin/notifikasi', kemampuan: null, awalan: '/admin/notifikasi', hitungan: 'notifikasi' },
 ]
 
-/** Menu di bawah garis yang boleh dibuka peran ini; yang tidak berhak disembunyikan (SPEC §5.1). */
-export function menuBawahUntuk(peran: Peran): ItemMenu[] {
-  return MENU_BAWAH.filter((i) => i.kemampuan === null || boleh(peran, i.kemampuan))
+/**
+ * Menu di bawah garis yang boleh dibuka peran ini; yang tidak berhak disembunyikan (SPEC §5.1). Kepala Desa dan Kaur Keuangan
+ * tidak mengelola pengaturan, tetapi membuka Langganan (SPEC-V0.2 §10): menu Pengaturannya langsung ke halaman itu.
+ */
+export function menuBawahUntuk(peran: PeranSesi, status: StatusDesa = 'Aktif', modul?: ModulDesa): ItemMenu[] {
+  const boleh = (k: Kemampuan) => bolehDi(peran, status, k, modul)
+  return MENU_BAWAH.flatMap((i) => {
+    if (i.kemampuan === null || boleh(i.kemampuan)) return [i]
+    if (i.label === 'Pengaturan' && boleh('langganan.lihat')) {
+      return [{ ...i, href: '/admin/pengaturan/langganan', kemampuan: 'langganan.lihat' as const }]
+    }
+    if (i.label === 'Pengaturan' && boleh('akses-sinfodes.kelola')) {
+      return [{ ...i, href: '/admin/pengaturan/akses-sinfodes', kemampuan: 'akses-sinfodes.kelola' as const }]
+    }
+    return []
+  })
 }
 
-/** Menu yang tidak berhak diakses disembunyikan, bukan dinonaktifkan (SPEC §5.1). */
-export function menuUntuk(peran: Peran): KelompokMenu[] {
-  return MENU_ADMIN.map((k) => ({ ...k, item: k.item.filter((i) => i.kemampuan === null || boleh(peran, i.kemampuan)) })).filter(
+/**
+ * Menu yang tidak berhak diakses disembunyikan, bukan dinonaktifkan (SPEC §5.1). Selama desa Ditangguhkan, menu yang butuh
+ * kemampuan tulis (mis. Website Desa) ikut hilang (SPEC-V0.2 §10.5); modul Kesehatan yang mati menyembunyikan menu Kesehatan (§12.3).
+ */
+export function menuUntuk(peran: PeranSesi, status: StatusDesa = 'Aktif', modul?: ModulDesa): KelompokMenu[] {
+  return MENU_ADMIN.map((k) => ({ ...k, item: k.item.filter((i) => i.kemampuan === null || bolehDi(peran, status, i.kemampuan, modul)) })).filter(
     (k) => k.item.length > 0,
   )
 }

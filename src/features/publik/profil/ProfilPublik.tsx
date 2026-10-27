@@ -9,6 +9,7 @@ import { ErrorState } from '@/ui/umpan-balik/ErrorState'
 import { BarisKerangka } from '@/ui/umpan-balik/Skeleton'
 import { FotoWarta } from '@/ui/website/FotoWarta'
 import { Rubrik } from '@/ui/website/Rubrik'
+import { ProfilSingkat } from '../beranda/ProfilSingkat'
 import { usePublik } from '../publik-konteks'
 import { PetaProfil } from './PetaProfil'
 
@@ -140,11 +141,11 @@ export function ProfilPublik() {
   const identitas = usePublik()
   const kueri = useQuery(opsiProfilPublik(identitas.slug))
   return (
-    <div className="flex flex-col gap-10">
+    <div className="flex flex-col gap-[var(--desa-jarak,2.5rem)]">
       <h1 className="font-serif text-judul-halaman font-medium sm:text-judul-warta">Profil Desa {identitas.nama}</h1>
       {kueri.isPending && <BarisKerangka jumlah={8} label="Memuat profil desa…" />}
       {kueri.isError && <ErrorState pesan={pesanGalat(kueri.error)} onCobaLagi={() => void kueri.refetch()} />}
-      {kueri.isSuccess && <IsiProfil p={kueri.data} />}
+      {kueri.isSuccess && (kueri.data.profilSingkat ? <ProfilSingkat paragraf={kueri.data.profilSingkat} /> : <IsiProfil p={kueri.data} />)}
     </div>
   )
 }

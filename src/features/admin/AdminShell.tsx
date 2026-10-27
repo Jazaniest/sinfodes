@@ -1,5 +1,5 @@
 import { List, MagnifyingGlass } from '@phosphor-icons/react'
-import { useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { Button, Link } from 'react-aria-components'
 import logoMark from '@/assets/brand/sinfodes-mark.svg'
 import { formatAngka } from '@/domain/format/angka'
@@ -9,7 +9,11 @@ import { LambangDesa } from '@/ui/domain/LambangDesa'
 import { useMediaQuery } from '@/ui/hooks/useMediaQuery'
 import { Hitungan } from '@/ui/hitungan/Hitungan'
 import { Drawer } from '@/ui/lapisan/Drawer'
+import { pasangFavicon } from '@/ui/website/favicon'
 import { MenuAksi } from '@/ui/lapisan/Menu'
+import type { ModeTampilan } from '@/ui/mode/mode'
+import { pilihanMode } from '@/ui/mode/pilihan-mode'
+import { useModeTampilan } from '@/ui/mode/useModeTampilan'
 import { LABEL_HITUNGAN, menuAktif, menuBawahUntuk, menuUntuk, type ItemMenu, type KunciHitungan } from './navigasi'
 
 type Props = {
@@ -20,6 +24,13 @@ type Props = {
   /** Angka di samping menu; nol atau kosong tidak ditampilkan. */
   hitungan?: Partial<Record<KunciHitungan, number>>
   children: ReactNode
+}
+
+/** Garis 3 px warna aksen desa di tepi atas sidebar atau bilah atas HP (rencana 7E-1); dekoratif. */
+function GarisAksen({ sesi }: { sesi: SesiAdmin }) {
+  const aksen = sesi.tampilanPanel?.warnaAksen
+  if (!aksen) return null
+  return <div aria-hidden data-garis-aksen className="pointer-events-none absolute inset-x-0 top-0 h-[3px]" style={{ backgroundColor: aksen }} />
 }
 
 const fokus =
@@ -46,7 +57,9 @@ function TautanMenu({ item: i, jalur, onPilih, hitungan }: { item: ItemMenu; jal
   )
 }
 
-function IsiNavigasi({ sesi, jalur, onCari, onKeluar, onPilih, hitungan }: Omit<Props, 'children'> & { onPilih?: () => void }) {
+type PropsIsi = Omit<Props, 'children'> & { onPilih?: () => void; mode: ModeTampilan; ubahMode: (mode: ModeTampilan) => void }
+
+function IsiNavigasi({ sesi, jalur, onCari, onKeluar, onPilih, hitungan, mode, ubahMode }: PropsIsi) {
   const { desa, pengguna } = sesi
   return (
     <div className="flex h-full flex-col gap-5 px-4 py-5">
@@ -74,7 +87,7 @@ function IsiNavigasi({ sesi, jalur, onCari, onKeluar, onPilih, hitungan }: Omit<
         <kbd className="shrink-0 font-mono text-label">Ctrl K</kbd>
       </Button>
       <nav aria-label="Menu utama" className="flex-1 overflow-y-auto">
-        {menuUntuk(pengguna.peran).map((k) => (
+        {menuUntuk(pengguna.peran, desa.status, sesi.modul).map((k) => (
           <div key={k.judul ?? 'utama'} className="mb-4">
             {k.judul && <p className="mb-1 px-2 text-label font-medium text-tinta-2 uppercase">{k.judul}</p>}
             <ul>
@@ -89,7 +102,7 @@ function IsiNavigasi({ sesi, jalur, onCari, onKeluar, onPilih, hitungan }: Omit<
       </nav>
       <nav aria-label="Menu lain" className="border-t border-garis pt-3">
         <ul>
-          {menuBawahUntuk(pengguna.peran).map((i) => (
+          {menuBawahUntuk(pengguna.peran, desa.status, sesi.modul).map((i) => (
             <li key={i.href}>
               <TautanMenu item={i} jalur={jalur} onPilih={onPilih} hitungan={hitungan} />
             </li>
@@ -106,6 +119,7 @@ function IsiNavigasi({ sesi, jalur, onCari, onKeluar, onPilih, hitungan }: Omit<
             </Button>
           }
           items={[{ id: 'keluar', label: 'Keluar', onAction: onKeluar }]}
+          pilihan={pilihanMode(mode, ubahMode)}
         />
         <img src={logoMark} alt="Sinfodes" className="h-6 w-auto" />
       </div>
@@ -114,8 +128,17 @@ function IsiNavigasi({ sesi, jalur, onCari, onKeluar, onPilih, hitungan }: Omit<
 }
 
 /** Kerangka panel admin (SPEC §5.2, §5.7): sidebar ≥ 1024px, bar atas + laci di layar lebih kecil. */
-export function AdminShell({ children, ...nav }: Props) {
+export function AdminShell({ children, ...props }: Props) {
   const lebar = useMediaQuery('(min-width: 1024px)')
+  // Mode gelap pribadi: dipasang ke <html> selama panel terbuka, dilepas saat panel dilepas (website publik tetap terang).
+  const [mode, ubahMode] = useModeTampilan()
+  const nav = { ...props, mode, ubahMode }
+  // Favicon lambang desa selama panel terbuka; favicon Sinfodes kembali saat panel dilepas.
+  const panel = nav.sesi.tampilanPanel
+  const faviconLambang = panel?.favicon ?? null
+  const adaPanel = panel !== undefined
+  const namaDesa = nav.sesi.desa.nama
+  useEffect(() => (adaPanel ? pasangFavicon(faviconLambang, namaDesa) : undefined), [adaPanel, faviconLambang, namaDesa])
   const [laciTerbuka, setLaciTerbuka] = useState(false)
   return (
     <div className="min-h-screen lg:flex">
@@ -127,10 +150,12 @@ export function AdminShell({ children, ...nav }: Props) {
       </a>
       {lebar ? (
         <aside className="sticky top-0 h-screen w-[216px] shrink-0 border-r border-garis bg-kertas-2 xl:w-[240px] print:hidden">
+          <GarisAksen sesi={nav.sesi} />
           <IsiNavigasi {...nav} />
         </aside>
       ) : (
         <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-garis bg-kertas-2 px-4 print:hidden">
+          <GarisAksen sesi={nav.sesi} />
           <LambangDesa nama={nav.sesi.desa.nama} gambar={nav.sesi.desa.lambang} />
           <p className="min-w-0 flex-1 truncate font-serif font-medium">Desa {nav.sesi.desa.nama}</p>
           <Button aria-label="Cari" onPress={nav.onCari} className={cn('rounded-1 p-2', fokus)}>

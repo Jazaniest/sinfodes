@@ -16,7 +16,7 @@ export const HAPUS_SEMUA_FILTER: Partial<FilterPenduduk> = {
 export type FilterAktif = { kunci: string; label: string; hapus: Partial<FilterPenduduk> }
 
 function labelUmur(min?: number, max?: number): string {
-  if (min !== undefined && max !== undefined) return `Umur ${min}–${max} tahun`
+  if (min !== undefined && max !== undefined) return `Umur ${min}-${max} tahun`
   return min !== undefined ? `Umur ≥ ${min} tahun` : `Umur ≤ ${max} tahun`
 }
 

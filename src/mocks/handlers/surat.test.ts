@@ -81,8 +81,8 @@ describe('API Layanan Surat: baca (SPEC §3.4, §7.4)', () => {
     expect(d.jenis.kode).toBe('SKD')
     expect(d.pemohon.nama).toBe('Siti Rahmah')
     expect(d.subjek).toBeNull()
-    expect(d.pengaturan).toMatchObject({ kertas: 'A4', huruf: 'Tinos', modeTandaTangan: 'tte' })
-    expect(d.pejabat).toEqual({ kades: 'H. Muhammad Nasir', sekdes: 'Hendri Saputra' })
+    expect(d.pengaturan).toMatchObject({ tataLetak: { kertas: { ukuran: 'A4' }, huruf: { keluarga: 'Tinos' } }, modeTandaTangan: 'tte' })
+    expect(d.pejabat).toEqual({ kades: 'H. Muhammad Nasir', sekdes: 'Hendri Saputra', nipKades: null })
   })
   it('detail surat kelahiran membawa subjek (bayi) dan mutasinya', async () => {
     masukSebagai(AKUN_UJI.operator)

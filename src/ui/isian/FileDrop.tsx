@@ -13,15 +13,17 @@ type Props = {
   onPilih: (berkas: File) => void
   keterangan?: string
   isDisabled?: boolean
+  /** Pesan galat sendiri bila yang bawaan kurang cocok (mis. menyamakan dengan pesan server). */
+  pesan?: { jenis?: string; ukuran?: string }
 }
 
 /** Unggah satu berkas lewat seret-lepas atau tombol pilih (SPEC §4.4). Jenis dan ukurannya diperiksa di sini. */
-export function FileDrop({ label, terima, maksMb, onPilih, keterangan, isDisabled }: Props) {
+export function FileDrop({ label, terima, maksMb, onPilih, keterangan, isDisabled, pesan }: Props) {
   const [galat, setGalat] = useState<string | null>(null)
   const periksa = (berkas: File) => {
     const ekstensi = berkas.name.slice(berkas.name.lastIndexOf('.')).toLowerCase()
-    if (!terima.includes(ekstensi)) setGalat(`Pilih berkas ${terima.join(' atau ')}`)
-    else if (berkas.size > maksMb * 1024 * 1024) setGalat(`Ukuran berkas maksimal ${maksMb} MB`)
+    if (!terima.includes(ekstensi)) setGalat(pesan?.jenis ?? `Pilih berkas ${terima.join(' atau ')}`)
+    else if (berkas.size > maksMb * 1024 * 1024) setGalat(pesan?.ukuran ?? `Ukuran berkas maksimal ${maksMb} MB`)
     else {
       setGalat(null)
       onPilih(berkas)

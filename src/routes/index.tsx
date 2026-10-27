@@ -1,4 +1,4 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { HalamanDemo } from '@/features/demo/HalamanDemo'
+import { HalamanLanding } from '@/features/induk/HalamanLanding'
 
-export const Route = createFileRoute('/')({ component: HalamanDemo })
+export const Route = createFileRoute('/')({ component: HalamanLanding })

@@ -31,7 +31,7 @@ describe('data surat demo (SPEC §12.6)', () => {
       db.jenisSurat.filter((j) => j.desaId === 'desa_sungai_sialang').map((j) => j.id),
     )
     expect(katalogBaru.every((j) => !j.aktif)).toBe(true)
-    expect(db.pengaturanSurat.map((p) => [p.desaId, p.kertas, p.modeTandaTangan])).toEqual([
+    expect(db.pengaturanSurat.map((p) => [p.desaId, p.tataLetak.kertas.ukuran, p.modeTandaTangan])).toEqual([
       ['desa_sungai_sialang', 'A4', 'tte'],
       ['desa_tanjung_lamo', 'A4', 'tte'],
     ])
@@ -131,7 +131,7 @@ describe('data surat demo (SPEC §12.6)', () => {
     expect(catatan.map((a) => a.rujukan?.id)).toEqual(expect.arrayContaining(masuk))
     expect(catatan.every((a) => a.waktu.startsWith(hariIni) && a.rujukan?.jenis === 'permohonan')).toBe(true)
   })
-  it('loket hanya melayani di hari kerja pukul 08.00–15.30, juga bila demo dibuka malam hari', () => {
+  it('loket hanya melayani di hari kerja pukul 08.00-15.30, juga bila demo dibuka malam hari', () => {
     for (const dbUji of [db, bangkitkanDb(new Date('2026-09-24T14:00:00Z'))]) {
       for (const p of dbUji.permohonan.filter((x) => x.kanal === 'loket')) {
         const w = keWaktuWib(p.masukPada)

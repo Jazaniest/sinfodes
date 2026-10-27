@@ -16,6 +16,12 @@ export function formatPersen(rasio: number, desimal = 1): string {
 }
 
 /** 1250000 → "Rp1.250.000". */
+/** Ukuran berkas dari KB: di bawah 1024 dalam KB, selain itu MB dengan paling banyak satu desimal. */
+export function formatUkuranKb(kb: number): string {
+  if (kb < 1024) return `${formatAngka(kb)} KB`
+  return `${new Intl.NumberFormat('id-ID', { maximumFractionDigits: 1 }).format(kb / 1024)} MB`
+}
+
 export function formatRupiah(nilai: number): string {
   return `${nilai < 0 ? MINUS : ''}Rp${formatAngka(Math.round(Math.abs(nilai)))}`
 }

@@ -7,7 +7,7 @@ const ISTILAH = { dusun: 'Dusun', rw: 'RW', rt: 'RT' }
 const kolom = (b: ReturnType<typeof berkasContoh>, judul: string) => new Set(b.baris.map((r) => r.sel[b.kolom.indexOf(judul)]))
 
 describe('berkas contoh impor (SPEC §6.8, tahap 6C)', () => {
-  it('Sungai Sialang: tetap Dusun III Teluk Rengas, RW 005, RT 011–013 dalam berbagai cara tulis', () => {
+  it('Sungai Sialang: tetap Dusun III Teluk Rengas, RW 005, RT 011-013 dalam berbagai cara tulis', () => {
     const b = berkasContoh(DUSUN_DEMO.filter((d) => d.desaId === ID_SUNGAI_SIALANG), ISTILAH)
     expect(b.baris).toHaveLength(17)
     expect(kolom(b, 'Dusun')).toEqual(new Set(['III', 'Dusun III', '3', 'Teluk Rengas']))

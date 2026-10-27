@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { metaSchema } from '../api'
 import { boleh } from '../pengguna/hak-akses'
-import type { Peran } from '../pengguna/schema'
+import type { PeranSesi } from '../pengguna/schema'
 
 export const KELOMPOK_BUKU = ['umum', 'penduduk', 'keuangan', 'pembangunan'] as const
 export type KelompokBuku = (typeof KELOMPOK_BUKU)[number]
@@ -51,7 +51,7 @@ export function cariBuku(kode: string): DefinisiBuku | undefined {
 }
 
 /** Kaur Keuangan hanya melihat buku keuangan (SPEC §5.1); peran lain mengikuti kemampuan `buku.lihat`. */
-export function bukuBoleh(peran: Peran, kelompok: KelompokBuku): boolean {
+export function bukuBoleh(peran: PeranSesi, kelompok: KelompokBuku): boolean {
   if (!boleh(peran, 'buku.lihat')) return false
   return peran !== 'kaur-keuangan' || kelompok === 'keuangan'
 }

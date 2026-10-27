@@ -1,5 +1,6 @@
+import { Check } from '@phosphor-icons/react'
 import type { ReactElement } from 'react'
-import { Menu, MenuItem, MenuTrigger, Popover, type PopoverProps } from 'react-aria-components'
+import { Header, Menu, MenuItem, MenuSection, MenuTrigger, Popover, type PopoverProps } from 'react-aria-components'
 import { cn } from '../cn'
 
 export type ItemMenuAksi = {
@@ -12,10 +13,20 @@ export type ItemMenuAksi = {
   nonaktif?: boolean
 }
 
-type Props = { pemicu: ReactElement; items: readonly ItemMenuAksi[]; placement?: PopoverProps['placement'] }
+/** Kelompok pilihan tunggal di bawah aksi, mis. "Tampilan: Terang, Gelap, Ikuti perangkat". */
+export type KelompokPilihanMenu = {
+  judul: string
+  nilai: string
+  opsi: readonly { id: string; label: string }[]
+  onUbah: (id: string) => void
+}
+
+type Props = { pemicu: ReactElement; items: readonly ItemMenuAksi[]; pilihan?: KelompokPilihanMenu; placement?: PopoverProps['placement'] }
+
+const kelasItem = 'cursor-default px-3 py-2 text-teks outline-none data-[focused]:bg-biru-muda'
 
 /** Menu aksi kecil, mis. akun di sidebar. `pemicu` harus Button React Aria. */
-export function MenuAksi({ pemicu, items, placement = 'bottom start' }: Props) {
+export function MenuAksi({ pemicu, items, pilihan, placement = 'bottom start' }: Props) {
   return (
     <MenuTrigger>
       {pemicu}
@@ -31,15 +42,35 @@ export function MenuAksi({ pemicu, items, placement = 'bottom start' }: Props) {
               id={i.id}
               href={i.href}
               isDisabled={i.nonaktif}
-              className={cn(
-                'cursor-default px-3 py-2 text-teks outline-none data-[focused]:bg-biru-muda',
-                i.bahaya ? 'text-merah' : 'text-tinta',
-                'data-[disabled]:text-tinta-3',
-              )}
+              className={cn(kelasItem, i.bahaya ? 'text-merah' : 'text-tinta', 'data-[disabled]:text-tinta-3')}
             >
               {i.label}
             </MenuItem>
           ))}
+          {pilihan && (
+            <MenuSection
+              selectionMode="single"
+              disallowEmptySelection
+              selectedKeys={[pilihan.nilai]}
+              onSelectionChange={(k) => {
+                const id = [...k][0]
+                if (typeof id === 'string') pilihan.onUbah(id)
+              }}
+              className="mt-1 border-t border-garis pt-1"
+            >
+              <Header className="px-3 pt-1.5 pb-1 text-label font-medium text-tinta-2 uppercase">{pilihan.judul}</Header>
+              {pilihan.opsi.map((o) => (
+                <MenuItem key={o.id} id={o.id} textValue={o.label} className={cn(kelasItem, 'flex items-center justify-between gap-4 text-tinta')}>
+                  {({ isSelected }) => (
+                    <>
+                      {o.label}
+                      {isSelected && <Check aria-hidden size={14} weight="bold" />}
+                    </>
+                  )}
+                </MenuItem>
+              ))}
+            </MenuSection>
+          )}
         </Menu>
       </Popover>
     </MenuTrigger>

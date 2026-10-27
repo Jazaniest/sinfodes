@@ -1,7 +1,17 @@
-/** Lambang tiruan netral untuk kop demo, bukan lambang daerah asli (SPEC §7.5). Desa mengunggah lambangnya di Pengaturan. */
-export function LambangTiruan({ className }: { className?: string }) {
+/**
+ * Lambang tiruan netral untuk kop demo, bukan lambang daerah asli (SPEC §7.5). Desa mengunggah lambangnya di Pengaturan.
+ * Dengan `label` (mis. "Lambang kabupaten") lambang ini diumumkan sebagai gambar berlabel, bukan dekoratif.
+ */
+export function LambangTiruan({ className, label }: { className?: string; label?: string }) {
   return (
-    <svg aria-hidden viewBox="0 0 64 72" fill="none" stroke="currentColor" strokeLinejoin="round" className={className}>
+    <svg
+      {...(label ? { role: 'img', 'aria-label': label } : { 'aria-hidden': true })}
+      viewBox="0 0 64 72"
+      fill="none"
+      stroke="currentColor"
+      strokeLinejoin="round"
+      className={className}
+    >
       <path d="M32 3 L59 12 V34 C59 52 47 63 32 69 C17 63 5 52 5 34 V12 Z" strokeWidth="2" />
       <path d="M32 9 L53 16 V34 C53 49 43 58 32 63 C21 58 11 49 11 34 V16 Z" strokeWidth="1" />
       <path

@@ -3,9 +3,9 @@ import { galatSchema } from '@/domain/api'
 import { GalatApi } from './galat'
 
 const BASE = import.meta.env.VITE_API_BASE || '/api/v1'
-/** Panel admin dan layanan warga punya sesi sendiri; keduanya bisa aktif bersamaan di satu peramban. */
-export type BagianSesi = 'admin' | 'warga' | 'konsol'
-const tokenSesi: Record<BagianSesi, string | null> = { admin: null, warga: null, konsol: null }
+/** Panel admin, layanan warga, Konsol, dan dasbor kabupaten punya sesi sendiri; semuanya bisa aktif di satu peramban. */
+export type BagianSesi = 'admin' | 'warga' | 'konsol' | 'kabupaten'
+const tokenSesi: Record<BagianSesi, string | null> = { admin: null, warga: null, konsol: null, kabupaten: null }
 
 export function aturTokenSesi(token: string | null, bagian: BagianSesi = 'admin'): void {
   tokenSesi[bagian] = token
@@ -16,8 +16,13 @@ export function ambilTokenSesi(bagian: BagianSesi = 'admin'): string | null {
 
 type Metode = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE'
 type Query = Record<string, string | number | undefined | null>
+/**
+ * Skema respons, atau fungsi yang memuatnya. Skema berat (blok website, tema) diberikan sebagai fungsi `import()` supaya
+ * modulnya tidak ikut JS awal lewat loader rute; fungsi itu baru dipanggil saat respons sudah datang.
+ */
+export type SumberSkema<T> = z.ZodType<T> | (() => Promise<z.ZodType<T>>)
 type Opsi<T> = {
-  skema: z.ZodType<T>
+  skema: SumberSkema<T>
   query?: Query
   body?: unknown
   signal?: AbortSignal
@@ -33,6 +38,8 @@ function buatUrl(jalur: string, query?: Query): URL {
   }
   return url
 }
+
+const resolusiSkema = async <T>(skema: SumberSkema<T>): Promise<z.ZodType<T>> => (typeof skema === 'function' ? skema() : skema)
 
 /** Satu pintu untuk semua panggilan API: token, galat seragam (SPEC §3.4), dan validasi skema. */
 export async function panggilApi<T>(metode: Metode, jalur: string, opsi: Opsi<T>): Promise<T> {
@@ -56,7 +63,7 @@ export async function panggilApi<T>(metode: Metode, jalur: string, opsi: Opsi<T>
     throw new GalatApi('SERVER', 'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.', 0)
   }
 
-  if (respons.status === 204) return opsi.skema.parse(undefined)
+  if (respons.status === 204) return (await resolusiSkema(opsi.skema)).parse(undefined)
   const isi: unknown = await respons.json().catch(() => null)
   if (!respons.ok) {
     const galat = galatSchema.safeParse(isi)
@@ -65,5 +72,5 @@ export async function panggilApi<T>(metode: Metode, jalur: string, opsi: Opsi<T>
     }
     throw new GalatApi('SERVER', 'Server memberi jawaban yang tidak dikenali.', respons.status)
   }
-  return opsi.skema.parse(isi)
+  return (await resolusiSkema(opsi.skema)).parse(isi)
 }

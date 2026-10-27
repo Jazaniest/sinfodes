@@ -1,77 +1,111 @@
 import { http, HttpResponse } from 'msw'
 import { z } from 'zod'
-import { tanggalIsoWib } from '@/domain/format/tanggal'
-import { hitungPerhatian, slugDesa, statusTagihan } from '@/domain/konsol/aturan'
-import { ringkasWilayah, type BarisPemantauanDesa, type Pemantauan } from '@/domain/konsol/pemantauan'
+import { labelAlamatSah, PESAN_ALAMAT_TIDAK_SAH, usulanAlamatDesa } from '@/domain/alamat/alamat'
+import { tanggalIsoWib, waktuIsoWib } from '@/domain/format/tanggal'
+import { hitungPerhatian } from '@/domain/konsol/aturan'
+import { lewatJatuhTempo } from '@/domain/langganan/tagihan'
 import {
-  filterDesaKonsolSchema, tambahDesaSchema, undangSekdesSchema, type BarisDesaKonsol, type DetailDesaKonsol, type PenggunaKonsol,
+  filterDesaKonsolSchema, tambahDesaSchema, ubahAlamatSchema, undangSekdesSchema, type BarisDesaKonsol, type DetailDesaKonsol,
+  type PeriksaAlamat,
   type RingkasanKonsol, type SesiKonsol,
 } from '@/domain/konsol/schema'
+import { MODUL_BAWAAN_DESA_BARU, modulAktif } from '@/domain/pengaturan/modul'
 import type { Pengguna } from '@/domain/pengguna/schema'
 import { katalogDesaBaru } from '@/domain/surat/bawaan'
-import { KABUPATEN, wilayahKecamatan } from '@/domain/wilayah/kode-wilayah'
+import { wilayahKecamatan } from '@/domain/wilayah/kode-wilayah'
 import { langkahBerikut } from '@/domain/wilayah/persiapan'
 import type { Desa } from '@/domain/wilayah/schema'
 import { KATA_SANDI_DEMO } from '../data/desa-demo'
-import { ambilDb, ubahDb } from '../db'
+import { masihBerlaku, UMUR_TIKET_MS } from '../bantuan'
+import { ambilDb, simpanSekarang, ubahDb } from '../db'
 import { API, balasDaftar, balasGalat, denganJaringan } from '../http'
 import { angkaKonsolDesa, type AngkaKonsol } from '../konsol-angka'
+import { konteksPermintaan, tanpaKonteks } from '../konteks-permintaan'
 import { butuhPenggunaKonsol, tokenKonsolUntuk } from '../sesi-mock'
 import type { DbDemo } from '../tipe-db'
-import { bacaJson, balasField, balasIsianTidakValid, idBaru } from '../tulis'
+import { bacaJson, balasField, balasIsianTidakValid, emailTerpakai, idBaru } from '../tulis'
 
 const masukSchema = z.object({ email: z.string().trim().toLowerCase().min(1), kataSandi: z.string().min(1) })
-
-/** Desa dalam cakupan akun: semua untuk Tim Sinfodes; kabupatennya saja untuk pemantau (SPEC §11). */
-const desaCakupan = (db: DbDemo, p: PenggunaKonsol): Desa[] =>
-  db.desa.filter((d) => p.wilayah === null || d.kabupaten.kode === p.wilayah.kode)
-
-/** Endpoint Desa khusus Tim Sinfodes; pemantau hanya melihat angka agregat (fokus review 1). */
-const tolakPemantau = (p: PenggunaKonsol): Response | null =>
-  p.peran === 'tim' ? null : balasGalat('FORBIDDEN', 'Pemantau wilayah hanya membuka Ringkasan dan Pemantauan.', 403)
 
 function barisDesa(db: DbDemo, desa: Desa, a: AngkaKonsol): BarisDesaKonsol {
   return {
     id: desa.id, slug: desa.slug, nama: desa.nama, kodeDesa: desa.kodeDesa, kecamatan: desa.kecamatan, kabupaten: desa.kabupaten,
     provinsi: desa.provinsi, status: desa.status, paket: db.langganan.find((l) => l.desaId === desa.id)?.paket ?? 'Dasar',
-    penggunaAktif: a.penggunaAktif, aktivitasTerakhir: a.aktivitasTerakhir, kelengkapan: a.kelengkapan,
+    penggunaAktif: a.penggunaAktif, aktivitasTerakhir: a.aktivitasTerakhir,
   }
 }
 
-function detailDesa(db: DbDemo, desa: Desa, sekarang: Date): DetailDesaKonsol {
+export function detailDesa(db: DbDemo, desa: Desa, sekarang: Date): DetailDesaKonsol {
   const a = angkaKonsolDesa(db, desa, sekarang)
   const l = db.langganan.find((x) => x.desaId === desa.id)
+  const bantuan = db.aksesBantuan.find((x) => x.desaId === desa.id && masihBerlaku(x, sekarang))
   return {
     ...barisDesa(db, desa, a),
-    alamatKantor: desa.alamatKantor, surel: desa.surel, telepon: desa.telepon, kontak: a.kontak, jiwa: a.jiwa, persiapan: a.persiapan,
+    alamatKantor: desa.alamatKantor, surel: desa.surel, telepon: desa.telepon, kontak: a.kontak, persiapan: a.persiapan,
     // Undangan dari Konsol hanya untuk desa berdata panel; desa contoh (rekaman) tidak punya akun sungguhan.
     bisaUndangSekdes: !db.rekamDesa.some((r) => r.desaId === desa.id) && a.kontak.sekdes === null,
-    suratPerBulan: a.suratPerBulan, masukPerMinggu: a.masukPerMinggu,
-    langganan: l ? { paket: l.paket, mulai: l.mulai, sampai: l.sampai, tagihan: l.tagihan } : { paket: 'Dasar', mulai: null, sampai: null, tagihan: [] },
+    aliasAlamat: db.aliasAlamat.filter((x) => x.desaId === desa.id).map((x) => x.label),
+    modulAktif: modulAktif(db.modulDesa.find((m) => m.desaId === desa.id) ?? MODUL_BAWAAN_DESA_BARU),
+    penyimpananKb: a.penyimpananKb, masukPerMinggu: a.masukPerMinggu,
+    aksesBantuan: bantuan ? { sampai: bantuan.sampai, sembunyikanDataPribadi: bantuan.sembunyikanDataPribadi } : null,
+    langganan: l ? { paket: l.paket, periodeTagihan: l.periodeTagihan, mulai: l.mulai, sampai: l.sampai } : { paket: 'Dasar', periodeTagihan: 'triwulan', mulai: null, sampai: null },
+    tagihan: db.tagihan.filter((t) => t.desaId === desa.id).sort((a, b) => a.periode.mulai.localeCompare(b.periode.mulai) || a.id.localeCompare(b.id)),
+    riwayatStatus: db.riwayatStatusDesa
+      .filter((r) => r.desaId === desa.id)
+      // Terlama dulu di penyimpanan: dibalik dulu supaya perubahan pada detik yang sama tetap terbaru di atas (sort stabil).
+      .reverse()
+      .sort((a, b) => b.pada.localeCompare(a.pada))
+      .map((r) => ({ dari: r.dari, ke: r.ke, alasan: r.alasan, pada: r.pada, oleh: r.oleh })),
   }
 }
 
-/** Satu desa di Pemantauan wilayah: hanya angka agregat (SPEC §11). */
-const barisPemantauan = (desa: Desa, a: AngkaKonsol): BarisPemantauanDesa => ({
-  id: desa.id, nama: desa.nama, status: desa.status, suratBulanIni: a.suratBulanIni, waktuLayananJam: a.waktuLayananJam, jiwa: a.jiwa,
-  kelengkapan: a.kelengkapan, waktuTanggapanJam: a.waktuTanggapanJam, apbdes: a.apbdes,
-})
 
-const urutNama = (a: { nama: string }, b: { nama: string }) => a.nama.localeCompare(b.nama, 'id')
+/** Alamat yang sudah dipakai desa mana pun, termasuk alamat lama (alias) yang disimpan selamanya (SPEC-V0.2 §4.2). */
+const alamatTerpakai = (db: DbDemo): Set<string> => new Set([...db.desa.map((d) => d.slug), ...db.aliasAlamat.map((a) => a.label)])
 
-/** Slug yang belum dipakai: "sungai-sialang", lalu "sungai-sialang-2", dan seterusnya. */
-function slugBaru(db: DbDemo, nama: string): string {
-  const dasar = slugDesa(nama)
-  let slug = dasar
-  for (let n = 2; db.desa.some((d) => d.slug === slug); n++) slug = `${dasar}-${n}`
-  return slug
+/**
+ * Bisakah `label` dipakai desa `desaId` (undefined untuk desa baru)? Alias milik desa itu sendiri boleh dipakai lagi; alamat
+ * dan alias desa lain tidak pernah (SPEC-V0.2 §4.2).
+ */
+export function periksaLabelAlamat(db: DbDemo, label: string, desaId: string | undefined): PeriksaAlamat {
+  if (!labelAlamatSah(label)) return { status: 'tidak-sah', pesan: PESAN_ALAMAT_TIDAK_SAH }
+  if (desaId !== undefined && db.desa.find((d) => d.id === desaId)?.slug === label) return { status: 'sekarang', pesan: 'Ini alamat desa sekarang.' }
+  const pemilik = db.desa.find((d) => d.slug === label)?.id ?? db.aliasAlamat.find((a) => a.label === label)?.desaId
+  if (pemilik !== undefined && pemilik !== desaId) return { status: 'dipakai', pesan: 'Alamat ini sudah dipakai desa lain.' }
+  return { status: 'tersedia', pesan: 'Alamat ini bisa dipakai.' }
 }
 
 /** Konsol Sinfodes (SPEC §11). Akun konsol terpisah dari akun panel desa. */
 export const handlerKonsol = [
+  http.get(
+    `${API}/konsol/alamat-desa`,
+    denganJaringan(({ request }) => {
+      const pengguna = butuhPenggunaKonsol(request)
+      if (pengguna instanceof Response) return pengguna
+      const q = new URL(request.url).searchParams
+      const nama = (q.get('nama') ?? '').trim()
+      const wilayah = wilayahKecamatan(q.get('kecamatan') ?? '')
+      if (!nama || !wilayah) return HttpResponse.json({ usulan: null })
+      const w = { nama, kecamatan: wilayah.kecamatan.nama, kabupaten: wilayah.kabupaten.nama }
+      return HttpResponse.json({ usulan: usulanAlamatDesa(w, alamatTerpakai(ambilDb())) })
+    }),
+  ),
+  http.get(
+    `${API}/konsol/alamat-desa/periksa`,
+    denganJaringan(({ request }) => {
+      const pengguna = butuhPenggunaKonsol(request)
+      if (pengguna instanceof Response) return pengguna
+      const q = new URL(request.url).searchParams
+      const label = (q.get('label') ?? '').trim().toLowerCase()
+      return HttpResponse.json(periksaLabelAlamat(ambilDb(), label, q.get('desaId') ?? undefined))
+    }),
+  ),
   http.post(
     `${API}/konsol/sesi/masuk`,
     denganJaringan(async ({ request }) => {
+      // Konsol hanya dibuka dari alamatnya sendiri (SPEC-V0.2 §4.1).
+      const k = konteksPermintaan(request)
+      if (!tanpaKonteks(k) && k.jenis !== 'konsol') return balasGalat('NOT_FOUND', 'Konsol tidak ada di alamat ini.', 404)
       const isian = masukSchema.safeParse(await bacaJson(request))
       if (!isian.success) return balasGalat('VALIDATION', 'Email dan kata sandi wajib diisi.', 422)
       const akun = ambilDb().penggunaKonsol.find((p) => p.email === isian.data.email)
@@ -102,22 +136,20 @@ export const handlerKonsol = [
       if (pengguna instanceof Response) return pengguna
       const db = ambilDb()
       const sekarang = new Date()
-      const desa = desaCakupan(db, pengguna).map((d) => ({ d, a: angkaKonsolDesa(db, d, sekarang) }))
+      const desa = db.desa.map((d) => ({ d, a: angkaKonsolDesa(db, d, sekarang) }))
       const hariIni = tanggalIsoWib(sekarang)
-      const tagihanLewat =
-        pengguna.peran === 'tim'
-          ? db.langganan.flatMap((l) => l.tagihan).filter((t) => statusTagihan(t, hariIni) === 'lewat-jatuh-tempo').length
-          : null
+      const tagihanLewat = db.tagihan.filter((t) => lewatJatuhTempo(t, hariIni)).length
+      const buktiMenunggu = db.tagihan.filter((t) => t.status === 'menunggu-verifikasi').length
       const jumlah = (s: Desa['status']) => desa.filter(({ d }) => d.status === s).length
       const hasil: RingkasanKonsol = {
-        cakupan: pengguna.wilayah ? `Kabupaten ${pengguna.wilayah.nama}` : 'Semua desa',
         perhatian: hitungPerhatian(
           desa.map(({ d, a }) => ({ status: d.status, aktivitasTerakhir: a.aktivitasTerakhir, langkahBerikut: langkahBerikut(a.persiapan) })),
           tagihanLewat,
           sekarang,
+          buktiMenunggu,
         ),
         desa: { aktif: jumlah('Aktif'), ujiCoba: jumlah('Uji coba'), persiapan: jumlah('Persiapan'), ditangguhkan: jumlah('Ditangguhkan') },
-        suratMingguIni: desa.reduce((n, { a }) => n + a.suratMingguIni, 0),
+        kabupatenMitra: db.kabupatenMitra.length,
       }
       return HttpResponse.json(hasil)
     }),
@@ -127,8 +159,6 @@ export const handlerKonsol = [
     denganJaringan(({ request }) => {
       const pengguna = butuhPenggunaKonsol(request)
       if (pengguna instanceof Response) return pengguna
-      const ditolak = tolakPemantau(pengguna)
-      if (ditolak) return ditolak
       const filter = filterDesaKonsolSchema.safeParse(Object.fromEntries(new URL(request.url).searchParams))
       if (!filter.success) return balasIsianTidakValid(filter.error)
       const f = filter.data
@@ -152,8 +182,6 @@ export const handlerKonsol = [
     denganJaringan(({ request, params }) => {
       const pengguna = butuhPenggunaKonsol(request)
       if (pengguna instanceof Response) return pengguna
-      const ditolak = tolakPemantau(pengguna)
-      if (ditolak) return ditolak
       const db = ambilDb()
       const desa = db.desa.find((d) => d.id === String(params.id))
       if (!desa) return balasGalat('NOT_FOUND', 'Desa tidak ditemukan.', 404)
@@ -165,20 +193,19 @@ export const handlerKonsol = [
     denganJaringan(async ({ request }) => {
       const pengguna = butuhPenggunaKonsol(request)
       if (pengguna instanceof Response) return pengguna
-      const ditolak = tolakPemantau(pengguna)
-      if (ditolak) return ditolak
       const isian = tambahDesaSchema.safeParse(await bacaJson(request))
       if (!isian.success) return balasIsianTidakValid(isian.error)
-      const { nama, kecamatan, kodeDesa, paket, email } = isian.data
+      const { nama, kecamatan, kodeDesa, paket, email, alamat } = isian.data
       const wilayah = wilayahKecamatan(kecamatan)
       if (!wilayah) return balasField('kecamatan', 'Kecamatan tidak dikenal.')
       const db = ambilDb()
       const kodeLengkap = `${kecamatan}.${kodeDesa}`
       if (db.desa.some((d) => d.kodeDesa === kodeLengkap)) return balasField('kodeDesa', `Kode desa ${kodeLengkap} sudah terdaftar.`, 'CONFLICT')
-      if ([...db.pengguna, ...db.penggunaKonsol].some((p) => p.email.toLowerCase() === email)) {
+      if (emailTerpakai(db, email)) {
         return balasField('email', 'Email ini sudah dipakai akun lain.', 'CONFLICT')
       }
-      const slug = slugBaru(db, nama)
+      if (periksaLabelAlamat(db, alamat, undefined).status !== 'tersedia') return balasField('alamat', 'Alamat ini sudah dipakai desa lain.', 'CONFLICT')
+      const slug = alamat
       const id = `desa_${slug.replaceAll('-', '_')}`
       const desa: Desa = {
         id, slug, nama, kodeDesa: kodeLengkap, kecamatan: wilayah.kecamatan, kabupaten: wilayah.kabupaten, provinsi: wilayah.provinsi,
@@ -192,16 +219,65 @@ export const handlerKonsol = [
       // Pengaturan › Pengguna (tahap 6C).
       const admin: Pengguna = {
         id: `pgn_${slug.replaceAll('-', '_')}_admin`, desaId: id, nama: 'Admin desa', jabatan: 'Sekretaris Desa', peran: 'sekdes',
-        dusunId: null, email, aktif: true,
+        dusunId: null, email, aktif: true, nip: null,
       }
       ubahDb((d) => {
         d.desa.push(desa)
         d.pengguna.push(admin)
-        d.langganan.push({ desaId: id, paket, mulai: null, sampai: null, tagihan: [] })
+        d.langganan.push({ desaId: id, paket, periodeTagihan: 'triwulan', mulai: null, sampai: null })
         // Katalog bawaan, semuanya belum dilayani: desa memilihnya di langkah persiapan terakhir (tahap 6C).
         d.jenisSurat.push(...katalogDesaBaru(desa))
+        // Desa baru memulai tanpa modul Kesehatan; Sekretaris Desa menyalakannya di Pengaturan › Modul (SPEC-V0.2 12.3).
+        d.modulDesa.push({ desaId: id, ...MODUL_BAWAAN_DESA_BARU })
       })
       return HttpResponse.json({ id, nama, email }, { status: 201 })
+    }),
+  ),
+  http.put(
+    `${API}/konsol/desa/:id/alamat`,
+    denganJaringan(async ({ request, params }) => {
+      const pengguna = butuhPenggunaKonsol(request)
+      if (pengguna instanceof Response) return pengguna
+      const db = ambilDb()
+      const desa = db.desa.find((d) => d.id === String(params.id))
+      if (!desa) return balasGalat('NOT_FOUND', 'Desa tidak ditemukan.', 404)
+      const isian = ubahAlamatSchema.safeParse(await bacaJson(request))
+      if (!isian.success) return balasIsianTidakValid(isian.error)
+      const { alamat } = isian.data
+      const periksa = periksaLabelAlamat(db, alamat, desa.id)
+      if (periksa.status === 'sekarang') return balasField('alamat', 'Alamat baru sama dengan alamat sekarang.')
+      if (periksa.status !== 'tersedia') return balasField('alamat', periksa.pesan, 'CONFLICT')
+      // Alamat lama jadi alias selamanya supaya tautan dan QR surat lama tetap sampai; alias milik sendiri yang dipakai lagi
+      // keluar dari daftar alias (SPEC-V0.2 §4.2).
+      const lama = desa.slug
+      ubahDb((d) => {
+        d.aliasAlamat = [...d.aliasAlamat.filter((a) => a.label !== alamat), { label: lama, desaId: desa.id }]
+        desa.slug = alamat
+      })
+      return HttpResponse.json({ slug: alamat, aliasAlamat: db.aliasAlamat.filter((a) => a.desaId === desa.id).map((a) => a.label) })
+    }),
+  ),
+  http.post(
+    `${API}/konsol/desa/:id/tiket-bantuan`,
+    denganJaringan(async ({ request, params }) => {
+      const pengguna = butuhPenggunaKonsol(request)
+      if (pengguna instanceof Response) return pengguna
+      const db = ambilDb()
+      const desa = db.desa.find((d) => d.id === String(params.id))
+      if (!desa) return balasGalat('NOT_FOUND', 'Desa tidak ditemukan.', 404)
+      const sekarang = new Date()
+      const akses = db.aksesBantuan.find((a) => a.desaId === desa.id && masihBerlaku(a, sekarang))
+      if (!akses) return balasGalat('CONFLICT', 'Desa belum memberi akses bantuan.', 409)
+      const kode = crypto.randomUUID()
+      ubahDb((d) => {
+        const a = d.aksesBantuan.find((x) => x.id === akses.id)
+        if (a) {
+          a.tiket = { kode, berlakuSampai: waktuIsoWib(new Date(sekarang.getTime() + UMUR_TIKET_MS)), olehId: pengguna.id, olehNama: pengguna.nama }
+        }
+      })
+      // Tiket ditukar di alamat desa, yang membaca data dari penyimpanan bersama: simpan sebelum Konsol berpindah halaman.
+      await simpanSekarang()
+      return HttpResponse.json({ tiket: kode, alamat: desa.slug })
     }),
   ),
   http.post(
@@ -209,8 +285,6 @@ export const handlerKonsol = [
     denganJaringan(async ({ request, params }) => {
       const pengguna = butuhPenggunaKonsol(request)
       if (pengguna instanceof Response) return pengguna
-      const ditolak = tolakPemantau(pengguna)
-      if (ditolak) return ditolak
       const db = ambilDb()
       const desa = db.desa.find((d) => d.id === String(params.id))
       if (!desa) return balasGalat('NOT_FOUND', 'Desa tidak ditemukan.', 404)
@@ -220,47 +294,15 @@ export const handlerKonsol = [
       const ada = db.pengguna.find((p) => p.desaId === desa.id && p.peran === 'sekdes' && p.aktif)
       if (ada) return balasGalat('CONFLICT', `Desa ini sudah punya Sekretaris Desa aktif: ${ada.nama}.`, 409)
       const { nama, email } = isian.data
-      if ([...db.pengguna, ...db.penggunaKonsol].some((p) => p.email.toLowerCase() === email)) {
+      if (emailTerpakai(db, email)) {
         return balasField('email', 'Email ini sudah dipakai akun lain.', 'CONFLICT')
       }
       // Di demo undangan langsung aktif dengan kata sandi demo, sama dengan undangan di Pengaturan › Pengguna (tahap 6C).
-      const baru: Pengguna = { id: idBaru(db, 'pgn'), desaId: desa.id, nama, jabatan: 'Sekretaris Desa', peran: 'sekdes', dusunId: null, email, aktif: true }
+      const baru: Pengguna = { id: idBaru(db, 'pgn'), desaId: desa.id, nama, jabatan: 'Sekretaris Desa', peran: 'sekdes', dusunId: null, email, aktif: true, nip: null }
       ubahDb((d) => {
         d.pengguna.push(baru)
       })
       return HttpResponse.json({ nama, email }, { status: 201 })
-    }),
-  ),
-  http.get(
-    `${API}/konsol/pemantauan`,
-    denganJaringan(({ request }) => {
-      const pengguna = butuhPenggunaKonsol(request)
-      if (pengguna instanceof Response) return pengguna
-      const diminta = new URL(request.url).searchParams.get('wilayah')
-      // Pemantau selalu dibatasi ke wilayahnya; meminta wilayah lain berarti mencoba melihat yang bukan haknya (fokus review 1).
-      if (pengguna.wilayah && diminta !== null && diminta !== pengguna.wilayah.kode) {
-        return balasGalat('FORBIDDEN', 'Pemantau hanya membuka wilayahnya sendiri.', 403)
-      }
-      const kode = pengguna.wilayah?.kode ?? diminta
-      if (!kode) return balasField('wilayah', 'Pilih kabupaten.')
-      const nama = /^\d{2}\.\d{2}$/.test(kode) ? (KABUPATEN[kode.replace('.', '')] as string | undefined) : undefined
-      if (!nama) return balasField('wilayah', 'Kabupaten tidak dikenal.')
-      const db = ambilDb()
-      const sekarang = new Date()
-      const perKecamatan = new Map<string, { kecamatan: Desa['kecamatan']; desa: BarisPemantauanDesa[] }>()
-      for (const d of db.desa.filter((x) => x.kabupaten.kode === kode)) {
-        const k = perKecamatan.get(d.kecamatan.kode) ?? { kecamatan: d.kecamatan, desa: [] }
-        k.desa.push(barisPemantauan(d, angkaKonsolDesa(db, d, sekarang)))
-        perKecamatan.set(d.kecamatan.kode, k)
-      }
-      const kecamatan = [...perKecamatan.values()].sort((a, b) => urutNama(a.kecamatan, b.kecamatan))
-      const hasil: Pemantauan = {
-        wilayah: { kode, nama },
-        bulan: tanggalIsoWib(sekarang).slice(0, 7),
-        total: ringkasWilayah(kecamatan.flatMap((k) => k.desa)),
-        kecamatan: kecamatan.map((k) => ({ kecamatan: k.kecamatan, ...ringkasWilayah(k.desa), desa: [...k.desa].sort(urutNama) })),
-      }
-      return HttpResponse.json(hasil)
     }),
   ),
 ]

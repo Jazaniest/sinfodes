@@ -1,7 +1,8 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
 import { GalatApi, pesanGalat } from '@/api/galat'
-import { kunciKonsol, tambahDesa } from '@/api/konsol'
+import { kunciKonsol, opsiUsulanAlamat, tambahDesa } from '@/api/konsol'
+import { DOMAIN_INDUK } from '@/app/alamat'
 import { formatRupiah } from '@/domain/format/angka'
 import { galatDariZod } from '@/domain/format/galat-isian'
 import { HARGA_TRIWULAN, PAKET, tambahDesaSchema, type Paket } from '@/domain/konsol/schema'
@@ -12,7 +13,9 @@ import { TextField } from '@/ui/isian/TextField'
 import { PageHeader } from '@/ui/tata-letak/PageHeader'
 import { tampilkanToast } from '@/ui/toast/antrean'
 import { Tombol } from '@/ui/tombol/Tombol'
+import { useTunda } from '@/ui/hooks/useTunda'
 import { Banner } from '@/ui/umpan-balik/Banner'
+import { StatusAlamat } from './StatusAlamat'
 
 type Hasil = { id: string; nama: string; email: string }
 type Props = { onSelesai: (hasil: Hasil) => void; onBatal: () => void }
@@ -33,6 +36,14 @@ export function TambahDesa({ onSelesai, onBatal }: Props) {
   const [kodeDesa, setKodeDesa] = useState('')
   const [paket, setPaket] = useState<Paket>('Dasar')
   const [email, setEmail] = useState('')
+  // Alamat website (SPEC-V0.2 §4.2): diusulkan dari nama dan kecamatan sampai Tim Sinfodes mengetik sendiri.
+  const [alamatSendiri, setAlamatSendiri] = useState<string | null>(null)
+  const namaTenang = useTunda(nama.trim(), 300)
+  const usulan = useQuery({
+    ...opsiUsulanAlamat(namaTenang, kecamatan ?? ''),
+    enabled: alamatSendiri === null && namaTenang.length >= 3 && kecamatan !== null,
+  })
+  const alamat = alamatSendiri ?? usulan.data?.usulan ?? ''
   const [galat, setGalat] = useState<Record<string, string>>({})
   const simpan = useMutation({
     mutationFn: tambahDesa,
@@ -51,7 +62,7 @@ export function TambahDesa({ onSelesai, onBatal }: Props) {
 
   const kirim = (e: FormEvent) => {
     e.preventDefault()
-    const isian = tambahDesaSchema.safeParse({ nama, kecamatan: kecamatan ?? '', kodeDesa, paket, email })
+    const isian = tambahDesaSchema.safeParse({ nama, kecamatan: kecamatan ?? '', kodeDesa, paket, email, alamat })
     if (!isian.success) {
       setGalat(galatDariZod(isian.error))
       return
@@ -108,6 +119,21 @@ export function TambahDesa({ onSelesai, onBatal }: Props) {
           galat={galat.kodeDesa}
           isRequired
         />
+        <div className="flex flex-col gap-1.5">
+          <TextField
+            label="Alamat website"
+            value={alamat}
+            onChange={setAlamatSendiri}
+            inputClassName="font-mono"
+            galat={galat.alamat}
+            isRequired
+          />
+          <p className="text-teks-kecil text-tinta-2">
+            Alamat lengkap: <span className="font-mono">{alamat || 'namadesa'}</span>
+            <span className="font-mono">.{DOMAIN_INDUK}</span>
+          </p>
+          <StatusAlamat label={alamat} />
+        </div>
         <RadioGroup
           label="Paket"
           pilihan={PAKET.map((p) => ({ id: p, label: `${p} · ${formatRupiah(HARGA_TRIWULAN[p])} per triwulan` }))}

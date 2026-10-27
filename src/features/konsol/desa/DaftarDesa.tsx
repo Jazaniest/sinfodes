@@ -2,7 +2,8 @@ import { Plus } from '@phosphor-icons/react'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { pesanGalat } from '@/api/galat'
 import { opsiDaftarDesaKonsol } from '@/api/konsol'
-import { formatAngka, formatPersen } from '@/domain/format/angka'
+import { DOMAIN_INDUK, keAlamat } from '@/app/alamat'
+import { formatAngka } from '@/domain/format/angka'
 import { formatWaktuRelatif } from '@/domain/format/tanggal'
 import { PAKET, type BarisDesaKonsol, type FilterDesaKonsol } from '@/domain/konsol/schema'
 import { STATUS_DESA } from '@/domain/wilayah/schema'
@@ -36,6 +37,21 @@ function kolomDesa(sekarang: Date): KolomTabel<BarisDesaKonsol>[] {
         </span>
       ),
     },
+    {
+      id: 'alamat',
+      judul: 'Alamat',
+      // Tautan ke website desa; kliknya tidak ikut membuka detail desa dari baris tabel.
+      isi: (d) => (
+        <a
+          href={keAlamat({ jenis: 'desa', label: d.slug })}
+          onClick={(e) => e.stopPropagation()}
+          onPointerDown={(e) => e.stopPropagation()}
+          className="font-mono text-teks-kecil text-biru underline underline-offset-2"
+        >
+          {`${d.slug}.${DOMAIN_INDUK}`}
+        </a>
+      ),
+    },
     { id: 'wilayah', judul: 'Kecamatan · Kabupaten', isi: (d) => `${d.kecamatan.nama} · ${d.kabupaten.nama}` },
     { id: 'status', judul: 'Status', isi: (d) => d.status },
     { id: 'paket', judul: 'Paket', isi: (d) => d.paket },
@@ -44,12 +60,6 @@ function kolomDesa(sekarang: Date): KolomTabel<BarisDesaKonsol>[] {
       id: 'aktivitas',
       judul: 'Aktivitas terakhir',
       isi: (d) => (d.aktivitasTerakhir ? formatWaktuRelatif(d.aktivitasTerakhir, sekarang) : <span className={redup}>Belum ada</span>),
-    },
-    {
-      id: 'kelengkapan',
-      judul: 'Kelengkapan data',
-      rataKanan: true,
-      isi: (d) => (d.kelengkapan === null ? <span className={redup}>—</span> : <span className="tabular-nums">{formatPersen(d.kelengkapan)}</span>),
     },
   ]
 }

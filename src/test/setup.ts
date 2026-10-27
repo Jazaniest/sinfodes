@@ -19,7 +19,8 @@ if (typeof window !== 'undefined') {
     const max = /max-width:\s*(\d+)px/.exec(kueri)
     const lebar = window.innerWidth
     return {
-      matches: (!min || lebar >= Number(min[1])) && (!max || lebar <= Number(max[1])),
+      // Skema warna perangkat tidak ditiru: jsdom dianggap terang.
+      matches: !kueri.includes('prefers-color-scheme') && (!min || lebar >= Number(min[1])) && (!max || lebar <= Number(max[1])),
       media: kueri,
       onchange: null,
       addEventListener() {},

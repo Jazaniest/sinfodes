@@ -30,12 +30,12 @@ type Rencana = {
 /** SPEC §12.6: Pembangunan 2026, total Rp721.900.000 di dalam bidang Pelaksanaan Pembangunan. */
 const RENCANA: readonly Rencana[] = [
   {
-    nama: 'Semenisasi jalan lingkungan Dusun III', volume: '450 m', lokasi: 'Jalan lingkungan RT 011–013', dusun: 3, anggaran: 245_000_000,
+    nama: 'Semenisasi jalan lingkungan Dusun III', volume: '450 m', lokasi: 'Jalan lingkungan RT 011-013', dusun: 3, anggaran: 245_000_000,
     sumber: 'DD', fisik: 70, keuangan: 0.62, mulai: -100, target: 45, dok50: -40, dok100: null, titik: [102.7505, 0.233],
     foto: { 0: 'semenisasi-0', 50: 'semenisasi-50' },
   },
   {
-    nama: 'Drainase RT 006–007', volume: '320 m', lokasi: 'RT 006 dan RT 007', dusun: 2, anggaran: 98_000_000,
+    nama: 'Drainase RT 006-007', volume: '320 m', lokasi: 'RT 006 dan RT 007', dusun: 2, anggaran: 98_000_000,
     sumber: 'DD', fisik: 100, keuangan: 0.99, mulai: -190, target: -95, dok50: -150, dok100: -100, titik: [102.7662, 0.257],
   },
   {
@@ -47,7 +47,7 @@ const RENCANA: readonly Rencana[] = [
     sumber: 'DD', fisik: 40, keuangan: 0.35, mulai: -60, target: 60, dok50: null, dok100: null, titik: [102.7758, 0.2308],
   },
   {
-    nama: 'Titian kayu penghubung Dusun II–IV', volume: '180 m', lokasi: 'Antara Dusun II dan Dusun IV', dusun: 4, anggaran: 96_400_000,
+    nama: 'Titian kayu penghubung Dusun II-IV', volume: '180 m', lokasi: 'Antara Dusun II dan Dusun IV', dusun: 4, anggaran: 96_400_000,
     sumber: 'Bantuan Provinsi', fisik: 15, keuangan: 0.1, mulai: -25, target: 90, dok50: null, dok100: null, titik: [102.775, 0.2425],
   },
   {

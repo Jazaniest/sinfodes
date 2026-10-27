@@ -1,18 +1,22 @@
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState, type ReactNode } from 'react'
 import { GalatApi, pesanGalat } from '@/api/galat'
-import { opsiDetailDesaKonsol } from '@/api/konsol'
-import { formatAngka, formatPersen, formatRupiah } from '@/domain/format/angka'
-import { BULAN_PENDEK, formatTanggal, formatWaktuLog, tanggalIsoWib } from '@/domain/format/tanggal'
-import { LABEL_STATUS_TAGIHAN, statusTagihan, type StatusTagihan } from '@/domain/konsol/aturan'
+import { kunciKonsol, opsiDetailDesaKonsol, ubahPeriodeTagihan } from '@/api/konsol'
+import { DOMAIN_INDUK, keAlamat } from '@/app/alamat'
+import { formatAngka, formatRupiah, formatUkuranKb } from '@/domain/format/angka'
+import { formatTanggal, formatWaktuLog, tanggalIsoWib } from '@/domain/format/tanggal'
 import { HARGA_TRIWULAN, type DetailDesaKonsol } from '@/domain/konsol/schema'
+import { LABEL_PERIODE_TAGIHAN, PERIODE_TAGIHAN, type PeriodeTagihan } from '@/domain/langganan/tagihan'
+import { CapTagihan } from '@/features/langganan/CapTagihan'
 import { jumlahSelesai, LABEL_LANGKAH_PERSIAPAN, LANGKAH_PERSIAPAN } from '@/domain/wilayah/persiapan'
 import { Cap } from '@/ui/cap/Cap'
-import type { VarianCap } from '@/ui/cap/varian'
 import { DescriptionList } from '@/ui/data/DescriptionList'
 import { BarChart } from '@/ui/grafik/BarChart'
 import { MiniBar } from '@/ui/grafik/MiniBar'
 import { Checkbox } from '@/ui/isian/Checkbox'
+import { Select } from '@/ui/isian/Select'
+import { Timeline } from '@/ui/data/Timeline'
+import { tampilkanToast } from '@/ui/toast/antrean'
 import { TabNav } from '@/ui/navigasi/TabNav'
 import { Tautan } from '@/ui/navigasi/Tautan'
 import { PageHeader } from '@/ui/tata-letak/PageHeader'
@@ -20,6 +24,9 @@ import { Tombol } from '@/ui/tombol/Tombol'
 import { EmptyState } from '@/ui/umpan-balik/EmptyState'
 import { ErrorState } from '@/ui/umpan-balik/ErrorState'
 import { BarisKerangka } from '@/ui/umpan-balik/Skeleton'
+import { AksesBantuanDesa } from './AksesBantuanDesa'
+import { DialogUbahAlamat } from './DialogUbahAlamat'
+import { DialogUbahStatus } from './DialogUbahStatus'
 import { DialogUndangSekdes } from './DialogUndangSekdes'
 import { LABEL_TAB_DETAIL_DESA, TAB_DETAIL_DESA, type TabDetailDesa } from './tab-detail'
 
@@ -28,29 +35,47 @@ const redup = 'text-tinta-2'
 const sel = 'border-b border-garis py-1.5'
 const kepala = 'border-b border-garis py-1.5 text-label font-medium text-tinta-2 uppercase'
 
-const CAP_TAGIHAN: Readonly<Record<StatusTagihan, VarianCap>> = { lunas: 'selesai', menunggu: 'menunggu', 'lewat-jatuh-tempo': 'ditolak' }
-
-const labelBulan = (bulan: string) => `${BULAN_PENDEK[Number(bulan.slice(5, 7)) - 1]} ${bulan.slice(0, 4)}`
-
 function TabRingkasan({ d }: { d: DetailDesaKonsol }) {
+  const [ubahAlamat, setUbahAlamat] = useState(false)
   return (
-    <DescriptionList
-      items={[
-        { label: 'Kode desa', nilai: <span className="font-mono">{d.kodeDesa}</span> },
-        { label: 'Status', nilai: d.status },
-        { label: 'Paket', nilai: d.paket },
-        { label: 'Alamat kantor', nilai: d.alamatKantor || null },
-        { label: 'Surel', nilai: d.surel || null },
-        { label: 'Telepon', nilai: d.telepon || null },
-        { label: 'Kepala desa', nilai: d.kontak.kades },
-        { label: 'Sekretaris Desa', nilai: d.kontak.sekdes && `${d.kontak.sekdes.nama} · ${d.kontak.sekdes.email}` },
-        { label: 'Operator', nilai: d.kontak.operator && `${d.kontak.operator.nama} · ${d.kontak.operator.email}` },
-        { label: 'Penduduk', nilai: d.jiwa > 0 ? `${formatAngka(d.jiwa)} jiwa` : <span className={redup}>Belum ada data penduduk</span> },
-        { label: 'Kelengkapan data', nilai: d.kelengkapan === null ? <span className={redup}>—</span> : formatPersen(d.kelengkapan) },
-        { label: 'Pengguna aktif', nilai: `${formatAngka(d.penggunaAktif)} akun masuk dalam 30 hari terakhir` },
-        { label: 'Aktivitas terakhir', nilai: d.aktivitasTerakhir ? formatWaktuLog(d.aktivitasTerakhir) : <span className={redup}>Belum ada</span> },
-      ]}
-    />
+    <>
+      <DescriptionList
+        items={[
+          { label: 'Kode desa', nilai: <span className="font-mono">{d.kodeDesa}</span> },
+          { label: 'Status', nilai: d.status },
+          { label: 'Paket', nilai: d.paket },
+          { label: 'Alamat kantor', nilai: d.alamatKantor || null },
+          { label: 'Surel', nilai: d.surel || null },
+          { label: 'Telepon', nilai: d.telepon || null },
+          { label: 'Kepala desa', nilai: d.kontak.kades },
+          { label: 'Sekretaris Desa', nilai: d.kontak.sekdes && `${d.kontak.sekdes.nama} · ${d.kontak.sekdes.email}` },
+          { label: 'Operator', nilai: d.kontak.operator && `${d.kontak.operator.nama} · ${d.kontak.operator.email}` },
+          {
+            label: 'Alamat',
+            nilai: (
+              <span className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+                <Tautan href={keAlamat({ jenis: 'desa', label: d.slug })} className="font-mono">
+                  {`${d.slug}.${DOMAIN_INDUK}`}
+                </Tautan>
+                <Tombol varian="teks" onPress={() => setUbahAlamat(true)}>
+                  Ubah alamat
+                </Tombol>
+              </span>
+            ),
+          },
+          {
+            label: 'Alamat lama',
+            nilai:
+              d.aliasAlamat.length > 0 ? (
+                <span className="font-mono">{d.aliasAlamat.join(', ')}</span>
+              ) : (
+                <span className={redup}>Belum pernah diganti</span>
+              ),
+          },
+        ]}
+      />
+      {ubahAlamat && <DialogUbahAlamat desaId={d.id} alamatSekarang={d.slug} onTutup={() => setUbahAlamat(false)} />}
+    </>
   )
 }
 
@@ -128,23 +153,24 @@ function Deret(props: { id: string; judul: string; kolom: string; kosong: string
   )
 }
 
-function TabPenggunaan({ d }: { d: DetailDesaKonsol }) {
+/** Keaktifan (SPEC-V0.2 §7): tanda pemakaian Sinfodes oleh desa, bukan isi data desa. */
+function TabKeaktifan({ d }: { d: DetailDesaKonsol }) {
   const [tabel, setTabel] = useState(false)
   return (
     <div className="flex flex-col gap-6">
+      <DescriptionList
+        items={[
+          { label: 'Terakhir dipakai', nilai: d.aktivitasTerakhir ? formatWaktuLog(d.aktivitasTerakhir) : <span className={redup}>Belum ada</span> },
+          { label: 'Akun aktif', nilai: `${formatAngka(d.penggunaAktif)} akun masuk dalam 30 hari terakhir` },
+          { label: 'Modul aktif', nilai: d.modulAktif.length > 0 ? d.modulAktif.join(', ') : '-' },
+          { label: 'Penyimpanan berkas', nilai: formatUkuranKb(d.penyimpananKb) },
+        ]}
+      />
+      <AksesBantuanDesa d={d} />
       <Checkbox isSelected={tabel} onChange={setTabel} className="self-start">
         Lihat sebagai tabel
       </Checkbox>
       <div className="grid gap-x-10 gap-y-8 xl:grid-cols-2">
-        <Deret
-          id="judul-surat-bulanan"
-          judul="Surat terbit per bulan"
-          kolom="Bulan"
-          kosong="Belum ada surat terbit dalam 12 bulan terakhir."
-          satuan="surat"
-          tabel={tabel}
-          data={d.suratPerBulan.map((b) => ({ kunci: b.bulan, label: labelBulan(b.bulan), jumlah: b.jumlah }))}
-        />
         <Deret
           id="judul-masuk-mingguan"
           judul="Masuk panel per minggu"
@@ -159,15 +185,71 @@ function TabPenggunaan({ d }: { d: DetailDesaKonsol }) {
   )
 }
 
+/** Periode tagihan berlaku mulai tagihan berikutnya; tagihan yang sudah terbit tidak berubah (rencana 7D-2 keputusan 8). */
+function PemilihPeriode({ d }: { d: DetailDesaKonsol }) {
+  const queryClient = useQueryClient()
+  const ubah = useMutation({
+    mutationFn: (periode: PeriodeTagihan) => ubahPeriodeTagihan(d.id, periode),
+    onSuccess: async () => {
+      tampilkanToast({ pesan: 'Periode tagihan diubah. Berlaku mulai tagihan berikutnya.', nada: 'berhasil' })
+      await queryClient.invalidateQueries({ queryKey: kunciKonsol.semua })
+    },
+    onError: (e) => tampilkanToast({ pesan: pesanGalat(e), nada: 'galat' }),
+  })
+  return (
+    <Select
+      label="Periode tagihan"
+      labelTersembunyi
+      className="w-44"
+      isDisabled={ubah.isPending}
+      pilihan={PERIODE_TAGIHAN.map((p) => ({ id: p, label: LABEL_PERIODE_TAGIHAN[p] }))}
+      nilai={d.langganan.periodeTagihan}
+      onUbah={(id) => {
+        const baru = PERIODE_TAGIHAN.find((p) => p === id)
+        if (baru && baru !== d.langganan.periodeTagihan) ubah.mutate(baru)
+      }}
+    />
+  )
+}
+
+function StatusDesa({ d }: { d: DetailDesaKonsol }) {
+  const [ubah, setUbah] = useState(false)
+  return (
+    <section aria-labelledby="judul-status-desa" className="flex flex-col gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 id="judul-status-desa" className={judulBagian}>
+          {`Status desa: ${d.status}`}
+        </h2>
+        <Tombol onPress={() => setUbah(true)}>Ubah status</Tombol>
+      </div>
+      {d.riwayatStatus.length === 0 ? (
+        <p className={redup}>Belum ada perubahan status.</p>
+      ) : (
+        <Timeline
+          label="Riwayat status"
+          entri={d.riwayatStatus.map((r, i) => ({
+            id: `${i}-${r.pada}`,
+            waktu: formatWaktuLog(r.pada),
+            judul: `${r.dari} → ${r.ke} · ${r.oleh.nama}`,
+            keterangan: r.alasan,
+          }))}
+        />
+      )}
+      {ubah && <DialogUbahStatus desa={d} onTutup={() => setUbah(false)} />}
+    </section>
+  )
+}
+
 function TabLangganan({ d, hariIni }: { d: DetailDesaKonsol; hariIni: string }) {
   const l = d.langganan
   const masa =
-    l.mulai && l.sampai ? `${formatTanggal(l.mulai)} – ${formatTanggal(l.sampai)}` : <span className={redup}>Belum ditentukan, desa masih dalam persiapan</span>
+    l.mulai && l.sampai ? `${formatTanggal(l.mulai)} - ${formatTanggal(l.sampai)}` : <span className={redup}>Belum ditentukan, desa masih dalam persiapan</span>
   return (
     <div className="flex max-w-3xl flex-col gap-6">
       <DescriptionList
         items={[
           { label: 'Paket', nilai: `${l.paket} · ${formatRupiah(HARGA_TRIWULAN[l.paket])} per triwulan` },
+          { label: 'Penagihan', nilai: <PemilihPeriode d={d} /> },
           { label: d.status === 'Uji coba' ? 'Masa uji coba' : 'Masa aktif', nilai: masa },
         ]}
       />
@@ -175,7 +257,7 @@ function TabLangganan({ d, hariIni }: { d: DetailDesaKonsol; hariIni: string }) 
         <h2 id="judul-tagihan" className={judulBagian}>
           Tagihan
         </h2>
-        {l.tagihan.length === 0 ? (
+        {d.tagihan.length === 0 ? (
           <p className={redup}>Belum ada tagihan.</p>
         ) : (
           <div className="overflow-x-auto">
@@ -190,7 +272,7 @@ function TabLangganan({ d, hariIni }: { d: DetailDesaKonsol; hariIni: string }) 
                     Periode
                   </th>
                   <th scope="col" className={`${kepala} text-right`}>
-                    Jumlah
+                    Nominal
                   </th>
                   <th scope="col" className={`${kepala} text-left`}>
                     Jatuh tempo
@@ -201,18 +283,17 @@ function TabLangganan({ d, hariIni }: { d: DetailDesaKonsol; hariIni: string }) 
                 </tr>
               </thead>
               <tbody>
-                {[...l.tagihan].reverse().map((t) => {
-                  const status = statusTagihan(t, hariIni)
+                {[...d.tagihan].reverse().map((t) => {
                   return (
-                    <tr key={t.nomor}>
+                    <tr key={t.id}>
                       <th scope="row" className={`${sel} text-left font-mono font-normal`}>
-                        {t.nomor}
+                        <Tautan href={`/konsol/tagihan/${encodeURIComponent(t.id)}`}>{t.nomor}</Tautan>
                       </th>
-                      <td className={sel}>{t.periode}</td>
-                      <td className={`${sel} text-right tabular-nums`}>{formatRupiah(t.jumlah)}</td>
+                      <td className={sel}>{t.periode.label}</td>
+                      <td className={`${sel} text-right tabular-nums`}>{formatRupiah(t.nominal)}</td>
                       <td className={sel}>{formatTanggal(t.jatuhTempo, 'pendek')}</td>
                       <td className={sel}>
-                        <Cap varian={CAP_TAGIHAN[status]} label={LABEL_STATUS_TAGIHAN[status]} />
+                        <CapTagihan tagihan={t} hariIni={hariIni} />
                       </td>
                     </tr>
                   )
@@ -221,8 +302,9 @@ function TabLangganan({ d, hariIni }: { d: DetailDesaKonsol; hariIni: string }) 
             </table>
           </div>
         )}
-        <p className="text-teks-kecil text-tinta-2">Tagihan contoh untuk demo; pembayaran tidak diproses di sini.</p>
+        <p className="text-teks-kecil text-tinta-2">Tagihan contoh untuk demo; pembayaran diverifikasi di menu Tagihan.</p>
       </section>
+      <StatusDesa d={d} />
     </div>
   )
 }
@@ -262,7 +344,7 @@ export function DetailDesa({ id, tab, sekarang = new Date() }: { id: string; tab
       {kueri.isError && <ErrorState pesan={pesanGalat(kueri.error)} onCobaLagi={() => void kueri.refetch()} />}
       {d && tab === 'ringkasan' && <TabRingkasan d={d} />}
       {d && tab === 'persiapan' && <TabPersiapan d={d} />}
-      {d && tab === 'penggunaan' && <TabPenggunaan d={d} />}
+      {d && tab === 'keaktifan' && <TabKeaktifan d={d} />}
       {d && tab === 'langganan' && <TabLangganan d={d} hariIni={tanggalIsoWib(sekarang)} />}
     </div>
   )

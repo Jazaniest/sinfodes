@@ -6,7 +6,7 @@ import { segarkanKependudukan } from '@/api/segarkan'
 import type { Pemetaan } from '@/domain/impor/kolom'
 import type { NilaiBaris } from '@/domain/impor/periksa'
 import type { HasilImpor, LaporanImpor } from '@/domain/impor/schema'
-import { boleh } from '@/domain/pengguna/hak-akses'
+import { useBoleh } from '@/features/admin/useBoleh'
 import { Stepper } from '@/ui/navigasi/Stepper'
 import { tampilkanToast } from '@/ui/toast/antrean'
 import { TautanTombol } from '@/ui/tombol/TautanTombol'
@@ -42,7 +42,8 @@ type Props = { onKotor?: (kotor: boolean) => void; onLihatDaftar: () => void; se
 
 /** Impor penduduk dari Excel dalam empat langkah (SPEC §6.8). Data baru tersimpan di langkah terakhir. */
 export function ImporPenduduk({ onKotor, onLihatDaftar, sekarang }: Props) {
-  const { dusun, pengguna } = useSesiAdmin()
+  const { dusun } = useSesiAdmin()
+  const boleh = useBoleh()
   const queryClient = useQueryClient()
   const hariIni = useMemo(() => sekarang ?? new Date(), [sekarang])
   const [tahap, setTahap] = useState<Tahap>({ langkah: 'unggah' })
@@ -80,7 +81,7 @@ export function ImporPenduduk({ onKotor, onLihatDaftar, sekarang }: Props) {
         judul="Atur wilayah desa dulu"
         keterangan="Setiap penduduk dicatat dengan dusun, RW, dan RT-nya, dan desa ini belum punya dusun. Tambahkan dusun, RW, dan RT di Pengaturan › Wilayah, lalu kembali ke sini."
         aksi={
-          boleh(pengguna.peran, 'pengaturan.kelola') && (
+          boleh('pengaturan.kelola') && (
             <TautanTombol href="/admin/pengaturan/wilayah" varian="utama">
               Buka Pengaturan › Wilayah
             </TautanTombol>

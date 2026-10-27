@@ -1,10 +1,10 @@
 import type { Mutasi } from '@/domain/mutasi/schema'
 import { cakupanDusun } from '@/domain/pengguna/hak-akses'
-import type { Pengguna } from '@/domain/pengguna/schema'
+import type { PenggunaSesi } from '@/domain/pengguna/schema'
 import { ambilDb } from './db'
 
 /** Data milik pengguna: desanya saja; Kepala Dusun hanya dusunnya (SPEC §3.4, §5.1). */
-export function dataMilik(pengguna: Pengguna) {
+export function dataMilik(pengguna: PenggunaSesi) {
   const db = ambilDb()
   const dusunSaja = cakupanDusun(pengguna)
   const diDalam = (x: { desaId: string; dusunId: string | null }) =>

@@ -2,17 +2,20 @@ import { http, HttpResponse } from 'msw'
 import { tanggalIsoWib } from '@/domain/format/tanggal'
 import { JENIS_LEMBAGA, NAMA_LENGKAP_LEMBAGA, teksMasaBakti, type Pengurus } from '@/domain/lembaga/schema'
 import { URUTAN_STATUS } from '@/domain/pembangunan/schema'
+import type { HalamanPublik } from '@/domain/publik/schema'
 import type { PotensiPublik } from '@/domain/publik/potensi'
 import type { PengurusPublik, ProfilPublik } from '@/domain/publik/profil'
 import { keStatistikPublik } from '@/domain/publik/statistik'
 import type { TransparansiPublik } from '@/domain/publik/transparansi'
 import { hitungStatistik } from '@/domain/statistik/penduduk'
 import { namaDusun } from '@/domain/wilayah/alamat'
-import { API, denganJaringan } from '../http'
+import { fotoDari, jumlahKkAktif, potensiDesa, selesaikanBlok } from '../blok-publik'
+import { API, balasGalat, denganJaringan } from '../http'
 import { apbdesTerbaru } from './keuangan'
 import { barisKegiatan } from './pembangunan'
-import { cariDesaPublik, fotoDari, jumlahKkAktif, potensiDesa } from './publik'
+import { cariDesaPublik } from './publik'
 import { lapisanDesa } from './tata-kelola'
+import { versiTerbit, sumberTerbit } from './website'
 
 /** Jabatan dan nama saja: website tidak membuka rujukan ke data penduduk (`pendudukId`). */
 const keOrang = (p: Pengurus): PengurusPublik => ({ jabatan: p.jabatan, nama: p.nama, masaBakti: teksMasaBakti(p.masaBakti) })
@@ -21,8 +24,8 @@ const keOrang = (p: Pengurus): PengurusPublik => ({ jabatan: p.jabatan, nama: p.
 export const handlerPublikHalaman = [
   http.get(
     `${API}/publik/:slug/profil`,
-    denganJaringan(({ params }) => {
-      const c = cariDesaPublik(params.slug)
+    denganJaringan(({ request, params }) => {
+      const c = cariDesaPublik(params.slug, request)
       if (c instanceof Response) return c
       const { db, desa } = c
       const profil = db.profilDesa.find((p) => p.desaId === desa.id)
@@ -42,6 +45,7 @@ export const handlerPublikHalaman = [
           rt: d.rw.reduce((n, w) => n + w.rt.length, 0),
         })),
         peta: lapisanDesa(db, desa.id),
+        profilSingkat: profil ? null : (db.rekamDesa.find((r) => r.desaId === desa.id)?.profilSingkat ?? null),
         perangkat: pengurus.filter((p) => p.lembaga === 'perangkat').map(keOrang),
         lembaga: JENIS_LEMBAGA.filter((j) => j !== 'perangkat').flatMap((j) => {
           const anggota = pengurus.filter((p) => p.lembaga === j)
@@ -53,8 +57,8 @@ export const handlerPublikHalaman = [
   ),
   http.get(
     `${API}/publik/:slug/transparansi`,
-    denganJaringan(({ params }) => {
-      const c = cariDesaPublik(params.slug)
+    denganJaringan(({ request, params }) => {
+      const c = cariDesaPublik(params.slug, request)
       if (c instanceof Response) return c
       const { db, desa } = c
       const apbdes = apbdesTerbaru(desa.id)
@@ -75,8 +79,8 @@ export const handlerPublikHalaman = [
   ),
   http.get(
     `${API}/publik/:slug/statistik`,
-    denganJaringan(({ params }) => {
-      const c = cariDesaPublik(params.slug)
+    denganJaringan(({ request, params }) => {
+      const c = cariDesaPublik(params.slug, request)
       if (c instanceof Response) return c
       const { db, desa } = c
       const sekarang = new Date()
@@ -93,8 +97,8 @@ export const handlerPublikHalaman = [
   ),
   http.get(
     `${API}/publik/:slug/potensi`,
-    denganJaringan(({ params }) => {
-      const c = cariDesaPublik(params.slug)
+    denganJaringan(({ request, params }) => {
+      const c = cariDesaPublik(params.slug, request)
       if (c instanceof Response) return c
       const { db, desa } = c
       const hasil: PotensiPublik = {
@@ -111,6 +115,18 @@ export const handlerPublikHalaman = [
             }
           }),
       }
+      return HttpResponse.json(hasil)
+    }),
+  ),
+  http.get(
+    `${API}/publik/:slug/halaman/:nama`,
+    denganJaringan(({ request, params }) => {
+      const c = cariDesaPublik(params.slug, request)
+      if (c instanceof Response) return c
+      const { db, desa } = c
+      const halaman = versiTerbit(db, desa.id).susunan.halaman.find((h) => h.nama === String(params.nama))
+      if (!halaman) return balasGalat('NOT_FOUND', 'Halaman tidak ditemukan.', 404)
+      const hasil: HalamanPublik = { judul: halaman.judul, blok: selesaikanBlok(db, desa, halaman.blok, new Date(), sumberTerbit(db, desa.id)) }
       return HttpResponse.json(hasil)
     }),
   ),

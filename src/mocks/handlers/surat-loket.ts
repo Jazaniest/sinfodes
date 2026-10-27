@@ -2,7 +2,7 @@ import { http, HttpResponse } from 'msw'
 import { z } from 'zod'
 import { waktuIsoWib } from '@/domain/format/tanggal'
 import { peranMengizinkan, statusMengizinkan, tahapAwalTtd } from '@/domain/surat/alur'
-import { periksaIsian, saringIsian } from '@/domain/surat/jenis'
+import { dilayani, periksaIsian, saringIsian } from '@/domain/surat/jenis'
 import { periksaPemohon } from '@/domain/surat/pemohon'
 import { buatPermohonanSchema, type DetailPermohonan, type Permohonan, type SaranSurat } from '@/domain/surat/permohonan'
 import { JENIS_MUTASI_SURAT, saranDariMutasi } from '@/domain/surat/saran'
@@ -32,8 +32,10 @@ export const handlerSuratLoket = [
       // Mulai di sini tanpa `await`: dua klik "Ajukan" tidak bisa memakai nomor urut yang sama.
       const m = masukan.data
       const { db, jenisSurat } = dataMilik(pengguna)
-      const jenis = jenisSurat.find((j) => j.id === m.jenisId && j.aktif)
-      if (!jenis) return balasField('jenisId', 'Jenis surat tidak ditemukan atau sedang tidak dilayani.')
+      const jenis = jenisSurat.find((j) => j.id === m.jenisId)
+      if (!jenis) return balasField('jenisId', 'Jenis surat tidak ditemukan.')
+      // Jenis mati atau diarsipkan hanya menutup permohonan baru; yang sudah berjalan tetap diproses (fokus review 1).
+      if (!dilayani(jenis)) return balasField('jenisId', 'Jenis surat ini tidak tersedia.', 'CONFLICT')
       const warga = (id: string | null) => (id ? db.penduduk.find((p) => p.id === id && p.desaId === pengguna.desaId) : undefined)
       const pemohon = warga(m.pemohonId)
       if (!pemohon) return balasField('pemohonId', 'Pemohon tidak ditemukan.')

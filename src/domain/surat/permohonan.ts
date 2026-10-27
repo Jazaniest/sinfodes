@@ -4,6 +4,7 @@ import { pendudukSchema } from '../penduduk/schema'
 import { isiLembarSchema } from './isi-lembar'
 import { jenisSuratSchema } from './jenis'
 import { MODE_TANDA_TANGAN, pengaturanSuratSchema } from './pengaturan'
+import { tataLetakSuratSchema } from './tata-letak'
 import { POLA_KODE_VERIFIKASI } from './verifikasi'
 
 export const STATUS_PERMOHONAN = ['menunggu', 'diproses', 'perlu-ttd', 'selesai', 'ditolak', 'dibatalkan'] as const
@@ -64,11 +65,19 @@ export const terbitSchema = z.object({
   urut: z.number().int().min(1),
   kodeVerifikasi: z.string().regex(POLA_KODE_VERIFIKASI),
   pada: waktu,
-  penandatangan: z.object({ id: z.string(), nama: z.string(), peran: z.enum(['kades', 'sekdes']) }),
+  /** `nip` dibekukan bersama penanda tangan, untuk blok tanda tangan bila tata letaknya menampilkan NIP (SPEC-V0.2 12.2). */
+  penandatangan: z.object({ id: z.string(), nama: z.string(), peran: z.enum(['kades', 'sekdes']), nip: z.string().nullable() }),
   mode: z.enum(MODE_TANDA_TANGAN),
   berlakuSampai: z.iso.date().nullable(),
   /** Isi surat dibekukan saat ditandatangani: perubahan data penduduk sesudahnya tidak mengubah surat yang terbit. */
   lembar: isiLembarSchema,
+  /** Tata letak yang berlaku saat tanda tangan, dibekukan: mengganti tata letak desa tidak mengubah surat yang sudah terbit (SPEC-V0.2 12.2). */
+  tataLetak: tataLetakSuratSchema,
+  /**
+   * Lambang yang terpasang saat tanda tangan, dibekukan sebagai data URL (null bila memakai lambang tiruan). Di demo
+   * string yang sama dipakai bersama; di server nyata disimpan sebagai rujukan versi lambang.
+   */
+  kop: z.object({ lambang: z.string().nullable(), lambangKabupaten: z.string().nullable() }),
 })
 export type Terbit = z.infer<typeof terbitSchema>
 
@@ -154,6 +163,9 @@ export const jumlahPermohonanSchema = z.object({
 })
 export type JumlahPermohonan = z.infer<typeof jumlahPermohonanSchema>
 
+/** Pejabat yang menjabat; `nipKades` mengisi NIP di blok tanda tangan draf bila tata letaknya menampilkan NIP. */
+export const pejabatSchema = z.object({ kades: z.string(), sekdes: z.string(), nipKades: z.string().nullable().optional() })
+
 /** GET /permohonan/:id dan hasil setiap aksi: semua yang dibutuhkan ruang kerja dan lembar surat. */
 export const detailPermohonanSchema = z.object({
   permohonan: permohonanSchema,
@@ -163,7 +175,7 @@ export const detailPermohonanSchema = z.object({
   mutasi: mutasiSchema.nullable(),
   pengaturan: pengaturanSuratSchema,
   /** Nama pejabat penandatangan saat ini, untuk blok tanda tangan draf. */
-  pejabat: z.object({ kades: z.string(), sekdes: z.string() }),
+  pejabat: pejabatSchema,
 })
 export type DetailPermohonan = z.infer<typeof detailPermohonanSchema>
 
@@ -200,6 +212,6 @@ export const saranSuratSchema = z.object({
   pemohonId: z.string().nullable(),
   isian: z.record(z.string(), z.string()),
   pengaturan: pengaturanSuratSchema,
-  pejabat: z.object({ kades: z.string(), sekdes: z.string() }),
+  pejabat: pejabatSchema,
 })
 export type SaranSurat = z.infer<typeof saranSuratSchema>

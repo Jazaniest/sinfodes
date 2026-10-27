@@ -87,7 +87,7 @@ describe('alur status surat (SPEC §7.1, §7.2)', () => {
   it('Sekdes menandatangani a.n. Kepala Desa bila jenis suratnya mengizinkan', async () => {
     masukSebagai(AKUN_UJI.sekdes)
     const { permohonan: p } = await jalankanAksi(ttdDomisili().id, 'tandatangani', PASSPHRASE)
-    expect(p.terbit?.penandatangan).toEqual({ id: 'pgn_hendri', nama: 'Hendri Saputra', peran: 'sekdes' })
+    expect(p.terbit?.penandatangan).toEqual({ id: 'pgn_hendri', nama: 'Hendri Saputra', peran: 'sekdes', nip: null })
   })
   it('ajukan tanda tangan: isian diperiksa per field; kunci asing dibuang (fokus review 3)', async () => {
     const id = domisiliSiti().id

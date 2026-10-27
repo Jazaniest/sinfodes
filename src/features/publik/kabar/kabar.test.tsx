@@ -16,7 +16,7 @@ describe('Kabar desa (SPEC §9)', () => {
     expect(kabar[0]).toHaveAccessibleName('Penyaluran BLT Tahap III Dijadwalkan 30 September')
     const filter = screen.getByRole('navigation', { name: 'Kategori kabar' })
     expect(within(filter).getByRole('link', { name: 'Semua' })).toHaveAttribute('aria-current', 'page')
-    expect(within(filter).getByRole('link', { name: 'Budaya' })).toHaveAttribute('href', '/desa/sungai-sialang/kabar?kategori=Budaya')
+    expect(within(filter).getByRole('link', { name: 'Budaya' })).toHaveAttribute('href', '/desa/sungaisialang/kabar?kategori=Budaya')
   })
   it('kategori terpilih: hanya kabar kategori itu, dan tautan kategorinya aktif', async () => {
     renderPublik(<DaftarKabar kategori="Budaya" />)
@@ -36,11 +36,11 @@ describe('Kabar desa (SPEC §9)', () => {
     expect(screen.getByRole('figure')).toHaveTextContent('Foto: Zhilal Darma · CC BY-SA 4.0')
     // 1ch = lebar angka "0"; huruf rata-rata IBM Plex Sans lebih sempit, jadi ±68 karakter teks ≈ 56ch (diukur di browser).
     expect(screen.getByText(/^Tradisi menumbai kembali digelar/).parentElement).toHaveClass('text-baca', 'max-w-[56ch]')
-    expect(screen.getByRole('link', { name: '← Semua kabar' })).toHaveAttribute('href', '/desa/sungai-sialang/kabar')
+    expect(screen.getByRole('link', { name: '← Semua kabar' })).toHaveAttribute('href', '/desa/sungaisialang/kabar')
   })
   it('kabar yang masih draf atau alamat yang salah → "Kabar tidak ditemukan" dengan jalan kembali (fokus review 4)', async () => {
     renderPublik(<ArtikelPublik artikel="festival-bono-teluk-meranti-warga-siapkan-homestay" />)
     expect(await screen.findByRole('heading', { level: 1, name: 'Kabar tidak ditemukan' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Lihat semua kabar' })).toHaveAttribute('href', '/desa/sungai-sialang/kabar')
+    expect(screen.getByRole('link', { name: 'Lihat semua kabar' })).toHaveAttribute('href', '/desa/sungaisialang/kabar')
   })
 })

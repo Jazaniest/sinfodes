@@ -54,5 +54,5 @@ export function kelompokLembaga(daftar: readonly Pengurus[]): { lembaga: JenisLe
   })).filter((k) => k.anggota.length > 0)
 }
 
-/** "2021–2029", atau "sejak 2018" bila masa baktinya belum ditentukan berakhir. */
-export const teksMasaBakti = (m: Pengurus['masaBakti']): string => (m.selesai === null ? `sejak ${m.mulai}` : `${m.mulai}–${m.selesai}`)
+/** "2021-2029", atau "sejak 2018" bila masa baktinya belum ditentukan berakhir. */
+export const teksMasaBakti = (m: Pengurus['masaBakti']): string => (m.selesai === null ? `sejak ${m.mulai}` : `${m.mulai}-${m.selesai}`)

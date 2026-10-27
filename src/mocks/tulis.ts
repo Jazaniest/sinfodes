@@ -4,27 +4,52 @@ import { galatDariZod } from '@/domain/format/galat-isian'
 import type { Pelaku } from '@/domain/mutasi/schema'
 import type { Perubahan } from '@/domain/penduduk/perubahan'
 import type { Penduduk } from '@/domain/penduduk/schema'
-import { boleh, type Kemampuan } from '@/domain/pengguna/hak-akses'
-import type { Pengguna } from '@/domain/pengguna/schema'
+import { PESAN_MODUL_KESEHATAN_MATI } from '@/domain/pengaturan/modul'
+import { boleh, bolehDi, type Kemampuan } from '@/domain/pengguna/hak-akses'
+import type { PenggunaSesi } from '@/domain/pengguna/schema'
 import type { Dusun } from '@/domain/wilayah/schema'
 import { balasGalat } from './http'
+import { modulDesaDi } from './modul'
+import { hanyaMembaca, PESAN_PANEL_DITANGGUHKAN, statusDesaDi } from './penangguhan'
 import { butuhPengguna } from './sesi-mock'
 import type { DbDemo } from './tipe-db'
 
-/** Pengguna yang punya kemampuan tertentu, atau Response galat yang langsung dikembalikan handler. */
-export function butuhKemampuan(request: Request, kemampuan: Kemampuan, pesan: string): Pengguna | Response {
+/**
+ * Pengguna yang punya kemampuan tertentu, atau Response galat yang langsung dikembalikan handler. Selama desa Ditangguhkan,
+ * request yang mengubah data ditolak walau perannya berhak (SPEC-V0.2 §10.5); request baca (`GET`) tidak.
+ */
+export function butuhKemampuan(request: Request, kemampuan: Kemampuan, pesan: string): PenggunaSesi | Response {
   const pengguna = butuhPengguna(request)
   if (pengguna instanceof Response) return pengguna
-  return boleh(pengguna.peran, kemampuan) ? pengguna : balasGalat('FORBIDDEN', pesan, 403)
+  if (!boleh(pengguna.peran, kemampuan)) return balasGalat('FORBIDDEN', pesan, 403)
+  // Modul Kesehatan mati: semua endpoint Kesehatan menutup, termasuk untuk peran yang berhak (SPEC-V0.2 12.3).
+  if (kemampuan === 'kesehatan.lihat' && !modulDesaDi(pengguna.desaId).kesehatan) {
+    return balasGalat('FORBIDDEN', PESAN_MODUL_KESEHATAN_MATI, 403)
+  }
+  if (!hanyaMembaca(request) && !bolehDi(pengguna.peran, statusDesaDi(pengguna.desaId), kemampuan)) {
+    return balasGalat('FORBIDDEN', PESAN_PANEL_DITANGGUHKAN, 403)
+  }
+  return pengguna
 }
 
 /** Hanya Operator dan Sekretaris Desa yang boleh mengubah data kependudukan (SPEC §5.1). */
-export const butuhPengubah = (request: Request): Pengguna | Response =>
+export const butuhPengubah = (request: Request): PenggunaSesi | Response =>
   butuhKemampuan(request, 'penduduk.ubah', 'Peran Anda tidak berhak mengubah data kependudukan.')
 
-export const pelakuDari = (p: Pengguna): Pelaku => ({ id: p.id, nama: p.nama })
+export const pelakuDari = (p: Pick<PenggunaSesi, 'id' | 'nama'>): Pelaku => ({ id: p.id, nama: p.nama })
 
 export const bacaJson = (request: Request): Promise<unknown> => request.json().catch(() => null)
+
+/** Isi `data` (JSON) dari FormData yang membawa berkas; undefined bila tidak ada atau bukan JSON. */
+export function dataJson(form: FormData | null): unknown {
+  const data = form?.get('data')
+  if (typeof data !== 'string') return undefined
+  try {
+    return JSON.parse(data) as unknown
+  } catch {
+    return undefined
+  }
+}
 
 /** Galat Zod → `fields` respons VALIDATION, mis. { "bayi.nama": "Nama bayi wajib diisi" }. Satu pesan per field. */
 export function galatIsian(galat: z.ZodError): Record<string, string> {
@@ -45,7 +70,8 @@ export function idBaru(db: DbDemo, awalan: string): string {
   const terpakai = new Set<string>()
   for (const daftar of [
     db.penduduk, db.keluarga, db.mutasi, db.riwayat, db.aktivitas, db.laporanData, db.impor, db.permohonan, db.suratMasuk, db.notifikasi,
-    db.pengaduan,
+    db.jenisSurat,
+    db.pengaduan, db.aksesBantuan, db.tenggatLaporan, db.siaran,
   ]) {
     for (const x of daftar) terpakai.add(x.id)
   }
@@ -54,6 +80,14 @@ export function idBaru(db: DbDemo, awalan: string): string {
     const id = `${awalan}_${Math.floor(Math.random() * 36 ** 6).toString(36).padStart(6, '0')}`
     if (!terpakai.has(id)) return id
   }
+}
+
+/**
+ * Email dipakai untuk masuk, jadi harus unik di semua jenis akun: desa, Konsol, dan kabupaten (SPEC §8, SPEC-V0.2 §8.1).
+ * `email` sudah huruf kecil (skema isian merapikannya).
+ */
+export function emailTerpakai(db: DbDemo, email: string): boolean {
+  return [...db.pengguna, ...db.penggunaKonsol, ...db.penggunaKabupaten].some((p) => p.email.toLowerCase() === email)
 }
 
 /** Pemilik NIK di seluruh data, termasuk mantan penduduk dan desa lain (NIK berlaku nasional). */

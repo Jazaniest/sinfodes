@@ -27,7 +27,7 @@ describe('IsianSurat (SPEC §7.3, §7.4)', () => {
     render(<IsianSurat jenis={contohJenis('SKU')} nilai={{}} galat={{}} bisaUbah onUbah={vi.fn()} />)
     expect(screen.getByRole('textbox', { name: 'Mulai usaha (tahun)' })).toHaveAttribute('inputmode', 'numeric')
   })
-  it('di luar status Diproses: daftar label–nilai; rupiah diformat, yang kosong "Belum diisi"', () => {
+  it('di luar status Diproses: daftar label-nilai; rupiah diformat, yang kosong "Belum diisi"', () => {
     render(<IsianSurat jenis={contohJenis('SKP')} nilai={{ penghasilan: '1250000' }} galat={{}} bisaUbah={false} onUbah={vi.fn()} />)
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
     expect(screen.getByText('Rp1.250.000')).toBeInTheDocument()

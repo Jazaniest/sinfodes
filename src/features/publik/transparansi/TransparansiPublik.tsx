@@ -72,7 +72,7 @@ function Apbdes({ a, onCetak }: { a: ApbdesPublik; onCetak: () => void }) {
         </Tombol>
         <p className="text-teks-kecil text-tinta-2">Membuka dialog cetak; pilih “Simpan sebagai PDF” untuk mengunduh.</p>
       </div>
-      <div className="grid gap-10 lg:grid-cols-2">
+      <div className="grid gap-[var(--desa-jarak,2.5rem)] lg:grid-cols-2">
         {bagianApbdes(a).map((b) => (
           <BagianLayar key={b.kunci} b={b} />
         ))}
@@ -133,7 +133,7 @@ export function TransparansiPublik() {
   const apbdes = kueri.data?.apbdes ?? null
   return (
     <>
-      <div className={cn('flex flex-col gap-10', cetak && 'print:hidden')}>
+      <div className={cn('flex flex-col gap-[var(--desa-jarak,2.5rem)]', cetak && 'print:hidden')}>
         <div className="flex flex-col gap-2">
           <h1 className="font-serif text-judul-halaman font-medium">Transparansi</h1>
           <p className="max-w-[56ch] text-tinta-2">

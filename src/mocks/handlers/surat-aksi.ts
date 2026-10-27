@@ -12,11 +12,13 @@ import {
   AKSI_SURAT, ajukanTtdSchema, alasanSchema, catatanKembaliSchema, tandaTanganSchema, ubahPermohonanSchema,
   type AksiSurat, type KejadianSurat, type Permohonan,
 } from '@/domain/surat/permohonan'
+import { tataLetakBerlaku } from '@/domain/surat/tata-letak-siap'
 import { buatKodeVerifikasi } from '@/domain/surat/verifikasi'
 import { berlakuSampai } from '@/domain/surat/waktu'
 import { dataMilik } from '../cakupan'
 import { PASSPHRASE_TTE_DEMO } from '../data/desa-demo'
 import { ubahDb } from '../db'
+import { tolakBilaDitangguhkan } from '../penangguhan'
 import { kirimNotifikasi } from '../notifikasi'
 import { API, balasGalat, denganJaringan } from '../http'
 import { butuhPengguna } from '../sesi-mock'
@@ -95,6 +97,9 @@ export const handlerSuratAksi = [
       const pengguna = butuhPengguna(request)
       if (pengguna instanceof Response) return pengguna
       if (!boleh(pengguna.peran, 'surat.lihat')) return balasGalat('FORBIDDEN', 'Peran Anda tidak berhak membuka Layanan Surat.', 403)
+      // Semua aksi surat mengubah permohonan, jadi desa yang Ditangguhkan tidak boleh menjalankannya (SPEC-V0.2 §10.5).
+      const ditangguhkan = tolakBilaDitangguhkan(pengguna.desaId)
+      if (ditangguhkan) return ditangguhkan
       const badan = (await bacaJson(request)) ?? {}
       // Mulai di sini tidak ada `await`: dua klik "Tanda tangani" tidak bisa sama-sama lolos pemeriksaan status.
       const { db, permohonan } = dataMilik(pengguna)
@@ -187,8 +192,11 @@ export const handlerSuratAksi = [
             Object.assign(p, { status: 'selesai', tahap: null, ditutupPada: waktu })
             p.terbit = {
               nomor, tahun, urut, kodeVerifikasi: kode, pada: waktu,
-              penandatangan: { id: pengguna.id, nama: pengguna.nama, peran: pengguna.peran === 'kades' ? 'kades' : 'sekdes' },
+              penandatangan: { id: pengguna.id, nama: pengguna.nama, peran: pengguna.peran === 'kades' ? 'kades' : 'sekdes', nip: pengguna.nip },
               mode, berlakuSampai: berlakuSampai(tanggal, jenis.masaBerlakuBulan), lembar,
+              // Tata letak dan lambang dibekukan: mengganti keduanya kemudian tidak mengubah surat ini (SPEC-V0.2 12.2).
+              tataLetak: structuredClone(tataLetakBerlaku(jenis, pengaturanDesa(db, p.desaId))),
+              kop: { lambang: desa.lambang ?? null, lambangKabupaten: desa.lambangKabupaten ?? null },
             }
             catatRiwayatSurat(d, p, 'tandatangani', oleh, waktu, nomor)
             catatAktivitas(d, {

@@ -6,7 +6,7 @@ import { cariPermohonan, daftarPermohonan, kunciSurat, opsiJenisSurat, opsiJumla
 import { formatAngka } from '@/domain/format/angka'
 import { formatWaktuRelatif } from '@/domain/format/tanggal'
 import { kataCukup } from '@/domain/penduduk/cari'
-import { boleh } from '@/domain/pengguna/hak-akses'
+import { useBoleh } from '@/features/admin/useBoleh'
 import {
   LABEL_KANAL, LABEL_PERIODE, LABEL_STATUS, PERIODE_PERMOHONAN, STATUS_PERMOHONAN, STATUS_TERBUKA,
   type BarisPermohonan, type FilterPermohonan, type StatusPermohonan,
@@ -24,7 +24,6 @@ import { TautanTombol } from '@/ui/tombol/TautanTombol'
 import { Tombol } from '@/ui/tombol/Tombol'
 import { EmptyState } from '@/ui/umpan-balik/EmptyState'
 import { Skeleton } from '@/ui/umpan-balik/Skeleton'
-import { useSesiAdmin } from '../admin/sesi-konteks'
 import { CapPermohonan } from './CapPermohonan'
 import { hrefPermohonan } from './filter-url'
 import { TabSurat } from './TabSurat'
@@ -52,7 +51,7 @@ const noUrut = (n: number) => String(n).padStart(3, '0')
 
 /** Permohonan surat (SPEC §7.4 layar 1). Status, periode, dan jenis di URL; kata cari hanya di memori dan dikirim lewat POST. */
 export function DaftarPermohonan({ filter, onUbahFilter, onBuka, sekarang }: Props) {
-  const { pengguna } = useSesiAdmin()
+  const boleh = useBoleh()
   const hariIni = useMemo(() => sekarang ?? new Date(), [sekarang])
   const [kata, setKata] = useState('')
   const kataTunda = useTunda(kata.trim(), 300)
@@ -137,12 +136,12 @@ export function DaftarPermohonan({ filter, onUbahFilter, onBuka, sekarang }: Pro
         meta={meta}
         aksi={
           <>
-            {boleh(pengguna.peran, 'surat.tandatangani') && (
+            {boleh('surat.tandatangani') && (
               <TautanTombol href="/admin/surat/tanda-tangan" ikon={<PenNib aria-hidden size={16} />}>
                 Tanda tangani
               </TautanTombol>
             )}
-            {boleh(pengguna.peran, 'surat.proses') && (
+            {boleh('surat.proses') && (
               <TautanTombol varian="utama" href="/admin/surat/baru" ikon={<Plus aria-hidden size={16} />}>
                 Buat surat
               </TautanTombol>

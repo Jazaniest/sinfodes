@@ -1,5 +1,6 @@
 import { delay, HttpResponse, type HttpResponseResolver } from 'msw'
 import type { KodeGalat } from '@/domain/api'
+import { bungkusBantuan } from './bantuan'
 import { bacaModeJaringan, jedaUntuk } from './jaringan'
 
 /** Cocok untuk origin mana pun, jadi berlaku di browser maupun di uji Node. */
@@ -21,13 +22,16 @@ export function balasDaftar<T, U = T>(semua: readonly T[], page: number, pageSiz
   })
 }
 
-/** Menerapkan simulasi jaringan dari toolbar demo ke setiap handler (SPEC §3.6). */
+/**
+ * Menerapkan simulasi jaringan dari toolbar demo ke setiap handler (SPEC §3.6), dan aturan sesi bantuan Tim Sinfodes: tulis
+ * ditolak, baca dicatat dan disamarkan (SPEC-V0.2 §5.3).
+ */
 export function denganJaringan(resolver: (info: InfoPermintaan) => Response | Promise<Response>) {
   return async (info: InfoPermintaan): Promise<Response> => {
     const mode = bacaModeJaringan()
     const jeda = jedaUntuk(mode)
     if (jeda > 0) await delay(jeda)
     if (mode === 'gagal') return balasGalat('SERVER', 'Server sedang tidak dapat dihubungi. Coba lagi beberapa saat.', 503)
-    return resolver(info)
+    return bungkusBantuan(info.request, async () => resolver(info))
   }
 }

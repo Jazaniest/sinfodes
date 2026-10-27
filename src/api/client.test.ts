@@ -28,7 +28,7 @@ describe('panggilApi', () => {
     const { token, sesi } = await masuk(OPERATOR, 'demo')
     expect(sesi.pengguna.peran).toBe('operator')
     aturTokenSesi(token)
-    expect((await ambilSesi()).desa.slug).toBe('sungai-sialang')
+    expect((await ambilSesi()).desa.slug).toBe('sungaisialang')
   })
   it('galat 422 menjadi GalatApi dengan kode dan kolom', async () => {
     const galat = await masuk(OPERATOR, 'salah').catch((e: unknown) => e)
@@ -68,6 +68,29 @@ describe('panggilApi', () => {
     )
     await panggilApi('GET', '/uji-publik', { skema: z.object({ ok: z.boolean() }), sesi: null })
     expect(otorisasi).toBeNull()
+  })
+})
+
+describe('skema dimuat malas', () => {
+  it('skema berupa fungsi dimuat saat panggilan, bukan saat didefinisikan, lalu dipakai memvalidasi', async () => {
+    serverUji.use(http.get('*/api/v1/uji-malas', () => HttpResponse.json({ ok: true })))
+    let dimuat = 0
+    const skema = () => {
+      dimuat++
+      return Promise.resolve(z.object({ ok: z.boolean() }))
+    }
+    expect(dimuat).toBe(0)
+    expect(await panggilApi('GET', '/uji-malas', { skema })).toEqual({ ok: true })
+    expect(dimuat).toBe(1)
+  })
+  it('respons yang tidak sesuai skema malas ditolak, dan galat HTTP tetap menjadi GalatApi', async () => {
+    serverUji.use(
+      http.get('*/api/v1/uji-malas', () => HttpResponse.json({ salah: true })),
+      http.get('*/api/v1/uji-malas-galat', () => HttpResponse.json({ error: { code: 'NOT_FOUND', message: 'Tidak ada.' } }, { status: 404 })),
+    )
+    const skema = () => Promise.resolve(z.object({ ok: z.boolean() }))
+    await expect(panggilApi('GET', '/uji-malas', { skema })).rejects.toThrow()
+    await expect(panggilApi('GET', '/uji-malas-galat', { skema })).rejects.toMatchObject({ kode: 'NOT_FOUND', status: 404 })
   })
 })
 

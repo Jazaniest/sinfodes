@@ -18,7 +18,7 @@ export function LayananPublik() {
   const kueri = useQuery(opsiLayananPublik(identitas.slug))
   useGulirKeJangkar(kueri.isSuccess)
   return (
-    <div className="flex flex-col gap-10">
+    <div className="flex flex-col gap-[var(--desa-jarak,2.5rem)]">
       <div className="flex flex-col gap-2">
         <h1 className="font-serif text-judul-halaman font-medium">Layanan</h1>
         <p className="max-w-[56ch] text-tinta-2">
@@ -46,35 +46,38 @@ export function LayananPublik() {
               Masuk dengan NIK dan PIN dari kantor desa. Belum punya PIN? Mintalah di kantor desa dengan membawa KTP-el.
             </p>
           </Rubrik>
-          <div className="grid gap-10 sm:grid-cols-2">
+          <div className="grid gap-[var(--desa-jarak,2.5rem)] sm:grid-cols-2">
             <Rubrik id="jam-layanan" judul="Jam layanan kantor desa">
               <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
                 {identitas.jamLayanan.map((j) => (
                   <Fragment key={j.hari}>
                     <dt className="font-medium">{j.hari}</dt>
                     <dd>
-                      {j.buka}–{j.tutup} WIB
+                      {j.buka}-{j.tutup} WIB
                     </dd>
                   </Fragment>
                 ))}
               </dl>
               <p className="text-tinta-2">{identitas.alamatKantor}</p>
             </Rubrik>
-            <Rubrik id="posyandu" judul="Jadwal posyandu">
-              <ul className="flex flex-col gap-3">
-                {kueri.data.posyandu.map((p) => (
-                  <li key={p.nama} className="flex flex-col">
-                    <p className="font-medium">
-                      {p.nama} · {p.dusun}
-                    </p>
-                    <p className="text-teks-kecil text-tinta-2">{p.tempat}</p>
-                    <p className="text-teks-kecil">
-                      Berikutnya {formatTanggal(p.jadwal, 'hari')} <span className="text-tinta-2">({p.aturan})</span>
-                    </p>
-                  </li>
-                ))}
-              </ul>
-            </Rubrik>
+            {/* Kosong bila modul Kesehatan desa mati (SPEC-V0.2 12.3). */}
+            {kueri.data.posyandu.length > 0 && (
+              <Rubrik id="posyandu" judul="Jadwal posyandu">
+                <ul className="flex flex-col gap-3">
+                  {kueri.data.posyandu.map((p) => (
+                    <li key={p.nama} className="flex flex-col">
+                      <p className="font-medium">
+                        {p.nama} · {p.dusun}
+                      </p>
+                      <p className="text-teks-kecil text-tinta-2">{p.tempat}</p>
+                      <p className="text-teks-kecil">
+                        Berikutnya {formatTanggal(p.jadwal, 'hari')} <span className="text-tinta-2">({p.aturan})</span>
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              </Rubrik>
+            )}
           </div>
         </>
       )}

@@ -3,6 +3,7 @@ import {
   formatAngka,
   formatPersen,
   formatRupiah,
+  formatUkuranKb,
   formatRupiahRingkas,
   terbilang,
   terbilangRupiah,
@@ -49,5 +50,13 @@ describe('terbilang', () => {
   it('menolak negatif dan pecahan', () => {
     expect(() => terbilang(-1)).toThrow()
     expect(() => terbilang(1.5)).toThrow()
+  })
+})
+
+describe('formatUkuranKb', () => {
+  it('KB di bawah 1024, selain itu MB dengan satu desimal', () => {
+    expect(formatUkuranKb(512)).toBe('512 KB')
+    expect(formatUkuranKb(1536)).toBe('1,5 MB')
+    expect(formatUkuranKb(2048)).toBe('2 MB')
   })
 })

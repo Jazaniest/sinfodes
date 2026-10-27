@@ -11,9 +11,9 @@ import {
 import { statusPengumuman } from '@/domain/website/schema'
 import { ambilDb } from '../db'
 import { API, balasDaftar, balasGalat, denganJaringan } from '../http'
+import { modulDesaDi } from '../modul'
 import { butuhWarga, type WargaMasuk } from '../sesi-mock'
 import type { DbDemo } from '../tipe-db'
-import { pengaturanDesa } from './surat'
 
 const BATAS_BALITA_BULAN = 60
 const PERMOHONAN_TIDAK_DITEMUKAN = 'Permohonan tidak ditemukan.'
@@ -51,7 +51,7 @@ function posyanduKeluarga(db: DbDemo, w: WargaMasuk, sekarang: Date): BerandaWar
     .map((p) => ({ id: p.id, nama: p.nama, umurBulan: hitungUmur(p.tanggalLahir, sekarang).bulan }))
     .filter((b) => b.umurBulan < BATAS_BALITA_BULAN)
   const pos = db.posyandu.find((x) => x.dusunId === w.penduduk.dusunId)
-  if (balita.length === 0 || !pos) return null
+  if (balita.length === 0 || !pos || !modulDesaDi(w.penduduk.desaId).kesehatan) return null
   return { nama: pos.nama, tempat: pos.tempat, jadwal: jadwalBerikut(pos.jadwal, tanggalIsoWib(sekarang)), balita }
 }
 
@@ -121,7 +121,6 @@ export const handlerWarga = [
       if (!p) return balasGalat('NOT_FOUND', PERMOHONAN_TIDAK_DITEMUKAN, 404)
       const jenis = db.jenisSurat.find((j) => j.id === p.jenisId)
       if (!jenis) return balasGalat('SERVER', 'Data permohonan tidak utuh.', 500)
-      const { kertas, huruf } = pengaturanDesa(db, p.desaId)
       const detail: DetailPermohonanWarga = {
         permohonan: {
           ...ringkasUntukWarga(db, p),
@@ -132,7 +131,6 @@ export const handlerWarga = [
         },
         jenis: { kode: jenis.kode, nama: jenis.nama, isian: jenis.isian },
         terbit: p.status === 'selesai' ? p.terbit : null,
-        pengaturan: { kertas, huruf },
       }
       return HttpResponse.json(detail)
     }),

@@ -65,17 +65,17 @@ describe('DataTable (SPEC §4.4, §13.1)', () => {
 })
 
 describe('Pagination', () => {
-  it('"1–25 dari 2.812"; Sebelumnya nonaktif di halaman pertama', async () => {
+  it('"1-25 dari 2.812"; Sebelumnya nonaktif di halaman pertama', async () => {
     const onPage = vi.fn()
     render(<Pagination page={1} pageSize={25} total={2812} onPage={onPage} />)
-    expect(screen.getByText('1–25 dari 2.812')).toBeInTheDocument()
+    expect(screen.getByText('1-25 dari 2.812')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Sebelumnya/ })).toBeDisabled()
     await userEvent.click(screen.getByRole('button', { name: /Berikutnya/ }))
     expect(onPage).toHaveBeenCalledWith(2)
   })
   it('halaman terakhir', () => {
     render(<Pagination page={113} pageSize={25} total={2812} onPage={vi.fn()} />)
-    expect(screen.getByText('2.801–2.812 dari 2.812')).toBeInTheDocument()
+    expect(screen.getByText('2.801-2.812 dari 2.812')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Berikutnya/ })).toBeDisabled()
   })
   it('mengganti ukuran halaman', async () => {

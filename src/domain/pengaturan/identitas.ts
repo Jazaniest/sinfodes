@@ -5,7 +5,7 @@ import { desaSchema } from '../wilayah/schema'
 
 const jam = z.string().regex(/^([01]\d|2[0-3])\.[0-5]\d$/, 'Jam ditulis seperti 08.00')
 
-/** Satu baris jam layanan, mis. "Senin–Kamis 08.00–15.00" (SPEC §12.1). */
+/** Satu baris jam layanan, mis. "Senin-Kamis 08.00-15.00" (SPEC §12.1). */
 export const jamLayananSchema = z
   .object({ hari: z.string().trim().min(1, 'Hari wajib diisi').max(30, 'Paling banyak 30 karakter'), buka: jam, tutup: jam })
   .refine((j) => j.buka < j.tutup, { message: 'Jam tutup harus sesudah jam buka', path: ['tutup'] })
@@ -20,6 +20,7 @@ export const identitasDesaSchema = z.object({
   telepon: z.string().trim().regex(/^(\+62|0)\d{8,13}$/, 'Nomor telepon atau WhatsApp tidak valid'),
   jamLayanan: z.array(jamLayananSchema).min(1, 'Isi minimal satu jam layanan').max(7, 'Paling banyak 7 baris'),
   lambang: gambarDataUrlSchema(MAKS_GAMBAR_KB.lambang).nullable(),
+  lambangKabupaten: gambarDataUrlSchema(MAKS_GAMBAR_KB.lambang).nullable(),
 })
 export type IdentitasDesa = z.infer<typeof identitasDesaSchema>
 
@@ -29,7 +30,7 @@ export type IdentitasDesa = z.infer<typeof identitasDesaSchema>
  */
 export const pengaturanDesaSchema = z.object({
   identitas: desaSchema.pick({
-    nama: true, kodeDesa: true, alamatKantor: true, kodePos: true, surel: true, telepon: true, jamLayanan: true, lambang: true,
+    nama: true, kodeDesa: true, alamatKantor: true, kodePos: true, surel: true, telepon: true, jamLayanan: true, lambang: true, lambangKabupaten: true,
   }),
   kecamatan: z.string(),
   kabupaten: z.string(),
@@ -48,6 +49,7 @@ export type FormIdentitas = {
   telepon: string
   jamLayanan: { hari: string; buka: string | null; tutup: string | null }[]
   lambang: string | null
+  lambangKabupaten: string | null
 }
 
 export const jamKeIsian = (jam: string): string => jam.replace('.', ':')
@@ -63,6 +65,7 @@ export function formDariIdentitas(i: PengaturanDesa['identitas']): FormIdentitas
     telepon: i.telepon,
     jamLayanan: i.jamLayanan.map((j) => ({ hari: j.hari, buka: jamKeIsian(j.buka), tutup: jamKeIsian(j.tutup) })),
     lambang: i.lambang ?? null,
+    lambangKabupaten: i.lambangKabupaten ?? null,
   }
 }
 
@@ -77,6 +80,7 @@ export function isianIdentitas(f: FormIdentitas): IdentitasDesa {
     telepon: f.telepon.trim(),
     jamLayanan: f.jamLayanan.map((j) => ({ hari: j.hari.trim(), buka: jamDariIsian(j.buka), tutup: jamDariIsian(j.tutup) })),
     lambang: f.lambang,
+    lambangKabupaten: f.lambangKabupaten,
   }
 }
 

@@ -47,7 +47,7 @@ function angkaTerdaftar(db: DbDemo, baris: LaporanImpor['baris']): Pick<LaporanI
   return { nikTerdaftar: [...angka].filter((a) => nik.has(a)), nomorKkTerdaftar: [...angka].filter((a) => kk.has(a)) }
 }
 
-/** Tanggal terbit dari nomor KK (DDMMYY di digit 7–12); bila tidak masuk akal, hari ini. */
+/** Tanggal terbit dari nomor KK (DDMMYY di digit 7-12); bila tidak masuk akal, hari ini. */
 function tanggalTerbitDari(nomorKk: string, sekarang: Date): string {
   const [hari, bulan, yy] = [nomorKk.slice(6, 8), nomorKk.slice(8, 10), nomorKk.slice(10, 12)].map(Number)
   const tahun = tahunDariDuaDigit(yy, bulan, hari, sekarang)

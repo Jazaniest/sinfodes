@@ -20,6 +20,10 @@ function suratBerlaku() {
 }
 
 describe('Cek keaslian surat (SPEC §7.6)', () => {
+  it('wadah halaman bernama cek-keaslian supaya CSS kustom 7G bisa mengecualikannya', () => {
+    const { container } = renderPublik(<VerifikasiSurat kode={null} onPeriksa={() => {}} />)
+    expect(container.querySelector('[data-bagian="cek-keaslian"]')).not.toBeNull()
+  })
   it('dibuka dari QR (?kode=): langsung diperiksa; ASLI dengan nomor, nama disamarkan, dan status hijau', async () => {
     const t = suratBerlaku()
     renderPublik(<VerifikasiSurat kode={t.kodeVerifikasi} onPeriksa={() => {}} />)

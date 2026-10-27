@@ -1,10 +1,10 @@
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
-import { AKSEN_WEBSITE } from '@/domain/website/schema'
-import { rasioKontras } from '../kontras'
-import { warna } from '../tokens'
-import { gayaAksen, turunanAksen } from './aksen'
+import { ID_MOTIF } from '@/domain/website/motif'
 import { FotoWarta } from './FotoWarta'
+import { FotoKonteks } from './foto-konteks'
+import { CapLencana } from './Lencana'
+import { POLA_MOTIF } from './motif'
 import { Rubrik } from './Rubrik'
 
 describe('komponen website desa (SPEC §9)', () => {
@@ -35,6 +35,32 @@ describe('komponen website desa (SPEC §9)', () => {
     expect(img).toHaveClass('w-24', 'shrink-0')
     expect(img).not.toHaveClass('w-full')
   })
+  it('FotoWarta (7E-2): bingkai menaruh keterangan di bawah foto tanpa lapisan', () => {
+    const { container } = render(<FotoWarta berkas="/demo/foto/ombak-bono.jpg" alt="" keterangan="Ombak Bono" />)
+    expect(container.querySelector('[data-lapisan]')).toBeNull()
+    expect(screen.getByRole('figure')).toHaveAttribute('data-foto', 'bingkai')
+  })
+  it('FotoWarta penuh: keterangan di atas lapisan gelap aria-hidden; tanpa keterangan tanpa lapisan', () => {
+    const { container, unmount } = render(
+      <FotoKonteks.Provider value="penuh">
+        <FotoWarta berkas="/demo/foto/ombak-bono.jpg" alt="Ombak" keterangan="Ombak Bono" kredit="Domiyanto1977" />
+      </FotoKonteks.Provider>,
+    )
+    const lapisan = container.querySelector('[data-lapisan]')
+    expect(lapisan).not.toBeNull()
+    expect(lapisan).toHaveAttribute('aria-hidden', 'true')
+    expect(screen.getByRole('figure')).toHaveAttribute('data-foto', 'penuh')
+    expect(screen.getByRole('figure')).toHaveTextContent('Ombak Bono · Foto: Domiyanto1977')
+    expect(container.querySelector('figcaption')).toHaveClass('text-putih')
+    unmount()
+    const tanpa = render(
+      <FotoKonteks.Provider value="penuh">
+        <FotoWarta berkas="/demo/foto/ombak-bono.jpg" alt="Ombak" />
+      </FotoKonteks.Provider>,
+    )
+    expect(tanpa.container.querySelector('[data-lapisan]')).toBeNull()
+    expect(tanpa.container.querySelector('figure')).toBeNull()
+  })
   it('Rubrik: wilayah bernama judulnya, dengan id sebagai jangkar', () => {
     render(
       <Rubrik id="posyandu" judul="Jadwal posyandu">
@@ -43,13 +69,35 @@ describe('komponen website desa (SPEC §9)', () => {
     )
     expect(screen.getByRole('region', { name: 'Jadwal posyandu' })).toHaveAttribute('id', 'posyandu')
   })
-  it('aksen: turunan gelap dan pucat setiap aksen tetap lolos kontras 4,5:1 (fokus review 5)', () => {
-    for (const { hex } of Object.values(AKSEN_WEBSITE)) {
-      const t = turunanAksen(hex)
-      expect(rasioKontras(t.tua, '#FFFFFF')).toBeGreaterThanOrEqual(4.5)
-      expect(rasioKontras(t.utama, t.muda)).toBeGreaterThanOrEqual(4.5)
-      expect(rasioKontras(warna.tinta, t.muda)).toBeGreaterThanOrEqual(4.5)
+  it('CapLencana: tautan ke bukti dengan aria-label lengkap, angka peringkat, kategori, wilayah, dan periode', () => {
+    render(
+      <CapLencana
+        lencana={{
+          kode: 'LJ-ABCDEFGH',
+          kalimat: 'Juara 1 bersama Layanan Tercepat · Kabupaten Pelalawan · Agustus 2026',
+          peringkat: 1,
+          bersama: true,
+          kategori: 'layanan',
+          tingkat: 'kabupaten',
+          periode: { musim: 'bulanan', kode: '2026-08', label: 'Agustus 2026' },
+        }}
+        href="http://sinfodes.localhost/lencana/LJ-ABCDEFGH"
+        varian="bukti"
+      />,
+    )
+    const cap = screen.getByRole('link', { name: 'Juara 1 bersama Layanan Tercepat · Kabupaten Pelalawan · Agustus 2026, buka bukti lencana' })
+    expect(cap).toHaveAttribute('href', 'http://sinfodes.localhost/lencana/LJ-ABCDEFGH')
+    expect(cap).toHaveTextContent('Layanan Tercepat')
+    expect(cap).toHaveTextContent('Kabupaten Pelalawan · Agustus 2026')
+    expect(cap).toHaveClass('text-stempel')
+  })
+  it('setiap motif punya ubin dengan ukuran dan jalur tidak kosong', () => {
+    expect(Object.keys(POLA_MOTIF).sort()).toEqual([...ID_MOTIF].sort())
+    for (const m of ID_MOTIF) {
+      const pola = POLA_MOTIF[m]
+      expect(pola.lebar, m).toBeGreaterThan(0)
+      expect(pola.tinggi, m).toBeGreaterThan(0)
+      expect(pola.jalur, m).toMatch(/^M.+Z$/)
     }
-    expect(gayaAksen('#2F5D3A')).toMatchObject({ '--color-biru': '#2F5D3A' })
   })
 })

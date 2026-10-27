@@ -92,7 +92,7 @@ export function buatSkemaIsian(hariIni: Date, istilah: Desa['istilahWilayah']) {
     }
     if (i.hubunganKeluarga === '') salah('hubunganKeluarga', 'Pilih hubungan dalam keluarga')
     const telepon = bersihkanTelepon(i.telepon)
-    if (telepon !== '' && !/^08\d{8,11}$/.test(telepon)) salah('telepon', 'Nomor telepon diawali 08, 10–13 angka')
+    if (telepon !== '' && !/^08\d{8,11}$/.test(telepon)) salah('telepon', 'Nomor telepon diawali 08, 10-13 angka')
   })
 }
 

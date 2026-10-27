@@ -7,7 +7,7 @@ import type { Dusun } from '@/domain/wilayah/schema'
 import { ambilDb, ubahDb } from '../db'
 import { API, balasGalat, denganJaringan } from '../http'
 import type { DbDemo } from '../tipe-db'
-import { bacaJson, balasIsianTidakValid, butuhKemampuan, idBaru } from '../tulis'
+import { bacaJson, balasField, balasIsianTidakValid, butuhKemampuan, emailTerpakai, idBaru } from '../tulis'
 
 const butuhPengelola = (request: Request) => butuhKemampuan(request, 'pengguna.kelola', 'Hanya Sekretaris Desa yang mengelola pengguna.')
 
@@ -57,9 +57,12 @@ export const handlerPenggunaDesa = [
         dusunId: dusun?.id ?? null,
         email: isian.data.email,
         aktif: true,
+        nip: null,
       }
       const langgar = periksaAturanPengguna(db.pengguna, pelaku.id, null, baru)
       if (langgar) return balasPelanggaran(langgar)
+      // Sisanya akun Konsol atau kabupaten: pemiliknya di luar desa, jadi namanya tidak ditampilkan.
+      if (emailTerpakai(db, baru.email)) return balasField('email', 'Surel ini sudah dipakai akun lain.', 'CONFLICT')
       ubahDb((d) => {
         d.pengguna.push(baru)
       })
@@ -86,9 +89,12 @@ export const handlerPenggunaDesa = [
         peran,
         dusunId,
         aktif: isian.data.aktif ?? sasaran.aktif,
+        nip: isian.data.nip !== undefined ? isian.data.nip : sasaran.nip,
         jabatan: berubahJabatan ? jabatanBawaan(peran, dusun) : sasaran.jabatan,
       }
-      const langgar = periksaAturanPengguna(db.pengguna, pelaku.id, sasaran, sesudah)
+      // Mengisi NIP tidak menyentuh peran, dusun, atau status, jadi boleh juga untuk akun sendiri (penanda tangan atas nama).
+      const hanyaNip = isian.data.peran === undefined && isian.data.aktif === undefined && isian.data.dusunId === undefined
+      const langgar = hanyaNip ? null : periksaAturanPengguna(db.pengguna, pelaku.id, sasaran, sesudah)
       if (langgar) return balasPelanggaran(langgar)
       ubahDb(() => {
         Object.assign(sasaran, sesudah)

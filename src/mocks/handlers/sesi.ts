@@ -1,40 +1,38 @@
 import { http, HttpResponse } from 'msw'
 import { z } from 'zod'
 import { waktuIsoWib } from '@/domain/format/tanggal'
-import type { Pengguna } from '@/domain/pengguna/schema'
+import type { PenggunaSesi } from '@/domain/pengguna/schema'
+import { cariSesiBantuan, masihBerlaku, PESAN_TIKET_TIDAK_BERLAKU, tokenBantuanUntuk } from '../bantuan'
 import { KATA_SANDI_DEMO } from '../data/desa-demo'
 import { ambilDb, ubahDb } from '../db'
 import { API, balasGalat, denganJaringan } from '../http'
-import { butuhPengguna, tokenUntuk } from '../sesi-mock'
+import { desaKonteks, konteksPermintaan, tanpaKonteks } from '../konteks-permintaan'
+import { modulDesaDi } from '../modul'
+import { butuhPengguna, penggunaDariPermintaan, tokenUntuk } from '../sesi-mock'
+import { idBaru } from '../tulis'
+import { versiTerbit } from './website'
 
 const masukSchema = z.object({ email: z.string().min(1), kataSandi: z.string().min(1) })
-const kenaliSchema = z.object({ email: z.string().trim().min(1) })
+const tiketSchema = z.object({ tiket: z.string().min(1) })
 
 const penggunaAktif = (email: string) =>
   ambilDb().pengguna.find((p) => p.email === email.trim().toLowerCase() && p.aktif)
 
-/** Isi sesi admin: pengguna, desanya, dan daftar dusunnya. */
-function sesiUntuk(pengguna: Pengguna) {
+/** Isi sesi admin: pengguna, desanya, dan daftar dusunnya; sesi bantuan juga membawa batas aksesnya (SPEC-V0.2 §5.3). */
+function sesiUntuk(pengguna: PenggunaSesi) {
   const db = ambilDb()
   const desa = db.desa.find((d) => d.id === pengguna.desaId)
   if (!desa) return null
-  return { jenis: 'admin' as const, pengguna, desa, dusun: db.dusun.filter((d) => d.desaId === desa.id) }
+  const tampilanPanel = { warnaAksen: versiTerbit(db, desa.id).tema.warnaAksen, favicon: desa.lambang ?? null }
+  const sesi = {
+    jenis: 'admin' as const, pengguna, desa, dusun: db.dusun.filter((d) => d.desaId === desa.id), tampilanPanel, modul: modulDesaDi(desa.id),
+  }
+  if (pengguna.peran !== 'bantuan') return sesi
+  const akses = cariSesiBantuan(db, pengguna.id.replace(/^bantuan_/, ''))?.akses
+  return akses ? { ...sesi, bantuan: { sampai: akses.sampai, sembunyikanDataPribadi: akses.sembunyikanDataPribadi } } : null
 }
 
 export const handlerSesi = [
-  http.post(
-    `${API}/sesi/kenali`,
-    denganJaringan(async ({ request }) => {
-      const isian = kenaliSchema.safeParse(await request.json().catch(() => null))
-      if (!isian.success) return balasGalat('VALIDATION', 'Email wajib diisi.', 422, { email: 'Email wajib diisi.' })
-      const pengguna = penggunaAktif(isian.data.email)
-      const desa = pengguna ? ambilDb().desa.find((d) => d.id === pengguna.desaId) : undefined
-      // Email yang tidak dikenal tetap dijawab 200 tanpa desa; langkah kata sandi tetap ditampilkan.
-      return HttpResponse.json({
-        desa: desa ? { nama: desa.nama, kecamatan: desa.kecamatan.nama, kabupaten: desa.kabupaten.nama } : null,
-      })
-    }),
-  ),
   http.post(
     `${API}/sesi/masuk`,
     denganJaringan(async ({ request }) => {
@@ -46,11 +44,50 @@ export const handlerSesi = [
       }
       const sesi = sesiUntuk(pengguna)
       if (!sesi) return balasGalat('SERVER', 'Data desa tidak ditemukan.', 500)
+      // Desa dari alamat (SPEC-V0.2 §4.3). Diperiksa sesudah kata sandi terbukti benar, supaya orang tidak bisa menebak
+      // email mana terdaftar di desa mana.
+      const k = konteksPermintaan(request)
+      if (!tanpaKonteks(k)) {
+        const desaAlamat = desaKonteks(ambilDb(), k)
+        if (!desaAlamat) return balasGalat('FORBIDDEN', 'Panel desa dibuka dari alamat desa Anda.', 403)
+        if (desaAlamat.id !== pengguna.desaId) {
+          return balasGalat('FORBIDDEN', `Akun ini terdaftar di Desa ${sesi.desa.nama}.`, 403, { alamatDesa: sesi.desa.slug })
+        }
+      }
       // Dasar "login per minggu" dan "pengguna aktif" di Konsol (SPEC §11).
       ubahDb((d) => {
         d.riwayatMasuk.push({ penggunaId: pengguna.id, desaId: pengguna.desaId, waktu: waktuIsoWib(new Date()) })
       })
       return HttpResponse.json({ token: tokenUntuk(pengguna.id), sesi })
+    }),
+  ),
+  http.post(
+    `${API}/sesi/bantuan`,
+    denganJaringan(async ({ request }) => {
+      const tidakBerlaku = () => balasGalat('UNAUTHENTICATED', PESAN_TIKET_TIDAK_BERLAKU, 401)
+      const isian = tiketSchema.safeParse(await request.json().catch(() => null))
+      if (!isian.success) return tidakBerlaku()
+      const db = ambilDb()
+      const sekarang = new Date()
+      const akses = db.aksesBantuan.find((a) => a.tiket?.kode === isian.data.tiket)
+      const tiket = akses?.tiket
+      // Tiket sekali pakai, berumur 60 detik, dan hanya untuk alamat desa pemberi akses.
+      if (!akses || !tiket || new Date(tiket.berlakuSampai).getTime() < sekarang.getTime() || !masihBerlaku(akses, sekarang)) {
+        return tidakBerlaku()
+      }
+      const k = konteksPermintaan(request)
+      if (!tanpaKonteks(k) && desaKonteks(db, k)?.id !== akses.desaId) return tidakBerlaku()
+      const sesiId = idBaru(db, 'sbt')
+      ubahDb((d) => {
+        const a = d.aksesBantuan.find((x) => x.id === akses.id)
+        if (!a) return
+        a.tiket = null
+        a.sesi.push({ id: sesiId, olehId: tiket.olehId, olehNama: tiket.olehNama, mulai: waktuIsoWib(sekarang), halaman: [] })
+      })
+      const token = tokenBantuanUntuk(sesiId)
+      const pengguna = penggunaDariPermintaan(new Request(request.url, { headers: { Authorization: `Bearer ${token}` } }))
+      const sesi = pengguna && sesiUntuk(pengguna)
+      return sesi ? HttpResponse.json({ token, sesi }) : balasGalat('SERVER', 'Data desa tidak ditemukan.', 500)
     }),
   ),
   http.get(

@@ -6,7 +6,7 @@ import { kunciKeuangan, opsiApbdes, sinkronSiskeudes } from '@/api/keuangan'
 import { formatRupiahRingkas } from '@/domain/format/angka'
 import { BULAN_PENDEK, formatWaktuLog } from '@/domain/format/tanggal'
 import { jumlahKelompok, kumulatif, pembiayaanNetto, posUtama, type Apbdes } from '@/domain/keuangan/schema'
-import { boleh } from '@/domain/pengguna/hak-akses'
+import { useBoleh } from '@/features/admin/useBoleh'
 import { Rupiah } from '@/ui/domain/Rupiah'
 import { LineChart } from '@/ui/grafik/LineChart'
 import { MiniBar } from '@/ui/grafik/MiniBar'
@@ -16,14 +16,26 @@ import { Tombol } from '@/ui/tombol/Tombol'
 import { EmptyState } from '@/ui/umpan-balik/EmptyState'
 import { ErrorState } from '@/ui/umpan-balik/ErrorState'
 import { BarisKerangka } from '@/ui/umpan-balik/Skeleton'
-import { useSesiAdmin } from '../admin/sesi-konteks'
+import { LaporanKabupaten } from './LaporanKabupaten'
 import { TabelAnggaran } from './TabelAnggaran'
 
 const JEJAK = [{ label: 'Tata kelola' }]
 const judulBagian = 'text-label font-medium text-tinta-2 uppercase'
 
-/** Keuangan desa (SPEC §8): APBDes tahun berjalan yang disinkronkan dari Siskeudes. */
-export function Keuangan() {
+/**
+ * Keuangan desa (SPEC §8): APBDes tahun berjalan yang disinkronkan dari Siskeudes, lalu laporan ke kabupaten
+ * (SPEC-V0.2 §8.3 butir 4), yang tetap tampil walaupun APBDes belum tersedia.
+ */
+export function Keuangan({ sekarang = new Date() }: { sekarang?: Date }) {
+  return (
+    <div className="flex flex-col gap-8">
+      <Apbdes />
+      <LaporanKabupaten sekarang={sekarang} />
+    </div>
+  )
+}
+
+function Apbdes() {
   const kueri = useQuery(opsiApbdes())
   if (kueri.isPending) return <BarisKerangka jumlah={8} label="Memuat APBDes…" />
   if (kueri.isError) {
@@ -37,7 +49,7 @@ export function Keuangan() {
 
 function IsiKeuangan({ apbdes: a }: { apbdes: Apbdes }) {
   const queryClient = useQueryClient()
-  const { pengguna } = useSesiAdmin()
+  const boleh = useBoleh()
   const mengirim = useRef(false)
   const sinkron = useMutation({
     mutationFn: sinkronSiskeudes,
@@ -68,7 +80,7 @@ function IsiKeuangan({ apbdes: a }: { apbdes: Apbdes }) {
         judul={`APBDes ${a.tahun}`}
         meta={`Disinkronkan dari Siskeudes · ${formatWaktuLog(a.sinkronPada)}`}
         aksi={
-          boleh(pengguna.peran, 'keuangan.sinkron') && (
+          boleh('keuangan.sinkron') && (
             <Tombol
               ikon={<ArrowsClockwise aria-hidden size={16} />}
               memuat={sinkron.isPending}

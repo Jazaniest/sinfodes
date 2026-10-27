@@ -1,25 +1,31 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest'
 import { ambilBeranda } from '@/api/beranda'
+import { ambilKwitansiKonsol, cariTagihanKonsol, tandaiLunas } from '@/api/konsol'
+import { ambilKwitansiDesa, ambilLangganan, kirimBukti } from '@/api/langganan'
 import { ambilIsiBuku } from '@/api/buku'
 import { ambilKeluarga } from '@/api/keluarga'
 import { ambilApbdes } from '@/api/keuangan'
-import { ambilPemantauan } from '@/api/konsol'
+import { ambilDetailSiaran, ambilDetailTenggat, ambilPemantauanKabupaten, kirimSiaran, tarikSiaran } from '@/api/kabupaten'
 import { catatLahir } from '@/api/mutasi'
+import { ambilNotifikasi } from '@/api/notifikasi'
 import { daftarPengaduan } from '@/api/pengaduan'
 import { daftarPenduduk } from '@/api/penduduk'
 import { verifikasiSurat } from '@/api/publik'
+import { ambilDetailSiaranDesa, tandaiSiaranDibaca, tandaiTindakLanjut } from '@/api/siaran'
 import { ambilStatistikPublik } from '@/api/publik-halaman'
 import { ambilStatistikPenduduk } from '@/api/statistik'
 import { daftarPermohonan, jalankanAksi } from '@/api/surat'
+import { tandaiDikirim } from '@/api/tenggat'
 import { ambilRiwayatWarga, kirimPermohonanWarga } from '@/api/warga'
 import { tanggalIsoWib } from '@/domain/format/tanggal'
 import { jumlahKelompok } from '@/domain/keuangan/schema'
-import { bulatJam, median } from '@/domain/konsol/pemantauan'
+import { bulatJam, median } from '@/domain/kabupaten/pemantauan'
 import type { MasukanLahir } from '@/domain/mutasi/masukan'
 import { ambilDb } from '@/mocks/db'
 import {
-  AKUN_KONSOL_UJI, AKUN_UJI, AKUN_WARGA_UJI, masukKonsolSebagai, masukSebagai, masukSebagaiWarga, pakaiApiTiruan, SEKARANG_UJI,
+  AKUN_KABUPATEN_UJI, AKUN_KONSOL_UJI, AKUN_UJI, AKUN_WARGA_UJI, masukKabupatenSebagai, masukKonsolSebagai, masukSebagai, masukSebagaiWarga, pakaiApiTiruan,
+  SEKARANG_UJI,
 } from '@/test/api-tiruan'
 
 pakaiApiTiruan({ dbSegarTiapUji: true })
@@ -78,7 +84,7 @@ describe('tiga alur demo kriteria selesai tahap 1 (SPEC §13.5)', () => {
     expect(riwayat.permohonan.status).toBe('selesai')
     if (!riwayat.terbit) throw new Error('Surat belum terbit')
     // 5. Kode surat lolos di halaman verifikasi website desa.
-    expect(await verifikasiSurat('sungai-sialang', riwayat.terbit.kodeVerifikasi)).toMatchObject({
+    expect(await verifikasiSurat('sungaisialang', riwayat.terbit.kodeVerifikasi)).toMatchObject({
       nomor: riwayat.terbit.nomor,
       berlaku: { status: 'berlaku' },
     })
@@ -86,7 +92,7 @@ describe('tiga alur demo kriteria selesai tahap 1 (SPEC §13.5)', () => {
   it('2. mencatat kelahiran: penduduk dan KK bertambah, bayi tanpa NIK; Statistik, Buku Mutasi, Buku hari ini, dan website berubah', async () => {
     masukSebagai(AKUN_UJI.operator)
     const jiwaAwal = (await ambilStatistikPenduduk(null)).jiwa
-    const jiwaWebAwal = (await ambilStatistikPublik('sungai-sialang')).jiwa
+    const jiwaWebAwal = (await ambilStatistikPublik('sungaisialang')).jiwa
     const anggotaAwal = (await ambilKeluarga('kk_syahrial')).anggota.length
     const mutasiAwal = (await ambilIsiBuku('mutasi-penduduk', { page: 1, pageSize: 25 })).meta.total
     const [bayi] = (await catatLahir(LAHIR)).penduduk
@@ -95,11 +101,11 @@ describe('tiga alur demo kriteria selesai tahap 1 (SPEC §13.5)', () => {
     expect((await ambilStatistikPenduduk(null)).jiwa).toBe(jiwaAwal + 1)
     expect((await ambilIsiBuku('mutasi-penduduk', { page: 1, pageSize: 25 })).meta.total).toBe(mutasiAwal + 1)
     expect((await ambilBeranda()).bukuHariIni?.map((a) => a.ringkasan)).toContain('Kelahiran dicatat · Aisyah Putri')
-    expect((await ambilStatistikPublik('sungai-sialang')).jiwa).toBe(jiwaWebAwal + 1)
+    expect((await ambilStatistikPublik('sungaisialang')).jiwa).toBe(jiwaWebAwal + 1)
   })
-  it('3. pemantau Pelalawan melihat Sungai Sialang dengan angka yang sama dengan panel desanya (fokus review 2)', async () => {
-    masukKonsolSebagai(AKUN_KONSOL_UJI.pemantau)
-    const ss = (await ambilPemantauan(null)).kecamatan
+  it('3. Peninjau Pelalawan melihat Sungai Sialang di dasbor kabupaten dengan angka yang sama dengan panel desanya (fokus review 2)', async () => {
+    masukKabupatenSebagai(AKUN_KABUPATEN_UJI.peninjau)
+    const ss = (await ambilPemantauanKabupaten()).kecamatan
       .find((k) => k.kecamatan.nama === 'Teluk Meranti')
       ?.desa.find((d) => d.nama === 'Sungai Sialang')
     if (!ss) throw new Error('Sungai Sialang tidak ada di Pemantauan')
@@ -129,5 +135,58 @@ describe('tiga alur demo kriteria selesai tahap 1 (SPEC §13.5)', () => {
     expect(ss.waktuTanggapanJam).toBe(bulatJam(median(tanggapan)))
     // APBDes: halaman Keuangan, tahun berjalan.
     expect(ss.apbdes).toEqual(jumlahKelompok(await ambilApbdes(), 'belanja'))
+  })
+  it('alur 7B-2: Kaur Keuangan menandai laporan tahap II, lalu dasbor Pelalawan melihat Sungai Sialang sudah mengirim', async () => {
+    masukSebagai(AKUN_UJI.kaurKeuangan)
+    await tandaiDikirim('tgt_pll_dd2', tanggalIsoWib(SEKARANG_UJI))
+    masukKabupatenSebagai(AKUN_KABUPATEN_UJI.admin)
+    const detail = await ambilDetailTenggat('tgt_pll_dd2')
+    expect(detail.desa.find((d) => d.id === 'desa_sungai_sialang')).toMatchObject({ status: 'dikirim', tanggalKirim: '2026-09-24' })
+  })
+  it('alur 7B-3: siaran Pelalawan sampai tindak lanjut, lalu ditarik', async () => {
+    masukKabupatenSebagai(AKUN_KABUPATEN_UJI.admin)
+    const baru = await kirimSiaran(
+      { judul: 'Rapat evaluasi BLT-DD', isi: 'Mohon hadir.', tindakLanjut: { tenggat: '2026-10-01' }, sasaran: { jenis: 'kecamatan', kode: ['14.05.09'] } },
+      null,
+    )
+    masukSebagai(AKUN_UJI.kades)
+    const kotak = await ambilNotifikasi()
+    expect(kotak.data[0]).toMatchObject({ jenis: 'siaran-kabupaten', rujukan: { jenis: 'siaran', id: baru.id } })
+    await tandaiSiaranDibaca(baru.id)
+    await tandaiTindakLanjut(baru.id, 'Sudah dibahas dalam musyawarah dusun.')
+    masukKabupatenSebagai(AKUN_KABUPATEN_UJI.admin)
+    const detail = await ambilDetailSiaran(baru.id)
+    expect(detail.desa.find((d) => d.id === 'desa_sungai_sialang')).toMatchObject({
+      status: 'ditindaklanjuti', tindakLanjut: { catatan: 'Sudah dibahas dalam musyawarah dusun.' },
+    })
+    await tarikSiaran(baru.id)
+    masukSebagai(AKUN_UJI.kades)
+    expect(await ambilDetailSiaranDesa(baru.id)).toMatchObject({ ditarik: { pada: '2026-09-24T09:00:00+07:00' }, isi: null })
+  })
+  it('alur 7D: Kaur Keuangan unggah bukti, Dina menemukannya lewat nominal dan menandai lunas, lalu kwitansi tersedia di desa beserta notifikasi', async () => {
+    masukSebagai(AKUN_UJI.kaurKeuangan)
+    const awal = await ambilLangganan()
+    const tagihan = awal.berjalan!
+    expect(tagihan.status).toBe('terbit')
+    await expect(ambilKwitansiDesa(tagihan.id)).rejects.toMatchObject({ status: 404 })
+    await kirimBukti(
+      tagihan.id,
+      { tanggalTransfer: '2026-09-23', namaPengirim: 'Pemdes Sungai Sialang', nominalTransfer: tagihan.nominal },
+      new File([new Uint8Array(2048)], 'bukti.png', { type: 'image/png' }),
+    )
+    masukKonsolSebagai(AKUN_KONSOL_UJI.tim)
+    const ditemukan = await cariTagihanKonsol(String(tagihan.nominal))
+    expect(ditemukan.data.map((t) => t.id)).toEqual([tagihan.id])
+    expect(ditemukan.data[0].status).toBe('menunggu-verifikasi')
+    const lunas = await tandaiLunas(tagihan.id, { diterimaPada: '2026-09-24', nominalDiterima: tagihan.nominal })
+    expect(lunas.status).toBe('lunas')
+    expect((await ambilKwitansiKonsol(tagihan.id)).nomor).toBe(lunas.kwitansi!.nomor)
+
+    masukSebagai(AKUN_UJI.kaurKeuangan)
+    const kwitansi = await ambilKwitansiDesa(tagihan.id)
+    expect(kwitansi).toMatchObject({ nomor: lunas.kwitansi!.nomor, nominal: tagihan.nominal, periode: 'Triwulan IV 2026', desa: { nama: 'Sungai Sialang' } })
+    const kotak = await ambilNotifikasi()
+    expect(kotak.data.find((n) => n.judul === 'Pembayaran diterima')).toMatchObject({ jenis: 'tagihan', isi: `Kwitansi ${kwitansi.nomor} sudah bisa diunduh.`, rujukan: { jenis: 'tagihan', id: tagihan.id } })
+    expect((await ambilLangganan()).berjalan).toBeNull()
   })
 })

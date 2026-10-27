@@ -3,7 +3,7 @@ import { angkaRomawi } from '../format/romawi'
 import { tanggalIsoWib } from '../format/tanggal'
 import type { LangkahPersiapan } from '../wilayah/persiapan'
 import type { StatusDesa } from '../wilayah/schema'
-import type { Perhatian, RingkasanKonsol, Tagihan } from './schema'
+import type { Perhatian, RingkasanKonsol } from './schema'
 
 const HARI_MS = 86_400_000
 /** SPEC §11: desa Aktif atau Uji coba tanpa aktivitas selama ini dianggap tidak aktif. */
@@ -11,23 +11,17 @@ export const BATAS_TIDAK_AKTIF_HARI = 14
 /** Desa Persiapan yang diam selama ini di langkah impor penduduk dianggap berhenti. */
 export const BATAS_BERHENTI_HARI = 7
 
-export const STATUS_TAGIHAN = ['lunas', 'menunggu', 'lewat-jatuh-tempo'] as const
-export type StatusTagihan = (typeof STATUS_TAGIHAN)[number]
-export const LABEL_STATUS_TAGIHAN: Readonly<Record<StatusTagihan, string>> = {
-  lunas: 'Lunas',
-  menunggu: 'Menunggu pembayaran',
-  'lewat-jatuh-tempo': 'Lewat jatuh tempo',
-}
-
-/** Status tagihan pada `hariIni` (YYYY-MM-DD, WIB). */
-export function statusTagihan(t: Pick<Tagihan, 'jatuhTempo' | 'dibayar'>, hariIni: string): StatusTagihan {
-  if (t.dibayar !== null) return 'lunas'
-  return hariIni > t.jatuhTempo ? 'lewat-jatuh-tempo' : 'menunggu'
-}
-
 /** "2026-09-24" → "Triwulan III 2026". */
 export function labelTriwulan(tanggal: string): string {
   return `Triwulan ${angkaRomawi(Math.ceil(Number(tanggal.slice(5, 7)) / 3))} ${tanggal.slice(0, 4)}`
+}
+
+/** Perpindahan status desa yang boleh dilakukan Tim Sinfodes (rencana 7D-2 keputusan 7). */
+export const PERPINDAHAN_STATUS: Readonly<Record<StatusDesa, readonly StatusDesa[]>> = {
+  Persiapan: ['Uji coba'],
+  'Uji coba': ['Aktif'],
+  Aktif: ['Ditangguhkan'],
+  Ditangguhkan: ['Aktif'],
 }
 
 export type KeadaanDesaKonsol = { status: StatusDesa; aktivitasTerakhir: string | null; langkahBerikut: LangkahPersiapan | null }
@@ -39,16 +33,23 @@ const diamSedikitnya = (aktivitas: string | null, hari: number, sekarang: Date):
  * Butir "Perlu perhatian" (SPEC §11). `tagihanLewat` null untuk pemantau, karena urusan tagihan hanya untuk Tim Sinfodes.
  * Butir bernilai nol tidak dikirim.
  */
-export function hitungPerhatian(daftar: readonly KeadaanDesaKonsol[], tagihanLewat: number | null, sekarang: Date): Perhatian[] {
+export function hitungPerhatian(
+  daftar: readonly KeadaanDesaKonsol[],
+  tagihanLewat: number | null,
+  sekarang: Date,
+  buktiMenunggu: number | null = null,
+): Perhatian[] {
   const tidakAktif = daftar.filter(
     (d) => (d.status === 'Aktif' || d.status === 'Uji coba') && diamSedikitnya(d.aktivitasTerakhir, BATAS_TIDAK_AKTIF_HARI, sekarang),
   ).length
   const berhenti = daftar.filter(
-    (d) => d.status === 'Persiapan' && d.langkahBerikut === 'impor' && diamSedikitnya(d.aktivitasTerakhir, BATAS_BERHENTI_HARI, sekarang),
+    (d) => d.status === 'Persiapan' && d.langkahBerikut !== null && diamSedikitnya(d.aktivitasTerakhir, BATAS_BERHENTI_HARI, sekarang),
   ).length
   const hasil: Perhatian[] = []
+  // Pekerjaan harian Tim Sinfodes didahulukan: bukti bayar yang menunggu diperiksa.
+  if (buktiMenunggu) hasil.push({ jenis: 'bukti-menunggu', jumlah: buktiMenunggu })
   if (tidakAktif > 0) hasil.push({ jenis: 'tidak-aktif', jumlah: tidakAktif })
-  if (berhenti > 0) hasil.push({ jenis: 'berhenti-impor', jumlah: berhenti })
+  if (berhenti > 0) hasil.push({ jenis: 'berhenti-persiapan', jumlah: berhenti })
   if (tagihanLewat) hasil.push({ jenis: 'tagihan-lewat', jumlah: tagihanLewat })
   return hasil
 }
@@ -59,19 +60,22 @@ export function kalimatPerhatian(p: Perhatian): string {
   switch (p.jenis) {
     case 'tidak-aktif':
       return `${n} desa tidak aktif ${BATAS_TIDAK_AKTIF_HARI} hari`
-    case 'berhenti-impor':
-      return `${n} desa berhenti di langkah impor penduduk`
+    case 'berhenti-persiapan':
+      return `${n} desa berhenti di langkah persiapan`
     case 'tagihan-lewat':
       return `${n} tagihan lewat jatuh tempo`
+    case 'bukti-menunggu':
+      return `${n} bukti bayar menunggu verifikasi`
   }
 }
 
-/** Angka platform dalam kalimat (SPEC §11). */
-export function kalimatPlatform(r: Pick<RingkasanKonsol, 'desa' | 'suratMingguIni'>): string {
+/** Angka platform dalam kalimat (SPEC §11). Tanpa angka surat: isi layanan desa bukan untuk Tim Sinfodes (SPEC-V0.2 §5.1). */
+export function kalimatPlatform(r: Pick<RingkasanKonsol, 'desa' | 'kabupatenMitra'>): string {
   const { aktif, ujiCoba, persiapan, ditangguhkan } = r.desa
+  const kabupaten = r.kabupatenMitra > 0 ? `${formatAngka(r.kabupatenMitra)} kabupaten mitra.` : 'Belum ada kabupaten mitra.'
   return (
     `${formatAngka(aktif)} desa aktif, ${formatAngka(ujiCoba)} uji coba, ${formatAngka(persiapan)} dalam persiapan, ` +
-    `dan ${formatAngka(ditangguhkan)} ditangguhkan. ${formatAngka(r.suratMingguIni)} surat terbit dalam 7 hari terakhir.`
+    `dan ${formatAngka(ditangguhkan)} ditangguhkan. ${kabupaten}`
   )
 }
 

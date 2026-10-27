@@ -1,19 +1,42 @@
+import { handlerAksesSinfodes } from './akses-sinfodes'
+import { handlerAlamat } from './alamat'
 import { handlerArsip } from './arsip'
 import { handlerBansos } from './bansos'
 import { handlerBeranda } from './beranda'
 import { handlerBuku } from './buku'
 import { handlerCari } from './cari'
 import { handlerImpor } from './impor'
+import { handlerInduk } from './induk'
+import { handlerKabupaten } from './kabupaten'
+import { handlerKabupatenDanaDesa } from './kabupaten-dana-desa'
+import { handlerKabupatenDataGabungan } from './kabupaten-data-gabungan'
+import { handlerKabupatenIndeks } from './kabupaten-indeks'
+import { handlerKabupatenLaporan } from './kabupaten-laporan'
+import { handlerKabupatenPeta } from './kabupaten-peta'
+import { handlerLangganan } from './langganan'
+import { handlerLencana } from './lencana'
+import { handlerKabupatenSiaran } from './kabupaten-siaran'
+import { handlerSiaranDesa } from './siaran-desa'
+import { handlerKabupatenTenggat } from './kabupaten-tenggat'
+import { handlerTenggatDesa } from './tenggat-desa'
+import { handlerKabupatenSesi } from './kabupaten-sesi'
+import { handlerPenggunaKabupaten } from './kabupaten-pengguna'
+import { handlerPortalKabupaten } from './kabupaten-portal'
+import { handlerKonsolKabupaten } from './konsol-kabupaten'
 import { handlerJenisSurat } from './jenis-surat'
+import { handlerModul } from './modul'
 import { handlerKeluarga } from './keluarga'
 import { handlerKesehatan } from './kesehatan'
 import { handlerKeluargaTulis } from './keluarga-tulis'
 import { handlerKonsol } from './konsol'
+import { handlerKonsolStatus } from './konsol-status'
+import { handlerKonsolTagihan } from './konsol-tagihan'
 import { handlerKeuangan } from './keuangan'
 import { handlerLaporan } from './laporan'
 import { handlerMutasi } from './mutasi'
 import { handlerNotifikasi } from './notifikasi'
 import { handlerPembangunan } from './pembangunan'
+import { handlerPeringkat } from './peringkat'
 import { handlerPengaduan } from './pengaduan'
 import { handlerPengaturan } from './pengaturan'
 import { handlerPenggunaDesa } from './pengaturan-pengguna'
@@ -35,13 +58,15 @@ import { handlerWargaSesi } from './warga-sesi'
 import { handlerWebsite } from './website'
 
 export const handlers = [
-  ...handlerArsip,
+  ...handlerAlamat, ...handlerInduk, ...handlerArsip,
   ...handlerSesi, ...handlerBeranda, ...handlerCari, ...handlerPenduduk, ...handlerPendudukTulis, ...handlerKeluarga,
-  ...handlerKeluargaTulis, ...handlerMutasi, ...handlerStatistik, ...handlerLaporan, ...handlerImpor, ...handlerJenisSurat,
+  ...handlerKeluargaTulis, ...handlerMutasi, ...handlerStatistik, ...handlerLaporan, ...handlerImpor, ...handlerJenisSurat, ...handlerModul,
   ...handlerSuratLoket, ...handlerSurat, ...handlerSuratAksi,
   ...handlerNotifikasi, ...handlerPengaduan, ...handlerBansos, ...handlerKesehatan,
   ...handlerKeuangan, ...handlerPembangunan, ...handlerTataKelola,
-  ...handlerPengaturan, ...handlerPenggunaDesa, ...handlerWebsite, ...handlerBuku,
+  ...handlerPengaturan, ...handlerPenggunaDesa, ...handlerAksesSinfodes, ...handlerWebsite, ...handlerBuku,
   ...handlerWargaSesi, ...handlerWarga, ...handlerWargaAjukan, ...handlerWargaKeluarga, ...handlerWargaPengaduan,
-  ...handlerPublik, ...handlerPublikHalaman, ...handlerKonsol,
+  ...handlerPublik, ...handlerPublikHalaman, ...handlerKonsol, ...handlerKonsolTagihan, ...handlerKonsolStatus, ...handlerKabupatenSesi, ...handlerKabupaten, ...handlerPenggunaKabupaten,
+  ...handlerPortalKabupaten, ...handlerKonsolKabupaten, ...handlerKabupatenDanaDesa, ...handlerKabupatenDataGabungan, ...handlerKabupatenPeta, ...handlerKabupatenIndeks,...handlerKabupatenLaporan, ...handlerKabupatenTenggat, ...handlerTenggatDesa,
+  ...handlerKabupatenSiaran, ...handlerSiaranDesa, ...handlerPeringkat, ...handlerLencana, ...handlerLangganan,
 ]

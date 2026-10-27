@@ -28,7 +28,7 @@ export function bersihkanWhatsapp(teks: string): string {
 }
 
 export function periksaWhatsapp(nomor: string): string | null {
-  return POLA_WHATSAPP.test(nomor) ? null : 'Nomor WhatsApp diawali 08 dan terdiri dari 10–13 angka.'
+  return POLA_WHATSAPP.test(nomor) ? null : 'Nomor WhatsApp diawali 08 dan terdiri dari 10-13 angka.'
 }
 
 /** "081277402231" → "0812-7740-2231". */

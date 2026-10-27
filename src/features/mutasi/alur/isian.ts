@@ -62,8 +62,8 @@ export function buatSkemaLahir(hariIni: Date) {
     if (i.jam === '') salah('jam', 'Jam lahir wajib diisi')
     if (i.anakKe === null || i.anakKe < 1) salah('anakKe', 'Isi anak ke berapa')
     if (i.penolong === '') salah('penolong', 'Pilih penolong kelahiran')
-    if (i.beratGram === null || i.beratGram < 500 || i.beratGram > 6000) salah('beratGram', 'Berat 500–6.000 gram')
-    if (i.panjangCm === null || i.panjangCm < 30 || i.panjangCm > 65) salah('panjangCm', 'Panjang 30–65 cm')
+    if (i.beratGram === null || i.beratGram < 500 || i.beratGram > 6000) salah('beratGram', 'Berat 500-6.000 gram')
+    if (i.panjangCm === null || i.panjangCm < 30 || i.panjangCm > 65) salah('panjangCm', 'Panjang 30-65 cm')
     if (i.pelapor.trim() === '') salah('pelapor', 'Nama pelapor wajib diisi')
   })
 }

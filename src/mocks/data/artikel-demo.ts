@@ -1,5 +1,5 @@
 /**
- * Naskah 12 artikel kabar desa demo (SPEC §12.6): 150–300 kata, ditulis sejalan dengan data modul lain (kegiatan
+ * Naskah 12 artikel kabar desa demo (SPEC §12.6): 150-300 kata, ditulis sejalan dengan data modul lain (kegiatan
  * pembangunan, agenda, pengumuman, posyandu). `foto` adalah nama berkas foto kurasi di galeri, atau null.
  */
 export type NaskahArtikel = { ringkasan: string; isi: readonly string[]; foto: string | null }
@@ -18,7 +18,7 @@ export const NASKAH_ARTIKEL: Readonly<Record<string, NaskahArtikel>> = {
   },
   'Semenisasi Jalan Dusun III Capai 70 Persen': {
     ringkasan:
-      'Semenisasi jalan lingkungan sepanjang 450 meter di RT 011–013 sudah mencapai 70 persen dan ditargetkan rampung dalam satu setengah bulan.',
+      'Semenisasi jalan lingkungan sepanjang 450 meter di RT 011-013 sudah mencapai 70 persen dan ditargetkan rampung dalam satu setengah bulan.',
     isi: [
       'Pekerjaan semenisasi jalan lingkungan di Dusun III kini sudah mencapai 70 persen. Jalan sepanjang 450 meter yang menghubungkan RT 011 sampai RT 013 itu sebelumnya berupa tanah liat yang licin dan berlumpur setiap kali hujan turun, sehingga anak-anak sering terlambat ke sekolah.',
       'Kegiatan ini dibiayai Dana Desa sebesar Rp245 juta dan dikerjakan Tim Pelaksana Kegiatan (TPK) dengan melibatkan tenaga kerja dari warga setempat. Dengan pola padat karya, upah kerja ikut berputar di desa sendiri dan warga dapat mengawasi mutu pekerjaan dari dekat.',
@@ -54,15 +54,15 @@ export const NASKAH_ARTIKEL: Readonly<Record<string, NaskahArtikel>> = {
       'Menjelang musim pasang besar, warga Dusun II bergotong royong membersihkan parit di sepanjang jalan dusun. Sejak pagi, warga membawa cangkul, parang, dan karung untuk mengangkat sampah serta eceng gondok yang menyumbat aliran air menuju Sungai Kampar. Kegiatan dimulai pukul tujuh pagi dan selesai menjelang zuhur.',
       'Kepala Dusun II, Sukardi, menyebut parit yang tersumbat menjadi penyebab air meluap ke halaman rumah warga saat pasang naik. “Kalau paritnya lancar, air cepat surut dan jalan tidak tergenang berhari-hari,” katanya di sela kegiatan.',
       'Ibu-ibu PKK menyiapkan makanan dan minuman untuk para peserta. Sampah yang terkumpul diangkut ke tempat pembuangan sementara dengan bantuan kendaraan desa, sedangkan eceng gondok dikeringkan untuk dijadikan pupuk oleh kelompok tani. Kegiatan ditutup dengan makan bersama di halaman rumah ketua RT.',
-      'Pemerintah desa mengimbau warga tidak membuang sampah ke parit. Gotong royong serupa akan dilanjutkan di parit RT 006–007. Jadwalnya diumumkan di halaman Agenda website desa dan melalui ketua RT masing-masing. Warga diharapkan kembali hadir membawa peralatan sendiri.',
+      'Pemerintah desa mengimbau warga tidak membuang sampah ke parit. Gotong royong serupa akan dilanjutkan di parit RT 006-007. Jadwalnya diumumkan di halaman Agenda website desa dan melalui ketua RT masing-masing. Warga diharapkan kembali hadir membawa peralatan sendiri.',
     ],
     foto: 'gotong-royong',
   },
   'Penyaluran BLT Tahap III Dijadwalkan 30 September': {
     ringkasan:
-      'Penerima BLT Dana Desa diminta datang ke kantor desa pada 30 September pukul 09.00–12.00 dengan membawa KTP-el dan KK asli.',
+      'Penerima BLT Dana Desa diminta datang ke kantor desa pada 30 September pukul 09.00-12.00 dengan membawa KTP-el dan KK asli.',
     isi: [
-      'Penyaluran BLT Dana Desa tahap III untuk periode Juli–September dijadwalkan pada 30 September di Kantor Desa Sungai Sialang, mulai pukul 09.00 sampai 12.00 WIB. Setiap keluarga penerima akan menerima Rp900.000 untuk tiga bulan sekaligus.',
+      'Penyaluran BLT Dana Desa tahap III untuk periode Juli-September dijadwalkan pada 30 September di Kantor Desa Sungai Sialang, mulai pukul 09.00 sampai 12.00 WIB. Setiap keluarga penerima akan menerima Rp900.000 untuk tiga bulan sekaligus.',
       'Penerima diminta membawa KTP-el dan Kartu Keluarga asli. Bila penerima berhalangan hadir karena sakit atau sudah lanjut usia, bantuan dapat diambil anggota keluarga yang tercantum dalam KK yang sama dengan membawa surat kuasa yang ditandatangani penerima. Formulir surat kuasa dapat diminta di kantor desa pada hari kerja.',
       'Untuk menghindari antrean panjang, penerima dipanggil bergiliran sesuai dusun. Jadwal per dusun disampaikan melalui kepala dusun dan ketua RT. Penerima yang datang lebih awal diminta menunggu di balai desa. Petugas kantor desa juga akan membantu warga yang belum lancar membaca untuk menandatangani tanda terima.',
       'Warga yang belum terdaftar tetapi merasa layak menerima bantuan dapat menyampaikan usulan ke kantor desa atau melalui menu Pengaduan di layanan mandiri warga. Usulan akan diperiksa dan dibahas pada musyawarah desa berikutnya.',

@@ -1,5 +1,6 @@
-import { useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { getRouteApi, useRouter } from '@tanstack/react-router'
+import { opsiAlamat } from '@/api/alamat'
 import { simpanSesi } from '@/app/sesi'
 import { HalamanMasuk } from './HalamanMasuk'
 
@@ -10,8 +11,10 @@ export function HalamanMasukAdmin() {
   const { ke } = rute.useSearch()
   const router = useRouter()
   const queryClient = useQueryClient()
+  const alamat = useQuery(opsiAlamat())
   return (
     <HalamanMasuk
+      desa={alamat.data?.jenis === 'desa' ? alamat.data.desa : null}
       modeDemo={import.meta.env.VITE_DEMO === 'true'}
       onBerhasil={(token) => {
         simpanSesi(token)

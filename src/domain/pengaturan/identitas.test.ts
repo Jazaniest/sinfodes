@@ -9,17 +9,18 @@ const IDENTITAS: IdentitasDesa = {
   surel: 'pemdes@sungaisialang.desa.id',
   telepon: '081266031140',
   jamLayanan: [
-    { hari: 'Senin–Kamis', buka: '08.00', tutup: '15.00' },
+    { hari: 'Senin-Kamis', buka: '08.00', tutup: '15.00' },
     { hari: 'Jumat', buka: '08.00', tutup: '11.30' },
   ],
   lambang: null,
+  lambangKabupaten: null,
 }
 
 describe('identitas desa (SPEC §8, §12.1)', () => {
   it('identitas demo sah; formulir dan isian API bolak-balik tanpa berubah', () => {
     expect(identitasDesaSchema.parse(IDENTITAS)).toEqual(IDENTITAS)
     const form = formDariIdentitas(IDENTITAS)
-    expect(form.jamLayanan[0]).toEqual({ hari: 'Senin–Kamis', buka: '08:00', tutup: '15:00' })
+    expect(form.jamLayanan[0]).toEqual({ hari: 'Senin-Kamis', buka: '08:00', tutup: '15:00' })
     expect(isianIdentitas(form)).toEqual(IDENTITAS)
     expect(periksaIdentitas(form)).toEqual({})
   })
@@ -41,5 +42,14 @@ describe('identitas desa (SPEC §8, §12.1)', () => {
     expect(periksaIdentitas({ ...formDariIdentitas(IDENTITAS), lambang: 'data:text/plain;base64,QUJD' })).toEqual({
       lambang: 'Berkas harus gambar PNG, JPG, WebP, atau SVG.',
     })
+  })
+  it('lambang kabupaten: gambar tersimpan, bukan gambar ditolak dengan pesan gambar yang sama dengan lambang desa', () => {
+    const gambar = `data:image/png;base64,${'A'.repeat(64)}`
+    expect(identitasDesaSchema.parse({ ...IDENTITAS, lambangKabupaten: gambar }).lambangKabupaten).toBe(gambar)
+    const salah = identitasDesaSchema.safeParse({ ...IDENTITAS, lambangKabupaten: 'bukan gambar' })
+    const pesanDesa = identitasDesaSchema.safeParse({ ...IDENTITAS, lambang: 'bukan gambar' })
+    expect(salah.error?.issues[0].path).toEqual(['lambangKabupaten'])
+    expect(salah.error?.issues[0].message).toBe(pesanDesa.error?.issues[0].message)
+    expect(formDariIdentitas({ ...IDENTITAS, lambangKabupaten: gambar }).lambangKabupaten).toBe(gambar)
   })
 })

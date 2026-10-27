@@ -4,10 +4,12 @@ import { GalatApi, pesanGalat } from '@/api/galat'
 import { opsiPenduduk } from '@/api/penduduk'
 import { segarkanSurat } from '@/api/segarkan'
 import { buatPermohonan, opsiJenisSurat, opsiSaranSurat } from '@/api/surat'
-import { periksaIsian } from '@/domain/surat/jenis'
+import { asalDesa } from '@/app/alamat'
+import { dilayani, periksaIsian } from '@/domain/surat/jenis'
 import { periksaPemohon } from '@/domain/surat/pemohon'
 import { Cap } from '@/ui/cap/Cap'
 import { LembarSurat } from '@/ui/dokumen/LembarSurat'
+import { lebarLembarCm } from '@/ui/dokumen/ukuran-kertas'
 import { PratinjauLembar } from '@/ui/dokumen/PratinjauLembar'
 import { fokusIsianSalah } from '@/ui/hooks/fokus-isian'
 import { useMediaQuery } from '@/ui/hooks/useMediaQuery'
@@ -59,7 +61,7 @@ export function BuatSurat({ cari, onUbahCari, onSelesai, onKotor, sekarang }: Pr
   const [galat, setGalat] = useState<Record<string, string>>({})
 
   const daftarJenis = useQuery(opsiJenisSurat())
-  const jenis = daftarJenis.data?.data.find((j) => j.kode === cari.jenis && j.aktif) ?? null
+  const jenis = daftarJenis.data?.data.find((j) => j.kode === cari.jenis && dilayani(j)) ?? null
   const saran = useQuery({ ...opsiSaranSurat(cari.jenis ?? '', cari.pemohon ?? null, cari.subjek ?? null), enabled: jenis !== null })
   const idPemohon = cari.pemohon ?? saran.data?.pemohonId ?? null
   const pemohon = useQuery({ ...opsiPenduduk(idPemohon ?? ''), enabled: idPemohon !== null })
@@ -134,9 +136,9 @@ export function BuatSurat({ cari, onUbahCari, onSelesai, onKotor, sekarang }: Pr
           pejabat: saran.data.pejabat,
         }
       : null
-  const lembar = bahan ? (
-    <LembarSurat {...dataLembar(bahan, { desa, dusun, isian: isianAktif, hariIni, asal: window.location.origin })} penanda={<Cap varian="draf" />} />
-  ) : null
+  const dataLembarBahan = bahan ? dataLembar(bahan, { desa, dusun, isian: isianAktif, hariIni, asal: asalDesa(desa.slug) }) : null
+  const lembar = dataLembarBahan ? <LembarSurat {...dataLembarBahan} penanda={<Cap varian="draf" />} /> : null
+  const lebarKertas = dataLembarBahan ? lebarLembarCm(dataLembarBahan.tataLetak) : 21
   const samping = lebar && (langkah === 2 || langkah === 3)
   const lanjutKePratinjau = () => {
     if (!jenis) return
@@ -230,7 +232,7 @@ export function BuatSurat({ cari, onUbahCari, onSelesai, onKotor, sekarang }: Pr
           )}
           {langkah === 4 && lembar && (
             <>
-              <PratinjauLembar label="Pratinjau surat">{lembar}</PratinjauLembar>
+              <PratinjauLembar label="Pratinjau surat" lebarCm={lebarKertas}>{lembar}</PratinjauLembar>
               <BilahLangkah>
                 <Tombol isDisabled={buat.isPending} onPress={() => ke(3)}>
                   Kembali
@@ -254,7 +256,7 @@ export function BuatSurat({ cari, onUbahCari, onSelesai, onKotor, sekarang }: Pr
         </section>
         {samping &&
           (lembar ? (
-            <PratinjauLembar label="Pratinjau surat">{lembar}</PratinjauLembar>
+            <PratinjauLembar label="Pratinjau surat" lebarCm={lebarKertas}>{lembar}</PratinjauLembar>
           ) : (
             <p className="rounded-2 border border-dashed border-garis p-6 text-tinta-2">Pratinjau surat tampil setelah pemohon dipilih.</p>
           ))}

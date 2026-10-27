@@ -1,17 +1,18 @@
 import { daftarBulanTerakhir, tanggalIsoWib } from '@/domain/format/tanggal'
 import { jumlahKelompok } from '@/domain/keuangan/schema'
 import { daftarMingguTerakhir } from '@/domain/konsol/aturan'
-import { bulatJam, median } from '@/domain/konsol/pemantauan'
+import { bulatJam, median } from '@/domain/kabupaten/pemantauan'
 import { dataBelumLengkap } from '@/domain/penduduk/filter'
 import { persiapanBerurutan, type Persiapan } from '@/domain/wilayah/persiapan'
 import type { Desa } from '@/domain/wilayah/schema'
 import { persiapanDesa } from './persiapan'
 import type { DbDemo, RekamDesa } from './tipe-db'
+import { ukuranBerkasDesa } from './ukuran-berkas'
 
 const HARI_MS = 86_400_000
 
 /** `suratBulanIni`: surat Selesai yang terbit pada bulan berjalan, untuk Pemantauan wilayah. */
-export type AngkaKonsol = Omit<RekamDesa, 'desaId' | 'langkahSelesai'> & { persiapan: Persiapan; suratBulanIni: number }
+export type AngkaKonsol = Omit<RekamDesa, 'desaId' | 'langkahSelesai' | 'belanjaBulanan' | 'komposisi'> & { persiapan: Persiapan; suratBulanIni: number; penyimpananKb: number }
 
 const jamAntara = (dari: string, sampai: string) => (Date.parse(sampai) - Date.parse(dari)) / 3_600_000
 
@@ -31,6 +32,8 @@ export function angkaKonsolDesa(db: DbDemo, desa: Desa, sekarang: Date): AngkaKo
       waktuLayananJam, waktuTanggapanJam, apbdes,
       persiapan: persiapanBerurutan(rekam.langkahSelesai),
       suratBulanIni: suratPerBulan.at(-1)?.jumlah ?? 0,
+      // Desa rekaman tidak punya berkas sungguhan; angka contoh dari jumlah jiwa, tanpa PRNG supaya angka lain tidak bergeser.
+      penyimpananKb: Math.round(jiwa * 3.2),
     }
   }
   const hidup = db.penduduk.filter((p) => p.desaId === desa.id && p.statusDasar === 'Hidup')
@@ -76,5 +79,6 @@ export function angkaKonsolDesa(db: DbDemo, desa: Desa, sekarang: Date): AngkaKo
     ),
     waktuTanggapanJam: bulatJam(median(tanggapan)),
     apbdes: apbdes ? jumlahKelompok(apbdes, 'belanja') : null,
+    penyimpananKb: ukuranBerkasDesa(db, desa.id),
   }
 }

@@ -7,7 +7,7 @@ import { formatAngka } from '@/domain/format/angka'
 import { formatTanggal } from '@/domain/format/tanggal'
 import { kelompokkanNik } from '@/domain/penduduk/nik'
 import type { Penduduk } from '@/domain/penduduk/schema'
-import { boleh } from '@/domain/pengguna/hak-akses'
+import { useBoleh } from '@/features/admin/useBoleh'
 import { namaDusun } from '@/domain/wilayah/alamat'
 import { DataTable, type KolomTabel } from '@/ui/data/DataTable'
 import { Nik } from '@/ui/domain/Nik'
@@ -32,7 +32,8 @@ type Props = { id: string; onBukaPenduduk: (id: string) => void; onBukaKeluarga:
 
 /** Detail KK ditata mirip kartu KK fisik, beserta aksinya (SPEC §6.5). */
 export function DetailKeluarga({ id, onBukaPenduduk, onBukaKeluarga }: Props) {
-  const { pengguna, desa, dusun } = useSesiAdmin()
+  const { desa, dusun } = useSesiAdmin()
+  const boleh = useBoleh()
   const kueri = useQuery(opsiKeluarga(id))
   const [dialog, setDialog] = useState<'ganti-kepala' | 'pecah' | null>(null)
   const anggota = kueri.data?.anggota
@@ -73,7 +74,7 @@ export function DetailKeluarga({ id, onBukaPenduduk, onBukaKeluarga }: Props) {
   const { keluarga: kk } = detail
   const daftarAnggota = detail.anggota
   const kosong = daftarAnggota.length === 0
-  const bolehUbah = boleh(pengguna.peran, 'penduduk.ubah') && !kosong
+  const bolehUbah = boleh('penduduk.ubah') && !kosong
   const kepala = daftarAnggota.find((a) => a.id === kk.kepalaKeluargaId)
   const d = dusun.find((x) => x.id === kk.dusunId)
   const istilah = desa.istilahWilayah
