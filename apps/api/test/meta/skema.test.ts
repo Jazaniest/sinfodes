@@ -43,6 +43,10 @@ describe('skema basis data (SPEC-V0.3 §7.2, §7.10)', () => {
     for (const b of baris) expect(b.kolom_pertama, `${b.tabel}.${b.indeks}`).toBe('desa_id')
   })
 
+  it('setiap tabel yang digolongkan (selain _migrasi) punya definisi Drizzle', () => {
+    expect(Object.keys(TABEL_SKEMA).sort()).toEqual(Object.keys(GOLONGAN_TABEL).filter((t) => t !== '_migrasi').sort())
+  })
+
   it('kolom tabel Drizzle sama dengan information_schema (tidak hilang, tidak berlebih)', async () => {
     for (const [nama, tabel] of Object.entries(TABEL_SKEMA)) {
       const dibuat = (await uji.sqlMigrasi`select column_name from information_schema.columns where table_schema = 'public' and table_name = ${nama}`).map(

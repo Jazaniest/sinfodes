@@ -6,7 +6,7 @@ import type postgres from 'postgres'
 /** Baris siap sisip: kunci = nama kolom SQL. Nilai bersarang dibungkus `sql.json`. */
 export type BarisSisip = Record<string, string | number | boolean | Date | null | postgres.Parameter>
 
-type PembuatJson = Pick<postgres.Sql, 'json'>
+export type PembuatJson = Pick<postgres.Sql, 'json'>
 const json = (sql: PembuatJson, nilai: unknown): postgres.Parameter => sql.json(nilai as postgres.JSONValue)
 
 const versiTerbit = (db: DbDemo, desaId: string) => (db.situs.find((s) => s.desaId === desaId) ?? situsBawaan(desaId, db.tanggalAcuan)).terbit

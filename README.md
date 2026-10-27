@@ -9,7 +9,7 @@ Monorepo pnpm. Perintah dijalankan dari akar repositori.
 | Folder | Isi |
 |---|---|
 | `apps/web` | Aplikasi web (Vite, React 19, TypeScript, Tailwind v4) beserta API tiruan |
-| `apps/api` | Server API (Hono, PostgreSQL, Drizzle). Tahap 8C baru memuat irisan pertama: alamat, masuk panel, dan daftar penduduk. Cara menyalakan: `apps/api/README.md` |
+| `apps/api` | Server API (Hono, PostgreSQL, Drizzle). Sampai tahap 8D1 memuat alamat, masuk empat pelaku (panel desa, warga, kabupaten, Konsol dengan TOTP), dan daftar penduduk. Cara menyalakan: `apps/api/README.md` |
 | `packages/kontrak` | Skema Zod, aturan domain, dan kode galat yang dipakai bersama oleh web dan server. Paket sumber tanpa build; di web diimpor lewat alias `@/domain/...` |
 | `packages/demo` | Pembangkit dunia demo yang deterministik beserta tipe basis data tiruan. Di web diimpor lewat `@sinfodes/demo/...` |
 
@@ -33,7 +33,8 @@ Port lain: `pnpm dev --port 5174 --strictPort`.
 ## Catatan
 
 - Pengaturan lingkungan frontend ada di `apps/web/.env`. Jangan menaruh rahasia API di sana. Rahasia server ada di `apps/api/.env.local`, yang tidak dilacak git.
-- Mode nyata baru melayani irisan 8C. Halaman lain (Beranda, surat, dan seterusnya) menjawab `NOT_FOUND` sampai modulnya dibangun di tahap 8D-8K.
+- Mode nyata baru melayani alamat, masuk empat pelaku, dan daftar penduduk. Halaman lain (Beranda, surat, dan seterusnya) menjawab `NOT_FOUND` sampai modulnya dibangun di tahap 8E-8K.
+- Akun Tim Sinfodes untuk Konsol dibuat pemilik dengan `pnpm --filter @sinfodes/api db:akun-tim --email=... --nama="..."`; kata sandi dan kunci TOTP dicetak sekali di terminal Anda (lihat `apps/api/README.md`).
 - Uji server (`apps/api`) butuh PostgreSQL 15 atau lebih baru yang menyala. Tanpa itu, uji basis data gagal dengan pesan yang jelas, bukan terlewat diam-diam.
 - Skrip di `apps/web/scripts/` dijalankan dari folder `apps/web`.
 - Dokumen lama yang menyebut `src/…` merujuk ke `apps/web/src/…`, kecuali `src/domain/…` yang kini `packages/kontrak/src/…` serta `src/mocks/data`, `src/mocks/generator`, `src/mocks/prng.ts`, dan `src/mocks/tipe-db.ts` yang kini di `packages/demo/src/…`.

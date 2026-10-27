@@ -14,6 +14,8 @@ export type Konfigurasi = {
   kunciIndeks: Buffer
   kidAktif: string
   cookieAwalan: '__Host-' | '__Secure-'
+  /** Akun Konsol tanpa TOTP ditolak (staging dan produksi); di lingkungan lain akun yang belum didaftarkan TOTP boleh masuk dengan kata sandi. */
+  totpKonsolWajib: boolean
 }
 
 /** Semua masalah konfigurasi sekaligus. Pesannya menyebut nama variabel, tidak pernah nilainya. */
@@ -102,5 +104,5 @@ export function muatKonfigurasi(env: Env): Konfigurasi {
   const kunciIndeks = bacaKunci('KUNCI_INDEKS', env.KUNCI_INDEKS, ketat, masalah)
 
   if (masalah.length > 0 || !lingkungan) throw new GalatKonfigurasi(masalah)
-  return { lingkungan, port, domainInduk, urlDb, kunciUtama, kunciIndeks, kidAktif, cookieAwalan: awalan as Konfigurasi['cookieAwalan'] }
+  return { lingkungan, port, domainInduk, urlDb, kunciUtama, kunciIndeks, kidAktif, cookieAwalan: awalan as Konfigurasi['cookieAwalan'], totpKonsolWajib: ketat }
 }

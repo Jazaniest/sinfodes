@@ -1,5 +1,5 @@
 import type { QueryClient } from '@tanstack/react-query'
-import { kunciWarga } from '@/api/warga'
+import { keluarSesiWarga, kunciWarga } from '@/api/warga'
 import { hapusSesi, simpanSesi } from '@/app/sesi'
 import type { SesiWarga } from '@/domain/warga/sesi'
 import { hapusSemuaDraf } from '@/features/admin/useDrafFormulir'
@@ -19,4 +19,19 @@ export function keluarWarga(queryClient: QueryClient): void {
   hapusSesi('warga')
   hapusSemuaDraf('warga.')
   queryClient.removeQueries({ queryKey: kunciWarga.semua })
+}
+
+/**
+ * Keluar dari layanan warga sampai ke server: sesi di cookie dicabut lebih dulu (mode nyata), lalu sisa lokal dibersihkan.
+ * Gagalnya panggilan (mis. jaringan putus) tidak boleh menahan keluar di perangkat ini. Mode demo tidak memanggil server.
+ */
+export async function keluarWargaSampaiServer(queryClient: QueryClient): Promise<void> {
+  if (import.meta.env.VITE_DEMO !== 'true') {
+    try {
+      await keluarSesiWarga()
+    } catch {
+      // Sesi di server akan berakhir sendiri (30 hari menganggur); perangkat ini tetap keluar.
+    }
+  }
+  keluarWarga(queryClient)
 }

@@ -4,8 +4,10 @@ import type { DbDemo } from '@sinfodes/demo/tipe-db'
 import { SEKARANG_UJI } from '@sinfodes/demo/uji-akun'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { periksaKataSandi } from '../kripto/kata-sandi'
+import { ruang } from '../kripto/ruang'
 import type { Penyandi } from '../kripto/penyandi'
 import { buatDbUji, penyandiUji, type DbUji } from '../../test/basisdata'
+import { buatAkunKonsolUji } from '../../test/akun-uji'
 import { KID_UJI, KUNCI_UTAMA_UJI } from '../../test/env-uji'
 import { GalatSemai, pastikanKunciData, semaiDunia } from './semai'
 
@@ -133,6 +135,59 @@ describe('semai dari dunia demo (rencana 8C Tugas 6)', () => {
     const ringkasan = await semaiDunia(uji.sqlMigrasi, penyandi, SEKARANG_UJI, opsiUji())
     expect(Object.values(ringkasan).every((n) => typeof n === 'number')).toBe(true)
     expect(JSON.stringify(ringkasan)).not.toMatch(/\d{9,}/)
+  })
+
+  it('identitas: jumlah baris akun warga, kabupaten mitra, pengguna kabupaten, dan pengguna Konsol sama dengan dunia demo', async () => {
+    expect(dunia.akunWarga.length).toBeGreaterThan(0)
+    expect(await hitung('akun_warga')).toBe(dunia.akunWarga.length)
+    expect(await hitung('kabupaten_mitra')).toBe(dunia.kabupatenMitra.length)
+    expect(await hitung('pengguna_kabupaten')).toBe(dunia.penggunaKabupaten.length)
+    expect(await hitung('pengguna_konsol')).toBe(dunia.penggunaKonsol.length)
+    const [mitra] = await uji.sqlMigrasi`select nama, label, surat_penunjukan from kabupaten_mitra where label = 'kab-pelalawan'`
+    expect(mitra).toMatchObject({ nama: 'Pelalawan' })
+    expect(mitra.surat_penunjukan).toHaveProperty('nomor')
+  })
+
+  it('identitas: PIN warga di-hash argon2id (bukan polos) dan WhatsApp tersandi serta terbuka kembali', async () => {
+    const [{ teks }] = await uji.sqlMigrasi`select string_agg(a::text, E'\n') as teks from akun_warga a`
+    for (const a of dunia.akunWarga) {
+      const [b] = await uji.sqlMigrasi`select pin_hash, whatsapp_sandi, desa_id from akun_warga where penduduk_id = ${a.pendudukId}`
+      expect(b.pin_hash).toMatch(/^\$argon2id\$/)
+      expect(await periksaKataSandi(b.pin_hash, a.pin), a.pendudukId).toBe(true)
+      expect(await periksaKataSandi(b.pin_hash, '000000'), a.pendudukId).toBe(false)
+      expect(teks.includes(a.pin) && teks.includes(`"${a.pin}"`)).toBe(false)
+      expect(teks.includes(a.whatsapp), `whatsapp ${a.pendudukId}`).toBe(false)
+      expect(penyandi.bukaSandi(b.whatsapp_sandi, ruang.whatsapp(b.desa_id))).toBe(a.whatsapp)
+    }
+  })
+
+  it('identitas: pengguna kabupaten dan Konsol masuk dengan KATA_SANDI_DEMO; akun Konsol semai tanpa TOTP', async () => {
+    for (const tabel of ['pengguna_kabupaten', 'pengguna_konsol']) {
+      const baris = await uji.sqlMigrasi.unsafe(`select id, email, kata_sandi_hash from ${tabel}`)
+      expect(baris.length, tabel).toBeGreaterThan(0)
+      for (const b of baris) {
+        expect(b.kata_sandi_hash, b.id).toMatch(/^\$argon2id\$/)
+        expect(b.email, b.id).toBe((b.email as string).toLowerCase())
+        expect(await periksaKataSandi(b.kata_sandi_hash, KATA_SANDI_DEMO), b.id).toBe(true)
+      }
+    }
+    const [tanpa] = await uji.sqlMigrasi`select count(*)::int as n from pengguna_konsol where totp_rahasia_sandi is not null or totp_langkah_terakhir is not null`
+    expect(tanpa.n).toBe(0)
+  })
+
+  it('identitas: idempoten, dan buatAkunKonsolUji menyisipkan akun dengan rahasia TOTP tersandi yang dapat dibuka', async () => {
+    const sebelum = [await hitung('akun_warga'), await hitung('kabupaten_mitra'), await hitung('pengguna_kabupaten'), await hitung('pengguna_konsol')]
+    await semaiDunia(uji.sqlMigrasi, penyandi, SEKARANG_UJI, opsiUji())
+    expect([await hitung('akun_warga'), await hitung('kabupaten_mitra'), await hitung('pengguna_kabupaten'), await hitung('pengguna_konsol')]).toEqual(sebelum)
+
+    const akun = await buatAkunKonsolUji(uji.sqlMigrasi, penyandi, { totp: true })
+    const [b] = await uji.sqlMigrasi`select totp_rahasia_sandi, kata_sandi_hash from pengguna_konsol where id = ${akun.id}`
+    expect(b.totp_rahasia_sandi).toMatch(/^v1\./)
+    expect(Buffer.from(penyandi.bukaSandi(b.totp_rahasia_sandi, ruang.totpKonsol), 'base64')).toEqual(akun.rahasia)
+    expect(await periksaKataSandi(b.kata_sandi_hash, akun.kataSandi)).toBe(true)
+    const tanpaTotp = await buatAkunKonsolUji(uji.sqlMigrasi, penyandi, { totp: false })
+    expect(tanpaTotp.rahasia).toBeNull()
+    await uji.sqlMigrasi`delete from pengguna_konsol where id in (${akun.id}, ${tanpaTotp.id})`
   })
 
   it('kunci data aktif disisipkan sekali dan dapat dibuka kembali', async () => {

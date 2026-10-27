@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import type { Db } from './basisdata/klien'
-import { jejakAudit } from './basisdata/skema'
+import { jejakAudit, jejakAuditPlatform } from './basisdata/skema'
 
 export type CatatanAudit = {
   desaId: string | null
@@ -13,7 +13,12 @@ export type CatatanAudit = {
   ringkasan: Record<string, unknown>
 }
 
-/** Menambah satu baris jejak audit. Peran desa hanya boleh INSERT (tidak bisa membaca, mengubah, atau menghapus). */
+/** Menambah satu baris jejak audit desa. Peran desa hanya boleh INSERT (tidak bisa membaca, mengubah, atau menghapus). */
 export async function catatAudit(db: Db, c: CatatanAudit): Promise<void> {
   await db.insert(jejakAudit).values({ id: `aud_${randomUUID()}`, desaId: c.desaId, jenis: c.jenis, pelaku: c.pelaku, waktu: c.waktu, ringkasan: c.ringkasan })
+}
+
+/** Jejak audit lintas desa (masuk Konsol dan kabupaten). Peran `konsol` dan `kabupaten` hanya boleh INSERT. */
+export async function catatAuditPlatform(db: Db, c: Omit<CatatanAudit, 'desaId'>): Promise<void> {
+  await db.insert(jejakAuditPlatform).values({ id: `aup_${randomUUID()}`, jenis: c.jenis, pelaku: c.pelaku, waktu: c.waktu, ringkasan: c.ringkasan })
 }

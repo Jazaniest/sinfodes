@@ -8,7 +8,10 @@ import { penyimpananMemori } from '@/mocks/penyimpanan'
 import { aturTokenSesi, panggilApi, SESI_KUKI } from './client'
 import { GalatApi } from './galat'
 import { daftarPenduduk } from './penduduk'
+import { masukKabupaten } from './kabupaten'
+import { masukKonsol } from './konsol'
 import { ambilSesi, masuk } from './sesi'
+import { masukWarga } from './warga'
 
 const OPERATOR = 'rosmiati@sungaisialang.desa.id'
 
@@ -104,6 +107,38 @@ describe('penanda sesi cookie (mode nyata, SPEC-V0.3 §8.1)', () => {
     expect((await masuk(OPERATOR, 'demo')).token).toBe(SESI_KUKI)
     serverUji.use(http.post('*/api/v1/sesi/masuk', () => HttpResponse.json({ token: 'demo.pgn_rosmiati', sesi })))
     expect((await masuk(OPERATOR, 'demo')).token).toBe('demo.pgn_rosmiati')
+  })
+})
+
+describe('penanda sesi cookie untuk warga, Konsol, dan kabupaten', () => {
+  it('jawaban masuk tanpa token memberi penanda kuki; dengan token membawanya apa adanya', async () => {
+    const warga = (await masukWarga('1405095203918002', '246810')).sesi
+    const konsol = (await masukKonsol('dina@sinfodes.id', 'demo')).sesi
+    const kabupaten = (await masukKabupaten('admin.pelalawan@demo.sinfodes.id', 'demo')).sesi
+    serverUji.use(
+      http.post('*/api/v1/warga/masuk', () => HttpResponse.json({ sesi: warga })),
+      http.post('*/api/v1/konsol/sesi/masuk', () => HttpResponse.json({ sesi: konsol })),
+      http.post('*/api/v1/kabupaten/sesi/masuk', () => HttpResponse.json({ sesi: kabupaten })),
+    )
+    expect((await masukWarga('1405095203918002', '246810')).token).toBe(SESI_KUKI)
+    expect((await masukKonsol('dina@sinfodes.id', 'demo')).token).toBe(SESI_KUKI)
+    expect((await masukKabupaten('admin.pelalawan@demo.sinfodes.id', 'demo')).token).toBe(SESI_KUKI)
+    serverUji.use(http.post('*/api/v1/konsol/sesi/masuk', () => HttpResponse.json({ token: 'konsol.kns_dina', sesi: konsol })))
+    expect((await masukKonsol('dina@sinfodes.id', 'demo')).token).toBe('konsol.kns_dina')
+  })
+
+  it('masukKonsol mengirim kodeTotp hanya bila diisi', async () => {
+    const badan: unknown[] = []
+    const konsol = (await masukKonsol('dina@sinfodes.id', 'demo')).sesi
+    serverUji.use(
+      http.post('*/api/v1/konsol/sesi/masuk', async ({ request }) => {
+        badan.push(await request.json())
+        return HttpResponse.json({ sesi: konsol })
+      }),
+    )
+    await masukKonsol('dina@sinfodes.id', 'demo')
+    await masukKonsol('dina@sinfodes.id', 'demo', '012345')
+    expect(badan).toEqual([{ email: 'dina@sinfodes.id', kataSandi: 'demo' }, { email: 'dina@sinfodes.id', kataSandi: 'demo', kodeTotp: '012345' }])
   })
 })
 

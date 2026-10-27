@@ -14,8 +14,11 @@ import { lapisanSesi } from './lapisan/sesi'
 import { lapisanTransaksi } from './lapisan/transaksi'
 import type { Pencatat } from './log'
 import { ruteAlamat } from './modul/alamat/rute'
+import { ruteKabupaten } from './modul/kabupaten/rute'
+import { ruteKonsol } from './modul/konsol/rute'
 import { rutePenduduk } from './modul/penduduk/rute'
 import { ruteSesi } from './modul/sesi/rute'
+import { ruteWarga } from './modul/warga/rute'
 import type { Waktu } from './waktu'
 
 export type DepsApp = {
@@ -92,11 +95,15 @@ export function buatApp(deps: DepsApp): Hono<LingkunganApp> {
     lapisanSesi({ cookieAwalan: konfigurasi.cookieAwalan, waktu }),
   )
 
-  // Batas laju masuk di memori (SPEC-V0.3 §8.4): per IP dan per email; kunci per akun di PostgreSQL menyusul di 8D.
+  // Batas laju masuk per IP di memori (SPEC-V0.3 §8.5); kunci per akun disimpan di PostgreSQL (`sesi/kunci-masuk.ts`).
   const batasIp = buatBatasLaju({ maks: 5, jendelaMs: 60_000, waktu })
-  const batasEmail = buatBatasLaju({ maks: 5, jendelaMs: 15 * 60_000, waktu })
+  const batasLupaPin = buatBatasLaju({ maks: 5, jendelaMs: 60_000, waktu })
+  const ipKlien = deps.ipKlien ?? ipSoket
   app.route('/api/v1/alamat', ruteAlamat())
-  app.route('/api/v1/sesi', ruteSesi({ konfigurasi, penyandi, batasIp, batasEmail, ipKlien: deps.ipKlien ?? ipSoket }))
+  app.route('/api/v1/sesi', ruteSesi({ konfigurasi, penyandi, batasIp, ipKlien }))
+  app.route('/api/v1/kabupaten', ruteKabupaten({ konfigurasi, penyandi, batasIp, ipKlien }))
+  app.route('/api/v1/konsol', ruteKonsol({ konfigurasi, penyandi, batasIp, ipKlien }))
+  app.route('/api/v1/warga', ruteWarga({ konfigurasi, penyandi, batasIp, batasLupaPin, ipKlien }))
   app.route('/api/v1/penduduk', rutePenduduk({ penyandi }))
 
   app.get('/sehat', (c) => c.json({ hidup: true }))

@@ -8,6 +8,14 @@ const tangkap = () => {
 }
 
 describe('pencatat log', () => {
+  it('kunci TOTP, rahasia, dan WhatsApp disamarkan di mana pun', () => {
+    const { log, baris } = tangkap()
+    log.info('masuk', { kodeTotp: '123456', totp: '654321', rahasia: 'ABCDEFG', whatsapp: '081277402231', bersarang: { totpRahasia: 'x', whatsapp_nomor: 'y' } })
+    const teks = baris.join('')
+    for (const bocor of ['123456', '654321', 'ABCDEFG', '081277402231']) expect(teks).not.toContain(bocor)
+    expect(teks).toContain('[disamarkan]')
+  })
+
   it('galat kueri Drizzle dicatat tanpa nilai parameter, di pesan maupun tumpukan', () => {
     const { log, baris } = tangkap()
     const galat = new Error('Failed query: select "id" from "pengguna" where "email" = $1\nparams: rahasia@contoh.id,sandi-bocor')

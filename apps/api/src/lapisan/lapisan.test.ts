@@ -7,7 +7,7 @@ import { buatDbUji, type DbUji } from '../../test/basisdata'
 import { klienTanpaDb, rakitApp, sisipSesiUji } from '../../test/rakit-app'
 import { buatKlien, type Klien } from '../basisdata/klien'
 import { GalatApp } from '../galat'
-import { butuhAkses, butuhDesa, butuhPelaku, dbTanpaPelaku } from './akses'
+import { butuhAkses, butuhDesa, butuhPelakuPanel, dbTanpaPelaku } from './akses'
 import { batasiLaju, buatBatasLaju } from './batas-laju'
 
 const AWAL = new Date('2026-09-24T02:00:00Z')
@@ -50,7 +50,7 @@ function rakitDenganRute(opsi: { klien?: Klien; waktu?: () => Date; ipKlien?: (c
     return c.json({ konteks: a.konteks, desaId: a.desa?.desa.id ?? null, labelBaru: a.labelBaru })
   })
   app.get('/api/v1/contoh/desa', (c) => c.json({ id: butuhDesa(c).desa.id }))
-  app.get('/api/v1/contoh/aku', (c) => c.json({ id: butuhPelaku(c).id, sesiId: butuhPelaku(c).sesiId }))
+  app.get('/api/v1/contoh/aku', (c) => c.json({ id: butuhPelakuPanel(c).id, sesiId: butuhPelakuPanel(c).sesiId }))
   app.get('/api/v1/contoh/hitung', async (c) => {
     const { db } = butuhAkses(c, 'penduduk.lihat')
     const [b] = await db.execute<{ n: number; konteks: string | null }>(
@@ -136,9 +136,9 @@ describe('lapisan alamat (SPEC-V0.3 §6.2)', () => {
     expect(dipantau.hitung.publik).toBe(3)
   })
 
-  it('alamat induk dan Konsol tidak menyentuh basis data', async () => {
+  it('alamat induk, www, dan host luar tidak menyentuh basis data (Konsol dan kabupaten kini memakainya, sejak 8D1)', async () => {
     const { app } = rakitDenganRute({ klien: klienTanpaDb })
-    for (const url of [INDUK, 'http://konsol.sinfodes.localhost', 'http://kab-pelalawan.sinfodes.localhost']) {
+    for (const url of [INDUK, 'http://www.sinfodes.localhost', 'http://contoh.example.com']) {
       expect((await get(app, `${url}/api/v1/contoh/alamat`)).status).toBe(200)
     }
   })
