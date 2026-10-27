@@ -5,7 +5,7 @@ export type Pencatat = {
 }
 
 /** Kunci yang nilainya tidak boleh masuk log (SPEC-V0.3 §10), dibandingkan tanpa huruf besar, garis bawah, dan tanda hubung. */
-const KUNCI_TERLARANG = new Set(['nik', 'nomorkk', 'pin', 'katasandi', 'passphrase', 'token', 'telepon', 'cookie', 'authorization', 'setcookie'])
+const KUNCI_TERLARANG = new Set(['nik', 'nomorkk', 'pin', 'katasandi', 'passphrase', 'token', 'telepon', 'cookie', 'authorization', 'setcookie', 'kodetotp', 'totp', 'totprahasia', 'rahasia', 'whatsapp'])
 const normal = (kunci: string): string => kunci.toLowerCase().replaceAll('_', '').replaceAll('-', '')
 const BATAS_KEDALAMAN = 8
 

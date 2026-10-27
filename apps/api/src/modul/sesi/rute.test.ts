@@ -1,6 +1,6 @@
 import { galatSchema } from '@sinfodes/kontrak/api'
 import { hasilMasukSchema, sesiAdminSchema } from '@sinfodes/kontrak/pengguna/schema'
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { buatDbUji, type DbUji } from '../../../test/basisdata'
 import { ambil, kirimJson, kukiDariJawaban, masukLewatRute, rakitApp } from '../../../test/rakit-app'
 import * as kataSandi from '../../kripto/kata-sandi'
@@ -15,6 +15,9 @@ const BADAN_GAGAL = { error: { code: 'VALIDATION', message: PESAN_GAGAL, fields:
 let uji: DbUji
 beforeAll(async () => {
   uji = await buatDbUji()
+})
+afterEach(async () => {
+  await uji.sqlMigrasi`delete from kunci_masuk_desa`
 })
 afterAll(async () => {
   await uji?.tutup()
@@ -178,11 +181,24 @@ describe('POST /sesi/masuk', () => {
     expect((await masukLewatRute(app, SS, EMAIL_OPERATOR, 'demo', '10.5.0.1')).res.status).toBe(200)
   })
 
-  it('batas laju per email: tebakan dari banyak IP untuk satu akun dihentikan', async () => {
-    const { app } = rakit()
-    for (let i = 0; i < 5; i++) expect((await masukLewatRute(app, SS, EMAIL_OPERATOR, 'salah', `10.6.0.${i}`)).res.status).toBe(422)
-    const terbatas = await masukLewatRute(app, SS, EMAIL_OPERATOR, 'demo', '10.6.1.1')
-    expect(terbatas.res.status).toBe(429)
+  it('kunci per akun di PostgreSQL: lima gagal dari banyak IP mengunci akun, juga untuk kata sandi benar, sama untuk email yang tidak ada, bertahan lewat aplikasi baru', async () => {
+    for (const email of [EMAIL_OPERATOR, 'hantu@sungaisialang.desa.id']) {
+      for (let i = 0; i < 4; i++) expect((await masukLewatRute(rakit().app, SS, email, 'salah', `10.6.${email === EMAIL_OPERATOR ? 0 : 1}.${i}`)).res.status).toBe(422)
+      const kelima = await masukLewatRute(rakit().app, SS, email, 'salah', '10.6.9.1')
+      expect(kelima.res.status).toBe(429)
+      expect(galatSchema.parse(await kelima.res.json()).error.code).toBe('RATE_LIMITED')
+      expect((await masukLewatRute(rakit().app, SS, email, 'demo', '10.6.9.2')).res.status).toBe(429)
+    }
+    // Akun lain di desa yang sama, dan email yang sama di desa lain, tidak ikut terkunci.
+    expect((await masukLewatRute(rakit().app, SS, 'hendri@sungaisialang.desa.id', 'demo', '10.6.9.3')).res.status).toBe(200)
+  })
+
+  it('kunci akun panel dibuka sesudah 15 menit dan berhasil masuk menghapus hitungan', async () => {
+    let sekarang = new Date('2026-09-24T02:00:00Z')
+    for (let i = 0; i < 5; i++) await masukLewatRute(rakit({ waktu: () => sekarang }).app, SS, EMAIL_OPERATOR, 'salah', `10.6.5.${i}`)
+    sekarang = new Date(sekarang.getTime() + 15 * 60_000 + 1000)
+    expect((await masukLewatRute(rakit({ waktu: () => sekarang }).app, SS, EMAIL_OPERATOR, 'demo', '10.6.5.9')).res.status).toBe(200)
+    expect((await uji.sqlMigrasi`select count(*)::int as n from kunci_masuk_desa where jenis = 'panel'`)[0].n).toBe(0)
   })
 })
 

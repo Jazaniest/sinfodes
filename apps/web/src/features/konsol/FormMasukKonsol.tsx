@@ -13,6 +13,9 @@ export function FormMasukKonsol({ onBerhasil }: { onBerhasil: (sesi: SesiKonsol)
   const queryClient = useQueryClient()
   const [email, setEmail] = useState('')
   const [kataSandi, setKataSandi] = useState('')
+  const [kodeTotp, setKodeTotp] = useState('')
+  // Server nyata meminta kode dari aplikasi autentikator (SPEC-V0.3 §8.4); API tiruan tidak mengenalnya.
+  const tampilkanTotp = import.meta.env.VITE_DEMO !== 'true'
   const [galat, setGalat] = useState<{ sandi?: string; umum?: string }>({})
   const [memuat, setMemuat] = useState(false)
   const kirim = async (e: FormEvent) => {
@@ -20,7 +23,7 @@ export function FormMasukKonsol({ onBerhasil }: { onBerhasil: (sesi: SesiKonsol)
     setMemuat(true)
     setGalat({})
     try {
-      const { token, sesi } = await masukKonsol(email, kataSandi)
+      const { token, sesi } = await masukKonsol(email, kataSandi, kodeTotp.trim() || undefined)
       simpanSesi(token, 'konsol')
       queryClient.removeQueries({ queryKey: kunciKonsol.semua })
       queryClient.setQueryData(kunciKonsol.sesi, sesi)
@@ -44,6 +47,16 @@ export function FormMasukKonsol({ onBerhasil }: { onBerhasil: (sesi: SesiKonsol)
         galat={galat.sandi}
         isRequired
       />
+      {tampilkanTotp && (
+        <TextField
+          label="Kode autentikator"
+          autoComplete="one-time-code"
+          inputMode="numeric"
+          maxLength={6}
+          value={kodeTotp}
+          onChange={setKodeTotp}
+        />
+      )}
       <Tombol type="submit" varian="utama" memuat={memuat}>
         Masuk
       </Tombol>

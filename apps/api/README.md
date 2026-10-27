@@ -1,6 +1,6 @@
 # Sinfodes API
 
-Server API Sinfodes: Hono, PostgreSQL, dan Drizzle. Tahap 8C baru memuat satu irisan vertikal yang menjawab kontrak yang sama dengan API tiruan di `apps/web`:
+Server API Sinfodes: Hono, PostgreSQL, dan Drizzle. Sampai tahap 8D1 server memuat identitas empat pelaku dan satu irisan data yang menjawab kontrak yang sama dengan API tiruan di `apps/web`:
 
 | Rute | Isi |
 | --- | --- |
@@ -9,6 +9,9 @@ Server API Sinfodes: Hono, PostgreSQL, dan Drizzle. Tahap 8C baru memuat satu ir
 | `GET /api/v1/sesi` | Sesi yang sedang berjalan |
 | `POST /api/v1/sesi/keluar` | Keluar; sesi dicabut |
 | `GET /api/v1/penduduk`, `POST /api/v1/penduduk/cari`, `GET /api/v1/penduduk/ringkasan` | Daftar, pencarian, dan angka kepala halaman Penduduk |
+| `POST /api/v1/warga/masuk`, `/warga/lupa-pin`, `GET /warga/sesi`, `PATCH /warga/akun`, `POST /warga/sesi/keluar` | Layanan warga: NIK dan PIN di alamat desa, cookie `__Host-warga` |
+| `POST /api/v1/kabupaten/sesi/masuk`, `GET /kabupaten/sesi`, `POST /kabupaten/sesi/keluar` | Dasbor kabupaten di alamat `kab-...`, cookie `__Host-kab` |
+| `POST /api/v1/konsol/sesi/masuk`, `GET /konsol/sesi`, `POST /konsol/sesi/keluar` | Konsol di alamat `konsol`, dengan kode TOTP, cookie `__Host-konsol` |
 
 Rute lain belum ada dan menjawab `NOT_FOUND`. Rancangan lengkapnya ada di `SPEC-V0.3.md` (akar repositori).
 
@@ -52,6 +55,20 @@ Butuh PostgreSQL 15 atau lebih baru (disarankan 17), mis. dari Laragon, yang sed
 
    Masuk di `http://sungaisialang.sinfodes.localhost:5173/admin/masuk` dengan akun demo mana pun (kata sandi `demo`), mis. `rosmiati@sungaisialang.desa.id`.
 
+## Akun Tim Sinfodes (Konsol)
+
+Akun Konsol pertama tidak punya pendaftaran sendiri. Pemilik membuatnya di terminalnya sendiri:
+
+```bash
+pnpm --filter @sinfodes/api db:akun-tim --email=orang@contoh.id --nama="Nama Lengkap"
+```
+
+Kata sandi acak dan kunci TOTP dicetak **sekali** di layar itu. Di aplikasi autentikator (Google Authenticator, Microsoft Authenticator, Aegis, dan sejenisnya) pilih memasukkan kunci setelan secara manual, jenis berbasis waktu, lalu ketik kuncinya. Masuk di `http://konsol.sinfodes.localhost:5173` dengan email, kata sandi, dan kode enam angka.
+
+Bila akun Konsol (atau akun lain) terkunci karena orang lain sengaja salah memasukkan kata sandi, buka kuncinya dari terminal Anda: `pnpm --filter @sinfodes/api db:buka-kunci --jenis=konsol` (pilihan: `konsol`, `kabupaten`, `warga`, `panel`, `semua`).
+
+Aturan TOTP: akun yang sudah didaftarkan TOTP-nya selalu wajib kode. Di `staging` dan `produksi` akun tanpa TOTP ditolak; di `pengembangan` dan `uji` akun semai (tanpa TOTP) boleh masuk dengan kata sandi saja.
+
 `db:semai` menolak lingkungan `staging` dan `produksi` kecuali diberi `--izinkan-lingkungan-nyata`, karena akun demo berkata sandi bersama.
 
 ## Uji
@@ -77,7 +94,9 @@ pnpm --filter @sinfodes/api test
 
 - Data desa dibatasi dua lapis: kode aplikasi dan RLS PostgreSQL (`ENABLE` dan `FORCE`, konteks desa disetel lokal pada transaksi).
 - NIK, nomor KK, dan telepon tidak pernah tersimpan polos. Pencarian persis memakai indeks HMAC; pencarian sebagian dilakukan di aplikasi setelah dibuka.
-- Masuk menjawab sama persis untuk email tak dikenal, kata sandi salah, akun nonaktif, dan akun desa lain; selalu ada satu verifikasi argon2. Batas laju per IP dan per email.
+- Masuk (panel, warga, kabupaten, Konsol) menjawab sama persis untuk akun tak dikenal, kata sandi atau PIN salah, akun nonaktif, akun milik alamat lain, dan kode TOTP salah; selalu ada satu verifikasi argon2.
+- Percobaan gagal dihitung di PostgreSQL per akun (NIK atau email): 5 kegagalan mengunci 15 menit, lalu berlipat sampai 24 jam, dan bertahan saat server dimulai ulang. Di atasnya ada batas laju per IP di memori.
+- Tiap pelaku punya cookie, tabel sesi, dan masa berlaku sendiri; cookie satu pelaku tidak pernah diterima pelaku atau alamat lain.
 - Rahasia hanya di `.env.local` (tidak dilacak git). Server menolak mulai di staging atau produksi bila rahasia tampak seperti nilai contoh.
 - Log JSON dengan penyamaran kunci sensitif; jawaban galat tidak memuat tumpukan atau isi basis data.
 

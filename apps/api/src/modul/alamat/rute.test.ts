@@ -43,9 +43,17 @@ describe('GET /api/v1/alamat (SPEC-V0.2 §4.5)', () => {
     expect(hasilAlamatSchema.parse(await (await baca('http://konsol.sinfodes.localhost')).json())).toEqual({ jenis: 'konsol' })
   })
 
-  it('desa yang tidak ada dan alamat selain desa/induk/Konsol menjawab NOT_FOUND', async () => {
-    // Perbedaan sengaja: alamat kabupaten baru dilayani di 8D; sampai saat itu menjawab NOT_FOUND.
-    for (const url of ['http://tidak-ada.sinfodes.localhost', 'http://kab-pelalawan.sinfodes.localhost', 'http://contoh.example.com']) {
+  it('alamat kabupaten: mitra (kab-pelalawan) dan kabupaten yang belum mitra (kab-kampar), dari tabel kode wilayah', async () => {
+    expect(hasilAlamatSchema.parse(await (await baca('http://kab-pelalawan.sinfodes.localhost')).json())).toEqual({
+      jenis: 'kabupaten', kabupaten: { label: 'kab-pelalawan', kode: '14.05', nama: 'Pelalawan', mitra: true },
+    })
+    expect(hasilAlamatSchema.parse(await (await baca('http://kab-kampar.sinfodes.localhost')).json())).toEqual({
+      jenis: 'kabupaten', kabupaten: { label: 'kab-kampar', kode: '14.01', nama: 'Kampar', mitra: false },
+    })
+  })
+
+  it('desa yang tidak ada, kabupaten tak dikenal, dan host luar menjawab NOT_FOUND', async () => {
+    for (const url of ['http://tidak-ada.sinfodes.localhost', 'http://kab-antahberantah.sinfodes.localhost', 'http://contoh.example.com']) {
       const r = await baca(url)
       expect(r.status, url).toBe(404)
       expect(galatSchema.parse(await r.json()).error.code).toBe('NOT_FOUND')

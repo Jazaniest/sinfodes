@@ -10,11 +10,22 @@ export const GOLONGAN_TABEL: Readonly<Record<string, Golongan>> = {
   alias_alamat: 'platform',
   kunci_data: 'platform',
   sesi: 'platform',
+  // Identitas lintas desa dipisah dengan hak tabel per peran (SPEC-V0.3 §7.3); pengunci Konsol dan kabupaten juga ber-RLS per peran.
+  kabupaten_mitra: 'platform',
+  pengguna_kabupaten: 'platform',
+  sesi_kabupaten: 'platform',
+  pengguna_konsol: 'platform',
+  sesi_konsol: 'platform',
+  kunci_masuk_platform: 'platform',
   dusun: 'desa-privat',
   pengguna: 'desa-privat',
   keluarga: 'desa-privat',
   penduduk: 'desa-privat',
+  akun_warga: 'desa-privat',
+  sesi_warga: 'desa-privat',
+  kunci_masuk_desa: 'desa-privat',
   jejak_audit: 'audit',
+  jejak_audit_platform: 'audit',
 }
 
 export const tabelDengan = (golongan: Golongan): string[] =>

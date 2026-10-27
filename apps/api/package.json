@@ -8,6 +8,8 @@
     "db:siapkan": "tsx --env-file=.env.local skrip/siapkan-db.ts",
     "db:migrasi": "tsx --env-file=.env.local skrip/migrasi.ts",
     "db:semai": "tsx --env-file=.env.local skrip/semai.ts",
+    "db:akun-tim": "tsx --env-file=.env.local skrip/akun-tim-jalankan.ts",
+    "db:buka-kunci": "tsx --env-file=.env.local skrip/buka-kunci-jalankan.ts",
     "lint": "eslint .",
     "test": "vitest run",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.konformansi.json"

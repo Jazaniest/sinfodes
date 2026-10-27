@@ -29,6 +29,17 @@ export type PenggunaKonsol = z.infer<typeof penggunaKonsolSchema>
 export const sesiKonsolSchema = z.object({ jenis: z.literal('konsol'), pengguna: penggunaKonsolSchema })
 export type SesiKonsol = z.infer<typeof sesiKonsolSchema>
 
+/** POST /konsol/sesi/masuk. `kodeTotp` dari aplikasi autentikator; wajib di server nyata untuk akun yang memakai TOTP (SPEC-V0.3 §8.4). */
+export const masukKonsolSchema = z.object({
+  email: z.string().min(1),
+  kataSandi: z.string().min(1),
+  kodeTotp: z.string().regex(/^\d{6}$/).optional(),
+})
+export type MasukKonsol = z.infer<typeof masukKonsolSchema>
+
+/** `token` hanya ada pada mode demo; server nyata menaruh sesi di cookie HttpOnly (SPEC-V0.3 §8.1). */
+export const hasilMasukKonsolSchema = z.object({ token: z.string().optional(), sesi: sesiKonsolSchema })
+
 export const langgananSchema = z.object({
   desaId: z.string(),
   paket: z.enum(PAKET),

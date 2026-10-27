@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { Akun } from './Akun'
-import { keluarWarga } from './masuk-warga'
+import { keluarWargaSampaiServer } from './masuk-warga'
 
 /** Pembungkus rute: keluar menghapus sesi warga saja, lalu ke halaman masuk warga (fokus review 1). */
 export function HalamanAkun() {
@@ -10,8 +10,7 @@ export function HalamanAkun() {
   return (
     <Akun
       onKeluar={() => {
-        keluarWarga(queryClient)
-        void router.navigate({ to: '/warga/masuk' })
+        void keluarWargaSampaiServer(queryClient).then(() => router.navigate({ to: '/warga/masuk' }))
       }}
     />
   )

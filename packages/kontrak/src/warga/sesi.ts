@@ -17,7 +17,8 @@ export const sesiWargaSchema = z.object({
 })
 export type SesiWarga = z.infer<typeof sesiWargaSchema>
 
-export const hasilMasukWargaSchema = z.object({ token: z.string(), sesi: sesiWargaSchema })
+/** `token` hanya ada pada mode demo; server nyata menaruh sesi di cookie HttpOnly (SPEC-V0.3 §8.1). */
+export const hasilMasukWargaSchema = z.object({ token: z.string().optional(), sesi: sesiWargaSchema })
 
 /** POST /warga/lupa-pin. Jawabannya sama untuk NIK terdaftar maupun tidak (fokus review 2). */
 export const lupaPinSchema = z.object({ nik })

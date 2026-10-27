@@ -8,7 +8,7 @@ import { hasilKirimPengaduanSchema, type KirimPengaduanWarga } from '@/domain/wa
 import { berandaWargaSchema } from '@/domain/warga/beranda'
 import { detailPermohonanWargaSchema, ringkasPermohonanWargaSchema } from '@/domain/warga/permohonan'
 import { hasilLupaPinSchema, hasilMasukWargaSchema, sesiWargaSchema, type UbahAkunWarga } from '@/domain/warga/sesi'
-import { panggilApi } from './client'
+import { denganPenandaKuki, panggilApi } from './client'
 
 /** Semua kueri layanan warga berawalan 'warga', supaya bisa dibuang sekaligus saat ganti akun atau keluar. */
 export const kunciWarga = {
@@ -23,11 +23,14 @@ export const kunciWarga = {
   detailPengaduan: (id: string) => ['warga', 'pengaduan', id] as const,
 }
 
-export const masukWarga = (nik: string, pin: string) =>
-  panggilApi('POST', '/warga/masuk', { skema: hasilMasukWargaSchema, body: { nik, pin }, sesi: 'warga' })
+export const masukWarga = async (nik: string, pin: string) =>
+  denganPenandaKuki(await panggilApi('POST', '/warga/masuk', { skema: hasilMasukWargaSchema, body: { nik, pin }, sesi: 'warga' }))
 
 export const lupaPin = (nik: string) =>
   panggilApi('POST', '/warga/lupa-pin', { skema: hasilLupaPinSchema, body: { nik }, sesi: 'warga' })
+
+/** Keluar di server: sesi dicabut dan cookie dihapus (SPEC-V0.3 §8.1). Tiruan tidak punya rute ini; pemanggil melewatinya di mode demo. */
+export const keluarSesiWarga = () => panggilApi('POST', '/warga/sesi/keluar', { skema: z.undefined(), sesi: 'warga' })
 
 export const ambilSesiWarga = (signal?: AbortSignal) =>
   panggilApi('GET', '/warga/sesi', { skema: sesiWargaSchema, signal, sesi: 'warga' })

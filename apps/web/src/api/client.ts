@@ -10,6 +10,8 @@ export type BagianSesi = 'admin' | 'warga' | 'konsol' | 'kabupaten'
  * di peramban hanya penanda ini (SPEC-V0.3 §8.1). Bukan rahasia dan tidak dikirim sebagai `Authorization`.
  */
 export const SESI_KUKI = 'kuki'
+/** Hasil masuk dengan `token` pasti berisi: token demo apa adanya, atau penanda `SESI_KUKI` bila server tidak mengirimnya. */
+export const denganPenandaKuki = <T extends { token?: string }>(hasil: T): T & { token: string } => ({ ...hasil, token: hasil.token ?? SESI_KUKI })
 const tokenSesi: Record<BagianSesi, string | null> = { admin: null, warga: null, konsol: null, kabupaten: null }
 
 export function aturTokenSesi(token: string | null, bagian: BagianSesi = 'admin'): void {

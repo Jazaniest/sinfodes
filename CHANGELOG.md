@@ -4,6 +4,24 @@ Semua perubahan penting Sinfodes dicatat di sini. Formatnya mengikuti [Keep a Ch
 
 ## [Belum dirilis]
 
+### Ditambahkan (tahap 8D1)
+
+- **Masuk dan sesi untuk empat pelaku di server nyata.**
+  - Warga (NIK dan PIN: `/warga/masuk`, `/warga/sesi`, `/warga/akun`, `/warga/lupa-pin`, keluar), kabupaten (`/kabupaten/sesi/...` di alamat `kab-...`), dan Konsol (`/konsol/sesi/...` dengan kode TOTP), melengkapi panel desa dari 8C.
+  - Tiap pelaku punya cookie sendiri (`__Host-panel`, `__Host-warga`, `__Host-konsol`, `__Host-kab`), tabel sesi sendiri, dan masa berlaku sendiri (panel 2 jam dan 12 jam; warga 30 hari bergeser; Konsol 30 menit dan 8 jam; kabupaten 2 jam dan 12 jam).
+  - `GET /alamat` kini mengenali alamat kabupaten (mitra atau bukan).
+- **Pengunci percobaan masuk di PostgreSQL.** Lima kegagalan mengunci akun 15 menit, lalu berlipat sampai 24 jam; berhasil masuk menghapusnya, dan 24 jam tanpa kegagalan melupakannya. Menggantikan pembatas per email di memori dari 8C; pembatas per IP di memori tetap.
+- **TOTP untuk Konsol** (RFC 6238, ditulis sendiri tanpa pustaka): kode tidak bisa dipakai dua kali, rahasia disandikan di basis data, dan di `staging` dan `produksi` akun tanpa TOTP ditolak. `db:akun-tim` membuat akun Tim Sinfodes dan mencetak kata sandi serta kunci TOTP sekali di terminal pemilik.
+- **Basis data.** Migrasi `0002_identitas` (akun, sesi, dan pengunci warga yang ber-RLS; akun, sesi, dan pengunci kabupaten dan Konsol yang dipisah dengan hak tabel per peran, termasuk hak kolom: Konsol hanya boleh memperbarui langkah TOTP terakhir) dan `0003_audit_platform` (jejak masuk Konsol dan kabupaten, hanya tambah). Semai ikut mengisi akun warga, kabupaten mitra, serta pengguna kabupaten dan Konsol demo.
+- **Frontend mode nyata** untuk keempat alamat: isian "Kode autentikator" di masuk Konsol (hanya mode nyata) dan keluar warga yang mencabut sesi di server.
+- **Uji.** Uji meta hak per peran dan RLS tabel identitas; uji lapisan untuk empat keluarga pelaku (termasuk cookie tertukar dan token berbentuk `demo.`, `warga.`, `konsol.`, `kab.`); kembaran konformansi dari uji sesi tiruan warga, kabupaten, dan Konsol.
+
+### Diubah (tahap 8D1)
+
+- Hasil masuk warga, Konsol, dan kabupaten di kontrak memakai `token` opsional (server nyata tidak mengirimnya); fungsi `masuk...` di web mengisi penanda lokal `kuki`. `masukKonsol` menerima `kodeTotp` opsional.
+- Peran basis data dipilih menurut jenis alamat: desa `desa`, `konsol` `konsol`, `kab-...` mitra `kabupaten`.
+- Beda sengaja dari API tiruan, dicatat di uji konformansi: salah alamat dijawab sama dengan salah kata sandi (tanpa petunjuk alamat desa atau kabupaten); masuk Konsol dari alamat lain menjawab 404; keluar warga memanggil server (tiruan hanya menghapus penanda lokal).
+
 ### Ditambahkan (tahap 8C)
 
 - **Server pertama, `apps/api` (Hono, PostgreSQL, Drizzle),** dengan satu irisan vertikal yang menjawab kontrak yang sama dengan API tiruan: `GET /api/v1/alamat`, `POST /sesi/masuk`, `GET /sesi`, `POST /sesi/keluar`, `GET /penduduk`, `POST /penduduk/cari`, dan `GET /penduduk/ringkasan`. Rute lain belum ada dan menjawab `NOT_FOUND`. Cara menyalakannya ada di `apps/api/README.md`.

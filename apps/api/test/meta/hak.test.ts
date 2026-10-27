@@ -31,10 +31,10 @@ describe('hak tabel per peran (SPEC-V0.3 §7.3)', () => {
     }
   })
 
-  it('publik hanya boleh SELECT pada desa dan alias_alamat', async () => {
+  it('publik hanya boleh SELECT pada desa, alias_alamat, dan kabupaten_mitra', async () => {
     for (const tabel of Object.keys(GOLONGAN_TABEL)) {
       for (const hak of HAK) {
-        const harus = hak === 'SELECT' && (tabel === 'desa' || tabel === 'alias_alamat')
+        const harus = hak === 'SELECT' && ['desa', 'alias_alamat', 'kabupaten_mitra'].includes(tabel)
         expect(await punyaHak('sinfodes_publik', tabel, hak), `publik ${hak} ${tabel}`).toBe(harus)
       }
     }

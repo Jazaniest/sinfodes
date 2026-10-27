@@ -9,11 +9,11 @@ import { petaKabupatenSchema } from '@/domain/kabupaten/peta'
 import { daftarTenggatSchema, detailTenggatSchema, ringkasTenggatSchema, type IsianTenggat } from '@/domain/kabupaten/tenggat'
 import { daftarPenggunaKabupatenSchema, type TambahPenggunaKabupaten, type UbahPenggunaKabupaten } from '@/domain/kabupaten/pengguna'
 import { portalKabupatenSchema } from '@/domain/kabupaten/portal'
-import { penggunaKabupatenSchema, ringkasanKabupatenSchema, sesiKabupatenSchema } from '@/domain/kabupaten/schema'
+import { hasilMasukKabupatenSchema, penggunaKabupatenSchema, ringkasanKabupatenSchema, sesiKabupatenSchema } from '@/domain/kabupaten/schema'
 import {
   daftarSiaranKabupatenSchema, detailSiaranKabupatenSchema, ringkasSiaranSchema, sasaranTersediaSchema, type IsianSiaran,
 } from '@/domain/kabupaten/siaran'
-import { panggilApi } from './client'
+import { denganPenandaKuki, panggilApi } from './client'
 
 /** Dasbor kabupaten (SPEC-V0.2 §8). Semua panggilan memakai sesi kabupaten, kecuali portal publik. */
 export const kunciKabupaten = {
@@ -36,10 +36,10 @@ export const kunciKabupaten = {
   sasaranSiaran: ['kabupaten', 'siaran', 'sasaran'] as const,
 }
 
-export const hasilMasukKabupatenSchema = z.object({ token: z.string(), sesi: sesiKabupatenSchema })
+export { hasilMasukKabupatenSchema }
 
-export const masukKabupaten = (email: string, kataSandi: string) =>
-  panggilApi('POST', '/kabupaten/sesi/masuk', { skema: hasilMasukKabupatenSchema, body: { email, kataSandi }, sesi: 'kabupaten' })
+export const masukKabupaten = async (email: string, kataSandi: string) =>
+  denganPenandaKuki(await panggilApi('POST', '/kabupaten/sesi/masuk', { skema: hasilMasukKabupatenSchema, body: { email, kataSandi }, sesi: 'kabupaten' }))
 
 export const ambilSesiKabupaten = (signal?: AbortSignal) =>
   panggilApi('GET', '/kabupaten/sesi', { skema: sesiKabupatenSchema, signal, sesi: 'kabupaten' })

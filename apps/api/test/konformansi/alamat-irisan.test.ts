@@ -1,6 +1,6 @@
-// Kembaran irisan dari apps/web/src/mocks/handlers/alamat.test.ts: 9 dari 15 butir asal dipakai (6 utuh, 3 diadaptasi).
-// Tidak disalin: kabupaten (8D), warga dan Konsol (8D), website publik (8H), penerbitan draf (8H), dan petunjuk alamat
-// lintas desa (Keputusan 5 rencana 8C).
+// Kembaran irisan dari apps/web/src/mocks/handlers/alamat.test.ts: 10 dari 15 butir asal dipakai (7 utuh, 3 diadaptasi).
+// Tidak disalin: sesi warga dan Konsol per alamat (kembarannya ada di warga-sesi-irisan dan konsol-sesi-irisan), website publik
+// (8H), penerbitan draf (8H), dan petunjuk alamat lintas desa (Keputusan 5 rencana 8C).
 import { describe, expect, it } from 'vitest'
 import { ambilAlamat } from '@/api/alamat'
 import { masuk } from '@/api/sesi'
@@ -32,6 +32,17 @@ describe('GET /alamat: desa dibaca dari alamat (SPEC-V0.2 §4.5)', () => {
     expect(await ambilAlamat()).toEqual({ jenis: 'induk' })
     api.keAlamat('konsol')
     expect(await ambilAlamat()).toEqual({ jenis: 'konsol' })
+  })
+})
+
+describe('GET /alamat untuk kabupaten (SPEC-V0.2 §8.2)', () => {
+  it('kabupaten mitra, kabupaten yang belum mitra, dan kabupaten tidak dikenal', async () => {
+    api.keAlamat('kab-pelalawan')
+    expect(await ambilAlamat()).toEqual({ jenis: 'kabupaten', kabupaten: { label: 'kab-pelalawan', kode: '14.05', nama: 'Pelalawan', mitra: true } })
+    api.keAlamat('kab-kampar')
+    expect(await ambilAlamat()).toEqual({ jenis: 'kabupaten', kabupaten: { label: 'kab-kampar', kode: '14.01', nama: 'Kampar', mitra: false } })
+    api.keAlamat('kab-antahberantah')
+    await expect(ambilAlamat()).rejects.toMatchObject({ kode: 'NOT_FOUND', status: 404 })
   })
 })
 

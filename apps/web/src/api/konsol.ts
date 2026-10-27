@@ -8,14 +8,14 @@ import {
 import {
   barisDesaKonsolSchema, detailDesaKonsolSchema, hasilTambahDesaSchema, hasilUbahAlamatSchema, hasilUndangSekdesSchema, periksaAlamatSchema,
   ringkasanKonsolSchema,
-  sesiKonsolSchema, tiketBantuanSchema, usulanAlamatSchema,
+  hasilMasukKonsolSchema, sesiKonsolSchema, tiketBantuanSchema, usulanAlamatSchema,
   type FilterDesaKonsol, type TambahDesa, type UbahStatusDesa, type UndangSekdes,
 } from '@/domain/konsol/schema'
 import {
   barisTagihanKonsolSchema, daftarTagihanKonsolSchema, hasilCariTagihanSchema, kwitansiSchema,
   type IsianAlasan, type IsianLunas, type PeriodeTagihan, type TabTagihan,
 } from '@/domain/langganan/tagihan'
-import { panggilApi } from './client'
+import { denganPenandaKuki, panggilApi } from './client'
 
 export const kunciKonsol = {
   semua: ['konsol'] as const,
@@ -34,10 +34,17 @@ export const kunciKonsol = {
   kwitansi: (id: string) => ['konsol', 'tagihan', 'kwitansi', id] as const,
 }
 
-export const hasilMasukKonsolSchema = z.object({ token: z.string(), sesi: sesiKonsolSchema })
+export { hasilMasukKonsolSchema }
 
-export const masukKonsol = (email: string, kataSandi: string) =>
-  panggilApi('POST', '/konsol/sesi/masuk', { skema: hasilMasukKonsolSchema, body: { email, kataSandi }, sesi: 'konsol' })
+/** `kodeTotp` dikirim hanya bila diisi (akun yang memakai TOTP di server nyata). */
+export const masukKonsol = async (email: string, kataSandi: string, kodeTotp?: string) =>
+  denganPenandaKuki(
+    await panggilApi('POST', '/konsol/sesi/masuk', {
+      skema: hasilMasukKonsolSchema,
+      body: kodeTotp ? { email, kataSandi, kodeTotp } : { email, kataSandi },
+      sesi: 'konsol',
+    }),
+  )
 
 export const ambilSesiKonsol = (signal?: AbortSignal) => panggilApi('GET', '/konsol/sesi', { skema: sesiKonsolSchema, signal, sesi: 'konsol' })
 

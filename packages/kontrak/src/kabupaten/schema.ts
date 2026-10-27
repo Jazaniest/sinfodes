@@ -45,6 +45,9 @@ export const sesiKabupatenSchema = z.object({
 })
 export type SesiKabupaten = z.infer<typeof sesiKabupatenSchema>
 
+/** `token` hanya ada pada mode demo; server nyata menaruh sesi di cookie HttpOnly (SPEC-V0.3 §8.1). */
+export const hasilMasukKabupatenSchema = z.object({ token: z.string().optional(), sesi: sesiKabupatenSchema })
+
 const jumlah = z.number().int().min(0)
 const positif = z.number().int().min(1)
 

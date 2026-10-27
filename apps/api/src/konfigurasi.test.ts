@@ -34,6 +34,14 @@ describe('muatKonfigurasi', () => {
     expect(k.cookieAwalan).toBe('__Host-')
   })
 
+  it('totpKonsolWajib menyala hanya di staging dan produksi (SPEC-V0.3 §8.4)', () => {
+    expect(muatKonfigurasi(lengkap()).totpKonsolWajib).toBe(false)
+    expect(muatKonfigurasi(lengkap({ LINGKUNGAN: 'uji' })).totpKonsolWajib).toBe(false)
+    const nyata = { DOMAIN_INDUK: 'sinfodes.id' }
+    expect(muatKonfigurasi(lengkap({ LINGKUNGAN: 'staging', ...nyata })).totpKonsolWajib).toBe(true)
+    expect(muatKonfigurasi(lengkap({ LINGKUNGAN: 'produksi', ...nyata })).totpKonsolWajib).toBe(true)
+  })
+
   it('kunci yang bukan 32 bita ditolak', () => {
     expect(() => muatKonfigurasi(lengkap({ KUNCI_UTAMA: acak(11, 16) }))).toThrow(GalatKonfigurasi)
     expect(() => muatKonfigurasi(lengkap({ KUNCI_INDEKS: acak(97, 48) }))).toThrow(GalatKonfigurasi)
