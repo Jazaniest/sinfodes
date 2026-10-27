@@ -44,7 +44,7 @@ Versi ini adalah **demo v0.2.0**. Seluruh tampilan (frontend) sudah utuh. Datany
 
 Semua alamat demo berbentuk `*.sinfodes.localhost:5173`. Chrome, Edge, dan Firefox mengarahkan `*.localhost` ke komputer sendiri, jadi berkas hosts tidak perlu diubah. Peramban juga menganggap alamat itu aman, sehingga API tiruan (service worker MSW) tetap jalan.
 
-Berkas `.env` berisi `VITE_DEMO=true`, yang menyalakan API tiruan dan toolbar demo. Saat pertama dibuka, data demo dibangkitkan lalu disimpan di peramban.
+Berkas `apps/web/.env` berisi `VITE_DEMO=true`, yang menyalakan API tiruan dan toolbar demo. Saat pertama dibuka, data demo dibangkitkan lalu disimpan di peramban.
 
 > **Tips:**
 > - Layanan warga dan tampilan tanda tangan Kepala Desa dirancang untuk HP. Kecilkan jendela peramban (lebar ±375 px) atau pakai mode perangkat di DevTools.
@@ -391,8 +391,8 @@ Demo v0.2 memakai satu subdomain per desa, jadi server biasa tidak cukup. Demo v
    pnpm build
    ```
 
-3. Salin isi `dist/` ke server. Berkas `mockServiceWorker.js` dan `hub-demo.html` harus ikut dan dilayani apa adanya.
-4. Atur server supaya host `demo.sinfodes.com` dan `*.demo.sinfodes.com` menyajikan isi `dist/`, dengan cadangan `index.html`. Contoh untuk Nginx:
+3. Salin isi `apps/web/dist/` ke server. Berkas `mockServiceWorker.js` dan `hub-demo.html` harus ikut dan dilayani apa adanya.
+4. Atur server supaya host `demo.sinfodes.com` dan `*.demo.sinfodes.com` menyajikan isi `apps/web/dist/` yang sudah disalin, dengan cadangan `index.html`. Contoh untuk Nginx:
 
    ```nginx
    server {
@@ -497,7 +497,7 @@ Desa berstatus *Persiapan* menampilkan **lima langkah persiapan** di Beranda, le
 | Toolbar menampilkan "Data demo terpisah per alamat" | Hub data demo belum termuat, jadi alur lintas alamat tidak akan sampai. Muat ulang halaman. Bila tetap begitu, pakai peramban Chrome, Edge, atau Firefox terbaru |
 | Alamat `*.sinfodes.localhost` tidak terbuka | Pakai Chrome, Edge, atau Firefox terbaru. Alamat ini hanya dikenal oleh komputer yang menjalankan demo |
 | Menu yang dicari tidak ada | Menu disembunyikan sesuai peran. Ganti peran lewat toolbar, mis. *Pengaturan › Pengguna* hanya untuk Sekretaris Desa |
-| Toolbar dan API tiruan tidak muncul | Pastikan `.env` berisi `VITE_DEMO=true`, lalu jalankan ulang `pnpm dev` |
+| Toolbar dan API tiruan tidak muncul | Pastikan `apps/web/.env` berisi `VITE_DEMO=true`, lalu jalankan ulang `pnpm dev` |
 
 ---
 
@@ -513,13 +513,14 @@ Desa berstatus *Persiapan* menampilkan **lima langkah persiapan** di Beranda, le
 
 - **Stack:** Vite, React 19, TypeScript (strict), Tailwind CSS v4, TanStack Router dan Query, React Aria Components, Zod 4, MSW 2, dan Vitest.
 - **Spesifikasi:** `SPEC-DESAIN-FE.md` untuk dasar (kontrak API di §3.4) dan `SPEC-V0.2.md` untuk v0.2. Bila keduanya bertentangan, `SPEC-V0.2.md` yang berlaku.
-- **Variabel lingkungan:** `VITE_DEMO`, `VITE_DOMAIN_INDUK` (bawaan `sinfodes.localhost`), dan `VITE_API_BASE`.
+- **Variabel lingkungan:** `VITE_DEMO`, `VITE_DOMAIN_INDUK` (bawaan `sinfodes.localhost`), dan `VITE_API_BASE`, diatur di `apps/web/.env`.
+- **Susunan repositori:** monorepo pnpm. Perintah di atas dijalankan dari akar repositori dan diteruskan ke `apps/web`. Skrip di `apps/web/scripts/` dijalankan dari folder `apps/web`.
 - **Struktur kode:**
-  - `src/domain/`: aturan bisnis dan skema;
-  - `src/api/`: pemanggil API;
-  - `src/features/`: layar;
-  - `src/ui/`: komponen dasar;
-  - `src/mocks/`: API tiruan dan pembangkit data;
-  - `src/routes/`: rute.
+  - `apps/web/src/domain/`: aturan bisnis dan skema;
+  - `apps/web/src/api/`: pemanggil API;
+  - `apps/web/src/features/`: layar;
+  - `apps/web/src/ui/`: komponen dasar;
+  - `apps/web/src/mocks/`: API tiruan dan pembangkit data;
+  - `apps/web/src/routes/`: rute.
 - **Anggaran JavaScript awal:** paling besar 200 KiB (gzip), diukur dari berkas JS yang dirujuk `index.html`.
 - **Riwayat perubahan:** `CHANGELOG.md`.

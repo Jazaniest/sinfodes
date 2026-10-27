@@ -1,75 +1,35 @@
-# React + TypeScript + Vite
+# Sinfodes
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+SaaS Sistem Informasi Desa untuk banyak desa. Fase saat ini: antarmuka lengkap dengan API tiruan (MSW) dan data demo. Backend sungguhan dirancang di `SPEC-V0.3.md`.
 
-Currently, two official plugins are available:
+## Susunan repositori
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Monorepo pnpm. Perintah dijalankan dari akar repositori.
 
-## React Compiler
+| Folder | Isi |
+|---|---|
+| `apps/web` | Aplikasi web (Vite, React 19, TypeScript, Tailwind v4) beserta API tiruan |
+| `apps/api` | Backend. Belum ada, mulai tahap 8C |
+| `packages/*` | Paket bersama (kontrak API, data demo). Belum ada, mulai tahap 8B |
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Perintah
 
-## Expanding the ESLint configuration
+Butuh Node.js 22.12 atau lebih baru dan pnpm 10.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+| Perintah | Fungsi |
+|---|---|
+| `pnpm install` | Memasang dependensi semua paket |
+| `pnpm dev` | Server pengembangan `apps/web` di `http://sinfodes.localhost:5173` |
+| `pnpm build` | Build produksi, hasilnya di `apps/web/dist` |
+| `pnpm typecheck` | Pemeriksaan tipe |
+| `pnpm lint` | ESLint |
+| `pnpm test` | Seluruh uji (Vitest) |
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+Port lain: `pnpm dev --port 5174 --strictPort`.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## Catatan
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
-```
-
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
-```
+- Pengaturan lingkungan frontend ada di `apps/web/.env`. Jangan menaruh rahasia API di sana.
+- Skrip di `apps/web/scripts/` dijalankan dari folder `apps/web`.
+- Dokumen lama yang menyebut `src/…` merujuk ke `apps/web/src/…`.
+- Cara menjalankan dan memakai demo: `PANDUAN-DEMO.md`. Riwayat perubahan: `CHANGELOG.md`.

@@ -3,6 +3,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { SKENARIO_DEMO } from '@/features/demo/skenario'
+import { akarRepo } from '@/test/akar-repo'
 import { KATA_SANDI_DEMO, PENGGUNA_DEMO } from './data/desa-demo'
 import { PENGGUNA_KONSOL_DEMO } from './data/desa-konsol'
 import { PENGGUNA_KABUPATEN_DEMO } from './data/kabupaten-demo'
@@ -13,7 +14,7 @@ import { AKUN_WARGA_DEMO } from './data/warga-demo'
  * sana diambil dari data demo dan daftar skenario, bukan dikarang.
  */
 // PANDUAN-DEMO.md ada di .gitignore, jadi klon baru tidak memilikinya; ujinya dilewati di sana, bukan gagal.
-const berkas = join(process.cwd(), 'PANDUAN-DEMO.md')
+const berkas = join(akarRepo(), 'PANDUAN-DEMO.md')
 const ada = existsSync(berkas)
 const panduan = ada ? readFileSync(berkas, 'utf-8') : ''
 const jalurTampil = (jenis: string, jalur: string) => {
