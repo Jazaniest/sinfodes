@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { ambilDb, KUNCI_DB, muatDb, muatUlangDb, resetDb, simpanSekarang, ubahDb } from './db'
 import { penyimpananMemori } from './penyimpanan'
-import { VERSI_DATA, type DbDemo } from './tipe-db'
+import { VERSI_DATA, type DbDemo } from '@sinfodes/demo/tipe-db'
 
 const ACUAN = new Date('2026-09-24T02:00:00Z')
 

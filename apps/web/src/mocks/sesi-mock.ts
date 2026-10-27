@@ -7,7 +7,7 @@ import { cariSesiBantuan, masihBerlaku, sesiIdDariPermintaan } from './bantuan'
 import { ambilDb } from './db'
 import { balasGalat } from './http'
 import { desaKonteks, konteksPermintaan, tanpaKonteks } from './konteks-permintaan'
-import type { AkunWarga } from './tipe-db'
+import type { AkunWarga } from '@sinfodes/demo/tipe-db'
 
 export const tokenUntuk = (penggunaId: string): string => `demo.${penggunaId}`
 

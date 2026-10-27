@@ -6,7 +6,7 @@ import { ambilDb, ubahDb } from '../db'
 import { API, balasGalat, denganJaringan } from '../http'
 import { desaKonteks, konteksPermintaan, tanpaKonteks } from '../konteks-permintaan'
 import { butuhWarga, tokenWargaUntuk, type WargaMasuk } from '../sesi-mock'
-import type { DbDemo } from '../tipe-db'
+import type { DbDemo } from '@sinfodes/demo/tipe-db'
 import { bacaJson, balasIsianTidakValid } from '../tulis'
 
 /** Pengaman percobaan masuk (SPEC §10, fokus review 2). */

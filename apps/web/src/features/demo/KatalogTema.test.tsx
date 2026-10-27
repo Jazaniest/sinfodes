@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
-import { GALERI_TEMA } from '@/domain/website/galeri-tema'
+import { GALERI_TEMA } from '@/features/website/galeri-tema'
 import { routeTree } from '@/routeTree.gen'
 import { pakaiApiTiruan } from '@/test/api-tiruan'
 

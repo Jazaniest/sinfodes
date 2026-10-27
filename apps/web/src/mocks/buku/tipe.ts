@@ -1,6 +1,6 @@
 import { formatAngka } from '@/domain/format/angka'
 import type { Desa, Dusun } from '@/domain/wilayah/schema'
-import type { DbDemo } from '../tipe-db'
+import type { DbDemo } from '@sinfodes/demo/tipe-db'
 
 /** Isi satu buku: kolom format Permendagri 47/2016 dan barisnya, semuanya teks siap cetak. */
 export type IsiPenyusun = { kolom: readonly string[]; baris: string[][]; diperbarui: string | null }

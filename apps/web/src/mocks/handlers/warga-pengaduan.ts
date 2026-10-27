@@ -9,7 +9,7 @@ import { bacaMultipart, catatKiriman, kirimanSebelumnya } from '../kiriman-warga
 import { kirimNotifikasi } from '../notifikasi'
 import { tolakBilaLayananDitutup } from '../penangguhan'
 import { butuhWarga, type WargaMasuk } from '../sesi-mock'
-import type { DbDemo } from '../tipe-db'
+import type { DbDemo } from '@sinfodes/demo/tipe-db'
 import { bacaJson, balasField, balasIsianTidakValid, catatAktivitas, idBaru } from '../tulis'
 
 const TIDAK_DITEMUKAN = 'Pengaduan tidak ditemukan.'

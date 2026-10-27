@@ -9,7 +9,11 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   plugins: [tanstackRouter({ target: 'react', autoCodeSplitting: true }), react(), tailwindcss()],
   resolve: {
-    alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
+    // Urutan penting: `@/domain` (paket kontrak, SPEC-V0.3 §4) harus dicocokkan sebelum `@`.
+    alias: [
+      { find: '@/domain', replacement: fileURLToPath(new URL('../../packages/kontrak/src', import.meta.url)) },
+      { find: '@', replacement: fileURLToPath(new URL('./src', import.meta.url)) },
+    ],
   },
   build: {
     // hub-demo.html: penyimpanan demo bersama untuk semua subdomain (SPEC-V0.2 §4.6).

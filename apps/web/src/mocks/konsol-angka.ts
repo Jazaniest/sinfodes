@@ -6,7 +6,7 @@ import { dataBelumLengkap } from '@/domain/penduduk/filter'
 import { persiapanBerurutan, type Persiapan } from '@/domain/wilayah/persiapan'
 import type { Desa } from '@/domain/wilayah/schema'
 import { persiapanDesa } from './persiapan'
-import type { DbDemo, RekamDesa } from './tipe-db'
+import type { DbDemo, RekamDesa } from '@sinfodes/demo/tipe-db'
 import { ukuranBerkasDesa } from './ukuran-berkas'
 
 const HARI_MS = 86_400_000

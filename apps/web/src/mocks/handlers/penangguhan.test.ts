@@ -4,7 +4,7 @@ import { aturTokenSesi } from '@/api/client'
 import { beriAksesSinfodes } from '@/api/pengaturan'
 import { kirimBukti } from '@/api/langganan'
 import { AKUN_UJI, AKUN_WARGA_UJI, masukSebagai, masukSebagaiWarga, pakaiApiTiruan } from '@/test/api-tiruan'
-import { ID_SUNGAI_SIALANG } from '../data/desa-demo'
+import { ID_SUNGAI_SIALANG } from '@sinfodes/demo/data/desa-demo'
 import { ambilDb, ubahDb } from '../db'
 
 pakaiApiTiruan({ dbSegarTiapUji: true })

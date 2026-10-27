@@ -7,7 +7,7 @@ import { formatAngka } from '@/domain/format/angka'
 import { barisTagihanKonsolSchema, kwitansiSchema, type Tagihan } from '@/domain/langganan/tagihan'
 import { boleh } from '@/domain/pengguna/hak-akses'
 import { AKUN_KABUPATEN_UJI, AKUN_KONSOL_UJI, AKUN_UJI, masukKabupatenSebagai, masukKonsolSebagai, masukSebagai, pakaiApiTiruan } from '@/test/api-tiruan'
-import { ID_SUNGAI_SIALANG } from '../data/desa-demo'
+import { ID_SUNGAI_SIALANG } from '@sinfodes/demo/data/desa-demo'
 import { ambilDb, ubahDb } from '../db'
 import { pastikanTagihan } from '../tagihan'
 

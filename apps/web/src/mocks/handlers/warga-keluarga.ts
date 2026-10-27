@@ -12,7 +12,7 @@ import { API, balasGalat, denganJaringan } from '../http'
 import { bacaMultipart, catatKiriman, kirimanSebelumnya } from '../kiriman-warga'
 import { kirimNotifikasi } from '../notifikasi'
 import { butuhWarga } from '../sesi-mock'
-import type { DbDemo } from '../tipe-db'
+import type { DbDemo } from '@sinfodes/demo/tipe-db'
 import { balasField, balasIsianTidakValid, idBaru } from '../tulis'
 
 const DATA_TIDAK_UTUH = 'Data keluarga tidak lengkap.'

@@ -1,7 +1,7 @@
 import { http, HttpResponse } from 'msw'
 import { ambilDb } from '../db'
 import { API, denganJaringan } from '../http'
-import { danaDesaKabupaten } from '../kabupaten-angka'
+import { danaDesaKabupaten } from '@sinfodes/demo/kabupaten-angka'
 import { butuhKemampuanKabupaten } from '../sesi-mock'
 
 const TIDAK_BERHAK = 'Akun ini tidak berhak membuka dasbor kabupaten.'

@@ -1,4 +1,4 @@
-import type { DbDemo, KirimanWarga } from './tipe-db'
+import type { DbDemo, KirimanWarga } from '@sinfodes/demo/tipe-db'
 
 /** Kiriman sebelumnya dengan kunci yang sama (Kirim ulang), atau undefined bila kuncinya baru (fokus review 1). */
 export const kirimanSebelumnya = (db: DbDemo, pendudukId: string, jenis: KirimanWarga['jenis'], kunci: string) =>

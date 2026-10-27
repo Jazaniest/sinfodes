@@ -1,5 +1,5 @@
 import { tahanPenyaluran } from '@/domain/bansos/schema'
-import type { DbDemo } from './tipe-db'
+import type { DbDemo } from '@sinfodes/demo/tipe-db'
 
 /**
  * Penerima bansos atas nama orang yang meninggal atau pindah keluar ditandai "perlu ditinjau" (SPEC §6.6, §8), dan

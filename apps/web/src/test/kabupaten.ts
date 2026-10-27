@@ -1,5 +1,5 @@
 import type { SesiKabupaten } from '@/domain/kabupaten/schema'
-import { KABUPATEN_MITRA_DEMO, PENGGUNA_KABUPATEN_DEMO } from '@/mocks/data/kabupaten-demo'
+import { KABUPATEN_MITRA_DEMO, PENGGUNA_KABUPATEN_DEMO } from '@sinfodes/demo/data/kabupaten-demo'
 
 /** Sesi kabupaten demo untuk satu akun (SPEC-V0.2 §13). Khusus uji. */
 export function contohSesiKabupaten(id = 'kab_fajar'): SesiKabupaten {

@@ -4,10 +4,10 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { SKENARIO_DEMO } from '@/features/demo/skenario'
 import { akarRepo } from '@/test/akar-repo'
-import { KATA_SANDI_DEMO, PENGGUNA_DEMO } from './data/desa-demo'
-import { PENGGUNA_KONSOL_DEMO } from './data/desa-konsol'
-import { PENGGUNA_KABUPATEN_DEMO } from './data/kabupaten-demo'
-import { AKUN_WARGA_DEMO } from './data/warga-demo'
+import { KATA_SANDI_DEMO, PENGGUNA_DEMO } from '@sinfodes/demo/data/desa-demo'
+import { PENGGUNA_KONSOL_DEMO } from '@sinfodes/demo/data/desa-konsol'
+import { PENGGUNA_KABUPATEN_DEMO } from '@sinfodes/demo/data/kabupaten-demo'
+import { AKUN_WARGA_DEMO } from '@sinfodes/demo/data/warga-demo'
 
 /**
  * PANDUAN-DEMO.md mengikuti aplikasi (rencana Penutup v0.2, Review Focus 3): setiap akun, skenario, dan jalur yang ditulis di

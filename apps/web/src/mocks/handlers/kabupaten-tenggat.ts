@@ -5,9 +5,9 @@ import {
 } from '@/domain/kabupaten/tenggat'
 import { ambilDb, ubahDb } from '../db'
 import { API, balasGalat, denganJaringan } from '../http'
-import { desaSasaranKabupaten } from '../kabupaten-angka'
+import { desaSasaranKabupaten } from '@sinfodes/demo/kabupaten-angka'
 import { butuhKemampuanKabupaten } from '../sesi-mock'
-import type { DbDemo, TenggatLaporan } from '../tipe-db'
+import type { DbDemo, TenggatLaporan } from '@sinfodes/demo/tipe-db'
 import { bacaJson, balasField, balasIsianTidakValid, idBaru } from '../tulis'
 
 const butuhPembaca = (request: Request) => butuhKemampuanKabupaten(request, 'kab.lihat', 'Akun ini tidak berhak membuka dasbor kabupaten.')

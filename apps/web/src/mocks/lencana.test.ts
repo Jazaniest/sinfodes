@@ -2,10 +2,10 @@ import { describe, expect, it } from 'vitest'
 import { KATEGORI_DESA } from '@/domain/indeks/kategori'
 import { bulanPeriode, geserBulan, type Periode } from '@/domain/indeks/periode'
 import { pakaiApiTiruan, SEKARANG_UJI } from '@/test/api-tiruan'
-import { ID_SUNGAI_SIALANG } from './data/desa-demo'
+import { ID_SUNGAI_SIALANG } from '@sinfodes/demo/data/desa-demo'
 import { ambilDb } from './db'
 import { papanKabupaten, podiumKabupaten } from './indeks'
-import { desaDiKabupaten } from './kabupaten-angka'
+import { desaDiKabupaten } from '@sinfodes/demo/kabupaten-angka'
 import { lencanaDesa, lencanaTampil, pastikanLencana, terbitkanLencana } from './lencana'
 
 pakaiApiTiruan({ dbSegarTiapUji: true })

@@ -1,6 +1,6 @@
 import { waktuIsoWib } from '@/domain/format/tanggal'
 import { hariKerjaBerlalu } from '@/domain/surat/waktu'
-import type { DbDemo } from './tipe-db'
+import type { DbDemo } from '@sinfodes/demo/tipe-db'
 
 const HARI_MS = 86_400_000
 

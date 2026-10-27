@@ -3,8 +3,8 @@ import { waktuIsoWib } from '@/domain/format/tanggal'
 import { statusSiaranDesa, tindakLanjutSchema, type ButirSiaranDesa, type DaftarSiaranDesa, type DetailSiaranDesa } from '@/domain/kabupaten/siaran'
 import { ambilDb, ubahDb } from '../db'
 import { API, balasGalat, denganJaringan } from '../http'
-import { siaranUntukDesa } from '../siaran'
-import type { DbDemo, SiaranKabupaten } from '../tipe-db'
+import { siaranUntukDesa } from '@sinfodes/demo/siaran'
+import type { DbDemo, SiaranKabupaten } from '@sinfodes/demo/tipe-db'
 import { bacaJson, balasIsianTidakValid, butuhKemampuan } from '../tulis'
 
 const butuhPembaca = (request: Request) => butuhKemampuan(request, 'siaran.lihat', 'Peran Anda tidak membuka Siaran kabupaten.')

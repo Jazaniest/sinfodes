@@ -12,7 +12,7 @@ import { balasGalat } from './http'
 import { modulDesaDi } from './modul'
 import { hanyaMembaca, PESAN_PANEL_DITANGGUHKAN, statusDesaDi } from './penangguhan'
 import { butuhPengguna } from './sesi-mock'
-import type { DbDemo } from './tipe-db'
+import type { DbDemo } from '@sinfodes/demo/tipe-db'
 
 /**
  * Pengguna yang punya kemampuan tertentu, atau Response galat yang langsung dikembalikan handler. Selama desa Ditangguhkan,

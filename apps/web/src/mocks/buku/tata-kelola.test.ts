@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { DAFTAR_BUKU } from '@/domain/buku/schema'
-import { bangkitkanDb } from '../generator'
+import { bangkitkanDb } from '@sinfodes/demo/generator'
 import { PENYUSUN_BUKU } from './index'
 import { bukuApbDesa, bukuInventarisHasil, bukuKader, bukuKegiatan, bukuRab, bukuRencanaKerja } from './tata-kelola'
 

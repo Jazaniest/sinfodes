@@ -10,7 +10,7 @@ import { pengaturanBawaan } from '@/domain/surat/pengaturan-bawaan'
 import { tataLetakSuratSchema, type TataLetakSurat } from '@/domain/surat/tata-letak'
 import { salinTataLetak, TATA_LETAK_SIAP } from '@/domain/surat/tata-letak-siap'
 import { ambilDb } from '@/mocks/db'
-import { VERSI_DATA } from '@/mocks/tipe-db'
+import { VERSI_DATA } from '@sinfodes/demo/tipe-db'
 import { AKUN_UJI, AKUN_WARGA_UJI, masukSebagai, masukSebagaiWarga, pakaiApiTiruan } from '@/test/api-tiruan'
 
 pakaiApiTiruan({ dbSegarTiapUji: true })

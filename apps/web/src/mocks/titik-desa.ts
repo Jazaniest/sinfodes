@@ -1,7 +1,7 @@
 import type { Titik } from '@/domain/peta/titik'
 import type { Desa } from '@/domain/wilayah/schema'
-import { PUSAT_KECAMATAN } from './data/pusat-kecamatan'
-import type { DbDemo } from './tipe-db'
+import { PUSAT_KECAMATAN } from '@sinfodes/demo/data/pusat-kecamatan'
+import type { DbDemo } from '@sinfodes/demo/tipe-db'
 
 /** Hash FNV-1a 32-bit: geseran titik yang sama untuk desa yang sama, tanpa PRNG supaya data lain tidak bergeser. */
 function fnv1a(teks: string): number {

@@ -4,7 +4,7 @@ import { ambilDetailDesaKonsol, ubahPeriodeTagihan, ubahStatusDesa } from '@/api
 import { HARGA_TRIWULAN } from '@/domain/konsol/filter'
 import type { StatusDesa } from '@/domain/wilayah/schema'
 import { AKUN_KABUPATEN_UJI, AKUN_KONSOL_UJI, AKUN_UJI, masukKonsolSebagai, masukSebagai, pakaiApiTiruan } from '@/test/api-tiruan'
-import { ID_SUNGAI_SIALANG, ID_TANJUNG_LAMO } from '../data/desa-demo'
+import { ID_SUNGAI_SIALANG, ID_TANJUNG_LAMO } from '@sinfodes/demo/data/desa-demo'
 import { ambilDb, ubahDb } from '../db'
 import { pastikanTagihan } from '../tagihan'
 

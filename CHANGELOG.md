@@ -4,6 +4,12 @@ Semua perubahan penting Sinfodes dicatat di sini. Formatnya mengikuti [Keep a Ch
 
 ## [Belum dirilis]
 
+### Diubah (tahap 8B)
+
+- **Skema dan aturan domain menjadi paket `@sinfodes/kontrak`** (`packages/kontrak`), dan **pembangkit data demo menjadi paket `@sinfodes/demo`** (`packages/demo`). Keduanya paket sumber tanpa langkah build, disiapkan supaya server di tahap berikutnya memakai skema yang sama. Tidak ada perubahan perilaku.
+- Impor `@/domain/...` di frontend tetap berlaku lewat alias. Impor pembangkit data kini `@sinfodes/demo/...`.
+- Batas paket dijaga tiga lapis: `tsc` tanpa API DOM maupun Node, aturan impor ESLint di tiap paket, dan satu uji susunan di web.
+
 ### Diubah (tahap 8A)
 
 - **Repositori menjadi monorepo pnpm.** Frontend pindah ke `apps/web` tanpa perubahan perilaku. Perintah dari akar (`pnpm dev`, `build`, `typecheck`, `lint`, `test`) tetap sama, dan `pnpm-lock.yaml` hanya memindahkan pengimpor `.` ke `apps/web`.

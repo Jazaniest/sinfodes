@@ -1,4 +1,4 @@
-import type { TemaGaleri } from '@/domain/website/galeri-tema'
+import type { TemaGaleri } from '@/features/website/galeri-tema'
 import { PASANGAN_HURUF } from '@/domain/website/tema'
 import { Dialog } from '@/ui/lapisan/Dialog'
 import { Tombol } from '@/ui/tombol/Tombol'

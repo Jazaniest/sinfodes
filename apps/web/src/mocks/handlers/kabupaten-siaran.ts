@@ -6,10 +6,10 @@ import {
 import { galatDariZod } from '@/domain/format/galat-isian'
 import { ambilDb, ubahDb } from '../db'
 import { API, balasGalat, denganJaringan } from '../http'
-import { desaSasaranKabupaten } from '../kabupaten-angka'
+import { desaSasaranKabupaten } from '@sinfodes/demo/kabupaten-angka'
 import { butuhKemampuanKabupaten } from '../sesi-mock'
-import { notifikasiSiaran, ringkasSiaran, statusDesaSiaran, terjemahkanSasaran } from '../siaran'
-import type { DbDemo, SiaranKabupaten } from '../tipe-db'
+import { notifikasiSiaran, ringkasSiaran, statusDesaSiaran, terjemahkanSasaran } from '@sinfodes/demo/siaran'
+import type { DbDemo, SiaranKabupaten } from '@sinfodes/demo/tipe-db'
 import { balasField, dataJson, idBaru } from '../tulis'
 
 const butuhPembaca = (request: Request) => butuhKemampuanKabupaten(request, 'kab.lihat', 'Akun ini tidak berhak membuka dasbor kabupaten.')

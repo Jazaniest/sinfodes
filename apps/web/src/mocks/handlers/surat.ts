@@ -14,7 +14,7 @@ import {
 } from '@/domain/surat/permohonan'
 import { dataMilik } from '../cakupan'
 import { API, balasDaftar, balasGalat, denganJaringan } from '../http'
-import type { DbDemo } from '../tipe-db'
+import type { DbDemo } from '@sinfodes/demo/tipe-db'
 import { bacaJson, balasField, balasIsianTidakValid, butuhKemampuan } from '../tulis'
 
 const HARI_MS = 86_400_000

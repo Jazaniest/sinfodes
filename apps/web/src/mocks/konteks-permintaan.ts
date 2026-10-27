@@ -1,7 +1,7 @@
 import { DOMAIN_INDUK } from '@/app/alamat'
 import { bacaAlamat, type KonteksAlamat } from '@/domain/alamat/alamat'
 import type { Desa } from '@/domain/wilayah/schema'
-import type { DbDemo } from './tipe-db'
+import type { DbDemo } from '@sinfodes/demo/tipe-db'
 
 /** Alamat yang memanggil API, dibaca dari host permintaan seperti nanti di server (SPEC-V0.2 §4.5). */
 export function konteksPermintaan(request: Request): KonteksAlamat {

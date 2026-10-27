@@ -8,7 +8,7 @@ import { kalimatPengingatTagihan } from '@/domain/langganan/pengingat'
 import { hrefNotifikasi } from '@/domain/notifikasi/schema'
 import type { PenggunaSesi } from '@/domain/pengguna/schema'
 import { AKUN_UJI, masukSebagai, pakaiApiTiruan, SEKARANG_UJI } from '@/test/api-tiruan'
-import { ID_SUNGAI_SIALANG } from './data/desa-demo'
+import { ID_SUNGAI_SIALANG } from '@sinfodes/demo/data/desa-demo'
 import { ambilDb } from './db'
 import { notifikasiTagihanBaru, pengingatTagihanDesa } from './pengingat-tagihan'
 

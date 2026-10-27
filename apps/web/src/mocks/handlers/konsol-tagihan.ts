@@ -10,7 +10,7 @@ import { API, balasGalat, denganJaringan } from '../http'
 import { notifikasiAksiTagihan, type AksiTagihanKonsol } from '../pengingat-tagihan'
 import { butuhPenggunaKonsol } from '../sesi-mock'
 import { kwitansiTagihan, nomorKwitansiBerikut, pastikanTagihan } from '../tagihan'
-import type { DbDemo } from '../tipe-db'
+import type { DbDemo } from '@sinfodes/demo/tipe-db'
 import { bacaJson, balasIsianTidakValid, galatIsian } from '../tulis'
 
 const TIDAK_DITEMUKAN = 'Tagihan tidak ditemukan.'

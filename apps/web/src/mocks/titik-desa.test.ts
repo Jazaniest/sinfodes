@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import type { Desa } from '@/domain/wilayah/schema'
-import { ID_SUNGAI_SIALANG } from './data/desa-demo'
-import { PUSAT_KECAMATAN } from './data/pusat-kecamatan'
-import { bangkitkanDb } from './generator'
+import { ID_SUNGAI_SIALANG } from '@sinfodes/demo/data/desa-demo'
+import { PUSAT_KECAMATAN } from '@sinfodes/demo/data/pusat-kecamatan'
+import { bangkitkanDb } from '@sinfodes/demo/generator'
 import { titikDesa } from './titik-desa'
 
 const SEKARANG = new Date('2026-09-24T02:00:00Z')

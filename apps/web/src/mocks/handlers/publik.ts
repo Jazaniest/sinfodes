@@ -17,7 +17,7 @@ import { desaKonteks, konteksPermintaan, tanpaKonteks } from '../konteks-permint
 import { pastikanLencana } from '../lencana'
 import { modulDesaDi } from '../modul'
 import { perkiraanHariKerja } from '../surat-perkiraan'
-import type { DbDemo } from '../tipe-db'
+import type { DbDemo } from '@sinfodes/demo/tipe-db'
 import { bacaJson } from '../tulis'
 import { versiTerbit, sumberTerbit, situsDesa } from './website'
 

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { aturTokenSesi } from '@/api/client'
 import { ambilDanaDesaKabupaten, ambilLaporanBulanan, daftarLaporanBulanan } from '@/api/kabupaten'
 import { ambilDb } from '@/mocks/db'
-import { suratTerbitBulan } from '@/mocks/kabupaten-angka'
+import { suratTerbitBulan } from '@sinfodes/demo/kabupaten-angka'
 import { AKUN_KABUPATEN_UJI, masukKabupatenSebagai, pakaiApiTiruan } from '@/test/api-tiruan'
 import { ambilPapanIndeks } from '@/api/kabupaten'
 

@@ -4,7 +4,7 @@ import { dataGabunganSchema, samarkanGabungan, type BarisMentah } from '@/domain
 import type { Desa } from '@/domain/wilayah/schema'
 import { ambilDb } from '../db'
 import { API, balasGalat, denganJaringan } from '../http'
-import { desaDiKabupaten, komposisiDesa } from '../kabupaten-angka'
+import { desaDiKabupaten, komposisiDesa } from '@sinfodes/demo/kabupaten-angka'
 import { butuhKemampuanKabupaten } from '../sesi-mock'
 
 const urutNama = (a: { nama: string }, b: { nama: string }) => a.nama.localeCompare(b.nama, 'id')

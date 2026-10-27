@@ -12,8 +12,8 @@ import { temaDasarSchema } from '@/domain/website/tema'
 import { pratinjauBlok, type SumberTampil } from '../blok-publik'
 import { ambilDb, ubahDb } from '../db'
 import { API, balasDaftar, balasGalat, denganJaringan } from '../http'
-import type { DbDemo } from '../tipe-db'
-import { situsBawaan } from '../generator/website'
+import type { DbDemo } from '@sinfodes/demo/tipe-db'
+import { situsBawaan } from '@sinfodes/demo/generator/website'
 import { bacaJson, balasField, balasIsianTidakValid, butuhKemampuan, pelakuDari } from '../tulis'
 
 const butuhPengelola = (request: Request) => butuhKemampuan(request, 'website.kelola', 'Peran Anda tidak berhak mengelola Website Desa.')

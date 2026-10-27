@@ -4,7 +4,7 @@ import { beriAksesSchema, type AksesSinfodes, type RiwayatAkses } from '@/domain
 import { masihBerlaku } from '../bantuan'
 import { ambilDb, ubahDb } from '../db'
 import { API, denganJaringan } from '../http'
-import type { AksesBantuan, DbDemo } from '../tipe-db'
+import type { AksesBantuan, DbDemo } from '@sinfodes/demo/tipe-db'
 import { bacaJson, balasIsianTidakValid, butuhKemampuan, idBaru } from '../tulis'
 
 const JAM_MS = 3_600_000

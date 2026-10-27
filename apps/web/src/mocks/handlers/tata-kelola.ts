@@ -4,7 +4,7 @@ import type { LapisanPeta } from '@/domain/peta/schema'
 import { ambilDb } from '../db'
 import { API, balasDaftar, balasGalat, denganJaringan } from '../http'
 import { butuhPengguna } from '../sesi-mock'
-import type { DbDemo } from '../tipe-db'
+import type { DbDemo } from '@sinfodes/demo/tipe-db'
 import { balasIsianTidakValid, butuhKemampuan } from '../tulis'
 
 /** Lapisan Peta Desa: geometri desa ditambah lokasi kegiatan dari modul Pembangunan (SPEC §8); null bila peta belum ada. */

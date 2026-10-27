@@ -1,6 +1,6 @@
 import { Check } from '@phosphor-icons/react'
 import { useState } from 'react'
-import { GALERI_TEMA, pasangTema, type TemaGaleri } from '@/domain/website/galeri-tema'
+import { GALERI_TEMA, pasangTema, type TemaGaleri } from '@/features/website/galeri-tema'
 import { samaDenganGaleri } from '@/domain/website/galeri-dasar'
 import { SUSUNAN_BERANDA_TEMA } from '@/domain/website/susunan'
 import { cn } from '@/ui/cn'

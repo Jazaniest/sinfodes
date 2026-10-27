@@ -14,7 +14,7 @@ import { namaDusun } from '@/domain/wilayah/alamat'
 import type { Desa, Dusun } from '@/domain/wilayah/schema'
 import { ambilDb, ubahDb } from '../db'
 import { API, balasGalat, denganJaringan } from '../http'
-import type { DbDemo } from '../tipe-db'
+import type { DbDemo } from '@sinfodes/demo/tipe-db'
 import { bacaJson, balasIsianTidakValid, butuhKemampuan } from '../tulis'
 import { namaPejabat, pengaturanDesa } from './surat'
 

@@ -5,7 +5,7 @@ import type { Desa } from '@/domain/wilayah/schema'
 import { ambilDb } from '../db'
 import { API, balasGalat, denganJaringan } from '../http'
 import { konteksPermintaan } from '../konteks-permintaan'
-import type { DbDemo } from '../tipe-db'
+import type { DbDemo } from '@sinfodes/demo/tipe-db'
 import { versiTerbit } from './website'
 
 function tampilanWarga(db: DbDemo, desa: Desa) {

@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { formatTanggal } from '@/domain/format/tanggal'
 import { KOLOM_BUKU_INDUK } from '@/domain/penduduk/buku-induk'
-import { bangkitkanDb } from '../generator'
+import { bangkitkanDb } from '@sinfodes/demo/generator'
 import { bukuIndukPenduduk, bukuKtpKk, bukuMutasi, bukuPendudukSementara, bukuRekapitulasi } from './penduduk'
 import { bukuAgenda, bukuAparat, bukuInventaris, bukuTanahKas } from './umum'
 

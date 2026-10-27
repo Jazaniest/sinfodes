@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { DESA_DEMO, DUSUN_DEMO } from '@/mocks/data/desa-demo'
+import { DESA_DEMO, DUSUN_DEMO } from '@sinfodes/demo/data/desa-demo'
 import { bacaFilterPenduduk, daftarFilterAktif, FILTER_PENDUDUK_BAWAAN, HAPUS_SEMUA_FILTER, hrefDaftarPenduduk } from './filter-url'
 
 const istilah = DESA_DEMO[0].istilahWilayah

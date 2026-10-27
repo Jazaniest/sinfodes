@@ -1,11 +1,11 @@
 import { tanggalIsoWib } from '@/domain/format/tanggal'
 import { geserBulan } from '@/domain/indeks/periode'
 import { ambilDb, ubahDb } from './db'
-import { bulanAwalIndeks } from './indeks-dasar'
-import { barisBeku, bekukanPanel, punyaRekaman } from './indeks-panel'
+import { bulanAwalIndeks } from '@sinfodes/demo/indeks-dasar'
+import { barisBeku, bekukanPanel, punyaRekaman } from '@sinfodes/demo/indeks-panel'
 
 // Perhitungan murni ada di `indeks-hitung` supaya generator bisa memakainya tanpa melingkar lewat `db`.
-export * from './indeks-hitung'
+export * from '@sinfodes/demo/indeks-hitung'
 
 /** Membekukan bulan yang baru tutup. Menulis hanya bila ada yang perlu dibekukan, jadi `GET` biasa tidak menulis. */
 export function bekukanBulanTutup(sekarang: Date): void {

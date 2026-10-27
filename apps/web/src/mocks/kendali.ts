@@ -1,10 +1,10 @@
 import { urutAkunKabupaten } from '@/domain/kabupaten/pengguna'
 import type { PeranKabupaten } from '@/domain/kabupaten/schema'
 import { PERAN, type Peran } from '@/domain/pengguna/schema'
-import { ID_SUNGAI_SIALANG, PENGGUNA_DEMO } from './data/desa-demo'
-import { PENGGUNA_KONSOL_DEMO } from './data/desa-konsol'
+import { ID_SUNGAI_SIALANG, PENGGUNA_DEMO } from '@sinfodes/demo/data/desa-demo'
+import { PENGGUNA_KONSOL_DEMO } from '@sinfodes/demo/data/desa-konsol'
 import { ambilDb, resetDb } from './db'
-import type { DbDemo } from './tipe-db'
+import type { DbDemo } from '@sinfodes/demo/tipe-db'
 
 export { aturModeJaringan, bacaModeJaringan, MODE_JARINGAN } from './jaringan'
 export { dataDemoTerpisah } from './status-penyimpanan'
@@ -74,7 +74,7 @@ export async function resetDataDemo(): Promise<InfoDataDemo> {
   return infoDataDemo()
 }
 
-export { KATA_SANDI_DEMO, PASSPHRASE_TTE_DEMO } from './data/desa-demo'
+export { KATA_SANDI_DEMO, PASSPHRASE_TTE_DEMO } from '@sinfodes/demo/data/desa-demo'
 
 /** Akun panel admin Desa Sungai Sialang untuk tombol masuk dan pilihan peran (SPEC §12.9). */
 export const AKUN_DEMO_ADMIN = PENGGUNA_DEMO.filter((p) => p.desaId === ID_SUNGAI_SIALANG).map(({ id, nama, peran, email }) => ({
@@ -85,7 +85,7 @@ export const AKUN_DEMO_ADMIN = PENGGUNA_DEMO.filter((p) => p.desaId === ID_SUNGA
 }))
 
 /** Akun layanan warga untuk tombol masuk di halaman demo (SPEC §12.9). */
-export { AKUN_WARGA_DEMO as AKUN_DEMO_WARGA } from './data/warga-demo'
+export { AKUN_WARGA_DEMO as AKUN_DEMO_WARGA } from '@sinfodes/demo/data/warga-demo'
 
 /** Akun Konsol (SPEC §12.9): Tim Sinfodes. */
 export const AKUN_DEMO_KONSOL = PENGGUNA_KONSOL_DEMO.map(({ id, nama, peran, email }) => ({ id, nama, peran, email }))

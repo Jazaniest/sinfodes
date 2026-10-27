@@ -1,7 +1,7 @@
 import { ambilDb, ubahDb } from './db'
-import { tagihanJatuh, terapkanTagihanBaru } from './tagihan-hitung'
+import { tagihanJatuh, terapkanTagihanBaru } from '@sinfodes/demo/tagihan-hitung'
 
-export { buatTagihan, kwitansiTagihan, nomorDesa, nomorKwitansiBerikut, pilihKodeUnik, tagihanBerjalan, tagihanJatuh } from './tagihan-hitung'
+export { buatTagihan, kwitansiTagihan, nomorDesa, nomorKwitansiBerikut, pilihKodeUnik, tagihanBerjalan, tagihanJatuh } from '@sinfodes/demo/tagihan-hitung'
 
 /**
  * Terbitkan tagihan yang sudah waktunya (H-14 sebelum periode mulai) dan perpanjang masa aktif langganan: `sampai` = akhir

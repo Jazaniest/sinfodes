@@ -11,7 +11,7 @@ import { KABUPATEN, PROVINSI } from '@/domain/wilayah/kode-wilayah'
 import { ambilDb, ubahDb } from '../db'
 import { API, balasGalat, denganJaringan } from '../http'
 import { butuhPenggunaKonsol } from '../sesi-mock'
-import type { DbDemo } from '../tipe-db'
+import type { DbDemo } from '@sinfodes/demo/tipe-db'
 import { bacaJson, balasField, balasIsianTidakValid, dataJson, emailTerpakai, idBaru } from '../tulis'
 
 const desaBergabung = (db: DbDemo, kode: string): number =>

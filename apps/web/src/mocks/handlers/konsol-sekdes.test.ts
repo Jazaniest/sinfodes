@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { GalatApi } from '@/api/galat'
 import { ambilDetailDesaKonsol, undangSekdes } from '@/api/konsol'
 import { masuk } from '@/api/sesi'
-import { ID_SUNGAI_SIALANG, ID_TANJUNG_LAMO } from '@/mocks/data/desa-demo'
+import { ID_SUNGAI_SIALANG, ID_TANJUNG_LAMO } from '@sinfodes/demo/data/desa-demo'
 import { ambilDb } from '@/mocks/db'
 import { AKUN_KONSOL_UJI, masukKonsolSebagai, pakaiApiTiruan } from '@/test/api-tiruan'
 

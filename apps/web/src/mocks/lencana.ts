@@ -9,10 +9,10 @@ import {
 import { MUSIM, labelPeriode } from '@/domain/indeks/periode'
 import { ambilDb, ubahDb } from './db'
 import { bekukanBulanTutup } from './indeks'
-import type { DbDemo, Lencana } from './tipe-db'
+import type { DbDemo, Lencana } from '@sinfodes/demo/tipe-db'
 
-export { terbitkanLencana, type HasilTerbit } from './lencana-terbit'
-import { terbitkanLencana } from './lencana-terbit'
+export { terbitkanLencana, type HasilTerbit } from '@sinfodes/demo/lencana-terbit'
+import { terbitkanLencana } from '@sinfodes/demo/lencana-terbit'
 
 /** Paling banyak lencana yang tampil di website desa (rencana 7C-2 butir 3). */
 export const MAKS_LENCANA_WEBSITE = 6
