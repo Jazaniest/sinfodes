@@ -4,20 +4,10 @@ import { muatDb } from '@/mocks/db'
 import { aturModeJaringan } from '@/mocks/jaringan'
 import { serverUji } from '@/mocks/node'
 import { penyimpananMemori } from '@/mocks/penyimpanan'
+import { AKUN_DESA_BARU_UJI, AKUN_UJI, SEKARANG_UJI } from '@sinfodes/demo/uji-akun'
 
-/** Kamis, 24 September 2026 pukul 09.00 WIB: "sekarang" di semua uji yang memakai API tiruan. */
-export const SEKARANG_UJI = new Date('2026-09-24T02:00:00Z')
-
-export const AKUN_UJI = {
-  operator: 'pgn_rosmiati',
-  sekdes: 'pgn_hendri',
-  kades: 'pgn_nasir',
-  kaurKeuangan: 'pgn_nurhayati',
-  kadus: 'pgn_sukardi',
-} as const
-
-/** Operator Desa Tanjung Lamo, desa berstatus Persiapan (SPEC §12.2). */
-export const AKUN_DESA_BARU_UJI = 'pgn_yusri'
+// Dipakai bersama uji server (apps/api): satu sumber supaya kedua sisi bertanya tentang dunia demo yang sama.
+export { AKUN_DESA_BARU_UJI, AKUN_UJI, SEKARANG_UJI }
 
 /** Akun layanan warga demo (SPEC §12.9): ID penduduknya. */
 export const AKUN_WARGA_UJI = { siti: 'pdk_siti_rahmah', zulkifli: 'pdk_zulkifli' } as const

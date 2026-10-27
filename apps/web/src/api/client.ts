@@ -5,6 +5,11 @@ import { GalatApi } from './galat'
 const BASE = import.meta.env.VITE_API_BASE || '/api/v1'
 /** Panel admin, layanan warga, Konsol, dan dasbor kabupaten punya sesi sendiri; semuanya bisa aktif di satu peramban. */
 export type BagianSesi = 'admin' | 'warga' | 'konsol' | 'kabupaten'
+/**
+ * Penanda lokal "sudah masuk" untuk mode nyata: sesi hidup di cookie `HttpOnly` yang tidak terbaca skrip, jadi yang disimpan
+ * di peramban hanya penanda ini (SPEC-V0.3 §8.1). Bukan rahasia dan tidak dikirim sebagai `Authorization`.
+ */
+export const SESI_KUKI = 'kuki'
 const tokenSesi: Record<BagianSesi, string | null> = { admin: null, warga: null, konsol: null, kabupaten: null }
 
 export function aturTokenSesi(token: string | null, bagian: BagianSesi = 'admin'): void {
@@ -48,7 +53,8 @@ export async function panggilApi<T>(metode: Metode, jalur: string, opsi: Opsi<T>
   const formulir = opsi.body instanceof FormData
   if (opsi.body !== undefined && !formulir) headers['Content-Type'] = 'application/json'
   const token = opsi.sesi === null ? null : tokenSesi[opsi.sesi ?? 'admin']
-  if (token) headers.Authorization = `Bearer ${token}`
+  // Penanda `SESI_KUKI` bukan kredensial: sesi mode nyata dibawa cookie HttpOnly oleh peramban.
+  if (token && token !== SESI_KUKI) headers.Authorization = `Bearer ${token}`
 
   let respons: Response
   try {

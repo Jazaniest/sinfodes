@@ -57,3 +57,10 @@ export const sesiAdminSchema = z.object({
   bantuan: z.object({ sampai: z.iso.datetime({ offset: true }), sembunyikanDataPribadi: z.boolean() }).nullable().optional(),
 })
 export type SesiAdmin = z.infer<typeof sesiAdminSchema>
+
+/**
+ * Hasil masuk panel. `token` hanya ada pada mode demo (API tiruan); server nyata menaruh sesi di cookie `HttpOnly` dan tidak
+ * pernah mengirimkannya di badan jawaban (SPEC-V0.3 §8.1).
+ */
+export const hasilMasukSchema = z.object({ token: z.string().optional(), sesi: sesiAdminSchema })
+export type HasilMasuk = z.infer<typeof hasilMasukSchema>

@@ -6,6 +6,8 @@
   "engines": { "node": ">=22.12" },
   "scripts": {
     "dev": "pnpm --filter @sinfodes/web dev",
+    "dev:api": "pnpm --filter @sinfodes/api dev",
+    "dev:nyata": "pnpm --filter @sinfodes/web dev --mode nyata",
     "preview": "pnpm --filter @sinfodes/web preview",
     "build": "pnpm -r build",
     "typecheck": "pnpm -r typecheck",
