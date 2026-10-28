@@ -4,6 +4,25 @@ Semua perubahan penting Sinfodes dicatat di sini. Formatnya mengikuti [Keep a Ch
 
 ## [Belum dirilis]
 
+### Ditambahkan (tahap 8E1)
+
+- **Penduduk, keluarga, dan wilayah di server nyata.** Semua rute lewat `butuhAkses` (baca: `penduduk.lihat`; tulis: `penduduk.ubah`, hanya Operator dan Sekretaris Desa; wilayah: `pengaturan.kelola`):
+  - Penduduk: `GET /penduduk/:id`, `GET /penduduk/:id/riwayat`, `POST /penduduk` (ke KK yang ada atau KK baru), `PATCH /penduduk/:id`, `POST /penduduk/cek-nik`, `POST /penduduk/ekspor`.
+  - Keluarga: `GET /keluarga`, `POST /keluarga/cari`, `GET /keluarga/:id`, `POST /keluarga/:id/ganti-kepala`, `POST /keluarga/:id/pecah`.
+  - Wilayah: `GET` dan `PUT /pengaturan/wilayah` (istilah, dusun, RW, RT). Selama desa belum punya penduduk atau KK susunannya terbuka; sesudahnya hanya nama yang berubah.
+- **Penulisan yang aman terhadap kerja serentak.** Penduduk, KK, riwayat, aktivitas, dan jejak audit ditulis dalam satu transaksi permintaan: bila salah satu gagal, tidak ada yang tersimpan. Nomor KK baru memakai kunci penasihat per desa (dua operator tidak pernah mendapat nomor yang sama), operasi pada satu KK memakai kunci baris, dan tabrakan NIK serentak dijawab 409, bukan 500.
+- **Riwayat perubahan dan Buku hari ini.** Setiap perubahan field penduduk dan hubungan keluarga tercatat per field (`riwayat_penduduk`), setiap kejadian ke `aktivitas` (dibaca beranda di 8G). Unduhan data pribadi juga masuk jejak audit dengan format dan jumlah saja, tanpa NIK.
+- **Basis data.** Migrasi `0005_riwayat_aktivitas` (dua tabel desa-privat, hanya tambah dan baca bagi peran desa, plus kolom `penduduk.urutan_kk` untuk urutan anggota KK), `0006_desa_istilah_wilayah` (tabel `desa` ber-RLS: semua peran tetap membaca semua desa, peran desa hanya mengubah kolom `istilah_wilayah` desanya sendiri), dan `0007_riwayat_tersandi` (CHECK: nilai NIK dan telepon di Riwayat wajib tersandi).
+- **NIK dan telepon di Riwayat tidak pernah polos.** Nilai lama dan baru field `nik` dan `telepon` disandikan di ruang riwayat desa sebelum disimpan (data semai juga) dan dibuka saat dibaca; CHECK di basis data menjaga hal yang sama bila kode kelak keliru. Temuan tinjauan sendiri, diperbaiki dengan uji merah dulu.
+- **Sesi bantuan Tim Sinfodes** otomatis tunduk pada lapisan yang ada: semua penulisan baru, cek NIK, dan ekspor ditolak; `/keluarga/cari` masuk daftar pencarian-baca; NIK yang tercatat berkelompok di Riwayat (`140509 520391 8002`) kini ikut disamarkan, celah yang ditemukan saat uji.
+- **Uji.** Meta basis data (tabel baru, hak kolom `desa`), semai (invarian urutan anggota sama dengan data demo), uji rute baca dan tulis, uji serentak dengan bukti kunci yang deterministik beserta mutasi pembuktian, uji "gagal di tengah membatalkan semuanya", uji penjaga sesi bantuan, dan 34 butir konformansi dari uji tiruan.
+
+### Diubah (tahap 8E1)
+
+- Beda sengaja dari API tiruan, dicatat di uji konformansi: NIK unik per desa, bukan nasional (pesan "NIK sudah terdaftar di desa lain" tidak ada); entri riwayat `mutasi` dan preset "Pendatang tahun ini" menunggu tabel mutasi di 8E2; Buku hari ini dibaca beranda (8G); istilah wilayah ikut tersimpan saat susunan terkunci; ID dusun kembar dalam satu permintaan ditolak; jabatan Kepala Dusun yang diubah manual tidak ditimpa nomor baru; penyelarasan pengurus Lembaga Desa menunggu 8G.
+- `db:semai` pada basis yang sudah berisi harus memakai `--acuan` yang sama dengan semai pertama (`desa.dibuat`); acuan lain menghasilkan dunia demo berbeda dan semai gagal di kunci asing.
+- Klarifikasi 8D2: jejak bantuan ikut transaksi permintaan, jadi GET yang ditolak (galat dilempar: hak peran, tidak ditemukan) tidak tercatat; yang tercatat hanya halaman yang benar-benar terbuka.
+
 ### Ditambahkan (tahap 8D2)
 
 - **Akses bantuan Tim Sinfodes di server nyata.** Desa memegang kuncinya:

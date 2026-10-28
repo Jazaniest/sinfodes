@@ -1,5 +1,5 @@
 import { sesiAdminSchema, type PenggunaSesi, type SesiAdmin } from '@sinfodes/kontrak/pengguna/schema'
-import { daftarDusunDesa, type DesaRekam } from '../../basisdata/desa'
+import { bacaIstilahWilayah, daftarDusunDesa, type DesaRekam } from '../../basisdata/desa'
 import type { Db } from '../../basisdata/klien'
 import type { PelakuPanel } from '../../lapisan/konteks'
 import { cabutSesiBantuan } from '../../sesi/repositori-bantuan'
@@ -18,7 +18,7 @@ export async function susunSesiAdmin(
   return sesiAdminSchema.parse({
     jenis: 'admin',
     pengguna,
-    desa: desa.desa,
+    desa: { ...desa.desa, istilahWilayah: await bacaIstilahWilayah(db, desa.desa.id) },
     dusun: await daftarDusunDesa(db),
     tampilanPanel: { warnaAksen: desa.warnaAksen, favicon: desa.desa.lambang ?? null },
     modul: desa.modul,

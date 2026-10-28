@@ -122,6 +122,16 @@ export const kirimJson = (app: AppUji, basis: string, jalur: string, badan: unkn
     }),
   )
 
+/** Seperti `kirimJson` untuk metode apa pun yang membawa badan JSON (PATCH, PUT). */
+export const kirimDenganMetode = (app: AppUji, metode: 'POST' | 'PATCH' | 'PUT' | 'DELETE', basis: string, jalur: string, badan: unknown, kuki?: string | null) =>
+  app.fetch(
+    new Request(`${basis}${jalur}`, {
+      method: metode,
+      headers: { 'Content-Type': 'application/json', Origin: basis, ...(kuki ? { Cookie: kuki } : {}) },
+      body: JSON.stringify(badan),
+    }),
+  )
+
 type OpsiSesiDasar = { dibuat: Date; terakhirAktif?: Date; dicabut?: Date | null; awalan?: string }
 const JAM_MS = 3600_000
 

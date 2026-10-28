@@ -1,4 +1,4 @@
-import { bigint, boolean, date, integer, jsonb, numeric, pgTable, primaryKey, text, timestamp } from 'drizzle-orm/pg-core'
+import { bigint, boolean, date, integer, jsonb, numeric, pgTable, primaryKey, smallint, text, timestamp } from 'drizzle-orm/pg-core'
 
 /**
  * Definisi tabel untuk kueri bertipe. Bentuk sebenarnya ditetapkan migrasi SQL (`migrasi/`); uji meta membandingkan
@@ -111,6 +111,8 @@ export const penduduk = pgTable('penduduk', {
   ktpEl: text('ktp_el').notNull(),
   teleponSandi: text('telepon_sandi'),
   catatan: text('catatan'),
+  /** Urutan anggota dalam KK: kepala di depan, anggota baru di belakang (rencana 8E1 Ruling 4). */
+  urutanKk: smallint('urutan_kk').notNull().default(0),
   dibuatPada: waktu('dibuat_pada').notNull(),
   diubahPada: waktu('diubah_pada').notNull(),
 })
@@ -291,10 +293,36 @@ export const jejakBantuan = pgTable('jejak_bantuan', {
 })
 
 /** Tabel menurut nama SQL, dipakai uji meta. */
+export const riwayatPenduduk = pgTable('riwayat_penduduk', {
+  id: text('id').primaryKey(),
+  desaId: text('desa_id').notNull(),
+  pendudukId: text('penduduk_id').notNull(),
+  field: text('field').notNull(),
+  nilaiLama: text('nilai_lama'),
+  nilaiBaru: text('nilai_baru'),
+  olehId: text('oleh_id').notNull(),
+  olehNama: text('oleh_nama').notNull(),
+  waktu: waktu('waktu').notNull(),
+})
+
+export const aktivitas = pgTable('aktivitas', {
+  id: text('id').primaryKey(),
+  desaId: text('desa_id').notNull(),
+  dusunId: text('dusun_id'),
+  waktu: waktu('waktu').notNull(),
+  jenis: text('jenis').notNull(),
+  ringkasan: text('ringkasan').notNull(),
+  olehId: text('oleh_id'),
+  olehNama: text('oleh_nama'),
+  rujukanJenis: text('rujukan_jenis'),
+  rujukanId: text('rujukan_id'),
+})
+
 export const TABEL_SKEMA = {
   desa, alias_alamat: aliasAlamat, kunci_data: kunciData, dusun, pengguna, keluarga, penduduk, sesi, jejak_audit: jejakAudit,
   akun_warga: akunWarga, sesi_warga: sesiWarga, kunci_masuk_desa: kunciMasukDesa, kabupaten_mitra: kabupatenMitra,
   pengguna_kabupaten: penggunaKabupaten, sesi_kabupaten: sesiKabupaten, pengguna_konsol: penggunaKonsol, sesi_konsol: sesiKonsol,
   kunci_masuk_platform: kunciMasukPlatform, jejak_audit_platform: jejakAuditPlatform,
   akses_bantuan: aksesBantuan, tiket_bantuan: tiketBantuan, sesi_bantuan: sesiBantuan, jejak_bantuan: jejakBantuan,
+  riwayat_penduduk: riwayatPenduduk, aktivitas,
 } as const

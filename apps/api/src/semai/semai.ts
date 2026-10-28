@@ -7,7 +7,8 @@ import { hashKataSandi } from '../kripto/kata-sandi'
 import { buatKunciDataBaru, type BarisKunciData, type Penyandi } from '../kripto/penyandi'
 import { petaAlias, petaDesa, petaDusun, petaPengguna, type BarisSisip } from './peta-desa'
 import { petaAkunWarga, petaKabupatenMitra, petaPenggunaKabupaten, petaPenggunaKonsol } from './peta-identitas'
-import { petaKeluarga, petaPenduduk } from './peta-penduduk'
+import { petaAktivitas, petaRiwayat } from './peta-kependudukan'
+import { petaKeluarga, petaPenduduk, urutanKkDemo } from './peta-penduduk'
 
 /** Semai ditolak: lingkungan nyata tanpa bendera eksplisit. Pesannya tidak memuat nilai konfigurasi. */
 export class GalatSemai extends Error {
@@ -37,6 +38,8 @@ export type RingkasanSemai = {
   kabupatenMitra: number
   penggunaKabupaten: number
   penggunaKonsol: number
+  riwayatPenduduk: number
+  aktivitas: number
 }
 
 const UKURAN_KELOMPOK = 500
@@ -59,6 +62,20 @@ async function sisipkan(tx: postgres.TransactionSql, tabel: string, kolom: reado
   }
 }
 
+/**
+ * Menyelaraskan `urutan_kk` baris penduduk yang sudah ada sebelum kolom itu lahir (semua 0). Hanya baris yang masih 0 dan
+ * seharusnya bukan 0 yang disentuh, jadi urutan yang sudah diubah operator tidak ditimpa.
+ */
+async function selarasUrutanKk(tx: postgres.TransactionSql, dunia: DbDemo): Promise<void> {
+  const perlu = [...urutanKkDemo(dunia)].filter(([, urutan]) => urutan !== 0)
+  for (let i = 0; i < perlu.length; i += UKURAN_KELOMPOK) {
+    const kelompok = perlu.slice(i, i + UKURAN_KELOMPOK).map(([id, urutan]) => [id, String(urutan)])
+    await tx`update penduduk p set urutan_kk = v.urutan::smallint
+      from (values ${tx(kelompok as never)}) as v(id, urutan)
+      where p.id = v.id and p.urutan_kk = 0`
+  }
+}
+
 const KOLOM = {
   desa: [
     'id', 'slug', 'nama', 'kode_desa', 'kecamatan_kode', 'kecamatan_nama', 'kabupaten_kode', 'kabupaten_nama', 'provinsi_kode', 'provinsi_nama',
@@ -72,8 +89,11 @@ const KOLOM = {
   penduduk: [
     'id', 'desa_id', 'nik_sandi', 'nik_indeks', 'nama', 'jenis_kelamin', 'golongan_darah', 'agama', 'kewarganegaraan', 'tempat_lahir',
     'tanggal_lahir', 'nomor_akta_lahir', 'keluarga_id', 'hubungan_keluarga', 'nama_ayah', 'nama_ibu', 'dusun_id', 'rw', 'rt', 'pendidikan',
-    'pekerjaan', 'status_perkawinan', 'status_dasar', 'status_penduduk', 'ktp_el', 'telepon_sandi', 'catatan', 'dibuat_pada', 'diubah_pada',
+    'pekerjaan', 'status_perkawinan', 'status_dasar', 'status_penduduk', 'ktp_el', 'telepon_sandi', 'catatan', 'urutan_kk', 'dibuat_pada',
+    'diubah_pada',
   ],
+  riwayat_penduduk: ['id', 'desa_id', 'penduduk_id', 'field', 'nilai_lama', 'nilai_baru', 'oleh_id', 'oleh_nama', 'waktu'],
+  aktivitas: ['id', 'desa_id', 'dusun_id', 'waktu', 'jenis', 'ringkasan', 'oleh_id', 'oleh_nama', 'rujukan_jenis', 'rujukan_id'],
   akun_warga: ['penduduk_id', 'desa_id', 'pin_hash', 'whatsapp_sandi', 'diubah'],
   kabupaten_mitra: ['kode', 'nama', 'label', 'provinsi_kode', 'provinsi_nama', 'bergabung', 'surat_penunjukan', 'dibuat'],
   pengguna_kabupaten: ['id', 'kabupaten_kode', 'nama', 'jabatan', 'peran', 'email', 'aktif', 'kata_sandi_hash', 'dibuat'],
@@ -104,6 +124,9 @@ export async function semaiDunia(sql: postgres.Sql, penyandi: Penyandi, acuan: D
     // Kunci asing kepala keluarga ditunda sampai transaksi selesai (keluarga lebih dulu daripada penduduk).
     await sisipkan(tx, 'keluarga', KOLOM.keluarga, petaKeluarga(dunia, penyandi))
     await sisipkan(tx, 'penduduk', KOLOM.penduduk, petaPenduduk(dunia, penyandi))
+    await selarasUrutanKk(tx, dunia)
+    await sisipkan(tx, 'riwayat_penduduk', KOLOM.riwayat_penduduk, petaRiwayat(dunia, penyandi))
+    await sisipkan(tx, 'aktivitas', KOLOM.aktivitas, petaAktivitas(dunia))
     await sisipkan(tx, 'akun_warga', KOLOM.akun_warga, petaAkunWarga(dunia, penyandi, hashPin, acuan))
     await sisipkan(tx, 'kabupaten_mitra', KOLOM.kabupaten_mitra, petaKabupatenMitra(tx, dunia, acuan))
     await sisipkan(tx, 'pengguna_kabupaten', KOLOM.pengguna_kabupaten, petaPenggunaKabupaten(dunia, hashKabupaten, acuan))
@@ -115,6 +138,7 @@ export async function semaiDunia(sql: postgres.Sql, penyandi: Penyandi, acuan: D
     (select count(*)::int from dusun) as dusun, (select count(*)::int from pengguna) as pengguna,
     (select count(*)::int from keluarga) as keluarga, (select count(*)::int from penduduk) as penduduk,
     (select count(*)::int from akun_warga) as "akunWarga", (select count(*)::int from kabupaten_mitra) as "kabupatenMitra",
-    (select count(*)::int from pengguna_kabupaten) as "penggunaKabupaten", (select count(*)::int from pengguna_konsol) as "penggunaKonsol"`
+    (select count(*)::int from pengguna_kabupaten) as "penggunaKabupaten", (select count(*)::int from pengguna_konsol) as "penggunaKonsol",
+    (select count(*)::int from riwayat_penduduk) as "riwayatPenduduk", (select count(*)::int from aktivitas) as aktivitas`
   return { ...r }
 }

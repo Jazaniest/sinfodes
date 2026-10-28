@@ -5,7 +5,8 @@ import type { DbDemo } from '@sinfodes/demo/tipe-db'
 import { SEKARANG_UJI } from '@sinfodes/demo/uji-akun'
 import { cocokPenduduk } from '@sinfodes/kontrak/penduduk/cari'
 import { filterPendudukSchema, saringPenduduk, urutkanPenduduk } from '@sinfodes/kontrak/penduduk/filter'
-import { barisPendudukSchema, ringkasanPendudukSchema } from '@sinfodes/kontrak/penduduk/schema'
+import { entriRiwayatSchema } from '@sinfodes/kontrak/penduduk/riwayat'
+import { barisPendudukSchema, pendudukSchema, ringkasanPendudukSchema } from '@sinfodes/kontrak/penduduk/schema'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { buatDbUji, penyandiUji, type DbUji } from '../../../test/basisdata'
 import { ambil, kirimJson, masukLewatRute, rakitApp } from '../../../test/rakit-app'
@@ -225,5 +226,66 @@ describe('anggaran waktu dan log (Review Focus 4 dan 5)', () => {
     expect(semua).not.toContain(NIK_SITI)
     expect(semua).not.toContain(KK_SITI)
     expect(semua).not.toContain(kukiOperator.split('=')[1])
+  })
+})
+
+describe('GET /penduduk/:id dan /penduduk/:id/riwayat', () => {
+  const detail = (id: string, kuki: string | null = kukiOperator, basis = SS) => ambil(app, `${basis}/api/v1/penduduk/${id}`, kuki)
+  const riwayat = (id: string, kuki: string | null = kukiOperator, basis = SS) => ambil(app, `${basis}/api/v1/penduduk/${id}/riwayat`, kuki)
+
+  it('detail sama dengan dunia demo: NIK dan telepon terbuka dari sandi', async () => {
+    const r = await detail('pdk_siti_rahmah')
+    expect(r.status).toBe(200)
+    expect(pendudukSchema.parse(await r.json())).toEqual(dunia.penduduk.find((p) => p.id === 'pdk_siti_rahmah'))
+  })
+
+  it('mantan penduduk tetap bisa dibuka lewat id', async () => {
+    const mantan = dunia.penduduk.find((p) => p.desaId === ID_SUNGAI_SIALANG && p.statusDasar === 'Meninggal') as NonNullable<DbDemo['penduduk'][number]>
+    expect(pendudukSchema.parse(await (await detail(mantan.id)).json()).statusDasar).toBe('Meninggal')
+  })
+
+  it('id tak dikenal 404 dengan pesan tiruan, baik untuk detail maupun riwayat', async () => {
+    for (const r of [await detail('pdk_tidak_ada'), await riwayat('pdk_tidak_ada')]) {
+      expect(r.status).toBe(404)
+      expect(galatSchema.parse(await r.json()).error).toMatchObject({ code: 'NOT_FOUND', message: 'Data penduduk tidak ditemukan.' })
+    }
+  })
+
+  it('riwayat: terbaru dulu, perubahan field dari dunia demo, data lama diawali entri pembuatan (Ruling 8: belum ada entri mutasi)', async () => {
+    const sasaran = dunia.riwayat.reduce<Map<string, number>>((m, r) => m.set(r.pendudukId, (m.get(r.pendudukId) ?? 0) + 1), new Map())
+    const [pendudukId] = [...sasaran].sort((a, b) => b[1] - a[1])[0]
+    const entri = entriRiwayatSchema.array().parse(await (await riwayat(pendudukId)).json())
+    const waktu = entri.map((e) => e.waktu)
+    expect(waktu).toEqual([...waktu].sort().reverse())
+    const ubah = entri.filter((e) => e.jenis === 'ubah')
+    const asal = dunia.riwayat.filter((r) => r.pendudukId === pendudukId)
+    expect(ubah.map((e) => e.id).sort()).toEqual(asal.map((r) => r.id).sort())
+    const contoh = ubah[0]
+    const aslinya = asal.find((r) => r.id === contoh.id)
+    expect(contoh).toMatchObject({ jenis: 'ubah', field: aslinya?.field, nilaiLama: aslinya?.nilaiLama, nilaiBaru: aslinya?.nilaiBaru, oleh: aslinya?.oleh })
+    expect(entri.at(-1)).toMatchObject({ jenis: 'dibuat', id: `dibuat-${pendudukId}` })
+    expect(entri.filter((e) => e.jenis === 'mutasi')).toHaveLength(0)
+  })
+
+  it('Kaur Keuangan 403, tanpa login 401, desa lain 404', async () => {
+    const kaur = (await masukLewatRute(app, SS, 'nurhayati@sungaisialang.desa.id', 'demo', '10.9.2.1')).kuki
+    for (const f of [detail, riwayat]) {
+      const r = await f('pdk_siti_rahmah', kaur)
+      expect(r.status).toBe(403)
+      expect(galatSchema.parse(await r.json()).error.message).toBe('Peran Anda tidak berhak melihat data penduduk.')
+      expect((await f('pdk_siti_rahmah', null)).status).toBe(401)
+    }
+    const yusri = (await masukLewatRute(app, TL, 'operator@tanjunglamo.desa.id', 'demo', '10.9.2.2')).kuki
+    expect((await detail('pdk_siti_rahmah', yusri, TL)).status).toBe(404)
+    expect((await riwayat('pdk_siti_rahmah', yusri, TL)).status).toBe(404)
+  })
+
+  it('Kepala Dusun II: warga dusun lain 404 (detail dan riwayat), warga dusunnya terbuka (fokus 4)', async () => {
+    const kadus = (await masukLewatRute(app, SS, 'sukardi@sungaisialang.desa.id', 'demo', '10.9.2.3')).kuki
+    expect((await detail('pdk_siti_rahmah', kadus)).status).toBe(404)
+    expect((await riwayat('pdk_siti_rahmah', kadus)).status).toBe(404)
+    const sendiri = dunia.penduduk.find((p) => p.desaId === ID_SUNGAI_SIALANG && p.dusunId === 'dsn_ss_2') as NonNullable<DbDemo['penduduk'][number]>
+    expect((await detail(sendiri.id, kadus)).status).toBe(200)
+    expect((await riwayat(sendiri.id, kadus)).status).toBe(200)
   })
 })
