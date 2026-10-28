@@ -19,11 +19,15 @@ import { ruteKabupaten } from './modul/kabupaten/rute'
 import { ruteKonsol } from './modul/konsol/rute'
 import { ruteAksesSinfodes } from './modul/bantuan/rute-pengaturan'
 import { ruteTiketBantuan, ruteTukarTiket } from './modul/bantuan/rute-tiket'
+import { ruteBuku } from './modul/buku/rute'
+import { ruteCari } from './modul/cari/rute'
+import { ruteImpor, JALUR_UNGGAH_IMPOR } from './modul/impor/rute'
 import { ruteKeluarga } from './modul/keluarga/rute'
 import { ruteLaporan } from './modul/laporan/rute'
 import { efekSilangBawaan, type EfekSilang } from './modul/mutasi/efek-silang'
 import { ruteMutasi } from './modul/mutasi/rute'
 import { rutePenduduk } from './modul/penduduk/rute'
+import { ruteStatistik } from './modul/statistik/rute'
 import { ruteWilayah } from './modul/wilayah/rute'
 import { ruteSesi } from './modul/sesi/rute'
 import { ruteWarga } from './modul/warga/rute'
@@ -88,13 +92,12 @@ export function buatApp(deps: DepsApp): Hono<LingkunganApp> {
     if (aman) h.set('Strict-Transport-Security', HSTS)
   })
 
-  app.use(
-    '/api/v1/*',
-    bodyLimit({
-      maxSize: BATAS_BADAN_BAWAAN,
-      onError: (c) => c.json(badanGalat('VALIDATION', 'Isi permintaan terlalu besar.'), 413),
-    }),
-  )
+  const batasBawaan = bodyLimit({
+    maxSize: BATAS_BADAN_BAWAAN,
+    onError: (c) => c.json(badanGalat('VALIDATION', 'Isi permintaan terlalu besar.'), 413),
+  })
+  // Unggahan berkas impor menyetel batasnya sendiri di rutenya (modul/impor/rute.ts); semua rute lain tetap 1 MB.
+  app.use('/api/v1/*', (c, next) => (c.req.method === 'POST' && c.req.path === JALUR_UNGGAH_IMPOR ? next() : batasBawaan(c, next)))
 
   // Lapisan SPEC-V0.3 §6.2. CSRF diletakkan sebelum transaksi: permintaan lintas asal ditolak tanpa menyentuh basis data.
   app.use(
@@ -120,6 +123,10 @@ export function buatApp(deps: DepsApp): Hono<LingkunganApp> {
   app.route('/api/v1/keluarga', ruteKeluarga({ penyandi }))
   app.route('/api/v1/mutasi', ruteMutasi({ penyandi, efek: deps.efekSilang ?? efekSilangBawaan }))
   app.route('/api/v1/laporan-data', ruteLaporan({ penyandi }))
+  app.route('/api/v1/statistik', ruteStatistik())
+  app.route('/api/v1/buku-administrasi', ruteBuku({ penyandi }))
+  app.route('/api/v1/cari', ruteCari({ penyandi }))
+  app.route('/api/v1/impor', ruteImpor({ penyandi }))
   app.route('/api/v1/pengaturan/wilayah', ruteWilayah())
   app.route('/api/v1/pengaturan/akses-sinfodes', ruteAksesSinfodes())
   // Akses bantuan (SPEC-V0.3 §8.6): tiket dari Konsol (6 per menit per akun) dan penukarannya di alamat desa (10 per menit per IP).

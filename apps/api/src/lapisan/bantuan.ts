@@ -18,7 +18,7 @@ export const PESAN_UNDUHAN = 'Unduhan tidak tersedia selama data pribadi warga d
  * Jalur POST yang hanya membaca (pencarian memakai POST supaya kata kunci tidak masuk URL). Setiap jalur di sini lolos dari
  * penolakan tulis: modul baru menambahkan jalur pencariannya sendiri di sini setelah memastikan ia tidak mengubah data.
  */
-export const JALUR_CARI_BACA: ReadonlySet<string> = new Set(['/penduduk/cari', '/keluarga/cari'])
+export const JALUR_CARI_BACA: ReadonlySet<string> = new Set(['/cari', '/penduduk/cari', '/keluarga/cari'])
 
 /**
  * Jalur POST yang hanya mengganti atau mengakhiri sesi peramban itu sendiri (keluar, masuk panel, menukar tiket baru). Tanpa
@@ -29,6 +29,8 @@ const JALUR_SESI_BEBAS: ReadonlySet<string> = new Set(['/sesi/keluar', '/sesi/ma
 
 /** Lima angka berurutan cukup untuk menebak bagian NIK atau nomor KK dari hasil yang cocok. */
 const ANGKA_NOMOR = /\d{5}/
+/** Spasi, titik, dan strip di antara angka diabaikan pencarian ("1405 0952 0391" sama dengan "140509520391"), jadi diabaikan juga di sini. */
+const PEMISAH_ANTAR_ANGKA = /(?<=\d)[\s.-]+(?=\d)/g
 /** Enam belas angka berurutan, di kunci apa pun dan di tengah kalimat; 17 atau 18 angka (mis. NIP) bukan nomor ini. */
 const NOMOR16_DALAM_TEKS = /(?<!\d)\d{16}(?!\d)/g
 /** NIK berkelompok enam-enam-empat seperti yang dicatat Riwayat ("140509 520391 8002"); tanpa ini ia lolos dari aturan di atas. */
@@ -72,7 +74,7 @@ export function lapisanBantuan(deps: Deps = {}): MiddlewareHandler<LingkunganApp
     if (cari && samarkan) {
       const isi: unknown = await c.req.json().catch(() => null)
       const kata = isi !== null && typeof isi === 'object' && 'kata' in isi && typeof isi.kata === 'string' ? isi.kata : ''
-      if (ANGKA_NOMOR.test(kata)) throw new GalatApp('FORBIDDEN', PESAN_CARI_NOMOR, 403)
+      if (ANGKA_NOMOR.test(kata.replace(PEMISAH_ANTAR_ANGKA, ''))) throw new GalatApp('FORBIDDEN', PESAN_CARI_NOMOR, 403)
     }
 
     // Jejak mendahului handler: bila jejak gagal ditulis, permintaan gagal dan tidak ada data yang keluar tanpa jejak.

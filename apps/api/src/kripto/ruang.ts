@@ -11,6 +11,8 @@ export const ruang = {
   riwayat: (desaId: string): string => `riwayat_penduduk.nilai:${desaId}`,
   /** Nilai telepon pada isi laporan perbaikan dari warga (NIK ikut dicakup CHECK basis data walau tidak boleh dilaporkan). */
   laporan: (desaId: string): string => `laporan_data.isi:${desaId}`,
+  /** Seluruh tabel berkas impor penduduk yang menunggu konfirmasi (memuat NIK dan telepon polos dari berkas). */
+  impor: (desaId: string): string => `impor_penduduk.isi:${desaId}`,
   /** Nomor WhatsApp akun warga, disandikan seperti telepon penduduk. */
   whatsapp: (desaId: string): string => `akun_warga.whatsapp:${desaId}`,
   /** Rahasia TOTP akun Konsol (lintas desa, jadi satu ruang tetap). */

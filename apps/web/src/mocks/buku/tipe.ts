@@ -1,18 +1,15 @@
 import { formatAngka } from '@/domain/format/angka'
+import type { IsiSusunan } from '@/domain/buku/penduduk'
 import type { Desa, Dusun } from '@/domain/wilayah/schema'
 import type { DbDemo } from '@sinfodes/demo/tipe-db'
 
+export { waktuTerakhir } from '@/domain/buku/penduduk'
+
 /** Isi satu buku: kolom format Permendagri 47/2016 dan barisnya, semuanya teks siap cetak. */
-export type IsiPenyusun = { kolom: readonly string[]; baris: string[][]; diperbarui: string | null }
+export type IsiPenyusun = IsiSusunan
 
 /** Penyusun satu buku dari data modul sumbernya (SPEC §8). Fungsi murni, tanpa menulis basis data. */
 export type PenyusunBuku = (db: DbDemo, desaId: string) => IsiPenyusun
-
-/** Waktu ISO paling akhir; tanggal saja dianggap pukul 00.00 WIB. Null bila daftar kosong. */
-export function waktuTerakhir(daftar: readonly string[]): string | null {
-  const waktu = daftar.map((w) => (w.length === 10 ? `${w}T00:00:00+07:00` : w))
-  return waktu.length === 0 ? null : waktu.reduce((a, b) => (b > a ? b : a))
-}
 
 /** Desa, dusun, dan istilah wilayahnya, untuk label alamat. */
 export function konteksWilayah(db: DbDemo, desaId: string): { desa: Desa; dusun: Dusun[]; istilah: Desa['istilahWilayah'] } {

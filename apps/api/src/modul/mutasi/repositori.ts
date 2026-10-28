@@ -112,6 +112,17 @@ export const bacaMutasiPenduduk = (db: Db, pendudukId: string): Promise<RekamMut
     .where(eq(mutasiPenduduk.pendudukId, pendudukId))
     .orderBy(asc(mutasi.dicatatPada), asc(mutasi.id))
 
+/** Seluruh mutasi desa, terlama dulu (tanggal, waktu catat, id), beserta ID penduduknya berurutan. Untuk menyusun buku. */
+export async function bacaSemuaMutasi(db: Db): Promise<{ rekam: RekamMutasi; pendudukIds: string[] }[]> {
+  const [rekam, tautan] = await Promise.all([
+    db.select().from(mutasi).orderBy(asc(mutasi.tanggal), asc(mutasi.dicatatPada), asc(mutasi.id)),
+    db.select({ mutasiId: mutasiPenduduk.mutasiId, id: mutasiPenduduk.pendudukId }).from(mutasiPenduduk).orderBy(asc(mutasiPenduduk.mutasiId), asc(mutasiPenduduk.urutan)),
+  ])
+  const perMutasi = new Map<string, string[]>()
+  for (const t of tautan) perMutasi.set(t.mutasiId, [...(perMutasi.get(t.mutasiId) ?? []), t.id])
+  return rekam.map((r) => ({ rekam: r, pendudukIds: perMutasi.get(r.id) ?? [] }))
+}
+
 /** Satu mutasi menurut id beserta ID penduduknya berurutan; RLS membatasi desa. Tidak ada = undefined. */
 export async function bacaMutasiSatu(db: Db, id: string): Promise<{ rekam: RekamMutasi; pendudukIds: string[] } | undefined> {
   const [rekam] = await db.select().from(mutasi).where(eq(mutasi.id, id)).limit(1)

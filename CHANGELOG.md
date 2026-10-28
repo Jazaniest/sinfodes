@@ -4,6 +4,26 @@ Semua perubahan penting Sinfodes dicatat di sini. Formatnya mengikuti [Keep a Ch
 
 ## [Belum dirilis]
 
+### Ditambahkan (tahap 8E3)
+
+- **Impor penduduk dari Excel atau CSV di server nyata.** `POST /impor/penduduk` membaca berkas sungguhan (`.xlsx` lembar pertama, atau `.csv` berpemisah koma, titik koma, atau tab, UTF-8 atau Windows-1252) dan `POST /impor/penduduk/:id/konfirmasi` menjalankannya setelah dipetakan dan diperbaiki di layar. Hanya Operator dan Sekretaris Desa; desa yang belum punya dusun ditolak dengan arahan ke Pengaturan, Wilayah.
+  - Berkas diperlakukan sebagai masukan berbahaya: paling banyak 10 MB, 10.000 baris, 40 kolom, sel 500 karakter; isi sebenarnya diperiksa (bukan hanya ekstensi), bom ZIP ditolak sebelum dibuka, rumus Excel tetap teks, nama berkas disanitasi, dan NIK atau nomor KK yang terlanjur disimpan Excel sebagai angka (digit akhir sudah terpotong) membuat berkas ditolak dengan petunjuk memperbaikinya.
+  - Isi berkas disimpan antara unggah dan konfirmasi di tabel `impor_penduduk` (migrasi `0010`), tersandi seluruhnya, berlaku 24 jam, dikosongkan sesudah impor selesai.
+  - Konfirmasi atomik: satu transaksi untuk KK, penduduk, aktivitas, dan penandaan sesi; sesi dikunci lebih dulu sehingga dua konfirmasi serentak berurutan; NIK atau nomor KK yang didaftarkan pihak lain di antaranya dijawab 422 per baris atau 409 tanpa baris setengah masuk.
+- **Buku Administrasi.** `GET /buku-administrasi` dan `GET /buku-administrasi/:kode`. Lima buku penduduk (Induk, Mutasi, Rekapitulasi, Penduduk Sementara, KTP dan KK) disusun dari PostgreSQL dengan fungsi yang sama dengan API tiruan. Sepuluh buku lain punya sumber data di modul yang belum ada di server (Surat 8F; Aset, Lembaga, Keuangan, Pembangunan 8G): tampil di daftar tanpa jumlah dan belum bisa dibuka; uji meta memaksa tahap itu memindahkannya.
+- **Statistik penduduk.** `GET /statistik/penduduk` memakai `hitungStatistik` kontrak yang sama dengan API tiruan dan halaman publik kelak; Kepala Dusun selalu mendapat dusunnya.
+- **Cari global.** `POST /cari` (penduduk dan KK, paling banyak lima per jenis, semua status dasar, Kepala Dusun hanya dusunnya). Pencarian surat kosong sampai 8F.
+- **Kontrak bersama.** Susunan lima buku penduduk (`buku/penduduk.ts`) dan tanggal terbit dari nomor KK (`impor/terbit.ts`) ditarik ke `packages/kontrak`; API tiruan memakainya dari sana.
+- **Uji.** Pembaca berkas (xlsx dan csv, batas, berkas rusak, bom ZIP jujur dan berukuran palsu), rute unggah, konfirmasi (termasuk uji kunci yang deterministik, tabrakan indeks, gagal di kelompok sisip kedua, 3.000 baris), statistik, buku, cari, sesi bantuan, dan 22 butir konformansi baru (impor 9, buku 3, statistik 4, cari 6) ditambah tiga butir yang menunggu 8F dan 8G.
+
+### Diperbaiki (tahap 8E3)
+
+- **Sesi bantuan Tim Sinfodes: pencarian dengan angka NIK atau nomor KK yang dipisah spasi, titik, atau strip** (mis. `1405 0952 0391 8002`) tidak lagi lolos penjaga lima-angka-berurutan, di `/penduduk/cari`, `/keluarga/cari`, dan `/cari`. Celah ini ada sejak 8D2.
+
+### Diubah (tahap 8E3)
+
+- Beda sengaja dari API tiruan, dicatat di uji konformansi: server membaca isi berkas yang diunggah (tiruan selalu mengembalikan berkas contoh); `nikTerdaftar` dan `nomorKkTerdaftar` dihitung per desa; sepuluh buku menunggu sumbernya; surat di Cari global kosong; jalur "file contoh" tetap ada di server (penutupannya dicatat untuk 8K).
+
 ### Ditambahkan (tahap 8E2)
 
 - **Mutasi di server nyata.** Kelahiran, kematian, kepindahan, dan kedatangan dicatat lewat `POST /mutasi/lahir`, `/meninggal`, `/pindah`, dan `/datang` (hanya Operator dan Sekretaris Desa), dibaca lewat `GET /mutasi` (Buku Mutasi, per bulan dan jenis, terbaru dulu) dan `GET /mutasi/ringkasan` (angka per jenis; bulan bawaan menurut WIB). Kepala Dusun melihat mutasi yang menyentuh dusunnya saja.

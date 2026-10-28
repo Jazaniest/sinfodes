@@ -45,6 +45,18 @@ export const sisipKeluarga = async (db: Db, baris: BarisKeluargaBaru): Promise<v
   await db.insert(keluarga).values(baris)
 }
 
+const KELOMPOK_SISIP = 500
+
+/** Menyisipkan banyak KK sekaligus, per 500 baris (impor). Tabrakan indeks unik melempar galat PostgreSQL apa adanya. */
+export async function sisipKeluargaBanyak(db: Db, baris: readonly BarisKeluargaBaru[]): Promise<void> {
+  for (let i = 0; i < baris.length; i += KELOMPOK_SISIP) await db.insert(keluarga).values(baris.slice(i, i + KELOMPOK_SISIP))
+}
+
+/** Menyisipkan banyak penduduk sekaligus, per 500 baris (impor). */
+export async function sisipPendudukBanyak(db: Db, baris: readonly BarisPendudukBaru[]): Promise<void> {
+  for (let i = 0; i < baris.length; i += KELOMPOK_SISIP) await db.insert(penduduk).values(baris.slice(i, i + KELOMPOK_SISIP))
+}
+
 export async function sisipPenduduk(db: Db, baris: BarisPendudukBaru): Promise<RekamPenduduk> {
   const [b] = await db.insert(penduduk).values(baris).returning()
   return b

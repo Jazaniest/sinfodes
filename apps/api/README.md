@@ -1,6 +1,6 @@
 # Sinfodes API
 
-Server API Sinfodes: Hono, PostgreSQL, dan Drizzle. Sampai tahap 8E2 server memuat identitas empat pelaku, akses bantuan Tim Sinfodes, serta kependudukan (penduduk, keluarga, wilayah, mutasi, laporan data) yang menjawab kontrak yang sama dengan API tiruan di `apps/web`:
+Server API Sinfodes: Hono, PostgreSQL, dan Drizzle. Sampai tahap 8E3 server memuat identitas empat pelaku, akses bantuan Tim Sinfodes, serta kependudukan (penduduk, keluarga, wilayah, mutasi, laporan data, impor, buku, statistik, cari) yang menjawab kontrak yang sama dengan API tiruan di `apps/web`:
 
 | Rute | Isi |
 | --- | --- |
@@ -17,6 +17,10 @@ Server API Sinfodes: Hono, PostgreSQL, dan Drizzle. Sampai tahap 8E2 server memu
 | `GET /api/v1/mutasi`, `GET /api/v1/mutasi/ringkasan` | Buku Mutasi (per bulan dan jenis, terbaru dulu) dan angka per jenis pada satu bulan; Kepala Dusun hanya dusunnya |
 | `POST /api/v1/mutasi/lahir`, `/meninggal`, `/pindah`, `/datang` | Catat kelahiran, kematian, kepindahan, kedatangan; hanya Operator dan Sekretaris Desa. Header `Idempotency-Key` (opsional): pengiriman ulang mengembalikan hasil pertama (`Idempotency-Replayed: true`) |
 | `GET /api/v1/laporan-data`, `GET /api/v1/laporan-data/:id`, `POST /api/v1/laporan-data/:id/terapkan`, `POST /api/v1/laporan-data/:id/tolak` | Laporan data dari warga: daftar, detail, terapkan perbaikan, tolak (alasan opsional) |
+| `POST /api/v1/impor/penduduk`, `POST /api/v1/impor/penduduk/:id/konfirmasi` | Impor penduduk dari `.xlsx` atau `.csv`: unggah (multipart `berkas`, atau `{ "contoh": true }` untuk berkas contoh) lalu konfirmasi dengan pemetaan kolom; hanya Operator dan Sekretaris Desa |
+| `GET /api/v1/buku-administrasi`, `GET /api/v1/buku-administrasi/:kode` | Daftar buku dan isi satu halaman; lima buku penduduk tersedia, sepuluh buku lain menunggu tahap 8F-8G |
+| `GET /api/v1/statistik/penduduk` | Angka agregat penduduk Hidup (`?dusun=` nomor dusun; Kepala Dusun selalu dusunnya) |
+| `POST /api/v1/cari` | Pencarian cepat penduduk dan KK (kata di badan, bukan URL); surat menyusul di 8F |
 | `GET/PUT /api/v1/pengaturan/wilayah` | Istilah wilayah dan susunan dusun, RW, RT (terbuka selama desa belum punya penduduk) |
 | `POST /api/v1/warga/masuk`, `/warga/lupa-pin`, `GET /warga/sesi`, `PATCH /warga/akun`, `POST /warga/sesi/keluar` | Layanan warga: NIK dan PIN di alamat desa, cookie `__Host-warga` |
 | `POST /api/v1/kabupaten/sesi/masuk`, `GET /kabupaten/sesi`, `POST /kabupaten/sesi/keluar` | Dasbor kabupaten di alamat `kab-...`, cookie `__Host-kab` |
@@ -98,6 +102,14 @@ Modul baru yang punya pencarian lewat POST wajib menambahkan jalurnya ke `JALUR_
 
 Daftar pencarian-baca kini `/penduduk/cari` dan `/keluarga/cari`. `POST /penduduk/cek-nik` dan `POST /penduduk/ekspor` sengaja tidak termasuk: yang pertama membuka keberadaan NIK, yang kedua mengeluarkan data pribadi massal. NIK yang tercatat berkelompok di Riwayat (`140509 520391 8002`) ikut disamarkan.
 
+## Impor berkas
+
+- Format: `.xlsx` (lembar pertama) dan `.csv` (pemisah koma, titik koma, atau tab; UTF-8 atau Windows-1252). Kepala kolom dikenali dari nama dan sinonim lazim (mis. `Tgl. Lahir`, `SHDK`, `No. KK`).
+- Batas: 10 MB, 10.000 baris, 40 kolom, 500 karakter per sel. Lebih dari 10 MB (11 MB pada badan permintaan) ditolak lapisan HTTP; rute lain tetap dibatasi 1 MB.
+- Rumus Excel tidak dievaluasi. Kolom NIK dan nomor KK harus berformat **Teks** di Excel: angka 16 digit yang disimpan sebagai angka sudah terpotong oleh Excel dan berkas ditolak.
+- Berkas contoh untuk pengujian: `apps/api/test/contoh/impor-3-baris.csv` dan `.xlsx` (dibuat oleh `skrip/buat-contoh-impor.ts`).
+- Jalur `{ "contoh": true }` (tombol "Coba dengan file contoh") memasukkan penduduk fiktif; penutupannya untuk produksi menunggu 8K.
+
 ## Uji
 
 ```bash
@@ -127,6 +139,7 @@ pnpm --filter @sinfodes/api test
 - Sesi bantuan Tim Sinfodes hanya melihat, setiap halamannya tercatat di jejak yang tak bisa dihapus, dan NIK serta nomor KK disamarkan bila desa meminta. Konsol tidak pernah membaca data desa: hak barunya hanya membaca status akses dan menambah tiket.
 - Nilai NIK dan telepon di Riwayat perubahan penduduk dan di isi laporan perbaikan warga disandikan seperti kolom aslinya, dan CHECK di basis data menolak nilai polos.
 - Tabel `kunci_idempotensi` menyimpan hanya sidik isi dan rujukan mutasi, bukan salinan jawaban, jadi NIK pendatang tidak tersalin ke sana.
+- Isi berkas impor yang menunggu konfirmasi (`impor_penduduk`) disimpan sebagai satu sandi, berlaku 24 jam, dikosongkan sesudah selesai; NIK dan telepon dari berkas tidak pernah polos di tabel.
 - Rahasia hanya di `.env.local` (tidak dilacak git). Server menolak mulai di staging atau produksi bila rahasia tampak seperti nilai contoh.
 - Log JSON dengan penyamaran kunci sensitif; jawaban galat tidak memuat tumpukan atau isi basis data.
 

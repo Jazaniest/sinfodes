@@ -37,6 +37,8 @@ export const GOLONGAN_TABEL: Readonly<Record<string, Golongan>> = {
   laporan_data: 'desa-privat',
   // Kunci idempotensi POST mutasi (8E2 Tugas 8): sidik isi dan rujukan mutasi saja.
   kunci_idempotensi: 'desa-privat',
+  // Sesi impor penduduk (8E3 Tugas 6): isi berkas tersandi, berlaku 24 jam.
+  impor_penduduk: 'desa-privat',
   jejak_audit: 'audit',
   jejak_bantuan: 'audit',
   jejak_audit_platform: 'audit',
