@@ -24,7 +24,7 @@ const punyaHak = async (peran: string, tabel: string, hak: string): Promise<bool
 
 describe('hak tabel per peran (SPEC-V0.3 §7.3)', () => {
   it('kabupaten, Konsol, dan publik tidak punya hak apa pun atas tabel desa-privat, sesi, dan jejak audit', async () => {
-    for (const tabel of [...tabelDengan('desa-privat'), 'sesi', 'jejak_audit', 'kunci_data']) {
+    for (const tabel of [...tabelDengan('desa-privat'), 'sesi', 'jejak_audit', 'jejak_bantuan', 'kunci_data']) {
       for (const peran of PERAN_LAIN) {
         for (const hak of HAK) expect(await punyaHak(peran, tabel, hak), `${peran} ${hak} ${tabel}`).toBe(false)
       }

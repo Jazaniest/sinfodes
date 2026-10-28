@@ -16,6 +16,14 @@ describe('pencatat log', () => {
     expect(teks).toContain('[disamarkan]')
   })
 
+  it('kunci tiket (akses bantuan) disamarkan di mana pun', () => {
+    const { log, baris } = tangkap()
+    log.info('tiket', { tiket: 'TIKET-RAHASIA-1', bersarang: { tiket: 'TIKET-RAHASIA-2' } })
+    const teks = baris.join('')
+    expect(teks).not.toContain('TIKET-RAHASIA')
+    expect(teks).toContain('[disamarkan]')
+  })
+
   it('galat kueri Drizzle dicatat tanpa nilai parameter, di pesan maupun tumpukan', () => {
     const { log, baris } = tangkap()
     const galat = new Error('Failed query: select "id" from "pengguna" where "email" = $1\nparams: rahasia@contoh.id,sandi-bocor')

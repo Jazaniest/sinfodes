@@ -64,3 +64,9 @@ export async function daftarDusunDesa(db: Db): Promise<Dusun[]> {
   const baris = await db.select().from(dusun).orderBy(asc(dusun.nomor))
   return baris.map((b) => dusunSchema.parse({ id: b.id, desaId: b.desaId, nomor: b.nomor, nama: b.nama, kepalaDusun: b.kepalaDusun, posyandu: b.posyandu, rw: b.rw }))
 }
+
+/** Slug desa menurut ID, atau null. Dibaca Konsol untuk membentuk alamat tujuan tiket bantuan tanpa memuat isi desa. */
+export async function cariSlugDesaMenurutId(db: Db, id: string): Promise<string | null> {
+  const [b] = await db.select({ slug: desa.slug }).from(desa).where(eq(desa.id, id)).limit(1)
+  return b?.slug ?? null
+}

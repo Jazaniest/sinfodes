@@ -10,12 +10,15 @@ import { lapisanAlamat } from './lapisan/alamat'
 import { buatBatasLaju, ipSoket } from './lapisan/batas-laju'
 import { lapisanCsrf } from './lapisan/csrf'
 import type { LingkunganApp } from './lapisan/konteks'
+import { lapisanBantuan } from './lapisan/bantuan'
 import { lapisanSesi } from './lapisan/sesi'
 import { lapisanTransaksi } from './lapisan/transaksi'
 import type { Pencatat } from './log'
 import { ruteAlamat } from './modul/alamat/rute'
 import { ruteKabupaten } from './modul/kabupaten/rute'
 import { ruteKonsol } from './modul/konsol/rute'
+import { ruteAksesSinfodes } from './modul/bantuan/rute-pengaturan'
+import { ruteTiketBantuan, ruteTukarTiket } from './modul/bantuan/rute-tiket'
 import { rutePenduduk } from './modul/penduduk/rute'
 import { ruteSesi } from './modul/sesi/rute'
 import { ruteWarga } from './modul/warga/rute'
@@ -93,6 +96,8 @@ export function buatApp(deps: DepsApp): Hono<LingkunganApp> {
     lapisanCsrf({ lingkungan: konfigurasi.lingkungan }),
     lapisanTransaksi({ klien }),
     lapisanSesi({ cookieAwalan: konfigurasi.cookieAwalan, waktu }),
+    // Aturan sesi bantuan Tim Sinfodes (lihat saja, jejak, penyamaran) mendahului pemilihan rute (SPEC-V0.3 §8.6).
+    lapisanBantuan(),
   )
 
   // Batas laju masuk per IP di memori (SPEC-V0.3 §8.5); kunci per akun disimpan di PostgreSQL (`sesi/kunci-masuk.ts`).
@@ -105,6 +110,12 @@ export function buatApp(deps: DepsApp): Hono<LingkunganApp> {
   app.route('/api/v1/konsol', ruteKonsol({ konfigurasi, penyandi, batasIp, ipKlien }))
   app.route('/api/v1/warga', ruteWarga({ konfigurasi, penyandi, batasIp, batasLupaPin, ipKlien }))
   app.route('/api/v1/penduduk', rutePenduduk({ penyandi }))
+  app.route('/api/v1/pengaturan/akses-sinfodes', ruteAksesSinfodes())
+  // Akses bantuan (SPEC-V0.3 §8.6): tiket dari Konsol (6 per menit per akun) dan penukarannya di alamat desa (10 per menit per IP).
+  const batasTiket = buatBatasLaju({ maks: 6, jendelaMs: 60_000, waktu })
+  const batasTukar = buatBatasLaju({ maks: 10, jendelaMs: 60_000, waktu })
+  app.route('/api/v1/konsol/desa', ruteTiketBantuan({ batasTiket }))
+  app.route('/api/v1/sesi/bantuan', ruteTukarTiket({ konfigurasi, batasTukar, ipKlien }))
 
   app.get('/sehat', (c) => c.json({ hidup: true }))
 

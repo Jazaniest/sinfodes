@@ -12,9 +12,9 @@ import { butuhSesi, dbTanpaPelaku, pelakuPanel } from '../../lapisan/akses'
 import { PESAN_TERLALU_SERING, type BatasLaju } from '../../lapisan/batas-laju'
 import type { LingkunganApp } from '../../lapisan/konteks'
 import { catatGagal, hapusKunci, periksaKunci, type RuangKunci } from '../../sesi/kunci-masuk'
-import { cabutSesi, cariPenggunaMenurutEmail, penggunaSesiDari, simpanSesi } from '../../sesi/repositori'
+import { cariPenggunaMenurutEmail, penggunaSesiDari, simpanSesi } from '../../sesi/repositori'
 import { hapusKuki, pasangKuki } from '../../sesi/toples'
-import { susunSesiAdmin, type AlasanGagal } from './layanan'
+import { cabutSesiPanel, susunSesiAdmin, type AlasanGagal } from './layanan'
 
 const masukSchema = z.object({ email: z.string().min(1), kataSandi: z.string().min(1) })
 /** Batas panjang isian masuk: email paling panjang 254 karakter; isian lebih panjang tidak masuk memori pembatas laju. */
@@ -76,7 +76,7 @@ export function ruteSesi(deps: DepsRuteSesi): Hono<LingkunganApp> {
     if (!penggunaSesi) throw new Error('Peran pengguna di basis data tidak dikenal.')
     // Token dan ID sesi selalu baru (anti fiksasi); sesi lama dari peramban yang sama dicabut, bukan dibiarkan hidup.
     const lama = pelakuPanel(c)
-    if (lama) await cabutSesi(db, lama.sesiId, sekarang)
+    if (lama) await cabutSesiPanel(db, lama, sekarang)
     const { token, hash } = buatTokenSesi()
     await simpanSesi(db, { id: `ses_${randomBytes(12).toString('base64url')}`, desaId: desa.desa.id, penggunaId: pengguna.id, tokenHash: hash, sekarang })
     await catatAudit(db, { desaId: desa.desa.id, jenis: 'masuk.berhasil', pelaku: pengguna.id, waktu: sekarang, ringkasan: {} })
@@ -87,12 +87,12 @@ export function ruteSesi(deps: DepsRuteSesi): Hono<LingkunganApp> {
   rute.get('/', async (c) => {
     const { db, pelaku, desa } = butuhSesi(c)
     // `sesiId` tidak ikut keluar: skema sesi hanya meloloskan kolom pengguna.
-    return c.json(await susunSesiAdmin(db, desa, pelaku))
+    return c.json(await susunSesiAdmin(db, desa, pelaku, pelaku.bantuan))
   })
 
   rute.post('/keluar', async (c) => {
     const pelaku = pelakuPanel(c)
-    if (pelaku) await cabutSesi(dbTanpaPelaku(c).db, pelaku.sesiId, c.get('waktu')())
+    if (pelaku) await cabutSesiPanel(dbTanpaPelaku(c).db, pelaku, c.get('waktu')())
     hapusKuki(c, 'panel', awalan)
     return c.body(null, 204)
   })

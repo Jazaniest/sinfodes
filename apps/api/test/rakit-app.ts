@@ -156,3 +156,41 @@ export async function sisipSesiKabupatenUji(
     values (${id}, ${p.penggunaId}, ${p.kabupatenKode}, ${hash}, ${p.dibuat}, ${p.terakhirAktif ?? p.dibuat}, ${mutlak}, ${p.dicabut ?? null})`
   return { id, token, kuki: `${p.awalan ?? '__Host-'}kab=${token}` }
 }
+
+/** Akses bantuan langsung lewat peran migrasi: `sampai` = `mulai` + `lamaJam` (bawaan 24 jam dari sekarang). */
+export async function sisipAksesUji(
+  sql: postgres.Sql,
+  p: { desaId: string; lamaJam?: number; sembunyikan?: boolean; mulai?: Date; diberiOlehId?: string; diberiOlehNama?: string; dicabut?: Date | null },
+): Promise<{ id: string; mulai: Date; sampai: Date }> {
+  const id = `aks_${randomBytes(6).toString('base64url')}`
+  const mulai = p.mulai ?? new Date()
+  const sampai = new Date(mulai.getTime() + (p.lamaJam ?? 24) * JAM_MS)
+  await sql`insert into akses_bantuan (id, desa_id, diberi_oleh_id, diberi_oleh_nama, mulai, sampai, sembunyikan_data_pribadi, dicabut)
+    values (${id}, ${p.desaId}, ${p.diberiOlehId ?? 'pgn_uji'}, ${p.diberiOlehNama ?? 'Pemberi Uji'}, ${mulai}, ${sampai}, ${p.sembunyikan ?? true}, ${p.dicabut ?? null})`
+  return { id, mulai, sampai }
+}
+
+/** Tiket bantuan langsung lewat peran migrasi; mengembalikan token polosnya (yang tersimpan hanya hash). */
+export async function sisipTiketUji(
+  sql: postgres.Sql,
+  p: { desaId: string; aksesId: string; mulai?: Date; umurMs?: number; dipakai?: Date | null; olehId?: string; olehNama?: string },
+): Promise<{ id: string; tiket: string }> {
+  const { token, hash } = buatTokenSesi()
+  const id = `tkt_${randomBytes(6).toString('base64url')}`
+  const mulai = p.mulai ?? new Date()
+  await sql`insert into tiket_bantuan (id, desa_id, akses_id, token_hash, oleh_id, oleh_nama, dibuat, berlaku_sampai, dipakai)
+    values (${id}, ${p.desaId}, ${p.aksesId}, ${hash}, ${p.olehId ?? 'kon_uji'}, ${p.olehNama ?? 'Dina Uji'}, ${mulai}, ${new Date(mulai.getTime() + (p.umurMs ?? 60_000))}, ${p.dipakai ?? null})`
+  return { id, tiket: token }
+}
+
+/** Sesi bantuan langsung lewat peran migrasi. Cookie-nya cookie panel (sesi bantuan hidup di keluarga panel). */
+export async function sisipSesiBantuanUji(
+  sql: postgres.Sql,
+  p: OpsiSesiDasar & { desaId: string; aksesId: string; olehId?: string; olehNama?: string },
+): Promise<SesiUji> {
+  const { token, hash } = buatTokenSesi()
+  const id = `sbt_${randomBytes(9).toString('base64url')}`
+  await sql`insert into sesi_bantuan (id, desa_id, akses_id, token_hash, oleh_id, oleh_nama, dibuat, terakhir_aktif, dicabut)
+    values (${id}, ${p.desaId}, ${p.aksesId}, ${hash}, ${p.olehId ?? 'kon_uji'}, ${p.olehNama ?? 'Dina Uji'}, ${p.dibuat}, ${p.terakhirAktif ?? p.dibuat}, ${p.dicabut ?? null})`
+  return { id, token, kuki: `${p.awalan ?? '__Host-'}panel=${token}` }
+}

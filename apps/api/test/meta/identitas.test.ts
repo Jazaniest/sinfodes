@@ -32,6 +32,11 @@ const HARAPAN: Readonly<Record<string, Partial<Record<Peran, readonly Hak[]>>>> 
   sesi_konsol: { sinfodes_konsol: ['SELECT', 'INSERT', 'UPDATE'] },
   kunci_masuk_platform: { sinfodes_kabupaten: SEMUA, sinfodes_konsol: SEMUA },
   jejak_audit_platform: { sinfodes_kabupaten: ['INSERT'], sinfodes_konsol: ['INSERT'] },
+  // Akses bantuan (SPEC-V0.3 §8.6): desa menulis akses dan tiket (hak kolom), Konsol membaca akses dan menerbitkan tiket.
+  akses_bantuan: { sinfodes_desa: ['SELECT', 'INSERT'], sinfodes_konsol: ['SELECT'] },
+  tiket_bantuan: { sinfodes_desa: ['SELECT'], sinfodes_konsol: ['INSERT'] },
+  sesi_bantuan: { sinfodes_desa: ['SELECT', 'INSERT', 'UPDATE'] },
+  jejak_bantuan: { sinfodes_desa: ['SELECT', 'INSERT'] },
 }
 
 const kodePg = (e: unknown): string | undefined => {
@@ -153,5 +158,89 @@ describe('kunci_masuk_platform: tiap peran hanya melihat barisnya sendiri', () =
       uji.klien.dalamTransaksi(peran, {}, async (db) => Number((await db.execute<{ n: number }>(dsql`select count(*)::int as n from kunci_masuk_platform`))[0].n))
     expect(await hitung('konsol')).toBe(1)
     expect(await hitung('kabupaten')).toBe(1)
+  })
+})
+
+describe('akses bantuan: hak kolom dan RLS (SPEC-V0.3 §8.6)', () => {
+  const TABEL_BANTUAN = ['akses_bantuan', 'tiket_bantuan', 'sesi_bantuan', 'jejak_bantuan'] as const
+
+  beforeAll(async () => {
+    for (const desa of ['desa_a', 'desa_b']) {
+      await uji.sqlMigrasi`insert into akses_bantuan (id, desa_id, diberi_oleh_id, diberi_oleh_nama, mulai, sampai, sembunyikan_data_pribadi)
+        values (${`aks_${desa}`}, ${desa}, 'pgn_x', 'Pemberi', now(), now() + interval '1 day', true)`
+      await uji.sqlMigrasi`insert into tiket_bantuan (id, desa_id, akses_id, token_hash, oleh_id, oleh_nama, dibuat, berlaku_sampai)
+        values (${`tkt_${desa}`}, ${desa}, ${`aks_${desa}`}, ${`th_tkt_${desa}`}, 'kon_x', 'Tim', now(), now() + interval '60 seconds')`
+      await uji.sqlMigrasi`insert into sesi_bantuan (id, desa_id, akses_id, token_hash, oleh_id, oleh_nama, dibuat, terakhir_aktif)
+        values (${`sb_${desa}`}, ${desa}, ${`aks_${desa}`}, ${`th_sb_${desa}`}, 'kon_x', 'Tim', now(), now())`
+      await uji.sqlMigrasi`insert into jejak_bantuan (desa_id, sesi_id, jalur, waktu) values (${desa}, ${`sb_${desa}`}, '/penduduk', now())`
+    }
+  })
+
+  const jalankan = (peran: 'desa' | 'kabupaten' | 'konsol' | 'publik', desaId: string | undefined, perintah: string) =>
+    galatDari(uji.klien.dalamTransaksi(peran, { desaId }, (db) => db.execute(dsql.raw(perintah))))
+  const hitungDesa = (desaId: string | undefined, tabel: string) =>
+    uji.klien.dalamTransaksi('desa', { desaId }, async (db) => Number((await db.execute<{ n: number }>(dsql.raw(`select count(*)::int as n from ${tabel}`)))[0].n))
+  const punyaKolom = async (peran: string, tabel: string, kolom: string) =>
+    (await uji.sqlMigrasi`select has_column_privilege(${peran}, ${tabel}, ${kolom}, 'UPDATE') as ada`)[0].ada as boolean
+
+  it('desa hanya boleh mengubah kolom dicabut (akses) dan dipakai (tiket); Konsol tidak boleh mengubah kolom apa pun', async () => {
+    expect(await punyaKolom('sinfodes_desa', 'akses_bantuan', 'dicabut')).toBe(true)
+    for (const kolom of ['desa_id', 'mulai', 'sampai', 'sembunyikan_data_pribadi', 'diberi_oleh_id', 'diberi_oleh_nama']) {
+      expect(await punyaKolom('sinfodes_desa', 'akses_bantuan', kolom), `akses_bantuan.${kolom}`).toBe(false)
+    }
+    expect(await punyaKolom('sinfodes_desa', 'tiket_bantuan', 'dipakai')).toBe(true)
+    for (const kolom of ['desa_id', 'akses_id', 'token_hash', 'berlaku_sampai', 'oleh_id']) {
+      expect(await punyaKolom('sinfodes_desa', 'tiket_bantuan', kolom), `tiket_bantuan.${kolom}`).toBe(false)
+    }
+    for (const tabel of ['akses_bantuan', 'tiket_bantuan']) {
+      const ada = (await uji.sqlMigrasi`select has_any_column_privilege('sinfodes_konsol', ${tabel}, 'UPDATE') as ada`)[0].ada as boolean
+      expect(ada, `konsol UPDATE ${tabel}`).toBe(false)
+    }
+  })
+
+  it('desa: tanpa konteks nol baris, dengan konteks hanya baris desanya', async () => {
+    for (const tabel of TABEL_BANTUAN) {
+      expect(await hitungDesa(undefined, tabel), `${tabel} tanpa konteks`).toBe(0)
+      expect(await hitungDesa('desa_a', tabel), `${tabel} desa_a`).toBe(1)
+      expect(await hitungDesa('desa_b', tabel), `${tabel} desa_b`).toBe(1)
+      expect(await hitungDesa('desa_lain', tabel), `${tabel} desa lain`).toBe(0)
+    }
+  })
+
+  it('konteks desa A tidak bisa menyisipkan atau mengubah baris desa B', async () => {
+    const sisipAkses = `insert into akses_bantuan (id, desa_id, diberi_oleh_id, diberi_oleh_nama, mulai, sampai, sembunyikan_data_pribadi) values ('aks_x', 'desa_b', 'p', 'P', now(), now() + interval '1 hour', true)`
+    expect(kodePg(await jalankan('desa', 'desa_a', sisipAkses))).toBe('42501')
+    expect(kodePg(await jalankan('desa', 'desa_a', `insert into jejak_bantuan (desa_id, sesi_id, jalur, waktu) values ('desa_b', 'sb_desa_b', '/x', now())`))).toBe('42501')
+    expect(kodePg(await jalankan('desa', 'desa_a', `insert into sesi_bantuan (id, desa_id, akses_id, token_hash, oleh_id, oleh_nama, dibuat, terakhir_aktif) values ('sb_x', 'desa_b', 'aks_desa_b', 'th_x', 'k', 'T', now(), now())`))).toBe('42501')
+    const cabut = await uji.klien.dalamTransaksi('desa', { desaId: 'desa_a' }, (db) => db.execute(dsql`update akses_bantuan set dicabut = now() where desa_id = 'desa_b'`))
+    expect(cabut.count).toBe(0)
+    const pakai = await uji.klien.dalamTransaksi('desa', { desaId: 'desa_a' }, (db) => db.execute(dsql`update tiket_bantuan set dipakai = now() where desa_id = 'desa_b'`))
+    expect(pakai.count).toBe(0)
+    expect(kodePg(await jalankan('desa', 'desa_a', `update akses_bantuan set sampai = now() + interval '30 days' where desa_id = 'desa_a'`))).toBe('42501')
+  })
+
+  it('Konsol membaca akses semua desa dan menerbitkan tiket, tetapi tidak menyentuh tiket, sesi, jejak, atau menulis akses', async () => {
+    const hitungKonsol = (tabel: string) =>
+      uji.klien.dalamTransaksi('konsol', {}, async (db) => Number((await db.execute<{ n: number }>(dsql.raw(`select count(*)::int as n from ${tabel}`)))[0].n))
+    expect(await hitungKonsol('akses_bantuan')).toBe(2)
+    for (const tabel of ['tiket_bantuan', 'sesi_bantuan', 'jejak_bantuan']) {
+      expect(kodePg(await jalankan('konsol', undefined, `select count(*) from ${tabel}`)), `konsol select ${tabel}`).toBe('42501')
+    }
+    const tiket = `insert into tiket_bantuan (id, desa_id, akses_id, token_hash, oleh_id, oleh_nama, dibuat, berlaku_sampai) values ('tkt_konsol', 'desa_a', 'aks_desa_a', 'th_konsol', 'kon_x', 'Tim', now(), now() + interval '60 seconds')`
+    expect(await jalankan('konsol', undefined, tiket)).toBeNull()
+    expect(kodePg(await jalankan('konsol', undefined, `insert into akses_bantuan (id, desa_id, diberi_oleh_id, diberi_oleh_nama, mulai, sampai, sembunyikan_data_pribadi) values ('aks_k', 'desa_a', 'p', 'P', now(), now() + interval '1 hour', false)`))).toBe('42501')
+    expect(kodePg(await jalankan('konsol', undefined, `update akses_bantuan set dicabut = now()`))).toBe('42501')
+  })
+
+  it('jejak_bantuan hanya tambah: UPDATE dan DELETE oleh desa ditolak', async () => {
+    for (const perintah of [`update jejak_bantuan set jalur = 'x'`, 'delete from jejak_bantuan']) {
+      expect(kodePg(await jalankan('desa', 'desa_a', perintah)), perintah).toBe('42501')
+    }
+  })
+
+  it('kabupaten dan publik ditolak sungguhan di keempat tabel', async () => {
+    for (const peran of ['kabupaten', 'publik'] as const) {
+      for (const tabel of TABEL_BANTUAN) expect(kodePg(await jalankan(peran, undefined, `select count(*) from ${tabel}`)), `${peran} ${tabel}`).toBe('42501')
+    }
   })
 })

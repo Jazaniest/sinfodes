@@ -1,6 +1,6 @@
 # Sinfodes API
 
-Server API Sinfodes: Hono, PostgreSQL, dan Drizzle. Sampai tahap 8D1 server memuat identitas empat pelaku dan satu irisan data yang menjawab kontrak yang sama dengan API tiruan di `apps/web`:
+Server API Sinfodes: Hono, PostgreSQL, dan Drizzle. Sampai tahap 8D2 server memuat identitas empat pelaku, akses bantuan Tim Sinfodes, dan satu irisan data yang menjawab kontrak yang sama dengan API tiruan di `apps/web`:
 
 | Rute | Isi |
 | --- | --- |
@@ -12,6 +12,8 @@ Server API Sinfodes: Hono, PostgreSQL, dan Drizzle. Sampai tahap 8D1 server memu
 | `POST /api/v1/warga/masuk`, `/warga/lupa-pin`, `GET /warga/sesi`, `PATCH /warga/akun`, `POST /warga/sesi/keluar` | Layanan warga: NIK dan PIN di alamat desa, cookie `__Host-warga` |
 | `POST /api/v1/kabupaten/sesi/masuk`, `GET /kabupaten/sesi`, `POST /kabupaten/sesi/keluar` | Dasbor kabupaten di alamat `kab-...`, cookie `__Host-kab` |
 | `POST /api/v1/konsol/sesi/masuk`, `GET /konsol/sesi`, `POST /konsol/sesi/keluar` | Konsol di alamat `konsol`, dengan kode TOTP, cookie `__Host-konsol` |
+| `GET/POST/DELETE /api/v1/pengaturan/akses-sinfodes` | Desa memberi, melihat, dan mencabut akses bantuan Tim Sinfodes (Sekretaris dan Kepala Desa) |
+| `POST /api/v1/konsol/desa/:id/tiket-bantuan`, `POST /api/v1/sesi/bantuan` | Konsol menerbitkan tiket sekali pakai (60 detik); tiket ditukar di alamat desa menjadi sesi bantuan lihat-saja |
 
 Rute lain belum ada dan menjawab `NOT_FOUND`. Rancangan lengkapnya ada di `SPEC-V0.3.md` (akar repositori).
 
@@ -71,6 +73,18 @@ Aturan TOTP: akun yang sudah didaftarkan TOTP-nya selalu wajib kode. Di `staging
 
 `db:semai` menolak lingkungan `staging` dan `produksi` kecuali diberi `--izinkan-lingkungan-nyata`, karena akun demo berkata sandi bersama.
 
+## Akses bantuan Tim Sinfodes
+
+Desa memegang kuncinya: Sekretaris atau Kepala Desa memberi akses (2 jam, 24 jam, atau 3 hari) dari Pengaturan, Akses Sinfodes, dan bisa mencabutnya kapan saja. Dari Konsol, Tim mengambil tiket (`POST /konsol/desa/:id/tiket-bantuan`) lalu membuka `http://<desa>.sinfodes.localhost/admin/bantuan?tiket=...`; tiket sekali pakai, berumur 60 detik, dan ditukar menjadi sesi bantuan di cookie panel (menganggur 30 menit, batas mutlak 8 jam, mati seketika bila akses dicabut atau habis).
+
+Aturannya satu lapisan (`src/lapisan/bantuan.ts`), bukan per rute:
+
+- semua metode selain GET dan HEAD ditolak sebelum rute dipilih; hanya keluar, masuk panel, tukar tiket, dan jalur pencarian-baca (`JALUR_CARI_BACA`) yang lolos;
+- setiap halaman dicatat di `jejak_bantuan` (hanya tambah) sebelum jawabannya dikirim;
+- bila "sembunyikan data pribadi" menyala: setiap string 16 angka di jawaban JSON disamarkan (`1405••••••••8002`), pencarian yang memuat lima angka berurutan ditolak, dan jawaban bukan-JSON ditolak.
+
+Modul baru yang punya pencarian lewat POST wajib menambahkan jalurnya ke `JALUR_CARI_BACA` setelah memastikan ia tidak mengubah data; jalur lain otomatis tertolak. Layar Konsol untuk mengambil tiket baru dibangun di 8J; sampai itu tiket diambil lewat konsol peramban (lihat arahan pengujian tahap 8D2).
+
 ## Uji
 
 ```bash
@@ -97,6 +111,7 @@ pnpm --filter @sinfodes/api test
 - Masuk (panel, warga, kabupaten, Konsol) menjawab sama persis untuk akun tak dikenal, kata sandi atau PIN salah, akun nonaktif, akun milik alamat lain, dan kode TOTP salah; selalu ada satu verifikasi argon2.
 - Percobaan gagal dihitung di PostgreSQL per akun (NIK atau email): 5 kegagalan mengunci 15 menit, lalu berlipat sampai 24 jam, dan bertahan saat server dimulai ulang. Di atasnya ada batas laju per IP di memori.
 - Tiap pelaku punya cookie, tabel sesi, dan masa berlaku sendiri; cookie satu pelaku tidak pernah diterima pelaku atau alamat lain.
+- Sesi bantuan Tim Sinfodes hanya melihat, setiap halamannya tercatat di jejak yang tak bisa dihapus, dan NIK serta nomor KK disamarkan bila desa meminta. Konsol tidak pernah membaca data desa: hak barunya hanya membaca status akses dan menambah tiket.
 - Rahasia hanya di `.env.local` (tidak dilacak git). Server menolak mulai di staging atau produksi bila rahasia tampak seperti nilai contoh.
 - Log JSON dengan penyamaran kunci sensitif; jawaban galat tidak memuat tumpukan atau isi basis data.
 

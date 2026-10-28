@@ -12,6 +12,9 @@ afterAll(async () => {
   await uji?.tutup()
 })
 
+/** Tabel di luar golongan desa-privat yang tetap ber-RLS paksa: sesi panel, audit desa, dan tabel akses bantuan platform (§8.6). */
+const RLS_TAMBAHAN = ['sesi', 'jejak_audit', 'jejak_bantuan', 'akses_bantuan', 'tiket_bantuan']
+
 describe('skema basis data (SPEC-V0.3 §7.2, §7.10)', () => {
   it('setiap tabel di skema public tercantum di penggolongan, dan sebaliknya', async () => {
     const baris = await uji.sqlMigrasi`select tablename from pg_tables where schemaname = 'public'`
@@ -22,8 +25,8 @@ describe('skema basis data (SPEC-V0.3 §7.2, §7.10)', () => {
     const baris = await uji.sqlMigrasi`select c.relname, c.relrowsecurity, c.relforcerowsecurity,
         (select count(*)::int from pg_policies p where p.schemaname = 'public' and p.tablename = c.relname) as kebijakan
       from pg_class c join pg_namespace n on n.oid = c.relnamespace
-      where n.nspname = 'public' and c.relname = any(${[...tabelDengan('desa-privat'), 'sesi', 'jejak_audit']})`
-    expect(baris.length).toBe(tabelDengan('desa-privat').length + 2)
+      where n.nspname = 'public' and c.relname = any(${[...tabelDengan('desa-privat'), ...RLS_TAMBAHAN]})`
+    expect(baris.length).toBe(tabelDengan('desa-privat').length + RLS_TAMBAHAN.length)
     for (const b of baris) {
       expect(b.relrowsecurity, b.relname).toBe(true)
       expect(b.relforcerowsecurity, b.relname).toBe(true)
