@@ -1,6 +1,6 @@
 import { tanggalIsoWib, waktuIsoWib } from '@sinfodes/kontrak/format/tanggal'
-import { cekNikSchema, hasilCekNikSchema, masukanPendudukSchema, ubahPendudukSchema, type HasilCekNik } from '@sinfodes/kontrak/penduduk/masukan'
-import { daftarPerubahan } from '@sinfodes/kontrak/penduduk/perubahan'
+import { cekNikSchema, hasilCekNikSchema, masukanPendudukSchema, ubahPendudukSchema, type HasilCekNik, type UbahPenduduk } from '@sinfodes/kontrak/penduduk/masukan'
+import { daftarPerubahan, type Perubahan } from '@sinfodes/kontrak/penduduk/perubahan'
 import { LABEL_FIELD } from '@sinfodes/kontrak/penduduk/riwayat'
 import { pendudukSchema, type Penduduk } from '@sinfodes/kontrak/penduduk/schema'
 import { cakupanDusun } from '@sinfodes/kontrak/pengguna/hak-akses'
@@ -18,7 +18,7 @@ import { catatAktivitas, catatRiwayat, pelakuKontrak } from '../../riwayat/catat
 import { nomorKkBaru } from '../keluarga/nomor'
 import { wilayahSah } from '../keluarga/wilayah-sah'
 import { bentukPenduduk, PESAN_PENDUDUK_TIDAK_ADA } from './layanan'
-import { bacaPendudukSatu } from './repositori'
+import { bacaPendudukSatu, type RekamPenduduk } from './repositori'
 import {
   cariPemilikNik, INDEKS_KK, INDEKS_NIK, kunciKeluarga, perbaruiPenduduk, sisipKeluarga, sisipPenduduk, urutanBerikutnya,
   type PerubahanPenduduk,
@@ -27,7 +27,7 @@ import {
 export type KonteksTulis = { db: Db; penyandi: Penyandi; pelaku: PelakuPanel; desa: Desa; sekarang: Date }
 
 const LEWAT_HARI_INI = 'Tanggal lahir tidak boleh setelah hari ini'
-const pesanNikGanda = (nama: string): string => `NIK sudah terdaftar atas nama ${nama}`
+export const pesanNikGanda = (nama: string): string => `NIK sudah terdaftar atas nama ${nama}`
 
 /**
  * Apakah NIK sudah terdaftar di desa ini (termasuk mantan penduduk)? Keunikan per desa, bukan nasional: indeks HMAC NIK
@@ -116,15 +116,12 @@ export async function tambahPenduduk(k: KonteksTulis, mentah: unknown): Promise<
 }
 
 /**
- * Mengubah biodata penduduk. Hanya field yang berubah yang dicatat ke Riwayat; tanpa perubahan nyata tidak ada yang ditulis.
- * Kepala keluarga tidak berubah di sini (lewat Ganti kepala keluarga di halaman KK).
+ * Menerapkan perubahan biodata yang sudah divalidasi ke satu penduduk: keunikan NIK, sandi NIK dan telepon, pembaruan baris, dan
+ * satu entri Riwayat per field yang benar-benar berubah. Tanpa perubahan nyata tidak ada yang ditulis. Aktivitas ditulis
+ * pemanggil, karena jenisnya berbeda (ubah biasa `penduduk-ubah`, laporan warga `laporan-diterapkan`). Kepala keluarga tidak
+ * berubah di sini (lewat Ganti kepala keluarga di halaman KK).
  */
-export async function ubahPenduduk(k: KonteksTulis, id: string, mentah: unknown): Promise<Penduduk> {
-  const rekam = await bacaPendudukSatu(k.db, id, cakupanDusun(k.pelaku))
-  if (!rekam) throw new GalatApp('NOT_FOUND', PESAN_PENDUDUK_TIDAK_ADA, 404)
-  const isian = ubahPendudukSchema.safeParse(mentah)
-  if (!isian.success) throw galatIsian(isian.error)
-  const ubah = isian.data
+export async function terapkanPerubahan(k: KonteksTulis, rekam: RekamPenduduk, ubah: UbahPenduduk): Promise<{ penduduk: Penduduk; perubahan: Perubahan[] }> {
   if (ubah.tanggalLahir !== undefined && ubah.tanggalLahir > tanggalIsoWib(k.sekarang)) throw galatField('tanggalLahir', LEWAT_HARI_INI)
 
   const nikIndeks = ubah.nik ? k.penyandi.indeks(ubah.nik, ruang.nik(k.desa.id)) : null
@@ -141,7 +138,7 @@ export async function ubahPenduduk(k: KonteksTulis, id: string, mentah: unknown)
   if (gantiKepala) throw galatField('hubunganKeluarga', 'Kepala keluarga diubah lewat halaman KK (Ganti kepala keluarga)')
 
   const perubahan = daftarPerubahan(lama, ubah)
-  if (perubahan.length === 0) return pendudukSchema.parse(lama)
+  if (perubahan.length === 0) return { penduduk: lama, perubahan }
 
   const { nik, telepon, ...biasa } = ubah
   const set: PerubahanPenduduk = { ...biasa, diubahPada: k.sekarang }
@@ -158,12 +155,22 @@ export async function ubahPenduduk(k: KonteksTulis, id: string, mentah: unknown)
     if (pelanggaranUnik(e, INDEKS_NIK)) throw galatField('nik', 'NIK sudah terdaftar', 'CONFLICT')
     throw e
   }
-  const waktu = waktuIsoWib(k.sekarang)
-  const oleh = pelakuKontrak(k.pelaku)
-  await catatRiwayat(k.db, k.penyandi, { id: baru.id, desaId: baru.desaId }, perubahan, oleh, waktu)
-  await catatAktivitas(k.db, {
-    desaId: baru.desaId, dusunId: baru.dusunId, waktu, jenis: 'penduduk-ubah',
-    ringkasan: `Data penduduk diubah · ${baru.nama} (${perubahan.map((u) => LABEL_FIELD[u.field]).join(', ')})`, oleh, rujukan: { jenis: 'penduduk', id: baru.id },
-  })
-  return pendudukSchema.parse(bentukPenduduk(baru, k.penyandi))
+  await catatRiwayat(k.db, k.penyandi, { id: baru.id, desaId: baru.desaId }, perubahan, pelakuKontrak(k.pelaku), waktuIsoWib(k.sekarang))
+  return { penduduk: bentukPenduduk(baru, k.penyandi), perubahan }
+}
+
+/** Mengubah biodata penduduk (`PATCH /penduduk/:id`); lihat `terapkanPerubahan` untuk aturan penulisannya. */
+export async function ubahPenduduk(k: KonteksTulis, id: string, mentah: unknown): Promise<Penduduk> {
+  const rekam = await bacaPendudukSatu(k.db, id, cakupanDusun(k.pelaku))
+  if (!rekam) throw new GalatApp('NOT_FOUND', PESAN_PENDUDUK_TIDAK_ADA, 404)
+  const isian = ubahPendudukSchema.safeParse(mentah)
+  if (!isian.success) throw galatIsian(isian.error)
+  const { penduduk: baru, perubahan } = await terapkanPerubahan(k, rekam, isian.data)
+  if (perubahan.length > 0) {
+    await catatAktivitas(k.db, {
+      desaId: baru.desaId, dusunId: baru.dusunId, waktu: waktuIsoWib(k.sekarang), jenis: 'penduduk-ubah',
+      ringkasan: `Data penduduk diubah · ${baru.nama} (${perubahan.map((u) => LABEL_FIELD[u.field]).join(', ')})`, oleh: pelakuKontrak(k.pelaku), rujukan: { jenis: 'penduduk', id: baru.id },
+    })
+  }
+  return pendudukSchema.parse(baru)
 }

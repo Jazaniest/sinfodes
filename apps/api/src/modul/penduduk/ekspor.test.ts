@@ -1,3 +1,6 @@
+import { ID_SUNGAI_SIALANG } from '@sinfodes/demo/data/desa-demo'
+import { bangkitkanDb } from '@sinfodes/demo/generator'
+import { SEKARANG_UJI } from '@sinfodes/demo/uji-akun'
 import { daftarSchema, galatSchema } from '@sinfodes/kontrak/api'
 import { barisPendudukSchema } from '@sinfodes/kontrak/penduduk/schema'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
@@ -56,7 +59,20 @@ describe('POST /penduduk/ekspor (rencana 8E1 Ruling 9)', () => {
     expect((await auditEkspor()).map((a) => a.ringkasan)).toContainEqual({ format: 'cetak', jumlah: baris.length })
   })
 
-  it('tidak ada data → 422 tanpa catatan; isian tidak valid → 422; preset yang belum ada ditolak jelas', async () => {
+  it('ekspor preset pendatang tahun ini berisi pendatang 2026 dari tabel mutasi dan tercatat (rencana 8E2 Ruling 10)', async () => {
+    const dunia = bangkitkanDb(SEKARANG_UJI)
+    const ids = new Set(dunia.mutasi.filter((m) => m.desaId === ID_SUNGAI_SIALANG && m.jenis === 'datang' && m.tanggal.startsWith('2026')).flatMap((m) => m.pendudukIds))
+    const sebelum = (await aktivitasEkspor()).length
+    const r = await ekspor({ kata: null, filter: { preset: 'pendatang-tahun-ini' }, format: 'csv' })
+    expect(r.status).toBe(200)
+    const { baris } = skemaEkspor.parse(await r.json())
+    expect(ids.size).toBeGreaterThanOrEqual(2)
+    expect(baris.map((b) => b.id).sort()).toEqual([...ids].sort())
+    expect((await aktivitasEkspor()).length).toBe(sebelum + 1)
+    expect(await auditEkspor()).toHaveLength(sebelum + 1)
+  })
+
+  it('tidak ada data → 422 tanpa catatan; isian tidak valid → 422', async () => {
     const sebelum = (await aktivitasEkspor()).length
     const kosong = await ekspor({ kata: 'zzzzzzzz', filter: {}, format: 'csv' })
     expect(kosong.status).toBe(422)
@@ -65,8 +81,6 @@ describe('POST /penduduk/ekspor (rencana 8E1 Ruling 9)', () => {
     expect(tidakValid.status).toBe(422)
     expect((await galat(tidakValid)).message).toBe('Permintaan unduhan tidak valid.')
     expect((await ekspor('bukan json')).status).toBe(422)
-    const preset = await ekspor({ kata: null, filter: { preset: 'pendatang-tahun-ini' }, format: 'csv' })
-    expect(preset.status).toBe(422)
     expect((await aktivitasEkspor()).length).toBe(sebelum)
     expect(await auditEkspor()).toHaveLength(sebelum)
   })

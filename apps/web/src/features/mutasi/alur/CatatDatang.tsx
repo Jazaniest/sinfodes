@@ -21,6 +21,7 @@ import { tampilkanToast } from '@/ui/toast/antrean'
 import { Tombol } from '@/ui/tombol/Tombol'
 import { Banner } from '@/ui/umpan-balik/Banner'
 import { useSesiAdmin } from '../../admin/sesi-konteks'
+import { useKunciKirim } from '../kunci-kirim'
 import { PilihKeluarga } from '../../keluarga/PilihKeluarga'
 import { terapkanGalatServer } from './galat'
 import { anggotaDatangKosong, buatSkemaDatang, isianDatangAwal, keMasukanDatang, type IsianDatang } from './isian'
@@ -87,8 +88,12 @@ export function CatatDatang({ onTersimpan, onBatal, onKotor, sekarang }: Props) 
     onKotor?.(formState.isDirty)
   }, [formState.isDirty, onKotor])
 
+  const kunciUntuk = useKunciKirim()
   const simpan = useMutation({
-    mutationFn: (isi: IsianDatang) => catatDatang(keMasukanDatang(isi, hariIni)),
+    mutationFn: (isi: IsianDatang) => {
+      const masukan = keMasukanDatang(isi, hariIni)
+      return catatDatang(masukan, kunciUntuk(masukan))
+    },
     onSuccess: (hasil) => {
       void segarkanKependudukan(queryClient)
       tampilkanToast({ pesan: `Kedatangan ${hasil.penduduk.length} orang dicatat.`, nada: 'berhasil' })

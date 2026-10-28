@@ -247,3 +247,57 @@ describe('semai kependudukan (rencana 8E1 Tugas 1)', () => {
     await uji.sqlMigrasi`update penduduk set urutan_kk = 2 where id = ${ketiga}`
   })
 })
+
+describe('semai mutasi dan laporan data (rencana 8E2 Tugas 1)', () => {
+  it('jumlah baris mutasi, pasangan mutasi-penduduk, dan laporan sama dengan dunia demo; ringkasan memuatnya', async () => {
+    expect(dunia.mutasi.length).toBeGreaterThan(0)
+    expect(dunia.laporanData.length).toBe(2)
+    expect(await hitung('mutasi')).toBe(dunia.mutasi.length)
+    expect(await hitung('mutasi_penduduk')).toBe(dunia.mutasi.reduce((n, m) => n + m.pendudukIds.length, 0))
+    expect(await hitung('laporan_data')).toBe(dunia.laporanData.length)
+    const ringkasan = await semaiDunia(uji.sqlMigrasi, penyandi, SEKARANG_UJI, opsiUji())
+    expect(ringkasan).toMatchObject({ mutasi: dunia.mutasi.length, laporanData: dunia.laporanData.length })
+  })
+
+  it('invarian: tiap mutasi membentuk kembali objek demo, penduduknya berurut menurut urutan', async () => {
+    const baris = await uji.sqlMigrasi`select id, desa_id, jenis, tanggal::text as tanggal, dicatat_oleh_id, dicatat_oleh_nama, dicatat_pada, rincian from mutasi`
+    const perId = new Map(baris.map((b) => [b.id as string, b]))
+    const pasangan = await uji.sqlMigrasi`select mutasi_id, penduduk_id from mutasi_penduduk order by mutasi_id, urutan`
+    const perMutasi = new Map<string, string[]>()
+    for (const b of pasangan) perMutasi.set(b.mutasi_id as string, [...(perMutasi.get(b.mutasi_id as string) ?? []), b.penduduk_id as string])
+    for (const m of dunia.mutasi) {
+      const b = perId.get(m.id)
+      expect(b, m.id).toBeDefined()
+      expect({ desaId: b?.desa_id, jenis: b?.jenis, tanggal: b?.tanggal, oleh: { id: b?.dicatat_oleh_id, nama: b?.dicatat_oleh_nama }, pada: (b?.dicatat_pada as Date).getTime(), rincian: b?.rincian }, m.id).toEqual({
+        desaId: m.desaId, jenis: m.jenis, tanggal: m.tanggal, oleh: m.dicatatOleh, pada: new Date(m.dicatatPada).getTime(), rincian: m.rincian,
+      })
+      expect(perMutasi.get(m.id), m.id).toEqual(m.pendudukIds)
+    }
+  })
+
+  it('invarian: tiap laporan membentuk kembali objek demo', async () => {
+    for (const l of dunia.laporanData) {
+      const [b] = await uji.sqlMigrasi`select desa_id, dusun_id, dibuat_pada, pelapor_penduduk_id, pelapor_nama, status, ditangani_oleh_id, ditangani_oleh_nama,
+        ditangani_pada, ditangani_alasan, lampiran_berkas, lampiran_ukuran_kb, isi from laporan_data where id = ${l.id}`
+      expect(b, l.id).toBeDefined()
+      expect({ desaId: b.desa_id, dusunId: b.dusun_id, pada: (b.dibuat_pada as Date).getTime(), pelapor: { pendudukId: b.pelapor_penduduk_id, nama: b.pelapor_nama }, status: b.status, isi: b.isi }, l.id).toEqual({
+        desaId: l.desaId, dusunId: l.dusunId, pada: new Date(l.dibuatPada).getTime(), pelapor: l.pelapor, status: l.status, isi: l.isi,
+      })
+      expect(b.ditangani_oleh_id).toBe(l.ditangani?.oleh.id ?? null)
+      expect(b.lampiran_berkas).toBe(l.lampiran?.berkas ?? null)
+    }
+  })
+
+  it('laporan perbaikan telepon disemai tersandi dan terbuka kembali; semai kedua tidak menggandakan', async () => {
+    const dasar = dunia.laporanData[0]
+    const telepon = { ...dasar, id: 'lap_uji_telepon', isi: { jenis: 'perbaikan' as const, pendudukId: 'pdk_siti_rahmah', field: 'telepon' as const, nilaiBaru: '081377712345', catatan: null } }
+    const duniaTelepon = { ...dunia, laporanData: [...dunia.laporanData, telepon] }
+    await semaiDunia(uji.sqlMigrasi, penyandi, SEKARANG_UJI, { lingkungan: 'uji', dunia: duniaTelepon })
+    await semaiDunia(uji.sqlMigrasi, penyandi, SEKARANG_UJI, { lingkungan: 'uji', dunia: duniaTelepon })
+    expect(await hitung('laporan_data')).toBe(dunia.laporanData.length + 1)
+    const [b] = await uji.sqlMigrasi`select isi, isi::text as teks from laporan_data where id = 'lap_uji_telepon'`
+    expect(b.teks.includes('081377712345')).toBe(false)
+    expect(penyandi.bukaSandi(b.isi.nilaiBaru, `laporan_data.isi:${dasar.desaId}`)).toBe('081377712345')
+    await uji.sqlMigrasi`delete from laporan_data where id = 'lap_uji_telepon'`
+  })
+})

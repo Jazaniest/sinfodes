@@ -21,6 +21,7 @@ import { PilihPenduduk } from '../../penduduk/PilihPenduduk'
 import { terapkanGalatServer } from './galat'
 import { buatSkemaPindah, isianPindahAwal, keMasukanPindah, type IsianPindah } from './isian'
 import { usePengganti } from './pengganti'
+import { useKunciKirim } from '../kunci-kirim'
 
 const BAGIAN = [
   { id: 'siapa', judul: 'Yang pindah' },
@@ -67,8 +68,12 @@ export function CatatPindah({ pendudukAwal, onTersimpan, onBatal, onKotor, sekar
     onKotor?.(formState.isDirty)
   }, [formState.isDirty, onKotor])
 
+  const kunciUntuk = useKunciKirim()
   const simpan = useMutation({
-    mutationFn: (isi: IsianPindah) => catatPindah(keMasukanPindah(isi, keluarIds, pengganti.wajib)),
+    mutationFn: (isi: IsianPindah) => {
+      const masukan = keMasukanPindah(isi, keluarIds, pengganti.wajib)
+      return catatPindah(masukan, kunciUntuk(masukan))
+    },
     onSuccess: (hasil) => {
       const [pertama] = hasil.penduduk
       void segarkanKependudukan(queryClient)

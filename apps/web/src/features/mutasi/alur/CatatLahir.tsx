@@ -22,6 +22,7 @@ import { BagianIsian, FormulirBagian } from '@/ui/tata-letak/FormulirBagian'
 import { tampilkanToast } from '@/ui/toast/antrean'
 import { Tombol } from '@/ui/tombol/Tombol'
 import { useSesiAdmin } from '../../admin/sesi-konteks'
+import { useKunciKirim } from '../kunci-kirim'
 import { PilihPenduduk } from '../../penduduk/PilihPenduduk'
 import { terapkanGalatServer } from './galat'
 import { buatSkemaLahir, isianLahirAwal, keMasukanLahir, saranDariKk, type IsianLahir } from './isian'
@@ -86,8 +87,12 @@ export function CatatLahir({ onTersimpan, onBatal, onKotor, sekarang, awal, lapo
     }
   }
 
+  const kunciUntuk = useKunciKirim()
   const simpan = useMutation({
-    mutationFn: (isi: IsianLahir) => catatLahir({ ...keMasukanLahir(isi), laporanId: laporanId ?? null }),
+    mutationFn: (isi: IsianLahir) => {
+      const masukan = { ...keMasukanLahir(isi), laporanId: laporanId ?? null }
+      return catatLahir(masukan, kunciUntuk(masukan))
+    },
     onSuccess: (hasil) => {
       const [bayi] = hasil.penduduk
       void segarkanKependudukan(queryClient)

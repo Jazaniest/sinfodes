@@ -205,3 +205,19 @@ describe('token per bagian (4A)', () => {
     expect(terlihat).toEqual(['Bearer demo.pgn_rosmiati', 'Bearer warga.pdk_siti_rahmah', 'Bearer warga.pdk_siti_rahmah', null])
   })
 })
+
+describe('kunci idempotensi (SPEC-V0.3 §5.4 butir 4)', () => {
+  it('Idempotency-Key dikirim hanya bila diberikan', async () => {
+    const terlihat: (string | null)[] = []
+    serverUji.use(
+      http.post('*/api/v1/uji-kunci', ({ request }) => {
+        terlihat.push(request.headers.get('Idempotency-Key'))
+        return HttpResponse.json({ ok: true })
+      }),
+    )
+    const skema = z.object({ ok: z.boolean() })
+    await panggilApi('POST', '/uji-kunci', { skema, body: {} })
+    await panggilApi('POST', '/uji-kunci', { skema, body: {}, kunciIdempotensi: 'kunci-uji-0001' })
+    expect(terlihat).toEqual([null, 'kunci-uji-0001'])
+  })
+})

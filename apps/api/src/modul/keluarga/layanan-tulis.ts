@@ -21,7 +21,7 @@ import { wilayahSah } from './wilayah-sah'
  * Mengubah hubungan dalam keluarga dan mencatatnya di Riwayat. Hubungan yang sama tidak menulis apa pun kecuali `tambahan`
  * (alamat dan urutan yang ikut berpindah). Dipanggil dalam transaksi permintaan.
  */
-async function ubahHubungan(k: KonteksTulis, p: RekamPenduduk, baru: string, tambahan: PerubahanPenduduk = {}): Promise<void> {
+export async function ubahHubungan(k: KonteksTulis, p: RekamPenduduk, baru: string, tambahan: PerubahanPenduduk = {}): Promise<void> {
   let set = tambahan
   if (p.hubunganKeluarga !== baru) {
     await catatRiwayat(k.db, k.penyandi, { id: p.id, desaId: p.desaId }, [{ field: 'hubunganKeluarga', nilaiLama: p.hubunganKeluarga, nilaiBaru: baru }], pelakuKontrak(k.pelaku), waktuIsoWib(k.sekarang))

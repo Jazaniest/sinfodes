@@ -7,6 +7,7 @@ import type { Klien } from '../src/basisdata/klien'
 import { muatKonfigurasi, type Konfigurasi } from '../src/konfigurasi'
 import { buatPenyandi, buatKunciDataBaru, type Penyandi } from '../src/kripto/penyandi'
 import { buatTokenSesi } from '../src/kripto/token'
+import type { EfekSilang } from '../src/modul/mutasi/efek-silang'
 import { buatPencatat } from '../src/log'
 import { KID_UJI, KUNCI_INDEKS_UJI, KUNCI_UTAMA_UJI } from './env-uji'
 
@@ -50,6 +51,8 @@ export type OpsiRakit = {
   /** Menimpa konfigurasi hasil `muatKonfigurasi` (mis. `totpKonsolWajib`) tanpa menyetel lingkungan staging yang ketat. */
   ubahKonfigurasi?: (k: Konfigurasi) => Konfigurasi
   ipKlien?: (c: Context) => string
+  /** Menyuntik efek silang mutasi (mata-mata di uji); bawaan tanpa kerja. */
+  efekSilang?: EfekSilang
 }
 
 export function rakitApp(opsi: OpsiRakit = {}) {
@@ -63,6 +66,7 @@ export function rakitApp(opsi: OpsiRakit = {}) {
     klien: opsi.klien ?? klienTanpaDb,
     penyandi: opsi.penyandi ?? penyandiTanpaDb(),
     ipKlien: opsi.ipKlien ?? ipUji,
+    efekSilang: opsi.efekSilang,
   })
   return { app, baris, json: () => baris.map((b) => JSON.parse(b) as Record<string, unknown>) }
 }

@@ -3,6 +3,7 @@ import userEvent, { type UserEvent } from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { ambilKeluarga } from '@/api/keluarga'
 import { ambilPenduduk } from '@/api/penduduk'
+import { serverUji } from '@/mocks/node'
 import { AKUN_UJI, masukSebagai, pakaiApiTiruan, SEKARANG_UJI } from '@/test/api-tiruan'
 import { renderPanel } from '@/test/render'
 import { contohSesi } from '@/test/sesi'
@@ -81,5 +82,31 @@ describe('Alur mutasi (SPEC §6.6)', { timeout: 20_000 }, () => {
     expect(await screen.findByRole('combobox', { name: 'Penduduk yang meninggal' })).toHaveValue('Nur Aini')
     await new Promise((r) => setTimeout(r, 100))
     expect(screen.queryByRole('radiogroup', { name: 'Kepala keluarga pengganti' })).not.toBeInTheDocument()
+  })
+  it('pengiriman membawa Idempotency-Key yang sah', async () => {
+    masukSebagai(AKUN_UJI.operator)
+    const kunci: (string | null)[] = []
+    const catat = ({ request }: { request: Request }) => {
+      if (request.method === 'POST' && new URL(request.url).pathname.endsWith('/mutasi/meninggal')) kunci.push(request.headers.get('Idempotency-Key'))
+    }
+    serverUji.events.on('request:start', catat)
+    try {
+      const nurAini = await ambilPenduduk('pdk_nur_aini')
+      const onTersimpan = vi.fn()
+      renderPanel(<CatatMeninggal pendudukAwal={nurAini} onTersimpan={onTersimpan} onBatal={vi.fn()} sekarang={SEKARANG_UJI} />, contohSesi())
+      const user = userEvent.setup()
+      await screen.findByRole('combobox', { name: 'Penduduk yang meninggal' })
+      await ketikJam(user, 'Jam meninggal', '2140')
+      await isi(user, 'Tempat meninggal', 'Rumah')
+      await pilih(user, /Sebab kematian/, 'Sakit biasa/tua')
+      await pilih(user, /Yang menerangkan/, 'Tenaga kesehatan')
+      await isi(user, 'Nama pelapor', 'Siti Rahmah')
+      await user.click(screen.getByRole('button', { name: 'Simpan' }))
+      await waitFor(() => expect(onTersimpan).toHaveBeenCalled())
+    } finally {
+      serverUji.events.removeListener('request:start', catat)
+    }
+    expect(kunci).toHaveLength(1)
+    expect(kunci[0]).toMatch(/^[A-Za-z0-9_-]{8,64}$/)
   })
 })

@@ -35,6 +35,10 @@ afterAll(async () => {
 
 const skemaDaftar = daftarSchema(barisPendudukSchema)
 
+/** Penduduk yang tercatat datang pada tahun tertentu menurut dunia demo (preset "Pendatang tahun ini", rencana 8E2 Ruling 10). */
+const pendatangTahun = (tahun: string): Set<string> =>
+  new Set(dunia.mutasi.filter((m) => m.desaId === ID_SUNGAI_SIALANG && m.jenis === 'datang' && m.tanggal.startsWith(tahun)).flatMap((m) => m.pendudukIds))
+
 /** Hasil yang seharusnya, dihitung dari dunia demo dengan fungsi kontrak yang sama dengan API tiruan. */
 function harapan(mentah: Record<string, string | number>, kata: string | null, dusunSaja: string | null = null) {
   const filter = filterPendudukSchema.parse(mentah)
@@ -48,7 +52,7 @@ function harapan(mentah: Record<string, string | number>, kata: string | null, d
   const tersaring = saringPenduduk(calon, filter, {
     hariIni: SEKARANG_UJI,
     dusunIdPerNomor: new Map(dusunDesa.map((d) => [d.nomor, d.id] as const)),
-    idPendatangTahunIni: new Set<string>(),
+    idPendatangTahunIni: pendatangTahun('2026'),
   })
   const urut = urutkanPenduduk(tersaring, filter.urut, { nomorDusun: (id) => dusunDesa.find((d) => d.id === id)?.nomor ?? Number.MAX_SAFE_INTEGER })
   const mulai = (filter.page - 1) * filter.pageSize
@@ -97,14 +101,35 @@ describe('GET /penduduk', () => {
     expect(isi.data).toEqual(h.halaman)
   })
 
-  it('saringan tidak valid: 422 VALIDATION; preset pendatang menunggu modul mutasi (8E): 422 dengan pesan jelas', async () => {
+  it('saringan tidak valid: 422 VALIDATION', async () => {
     const rusak = await daftar('?page=0')
     expect(rusak.status).toBe(422)
     expect(galatSchema.parse(await rusak.json()).error.code).toBe('VALIDATION')
-    // Perbedaan sengaja: API tiruan menghitung "pendatang tahun ini" dari mutasi; tabel mutasi baru ada di 8E.
-    const pendatang = await daftar('?preset=pendatang-tahun-ini')
-    expect(pendatang.status).toBe(422)
-    expect(galatSchema.parse(await pendatang.json()).error.message).toMatch(/belum tersedia/)
+  })
+
+  it('preset pendatang tahun ini: daftar dan cari berisi tepat penduduk dengan mutasi datang di tahun itu (Ruling 10)', async () => {
+    const h = harapan({ preset: 'pendatang-tahun-ini', pageSize: 100 }, null)
+    expect(h.total).toBeGreaterThanOrEqual(2)
+    const r = await daftar('?preset=pendatang-tahun-ini&pageSize=100')
+    expect(r.status).toBe(200)
+    const isi = skemaDaftar.parse(await r.json())
+    expect(isi.meta.total).toBe(h.total)
+    expect(isi.data).toEqual(h.halaman)
+    expect(isi.data.map((p) => p.id).sort()).toEqual([...pendatangTahun('2026')].sort())
+    const nama = isi.data[0].nama
+    const dicari = skemaDaftar.parse(await (await cari({ kata: nama, filter: { preset: 'pendatang-tahun-ini', pageSize: 100 } })).json())
+    expect(dicari.data.map((p) => p.id)).toContain(isi.data[0].id)
+    expect(dicari.data.every((p) => pendatangTahun('2026').has(p.id))).toBe(true)
+  })
+
+  it('preset pendatang mengikuti tahun menurut WIB: 31 Desember 17.30 UTC sudah 2027, tak ada pendatang 2026', async () => {
+    const penyandi = await penyandiUji(uji.sqlMigrasi)
+    const sesudah = rakitApp({ klien: uji.klien, penyandi, waktu: () => new Date('2026-12-31T17:30:00Z') })
+    const kukiSesudah = (await masukLewatRute(sesudah.app, SS, 'rosmiati@sungaisialang.desa.id', 'demo', '10.9.0.9')).kuki as string
+    const sebelum = rakitApp({ klien: uji.klien, penyandi, waktu: () => new Date('2026-12-31T16:30:00Z') })
+    const kukiSebelum = (await masukLewatRute(sebelum.app, SS, 'rosmiati@sungaisialang.desa.id', 'demo', '10.9.0.10')).kuki as string
+    expect(skemaDaftar.parse(await (await ambil(sesudah.app, `${SS}/api/v1/penduduk?preset=pendatang-tahun-ini`, kukiSesudah)).json()).meta.total).toBe(0)
+    expect(skemaDaftar.parse(await (await ambil(sebelum.app, `${SS}/api/v1/penduduk?preset=pendatang-tahun-ini`, kukiSebelum)).json()).meta.total).toBe(pendatangTahun('2026').size)
   })
 
   it('tanpa cookie UNAUTHENTICATED; Kaur Keuangan FORBIDDEN dengan pesan yang sama dengan tiruan', async () => {
@@ -251,7 +276,7 @@ describe('GET /penduduk/:id dan /penduduk/:id/riwayat', () => {
     }
   })
 
-  it('riwayat: terbaru dulu, perubahan field dari dunia demo, data lama diawali entri pembuatan (Ruling 8: belum ada entri mutasi)', async () => {
+  it('riwayat: terbaru dulu, perubahan field dari dunia demo, data lama diawali entri pembuatan', async () => {
     const sasaran = dunia.riwayat.reduce<Map<string, number>>((m, r) => m.set(r.pendudukId, (m.get(r.pendudukId) ?? 0) + 1), new Map())
     const [pendudukId] = [...sasaran].sort((a, b) => b[1] - a[1])[0]
     const entri = entriRiwayatSchema.array().parse(await (await riwayat(pendudukId)).json())
@@ -263,8 +288,25 @@ describe('GET /penduduk/:id dan /penduduk/:id/riwayat', () => {
     const contoh = ubah[0]
     const aslinya = asal.find((r) => r.id === contoh.id)
     expect(contoh).toMatchObject({ jenis: 'ubah', field: aslinya?.field, nilaiLama: aslinya?.nilaiLama, nilaiBaru: aslinya?.nilaiBaru, oleh: aslinya?.oleh })
-    expect(entri.at(-1)).toMatchObject({ jenis: 'dibuat', id: `dibuat-${pendudukId}` })
-    expect(entri.filter((e) => e.jenis === 'mutasi')).toHaveLength(0)
+    const mutasi = dunia.mutasi.filter((m) => m.pendudukIds.includes(pendudukId))
+    expect(entri.filter((e) => e.jenis === 'mutasi').map((e) => e.id).sort()).toEqual(mutasi.map((m) => m.id).sort())
+    const awalMutasi = mutasi.some((m) => m.jenis === 'lahir' || m.jenis === 'datang')
+    expect(entri.some((e) => e.jenis === 'dibuat')).toBe(!awalMutasi)
+    if (!awalMutasi) expect(entri.at(-1)).toMatchObject({ jenis: 'dibuat', id: `dibuat-${pendudukId}` })
+  })
+
+  it('penduduk hasil kelahiran atau kedatangan diawali entri mutasi tanpa entri pembuatan; mantan penduduk memuat mutasi keluarnya (Ruling 5)', async () => {
+    const lahir = dunia.mutasi.find((m) => m.desaId === ID_SUNGAI_SIALANG && m.jenis === 'lahir') as NonNullable<DbDemo['mutasi'][number]>
+    const datang = dunia.mutasi.find((m) => m.desaId === ID_SUNGAI_SIALANG && m.jenis === 'datang') as NonNullable<DbDemo['mutasi'][number]>
+    for (const m of [lahir, datang]) {
+      const entri = entriRiwayatSchema.array().parse(await (await riwayat(m.pendudukIds[0])).json())
+      expect(entri.some((e) => e.jenis === 'dibuat'), m.jenis).toBe(false)
+      expect(entri.at(-1), m.jenis).toMatchObject({ jenis: 'mutasi', id: m.id, mutasi: m.jenis, tanggal: m.tanggal, oleh: m.dicatatOleh, waktu: m.dicatatPada })
+    }
+    const keluar = dunia.mutasi.find((m) => m.desaId === ID_SUNGAI_SIALANG && (m.jenis === 'meninggal' || m.jenis === 'pindah')) as NonNullable<DbDemo['mutasi'][number]>
+    const entri = entriRiwayatSchema.array().parse(await (await riwayat(keluar.pendudukIds[0])).json())
+    expect(entri.find((e) => e.jenis === 'mutasi' && e.id === keluar.id)).toMatchObject({ mutasi: keluar.jenis })
+    expect(entri.at(-1)?.jenis).toBe('dibuat')
   })
 
   it('Kaur Keuangan 403, tanpa login 401, desa lain 404', async () => {

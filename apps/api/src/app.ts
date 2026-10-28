@@ -20,6 +20,9 @@ import { ruteKonsol } from './modul/konsol/rute'
 import { ruteAksesSinfodes } from './modul/bantuan/rute-pengaturan'
 import { ruteTiketBantuan, ruteTukarTiket } from './modul/bantuan/rute-tiket'
 import { ruteKeluarga } from './modul/keluarga/rute'
+import { ruteLaporan } from './modul/laporan/rute'
+import { efekSilangBawaan, type EfekSilang } from './modul/mutasi/efek-silang'
+import { ruteMutasi } from './modul/mutasi/rute'
 import { rutePenduduk } from './modul/penduduk/rute'
 import { ruteWilayah } from './modul/wilayah/rute'
 import { ruteSesi } from './modul/sesi/rute'
@@ -34,6 +37,8 @@ export type DepsApp = {
   penyandi: Penyandi
   /** Alamat IP klien untuk batas laju; bawaan: alamat soket. Uji menyuntik sendiri. */
   ipKlien?: (c: Context) => string
+  /** Efek mutasi ke modul yang belum ada (bansos, 8G); bawaan tanpa kerja. Uji menyuntik mata-mata. */
+  efekSilang?: EfekSilang
 }
 
 /** Batas badan permintaan untuk /api/v1; rute yang butuh lebih (unggahan) menyetel batasnya sendiri. */
@@ -113,6 +118,8 @@ export function buatApp(deps: DepsApp): Hono<LingkunganApp> {
   app.route('/api/v1/warga', ruteWarga({ konfigurasi, penyandi, batasIp, batasLupaPin, ipKlien }))
   app.route('/api/v1/penduduk', rutePenduduk({ penyandi }))
   app.route('/api/v1/keluarga', ruteKeluarga({ penyandi }))
+  app.route('/api/v1/mutasi', ruteMutasi({ penyandi, efek: deps.efekSilang ?? efekSilangBawaan }))
+  app.route('/api/v1/laporan-data', ruteLaporan({ penyandi }))
   app.route('/api/v1/pengaturan/wilayah', ruteWilayah())
   app.route('/api/v1/pengaturan/akses-sinfodes', ruteAksesSinfodes())
   // Akses bantuan (SPEC-V0.3 §8.6): tiket dari Konsol (6 per menit per akun) dan penukarannya di alamat desa (10 per menit per IP).

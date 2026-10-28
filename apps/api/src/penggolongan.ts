@@ -31,6 +31,12 @@ export const GOLONGAN_TABEL: Readonly<Record<string, Golongan>> = {
   // Kependudukan (8E1): riwayat perubahan dan Buku hari ini; desa hanya menambah dan membaca.
   riwayat_penduduk: 'desa-privat',
   aktivitas: 'desa-privat',
+  // Mutasi dan laporan data (8E2): mutasi hanya tambah; laporan berubah hanya di kolom penanganan.
+  mutasi: 'desa-privat',
+  mutasi_penduduk: 'desa-privat',
+  laporan_data: 'desa-privat',
+  // Kunci idempotensi POST mutasi (8E2 Tugas 8): sidik isi dan rujukan mutasi saja.
+  kunci_idempotensi: 'desa-privat',
   jejak_audit: 'audit',
   jejak_bantuan: 'audit',
   jejak_audit_platform: 'audit',

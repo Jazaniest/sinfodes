@@ -1,6 +1,6 @@
 # Sinfodes API
 
-Server API Sinfodes: Hono, PostgreSQL, dan Drizzle. Sampai tahap 8E1 server memuat identitas empat pelaku, akses bantuan Tim Sinfodes, serta kependudukan (penduduk, keluarga, wilayah) yang menjawab kontrak yang sama dengan API tiruan di `apps/web`:
+Server API Sinfodes: Hono, PostgreSQL, dan Drizzle. Sampai tahap 8E2 server memuat identitas empat pelaku, akses bantuan Tim Sinfodes, serta kependudukan (penduduk, keluarga, wilayah, mutasi, laporan data) yang menjawab kontrak yang sama dengan API tiruan di `apps/web`:
 
 | Rute | Isi |
 | --- | --- |
@@ -14,6 +14,9 @@ Server API Sinfodes: Hono, PostgreSQL, dan Drizzle. Sampai tahap 8E1 server memu
 | `POST /api/v1/penduduk/ekspor` | Seluruh baris tersaring untuk CSV atau Buku Induk; tercatat di Buku hari ini dan jejak audit |
 | `GET /api/v1/keluarga`, `POST /api/v1/keluarga/cari`, `GET /api/v1/keluarga/:id` | Daftar KK, pencarian nomor KK atau nama kepala, dan detail KK beserta anggota |
 | `POST /api/v1/keluarga/:id/ganti-kepala`, `POST /api/v1/keluarga/:id/pecah` | Ganti kepala keluarga dan pecah KK (nomor KK baru) |
+| `GET /api/v1/mutasi`, `GET /api/v1/mutasi/ringkasan` | Buku Mutasi (per bulan dan jenis, terbaru dulu) dan angka per jenis pada satu bulan; Kepala Dusun hanya dusunnya |
+| `POST /api/v1/mutasi/lahir`, `/meninggal`, `/pindah`, `/datang` | Catat kelahiran, kematian, kepindahan, kedatangan; hanya Operator dan Sekretaris Desa. Header `Idempotency-Key` (opsional): pengiriman ulang mengembalikan hasil pertama (`Idempotency-Replayed: true`) |
+| `GET /api/v1/laporan-data`, `GET /api/v1/laporan-data/:id`, `POST /api/v1/laporan-data/:id/terapkan`, `POST /api/v1/laporan-data/:id/tolak` | Laporan data dari warga: daftar, detail, terapkan perbaikan, tolak (alasan opsional) |
 | `GET/PUT /api/v1/pengaturan/wilayah` | Istilah wilayah dan susunan dusun, RW, RT (terbuka selama desa belum punya penduduk) |
 | `POST /api/v1/warga/masuk`, `/warga/lupa-pin`, `GET /warga/sesi`, `PATCH /warga/akun`, `POST /warga/sesi/keluar` | Layanan warga: NIK dan PIN di alamat desa, cookie `__Host-warga` |
 | `POST /api/v1/kabupaten/sesi/masuk`, `GET /kabupaten/sesi`, `POST /kabupaten/sesi/keluar` | Dasbor kabupaten di alamat `kab-...`, cookie `__Host-kab` |
@@ -122,7 +125,8 @@ pnpm --filter @sinfodes/api test
 - Percobaan gagal dihitung di PostgreSQL per akun (NIK atau email): 5 kegagalan mengunci 15 menit, lalu berlipat sampai 24 jam, dan bertahan saat server dimulai ulang. Di atasnya ada batas laju per IP di memori.
 - Tiap pelaku punya cookie, tabel sesi, dan masa berlaku sendiri; cookie satu pelaku tidak pernah diterima pelaku atau alamat lain.
 - Sesi bantuan Tim Sinfodes hanya melihat, setiap halamannya tercatat di jejak yang tak bisa dihapus, dan NIK serta nomor KK disamarkan bila desa meminta. Konsol tidak pernah membaca data desa: hak barunya hanya membaca status akses dan menambah tiket.
-- Nilai NIK dan telepon di Riwayat perubahan penduduk disandikan seperti kolom aslinya, dan CHECK di basis data menolak nilai polos.
+- Nilai NIK dan telepon di Riwayat perubahan penduduk dan di isi laporan perbaikan warga disandikan seperti kolom aslinya, dan CHECK di basis data menolak nilai polos.
+- Tabel `kunci_idempotensi` menyimpan hanya sidik isi dan rujukan mutasi, bukan salinan jawaban, jadi NIK pendatang tidak tersalin ke sana.
 - Rahasia hanya di `.env.local` (tidak dilacak git). Server menolak mulai di staging atau produksi bila rahasia tampak seperti nilai contoh.
 - Log JSON dengan penyamaran kunci sensitif; jawaban galat tidak memuat tumpukan atau isi basis data.
 

@@ -318,11 +318,68 @@ export const aktivitas = pgTable('aktivitas', {
   rujukanId: text('rujukan_id'),
 })
 
+/** Peristiwa kependudukan (8E2); hanya tambah. `rincian` dijaga `mutasiSchema` kontrak di aplikasi. */
+export const mutasi = pgTable('mutasi', {
+  id: text('id').primaryKey(),
+  desaId: text('desa_id').notNull(),
+  jenis: text('jenis').notNull(),
+  tanggal: date('tanggal', { mode: 'string' }).notNull(),
+  dicatatOlehId: text('dicatat_oleh_id').notNull(),
+  dicatatOlehNama: text('dicatat_oleh_nama').notNull(),
+  dicatatPada: waktu('dicatat_pada').notNull(),
+  rincian: jsonb('rincian').notNull().$type<Record<string, unknown>>(),
+})
+
+export const mutasiPenduduk = pgTable(
+  'mutasi_penduduk',
+  {
+    mutasiId: text('mutasi_id').notNull(),
+    pendudukId: text('penduduk_id').notNull(),
+    desaId: text('desa_id').notNull(),
+    urutan: smallint('urutan').notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.mutasiId, t.pendudukId] })],
+)
+
+/** Laporan dari warga. `isi` dijaga `isiLaporanSchema`; nilai telepon di dalamnya tersandi (migrasi 0008). */
+export const laporanData = pgTable('laporan_data', {
+  id: text('id').primaryKey(),
+  desaId: text('desa_id').notNull(),
+  dusunId: text('dusun_id').notNull(),
+  dibuatPada: waktu('dibuat_pada').notNull(),
+  pelaporPendudukId: text('pelapor_penduduk_id').notNull(),
+  pelaporNama: text('pelapor_nama').notNull(),
+  status: text('status').notNull(),
+  ditanganiOlehId: text('ditangani_oleh_id'),
+  ditanganiOlehNama: text('ditangani_oleh_nama'),
+  ditanganiPada: waktu('ditangani_pada'),
+  ditanganiAlasan: text('ditangani_alasan'),
+  lampiranBerkas: text('lampiran_berkas'),
+  lampiranUkuranKb: integer('lampiran_ukuran_kb'),
+  isi: jsonb('isi').notNull().$type<Record<string, unknown>>(),
+})
+
+/** Kunci idempotensi POST mutasi (8E2 Tugas 8): hanya sidik isi dan rujukan ke mutasi, tanpa salinan jawaban. */
+export const kunciIdempotensi = pgTable(
+  'kunci_idempotensi',
+  {
+    desaId: text('desa_id').notNull(),
+    penggunaId: text('pengguna_id').notNull(),
+    kunci: text('kunci').notNull(),
+    jalur: text('jalur').notNull(),
+    sidikIsi: text('sidik_isi').notNull(),
+    mutasiId: text('mutasi_id'),
+    dibuat: waktu('dibuat').notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.desaId, t.penggunaId, t.kunci] })],
+)
+
 export const TABEL_SKEMA = {
   desa, alias_alamat: aliasAlamat, kunci_data: kunciData, dusun, pengguna, keluarga, penduduk, sesi, jejak_audit: jejakAudit,
   akun_warga: akunWarga, sesi_warga: sesiWarga, kunci_masuk_desa: kunciMasukDesa, kabupaten_mitra: kabupatenMitra,
   pengguna_kabupaten: penggunaKabupaten, sesi_kabupaten: sesiKabupaten, pengguna_konsol: penggunaKonsol, sesi_konsol: sesiKonsol,
   kunci_masuk_platform: kunciMasukPlatform, jejak_audit_platform: jejakAuditPlatform,
   akses_bantuan: aksesBantuan, tiket_bantuan: tiketBantuan, sesi_bantuan: sesiBantuan, jejak_bantuan: jejakBantuan,
-  riwayat_penduduk: riwayatPenduduk, aktivitas,
+  riwayat_penduduk: riwayatPenduduk, aktivitas, mutasi, mutasi_penduduk: mutasiPenduduk, laporan_data: laporanData,
+  kunci_idempotensi: kunciIdempotensi,
 } as const

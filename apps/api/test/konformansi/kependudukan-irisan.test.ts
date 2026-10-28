@@ -1,7 +1,7 @@
 // Kembaran irisan dari apps/web/src/mocks/handlers/kependudukan.test.ts: pertanyaan yang sama diajukan ke server sungguhan
 // lewat `panggilApi` dan modul `api/*` web yang sama, dan jawabannya harus sama dengan API tiruan. Ini irisan 8C: 10 dari 18 butir
 // asal (8 utuh, 2 diadaptasi). Sisanya (riwayat, keluarga, cakupan Kepala Dusun, penulisan) ada di `kependudukan-lanjutan.test.ts`
-// (8E1); dua butir yang bergantung pada mutasi di sana ditandai `it.todo` sampai 8E2.
+// (8E1, dilengkapi 8E2); preset "Pendatang tahun ini" berjalan sejak tabel mutasi ada (8E2).
 import { describe, expect, it } from 'vitest'
 import { SESI_KUKI } from '@/api/client'
 import { cariPenduduk, daftarPenduduk, ambilRingkasanPenduduk } from '@/api/penduduk'
@@ -70,10 +70,11 @@ describe('penduduk', () => {
     expect((await cariPenduduk('1405095203918002', { dusun: 2 })).meta.total).toBe(0)
   })
 
-  it('preset pendatang tahun ini ditolak jelas sampai modul mutasi ada', async () => {
+  it('preset pendatang tahun ini berisi warga yang datang di 2026 (tabel mutasi ada sejak 8E2)', async () => {
     await masukSebagai(AKUN_UJI.operator)
-    // Perbedaan sengaja: API tiruan menghitung preset ini dari mutasi (tabel mutasi baru ada di 8E2); server menolaknya sampai itu.
-    await expect(daftarPenduduk({ preset: 'pendatang-tahun-ini', pageSize: 100 })).rejects.toMatchObject({ kode: 'VALIDATION' })
+    const r = await daftarPenduduk({ preset: 'pendatang-tahun-ini', pageSize: 100 })
+    expect(r.meta.total).toBeGreaterThanOrEqual(2)
+    expect(r.data.every((p) => p.nik !== null && !p.nik.startsWith('140509'))).toBe(true)
   })
 
   it('mantan penduduk terbuka lewat filter status dan tidak ikut jiwa', async () => {

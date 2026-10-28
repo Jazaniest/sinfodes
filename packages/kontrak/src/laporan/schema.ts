@@ -41,6 +41,8 @@ export const isiLaporanSchema = z.discriminatedUnion('jenis', [
   }),
 ])
 
+export type IsiLaporan = z.infer<typeof isiLaporanSchema>
+
 /** Laporan dari warga: perbaikan satu field data, atau kelahiran yang belum dicatat desa (SPEC §5.3, §6.3, §10). */
 export const laporanDataSchema = z.object({
   id: z.string(),
