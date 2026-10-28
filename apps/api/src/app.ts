@@ -19,7 +19,9 @@ import { ruteKabupaten } from './modul/kabupaten/rute'
 import { ruteKonsol } from './modul/konsol/rute'
 import { ruteAksesSinfodes } from './modul/bantuan/rute-pengaturan'
 import { ruteTiketBantuan, ruteTukarTiket } from './modul/bantuan/rute-tiket'
+import { ruteKeluarga } from './modul/keluarga/rute'
 import { rutePenduduk } from './modul/penduduk/rute'
+import { ruteWilayah } from './modul/wilayah/rute'
 import { ruteSesi } from './modul/sesi/rute'
 import { ruteWarga } from './modul/warga/rute'
 import type { Waktu } from './waktu'
@@ -110,6 +112,8 @@ export function buatApp(deps: DepsApp): Hono<LingkunganApp> {
   app.route('/api/v1/konsol', ruteKonsol({ konfigurasi, penyandi, batasIp, ipKlien }))
   app.route('/api/v1/warga', ruteWarga({ konfigurasi, penyandi, batasIp, batasLupaPin, ipKlien }))
   app.route('/api/v1/penduduk', rutePenduduk({ penyandi }))
+  app.route('/api/v1/keluarga', ruteKeluarga({ penyandi }))
+  app.route('/api/v1/pengaturan/wilayah', ruteWilayah())
   app.route('/api/v1/pengaturan/akses-sinfodes', ruteAksesSinfodes())
   // Akses bantuan (SPEC-V0.3 §8.6): tiket dari Konsol (6 per menit per akun) dan penukarannya di alamat desa (10 per menit per IP).
   const batasTiket = buatBatasLaju({ maks: 6, jendelaMs: 60_000, waktu })

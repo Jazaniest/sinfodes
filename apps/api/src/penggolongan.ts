@@ -28,6 +28,9 @@ export const GOLONGAN_TABEL: Readonly<Record<string, Golongan>> = {
   sesi_warga: 'desa-privat',
   kunci_masuk_desa: 'desa-privat',
   sesi_bantuan: 'desa-privat',
+  // Kependudukan (8E1): riwayat perubahan dan Buku hari ini; desa hanya menambah dan membaca.
+  riwayat_penduduk: 'desa-privat',
+  aktivitas: 'desa-privat',
   jejak_audit: 'audit',
   jejak_bantuan: 'audit',
   jejak_audit_platform: 'audit',

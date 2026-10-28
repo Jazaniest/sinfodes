@@ -1,7 +1,7 @@
 import { tampilanWargaSchema } from '@sinfodes/kontrak/alamat/schema'
 import type { TampilanWarga } from '@sinfodes/kontrak/alamat/schema'
 import { modulDesaSchema, type ModulDesa } from '@sinfodes/kontrak/pengaturan/modul'
-import { desaSchema, dusunSchema, type Desa, type Dusun } from '@sinfodes/kontrak/wilayah/schema'
+import { desaSchema, dusunSchema, istilahWilayahSchema, type Desa, type Dusun } from '@sinfodes/kontrak/wilayah/schema'
 import { asc, eq } from 'drizzle-orm'
 import type { Db } from './klien'
 import { aliasAlamat, desa, dusun } from './skema'
@@ -69,4 +69,13 @@ export async function daftarDusunDesa(db: Db): Promise<Dusun[]> {
 export async function cariSlugDesaMenurutId(db: Db, id: string): Promise<string | null> {
   const [b] = await db.select({ slug: desa.slug }).from(desa).where(eq(desa.id, id)).limit(1)
   return b?.slug ?? null
+}
+
+/**
+ * Istilah wilayah desa menurut basis data saat ini. `DesaRekam` dari pembaca alamat disimpan 30 detik, jadi sesudah desa
+ * mengubah istilahnya (Pengaturan, Wilayah) jawaban yang menampilkan istilah membacanya langsung dari sini.
+ */
+export async function bacaIstilahWilayah(db: Db, desaId: string): Promise<Desa['istilahWilayah']> {
+  const [b] = await db.select({ istilah: desa.istilahWilayah }).from(desa).where(eq(desa.id, desaId)).limit(1)
+  return istilahWilayahSchema.parse(b?.istilah)
 }

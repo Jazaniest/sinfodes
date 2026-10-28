@@ -12,8 +12,8 @@ afterAll(async () => {
   await uji?.tutup()
 })
 
-/** Tabel di luar golongan desa-privat yang tetap ber-RLS paksa: sesi panel, audit desa, dan tabel akses bantuan platform (§8.6). */
-const RLS_TAMBAHAN = ['sesi', 'jejak_audit', 'jejak_bantuan', 'akses_bantuan', 'tiket_bantuan']
+/** Tabel di luar golongan desa-privat yang tetap ber-RLS paksa: sesi panel, audit desa, dan tabel akses bantuan platform (§8.6), dan `desa` (desa menulis istilah wilayahnya sendiri, 8E1). */
+const RLS_TAMBAHAN = ['sesi', 'jejak_audit', 'jejak_bantuan', 'akses_bantuan', 'tiket_bantuan', 'desa']
 
 describe('skema basis data (SPEC-V0.3 §7.2, §7.10)', () => {
   it('setiap tabel di skema public tercantum di penggolongan, dan sebaliknya', async () => {

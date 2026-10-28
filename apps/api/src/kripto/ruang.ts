@@ -7,6 +7,8 @@ export const ruang = {
   nik: (desaId: string): string => `penduduk.nik:${desaId}`,
   telepon: (desaId: string): string => `penduduk.telepon:${desaId}`,
   nomorKk: (desaId: string): string => `keluarga.nomorKk:${desaId}`,
+  /** Nilai lama dan baru NIK dan telepon di Riwayat penduduk (field lain polos). */
+  riwayat: (desaId: string): string => `riwayat_penduduk.nilai:${desaId}`,
   /** Nomor WhatsApp akun warga, disandikan seperti telepon penduduk. */
   whatsapp: (desaId: string): string => `akun_warga.whatsapp:${desaId}`,
   /** Rahasia TOTP akun Konsol (lintas desa, jadi satu ruang tetap). */

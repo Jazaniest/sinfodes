@@ -17,9 +17,14 @@ export const petaKeluarga = (db: DbDemo, penyandi: Penyandi): BarisSisip[] =>
     tanggal_terbit: k.tanggalTerbit,
   }))
 
+/** Posisi tiap anggota dalam KK-nya (indeks di `anggotaIds`); penduduk yang bukan anggota (mantan) tidak tercantum. */
+export const urutanKkDemo = (db: DbDemo): Map<string, number> =>
+  new Map(db.keluarga.flatMap((k) => k.anggotaIds.map((id, i) => [id, i] as const)))
+
 /** NIK dan telepon disandikan di aplikasi; hanya NIK yang diberi indeks (telepon tidak dicari persis). */
-export const petaPenduduk = (db: DbDemo, penyandi: Penyandi): BarisSisip[] =>
-  db.penduduk.map((p) => ({
+export const petaPenduduk = (db: DbDemo, penyandi: Penyandi): BarisSisip[] => {
+  const urutan = urutanKkDemo(db)
+  return db.penduduk.map((p) => ({
     id: p.id,
     desa_id: p.desaId,
     nik_sandi: p.nik === null ? null : penyandi.sandikan(p.nik, ruang.nik(p.desaId)),
@@ -47,6 +52,8 @@ export const petaPenduduk = (db: DbDemo, penyandi: Penyandi): BarisSisip[] =>
     ktp_el: p.ktpEl,
     telepon_sandi: p.telepon === null ? null : penyandi.sandikan(p.telepon, ruang.telepon(p.desaId)),
     catatan: p.catatan,
+    urutan_kk: urutan.get(p.id) ?? 0,
     dibuat_pada: new Date(p.dibuatPada),
     diubah_pada: new Date(p.diubahPada),
   }))
+}

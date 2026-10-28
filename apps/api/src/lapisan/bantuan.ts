@@ -18,7 +18,7 @@ export const PESAN_UNDUHAN = 'Unduhan tidak tersedia selama data pribadi warga d
  * Jalur POST yang hanya membaca (pencarian memakai POST supaya kata kunci tidak masuk URL). Setiap jalur di sini lolos dari
  * penolakan tulis: modul baru menambahkan jalur pencariannya sendiri di sini setelah memastikan ia tidak mengubah data.
  */
-export const JALUR_CARI_BACA: ReadonlySet<string> = new Set(['/penduduk/cari'])
+export const JALUR_CARI_BACA: ReadonlySet<string> = new Set(['/penduduk/cari', '/keluarga/cari'])
 
 /**
  * Jalur POST yang hanya mengganti atau mengakhiri sesi peramban itu sendiri (keluar, masuk panel, menukar tiket baru). Tanpa
@@ -31,13 +31,19 @@ const JALUR_SESI_BEBAS: ReadonlySet<string> = new Set(['/sesi/keluar', '/sesi/ma
 const ANGKA_NOMOR = /\d{5}/
 /** Enam belas angka berurutan, di kunci apa pun dan di tengah kalimat; 17 atau 18 angka (mis. NIP) bukan nomor ini. */
 const NOMOR16_DALAM_TEKS = /(?<!\d)\d{16}(?!\d)/g
+/** NIK berkelompok enam-enam-empat seperti yang dicatat Riwayat ("140509 520391 8002"); tanpa ini ia lolos dari aturan di atas. */
+const NIK_BERKELOMPOK_DALAM_TEKS = /(?<!\d)(\d{6}) (\d{6}) (\d{4})(?!\d)/g
 
 /**
  * Menyamarkan setiap string yang memuat 16 angka berurutan menjadi `1405••••••••8002`. Berdasarkan isi, bukan nama kunci:
  * kunci baru dengan nama lain di modul berikutnya tidak membocorkan NIK.
  */
 export function samarkanDataPribadi(nilai: unknown): unknown {
-  if (typeof nilai === 'string') return nilai.replace(NOMOR16_DALAM_TEKS, (n) => samarkanNomor16(n))
+  if (typeof nilai === 'string') {
+    return nilai
+      .replace(NOMOR16_DALAM_TEKS, (n) => samarkanNomor16(n))
+      .replace(NIK_BERKELOMPOK_DALAM_TEKS, (_semua, a: string, b: string, c: string) => samarkanNomor16(`${a}${b}${c}`))
+  }
   if (Array.isArray(nilai)) return nilai.map(samarkanDataPribadi)
   if (nilai !== null && typeof nilai === 'object') return Object.fromEntries(Object.entries(nilai).map(([k, v]) => [k, samarkanDataPribadi(v)]))
   return nilai

@@ -1,14 +1,17 @@
 import { waktuIsoWib } from '@sinfodes/kontrak/format/tanggal'
 import { cocokPenduduk } from '@sinfodes/kontrak/penduduk/cari'
 import { saringPenduduk, urutkanPenduduk, type FilterPenduduk } from '@sinfodes/kontrak/penduduk/filter'
-import { barisPendudukSchema, type BarisPenduduk, type Penduduk, type RingkasanPenduduk } from '@sinfodes/kontrak/penduduk/schema'
+import { entriRiwayatSchema, type EntriRiwayat } from '@sinfodes/kontrak/penduduk/riwayat'
+import { barisPendudukSchema, pendudukSchema, type BarisPenduduk, type Penduduk, type RingkasanPenduduk } from '@sinfodes/kontrak/penduduk/schema'
 import { cakupanDusun } from '@sinfodes/kontrak/pengguna/hak-akses'
 import { daftarDusunDesa } from '../../basisdata/desa'
 import type { Db } from '../../basisdata/klien'
+import { GalatApp } from '../../galat'
 import type { Penyandi } from '../../kripto/penyandi'
 import { ruang } from '../../kripto/ruang'
 import type { Pelaku } from '../../lapisan/konteks'
-import { bacaKeluargaDesa, bacaPendudukDesa, hitungRingkasan, type RekamPenduduk } from './repositori'
+import { bukaNilaiRiwayat } from '../../riwayat/sandi'
+import { bacaKeluargaDesa, bacaPendudukDesa, bacaPendudukSatu, bacaRiwayatRekam, hitungRingkasan, type RekamPenduduk } from './repositori'
 
 export type KonteksLayanan = { db: Db; penyandi: Penyandi; pelaku: Pelaku; hariIni: Date }
 export type HasilDaftar = { data: BarisPenduduk[]; meta: { page: number; pageSize: number; total: number } }
@@ -56,6 +59,14 @@ export function bentukPenduduk(b: RekamPenduduk, penyandi: Penyandi): Penduduk {
  * pencarian potongan nomor KK dan NIK tetap menemukan seluruh anggota walau terenkripsi.
  */
 export async function daftarPenduduk(k: KonteksLayanan, filter: FilterPenduduk, kata: string | null): Promise<HasilDaftar> {
+  const urut = await barisTersaring(k, filter, kata)
+  const mulai = (filter.page - 1) * filter.pageSize
+  const halaman = urut.slice(mulai, mulai + filter.pageSize)
+  return { data: barisPendudukSchema.array().parse(halaman), meta: { page: filter.page, pageSize: filter.pageSize, total: urut.length } }
+}
+
+/** Seluruh penduduk yang lolos filter dan kata cari, sudah diurutkan, lengkap dengan nomor KK, tanpa dipotong halaman. */
+export async function barisTersaring(k: KonteksLayanan, filter: FilterPenduduk, kata: string | null): Promise<BarisPenduduk[]> {
   const dusunSaja = cakupanDusun(k.pelaku)
   const [rekam, rekamKk, dusun] = await Promise.all([bacaPendudukDesa(k.db, dusunSaja), bacaKeluargaDesa(k.db, dusunSaja), daftarDusunDesa(k.db)])
   const nomorKkPerId = new Map(rekamKk.map((r) => [r.id, k.penyandi.bukaSandi(r.nomorKkSandi, ruang.nomorKk(r.desaId))] as const))
@@ -73,14 +84,38 @@ export async function daftarPenduduk(k: KonteksLayanan, filter: FilterPenduduk, 
     idPendatangTahunIni: new Set<string>(),
   })
   const nomorDusun = (id: string): number => dusun.find((d) => d.id === id)?.nomor ?? Number.MAX_SAFE_INTEGER
-  const urut = urutkanPenduduk(tersaring, filter.urut, { nomorDusun })
-
-  const mulai = (filter.page - 1) * filter.pageSize
-  const halaman = urut.slice(mulai, mulai + filter.pageSize).map((p) => ({ ...p, nomorKk: nomorKk(p) }))
-  return { data: barisPendudukSchema.array().parse(halaman), meta: { page: filter.page, pageSize: filter.pageSize, total: urut.length } }
+  return urutkanPenduduk(tersaring, filter.urut, { nomorDusun }).map((p) => ({ ...p, nomorKk: nomorKk(p) }))
 }
 
 export async function ringkasanPenduduk(k: Pick<KonteksLayanan, 'db' | 'pelaku'>): Promise<RingkasanPenduduk> {
   const r = await hitungRingkasan(k.db, cakupanDusun(k.pelaku))
   return { jiwa: r.jiwa, kk: r.kk, diperbaruiPada: r.diperbarui === null ? null : waktuIsoWib(r.diperbarui) }
+}
+
+export const PESAN_PENDUDUK_TIDAK_ADA = 'Data penduduk tidak ditemukan.'
+
+/** Satu penduduk beserta NIK dan telepon yang dibuka dari sandi; 404 bila bukan milik desa atau dusun pelaku. */
+export async function detailPenduduk(k: Pick<KonteksLayanan, 'db' | 'penyandi' | 'pelaku'>, id: string): Promise<Penduduk> {
+  const b = await bacaPendudukSatu(k.db, id, cakupanDusun(k.pelaku))
+  if (!b) throw new GalatApp('NOT_FOUND', PESAN_PENDUDUK_TIDAK_ADA, 404)
+  return pendudukSchema.parse(bentukPenduduk(b, k.penyandi))
+}
+
+/**
+ * Isi tab Riwayat: perubahan field dan entri pembuatan, terbaru dulu. Perbedaan sengaja dari API tiruan sampai 8E2: entri
+ * `mutasi` belum ada karena tabel mutasi belum ada, jadi entri `dibuat` selalu menutup riwayat (rencana 8E1 Ruling 8).
+ */
+export async function bacaRiwayatPenduduk(k: Pick<KonteksLayanan, 'db' | 'penyandi' | 'pelaku'>, id: string): Promise<EntriRiwayat[]> {
+  const p = await bacaPendudukSatu(k.db, id, cakupanDusun(k.pelaku))
+  if (!p) throw new GalatApp('NOT_FOUND', PESAN_PENDUDUK_TIDAK_ADA, 404)
+  const entri: EntriRiwayat[] = [
+    ...(await bacaRiwayatRekam(k.db, p.id)).map(
+      (r): EntriRiwayat => ({
+        jenis: 'ubah', id: r.id, waktu: waktuIsoWib(r.waktu), oleh: { id: r.olehId, nama: r.olehNama }, field: r.field as never, nilaiLama: bukaNilaiRiwayat(k.penyandi, r.desaId, r.field as never, r.nilaiLama), nilaiBaru: bukaNilaiRiwayat(k.penyandi, r.desaId, r.field as never, r.nilaiBaru),
+      }),
+    ),
+    { jenis: 'dibuat', id: `dibuat-${p.id}`, waktu: waktuIsoWib(p.dibuatPada) },
+  ]
+  // Urutan stabil: waktu menurun; pada waktu yang sama entri perubahan mendahului entri pembuatan, seperti API tiruan.
+  return entriRiwayatSchema.array().parse(entri.sort((a, b) => b.waktu.localeCompare(a.waktu)))
 }

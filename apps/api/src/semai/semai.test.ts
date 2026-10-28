@@ -198,3 +198,52 @@ describe('semai dari dunia demo (rencana 8C Tugas 6)', () => {
     expect(await hitung('kunci_data')).toBe(sebelum.length)
   })
 })
+
+describe('semai kependudukan (rencana 8E1 Tugas 1)', () => {
+  it('riwayat penduduk dan aktivitas sama jumlahnya dengan dunia demo, pelaku dipecah menjadi id dan nama', async () => {
+    expect(await hitung('riwayat_penduduk')).toBe(dunia.riwayat.length)
+    expect(await hitung('aktivitas')).toBe(dunia.aktivitas.length)
+    const r = dunia.riwayat.find((x) => x.field !== 'nik' && x.field !== 'telepon') as NonNullable<DbDemo['riwayat'][number]>
+    const [b] = await uji.sqlMigrasi`select desa_id, penduduk_id, field, nilai_lama, nilai_baru, oleh_id, oleh_nama, waktu from riwayat_penduduk where id = ${r.id}`
+    expect(b).toMatchObject({ desa_id: r.desaId, penduduk_id: r.pendudukId, field: r.field, nilai_lama: r.nilaiLama, nilai_baru: r.nilaiBaru, oleh_id: r.oleh.id, oleh_nama: r.oleh.nama })
+    expect((b.waktu as Date).getTime()).toBe(new Date(r.waktu).getTime())
+    const a = dunia.aktivitas.find((x) => x.oleh !== null && x.rujukan !== null) as NonNullable<DbDemo['aktivitas'][number]>
+    expect(a).toBeDefined()
+    const [ba] = await uji.sqlMigrasi`select dusun_id, jenis, ringkasan, oleh_id, oleh_nama, rujukan_jenis, rujukan_id from aktivitas where id = ${a.id}`
+    expect(ba).toMatchObject({ dusun_id: a.dusunId, jenis: a.jenis, ringkasan: a.ringkasan, oleh_id: a.oleh?.id, oleh_nama: a.oleh?.nama, rujukan_jenis: a.rujukan?.jenis, rujukan_id: a.rujukan?.id })
+  })
+
+  it('riwayat NIK dan telepon tersandi di basis data dan terbuka kembali; tidak ada yang polos (SPEC-V0.3 §7.6)', async () => {
+    const sensitif = dunia.riwayat.filter((r) => r.field === 'nik' || r.field === 'telepon')
+    expect(sensitif.length).toBeGreaterThan(0)
+    const [{ teks }] = await uji.sqlMigrasi`select string_agg(r::text, E'\n') as teks from riwayat_penduduk r where field in ('nik', 'telepon')`
+    for (const r of sensitif) {
+      for (const nilai of [r.nilaiLama, r.nilaiBaru]) if (nilai) expect(teks.includes(nilai), `${r.id} ${nilai}`).toBe(false)
+      const [b] = await uji.sqlMigrasi`select nilai_lama, nilai_baru from riwayat_penduduk where id = ${r.id}`
+      for (const [sandi, asli] of [[b.nilai_lama, r.nilaiLama], [b.nilai_baru, r.nilaiBaru]] as const) {
+        if (asli === null) expect(sandi).toBeNull()
+        else expect(penyandi.bukaSandi(sandi as string, `riwayat_penduduk.nilai:${r.desaId}`)).toBe(asli)
+      }
+    }
+  })
+
+  it('invarian: penduduk Hidup tiap KK menurut urutan_kk sama persis dengan anggotaIds KK itu', async () => {
+    const baris = await uji.sqlMigrasi`select keluarga_id, id from penduduk where status_dasar = 'Hidup' order by keluarga_id, urutan_kk, id`
+    const perKk = new Map<string, string[]>()
+    for (const b of baris) perKk.set(b.keluarga_id as string, [...(perKk.get(b.keluarga_id as string) ?? []), b.id as string])
+    for (const k of dunia.keluarga) expect(perKk.get(k.id) ?? [], k.id).toEqual(k.anggotaIds)
+    const bukanAnggota = await uji.sqlMigrasi`select count(*)::int as n from penduduk where status_dasar <> 'Hidup' and urutan_kk <> 0`
+    expect(bukanAnggota[0].n).toBe(0)
+  })
+
+  it('semai kedua memperbaiki urutan_kk yang masih 0 tetapi tidak menimpa urutan yang sudah berubah', async () => {
+    const kk = dunia.keluarga.find((k) => k.anggotaIds.length >= 3) as NonNullable<DbDemo['keluarga'][number]>
+    const [kedua, ketiga] = [kk.anggotaIds[1], kk.anggotaIds[2]]
+    await uji.sqlMigrasi`update penduduk set urutan_kk = 0 where id = ${kedua}`
+    await uji.sqlMigrasi`update penduduk set urutan_kk = 77 where id = ${ketiga}`
+    await semaiDunia(uji.sqlMigrasi, penyandi, SEKARANG_UJI, opsiUji())
+    const baris = await uji.sqlMigrasi`select id, urutan_kk from penduduk where id in (${kedua}, ${ketiga})`
+    expect(Object.fromEntries(baris.map((b) => [b.id, b.urutan_kk]))).toEqual({ [kedua]: 1, [ketiga]: 77 })
+    await uji.sqlMigrasi`update penduduk set urutan_kk = 2 where id = ${ketiga}`
+  })
+})
