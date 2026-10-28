@@ -1,4 +1,4 @@
-import { waktuIsoWib } from '@sinfodes/kontrak/format/tanggal'
+import { tanggalIsoWib, waktuIsoWib } from '@sinfodes/kontrak/format/tanggal'
 import { cocokPenduduk } from '@sinfodes/kontrak/penduduk/cari'
 import { saringPenduduk, urutkanPenduduk, type FilterPenduduk } from '@sinfodes/kontrak/penduduk/filter'
 import { entriRiwayatSchema, type EntriRiwayat } from '@sinfodes/kontrak/penduduk/riwayat'
@@ -11,6 +11,7 @@ import type { Penyandi } from '../../kripto/penyandi'
 import { ruang } from '../../kripto/ruang'
 import type { Pelaku } from '../../lapisan/konteks'
 import { bukaNilaiRiwayat } from '../../riwayat/sandi'
+import { bacaMutasiPenduduk, idPendatangTahunIni } from '../mutasi/repositori'
 import { bacaKeluargaDesa, bacaPendudukDesa, bacaPendudukSatu, bacaRiwayatRekam, hitungRingkasan, type RekamPenduduk } from './repositori'
 
 export type KonteksLayanan = { db: Db; penyandi: Penyandi; pelaku: Pelaku; hariIni: Date }
@@ -68,7 +69,13 @@ export async function daftarPenduduk(k: KonteksLayanan, filter: FilterPenduduk, 
 /** Seluruh penduduk yang lolos filter dan kata cari, sudah diurutkan, lengkap dengan nomor KK, tanpa dipotong halaman. */
 export async function barisTersaring(k: KonteksLayanan, filter: FilterPenduduk, kata: string | null): Promise<BarisPenduduk[]> {
   const dusunSaja = cakupanDusun(k.pelaku)
-  const [rekam, rekamKk, dusun] = await Promise.all([bacaPendudukDesa(k.db, dusunSaja), bacaKeluargaDesa(k.db, dusunSaja), daftarDusunDesa(k.db)])
+  const [rekam, rekamKk, dusun, pendatang] = await Promise.all([
+    bacaPendudukDesa(k.db, dusunSaja),
+    bacaKeluargaDesa(k.db, dusunSaja),
+    daftarDusunDesa(k.db),
+    // Hanya dihitung bila preset memintanya: tabel mutasi tidak dibuka untuk daftar biasa.
+    filter.preset === 'pendatang-tahun-ini' ? idPendatangTahunIni(k.db, tanggalIsoWib(k.hariIni).slice(0, 4)) : Promise.resolve(new Set<string>()),
+  ])
   const nomorKkPerId = new Map(rekamKk.map((r) => [r.id, k.penyandi.bukaSandi(r.nomorKkSandi, ruang.nomorKk(r.desaId))] as const))
   const nomorKk = (p: Penduduk): string => nomorKkPerId.get(p.keluargaId) ?? ''
 
@@ -80,8 +87,7 @@ export async function barisTersaring(k: KonteksLayanan, filter: FilterPenduduk, 
   const tersaring = saringPenduduk(calon, filter, {
     hariIni: k.hariIni,
     dusunIdPerNomor: new Map(dusun.map((d) => [d.nomor, d.id] as const)),
-    // Perbedaan sengaja: "pendatang tahun ini" bergantung pada tabel mutasi (8E); rute menolak preset itu sebelum sampai sini.
-    idPendatangTahunIni: new Set<string>(),
+    idPendatangTahunIni: pendatang,
   })
   const nomorDusun = (id: string): number => dusun.find((d) => d.id === id)?.nomor ?? Number.MAX_SAFE_INTEGER
   return urutkanPenduduk(tersaring, filter.urut, { nomorDusun }).map((p) => ({ ...p, nomorKk: nomorKk(p) }))
@@ -102,20 +108,25 @@ export async function detailPenduduk(k: Pick<KonteksLayanan, 'db' | 'penyandi' |
 }
 
 /**
- * Isi tab Riwayat: perubahan field dan entri pembuatan, terbaru dulu. Perbedaan sengaja dari API tiruan sampai 8E2: entri
- * `mutasi` belum ada karena tabel mutasi belum ada, jadi entri `dibuat` selalu menutup riwayat (rencana 8E1 Ruling 8).
+ * Isi tab Riwayat, terbaru dulu: perubahan field (`ubah`), mutasi, dan pembuatan data. Penduduk yang masuk lewat kelahiran atau
+ * kedatangan sudah punya entri mutasi sebagai awal riwayatnya, jadi tidak diberi entri `dibuat` (seperti API tiruan; rencana
+ * 8E2 Ruling 5). Pada waktu yang sama entri `ubah` mendahului `mutasi`, dan keduanya mendahului `dibuat`.
  */
 export async function bacaRiwayatPenduduk(k: Pick<KonteksLayanan, 'db' | 'penyandi' | 'pelaku'>, id: string): Promise<EntriRiwayat[]> {
   const p = await bacaPendudukSatu(k.db, id, cakupanDusun(k.pelaku))
   if (!p) throw new GalatApp('NOT_FOUND', PESAN_PENDUDUK_TIDAK_ADA, 404)
+  const mutasi = await bacaMutasiPenduduk(k.db, p.id)
   const entri: EntriRiwayat[] = [
     ...(await bacaRiwayatRekam(k.db, p.id)).map(
       (r): EntriRiwayat => ({
         jenis: 'ubah', id: r.id, waktu: waktuIsoWib(r.waktu), oleh: { id: r.olehId, nama: r.olehNama }, field: r.field as never, nilaiLama: bukaNilaiRiwayat(k.penyandi, r.desaId, r.field as never, r.nilaiLama), nilaiBaru: bukaNilaiRiwayat(k.penyandi, r.desaId, r.field as never, r.nilaiBaru),
       }),
     ),
-    { jenis: 'dibuat', id: `dibuat-${p.id}`, waktu: waktuIsoWib(p.dibuatPada) },
+    ...mutasi.map(
+      (m): EntriRiwayat => ({ jenis: 'mutasi', id: m.id, waktu: waktuIsoWib(m.dicatatPada), oleh: { id: m.dicatatOlehId, nama: m.dicatatOlehNama }, mutasi: m.jenis as never, tanggal: m.tanggal }),
+    ),
   ]
-  // Urutan stabil: waktu menurun; pada waktu yang sama entri perubahan mendahului entri pembuatan, seperti API tiruan.
+  if (!mutasi.some((m) => m.jenis === 'lahir' || m.jenis === 'datang')) entri.push({ jenis: 'dibuat', id: `dibuat-${p.id}`, waktu: waktuIsoWib(p.dibuatPada) })
+  // Pengurutan stabil: pada waktu yang sama urutan larik dipertahankan (ubah, mutasi, dibuat).
   return entriRiwayatSchema.array().parse(entri.sort((a, b) => b.waktu.localeCompare(a.waktu)))
 }

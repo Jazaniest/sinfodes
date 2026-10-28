@@ -1,7 +1,8 @@
 // Kembaran dari apps/web/src/mocks/handlers/{kependudukan,penduduk-tulis,keluarga-tulis,pengaturan-wilayah}.test.ts untuk bagian 8E1:
 // pertanyaan yang sama diajukan ke server sungguhan lewat `panggilApi` dan modul `api/*` web yang sama, dan jawabannya harus sama
 // dengan API tiruan. Butir yang membaca "Buku hari ini" lewat tiruan (`ambilDb().aktivitas`) diperiksa lewat SQL karena Buku hari
-// ini dibaca beranda (8G). Butir yang bergantung pada mutasi (riwayat bayi termuda, preset "Pendatang tahun ini") menunggu 8E2.
+// ini dibaca beranda (8G). Butir yang bergantung pada mutasi (riwayat bayi termuda, preset "Pendatang tahun ini") ditambahkan di 8E2;
+// butir mutasi dan laporan data ada di mutasi-laporan.test.ts.
 import { describe, expect, it } from 'vitest'
 import { GalatApi } from '@/api/galat'
 import { ambilKeluarga, daftarKeluarga, cariKeluarga, gantiKepala, pecahKeluarga } from '@/api/keluarga'
@@ -46,9 +47,20 @@ describe('penduduk (lanjutan kependudukan.test.ts)', () => {
     expect(waktu).toEqual([...waktu].sort().reverse())
   })
 
-  // Menunggu 8E2: tabel mutasi baru lahir di sana, jadi riwayat bayi termuda belum diawali mutasi lahir.
-  it.todo('riwayat bayi termuda diawali mutasi lahir, tanpa entri pembuatan (8E2)')
-  it.todo('preset pendatang tahun ini berisi warga yang datang di 2026 (8E2)')
+  it('riwayat bayi termuda diawali mutasi lahir, tanpa entri pembuatan', async () => {
+    await masukSebagai(AKUN_UJI.operator)
+    const [termuda] = (await daftarPenduduk({ urut: 'umur' })).data
+    const entri = await ambilRiwayatPenduduk(termuda.id)
+    expect(entri.some((e) => e.jenis === 'mutasi' && e.mutasi === 'lahir')).toBe(true)
+    expect(entri.some((e) => e.jenis === 'dibuat')).toBe(false)
+  })
+
+  it('preset pendatang tahun ini berisi warga yang datang di 2026', async () => {
+    await masukSebagai(AKUN_UJI.operator)
+    const r = await daftarPenduduk({ preset: 'pendatang-tahun-ini', pageSize: 100 })
+    expect(r.meta.total).toBeGreaterThanOrEqual(2)
+    expect(r.data.every((p) => p.nik !== null && !p.nik.startsWith('140509'))).toBe(true)
+  })
 })
 
 describe('keluarga (lanjutan kependudukan.test.ts)', () => {

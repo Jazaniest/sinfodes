@@ -8,6 +8,7 @@ import { buatKunciDataBaru, type BarisKunciData, type Penyandi } from '../kripto
 import { petaAlias, petaDesa, petaDusun, petaPengguna, type BarisSisip } from './peta-desa'
 import { petaAkunWarga, petaKabupatenMitra, petaPenggunaKabupaten, petaPenggunaKonsol } from './peta-identitas'
 import { petaAktivitas, petaRiwayat } from './peta-kependudukan'
+import { petaLaporan, petaMutasi, petaMutasiPenduduk } from './peta-mutasi'
 import { petaKeluarga, petaPenduduk, urutanKkDemo } from './peta-penduduk'
 
 /** Semai ditolak: lingkungan nyata tanpa bendera eksplisit. Pesannya tidak memuat nilai konfigurasi. */
@@ -40,6 +41,8 @@ export type RingkasanSemai = {
   penggunaKonsol: number
   riwayatPenduduk: number
   aktivitas: number
+  mutasi: number
+  laporanData: number
 }
 
 const UKURAN_KELOMPOK = 500
@@ -94,6 +97,12 @@ const KOLOM = {
   ],
   riwayat_penduduk: ['id', 'desa_id', 'penduduk_id', 'field', 'nilai_lama', 'nilai_baru', 'oleh_id', 'oleh_nama', 'waktu'],
   aktivitas: ['id', 'desa_id', 'dusun_id', 'waktu', 'jenis', 'ringkasan', 'oleh_id', 'oleh_nama', 'rujukan_jenis', 'rujukan_id'],
+  mutasi: ['id', 'desa_id', 'jenis', 'tanggal', 'dicatat_oleh_id', 'dicatat_oleh_nama', 'dicatat_pada', 'rincian'],
+  mutasi_penduduk: ['mutasi_id', 'penduduk_id', 'desa_id', 'urutan'],
+  laporan_data: [
+    'id', 'desa_id', 'dusun_id', 'dibuat_pada', 'pelapor_penduduk_id', 'pelapor_nama', 'status', 'ditangani_oleh_id', 'ditangani_oleh_nama',
+    'ditangani_pada', 'ditangani_alasan', 'lampiran_berkas', 'lampiran_ukuran_kb', 'isi',
+  ],
   akun_warga: ['penduduk_id', 'desa_id', 'pin_hash', 'whatsapp_sandi', 'diubah'],
   kabupaten_mitra: ['kode', 'nama', 'label', 'provinsi_kode', 'provinsi_nama', 'bergabung', 'surat_penunjukan', 'dibuat'],
   pengguna_kabupaten: ['id', 'kabupaten_kode', 'nama', 'jabatan', 'peran', 'email', 'aktif', 'kata_sandi_hash', 'dibuat'],
@@ -127,6 +136,9 @@ export async function semaiDunia(sql: postgres.Sql, penyandi: Penyandi, acuan: D
     await selarasUrutanKk(tx, dunia)
     await sisipkan(tx, 'riwayat_penduduk', KOLOM.riwayat_penduduk, petaRiwayat(dunia, penyandi))
     await sisipkan(tx, 'aktivitas', KOLOM.aktivitas, petaAktivitas(dunia))
+    await sisipkan(tx, 'mutasi', KOLOM.mutasi, petaMutasi(tx, dunia))
+    await sisipkan(tx, 'mutasi_penduduk', KOLOM.mutasi_penduduk, petaMutasiPenduduk(dunia))
+    await sisipkan(tx, 'laporan_data', KOLOM.laporan_data, petaLaporan(tx, dunia, penyandi))
     await sisipkan(tx, 'akun_warga', KOLOM.akun_warga, petaAkunWarga(dunia, penyandi, hashPin, acuan))
     await sisipkan(tx, 'kabupaten_mitra', KOLOM.kabupaten_mitra, petaKabupatenMitra(tx, dunia, acuan))
     await sisipkan(tx, 'pengguna_kabupaten', KOLOM.pengguna_kabupaten, petaPenggunaKabupaten(dunia, hashKabupaten, acuan))
@@ -139,6 +151,7 @@ export async function semaiDunia(sql: postgres.Sql, penyandi: Penyandi, acuan: D
     (select count(*)::int from keluarga) as keluarga, (select count(*)::int from penduduk) as penduduk,
     (select count(*)::int from akun_warga) as "akunWarga", (select count(*)::int from kabupaten_mitra) as "kabupatenMitra",
     (select count(*)::int from pengguna_kabupaten) as "penggunaKabupaten", (select count(*)::int from pengguna_konsol) as "penggunaKonsol",
-    (select count(*)::int from riwayat_penduduk) as "riwayatPenduduk", (select count(*)::int from aktivitas) as aktivitas`
+    (select count(*)::int from riwayat_penduduk) as "riwayatPenduduk", (select count(*)::int from aktivitas) as aktivitas,
+    (select count(*)::int from mutasi) as mutasi, (select count(*)::int from laporan_data) as "laporanData"`
   return { ...r }
 }

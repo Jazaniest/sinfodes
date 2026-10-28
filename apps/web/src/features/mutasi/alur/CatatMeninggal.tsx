@@ -20,6 +20,7 @@ import { PilihPenduduk } from '../../penduduk/PilihPenduduk'
 import { terapkanGalatServer } from './galat'
 import { buatSkemaMeninggal, isianMeninggalAwal, keMasukanMeninggal, type IsianMeninggal } from './isian'
 import { usePengganti } from './pengganti'
+import { useKunciKirim } from '../kunci-kirim'
 
 const BAGIAN = [
   { id: 'penduduk', judul: 'Penduduk' },
@@ -57,8 +58,12 @@ export function CatatMeninggal({ pendudukAwal, onTersimpan, onBatal, onKotor, se
     onKotor?.(formState.isDirty)
   }, [formState.isDirty, onKotor])
 
+  const kunciUntuk = useKunciKirim()
   const simpan = useMutation({
-    mutationFn: (isi: IsianMeninggal) => catatMeninggal(keMasukanMeninggal(isi, pengganti.wajib)),
+    mutationFn: (isi: IsianMeninggal) => {
+      const masukan = keMasukanMeninggal(isi, pengganti.wajib)
+      return catatMeninggal(masukan, kunciUntuk(masukan))
+    },
     onSuccess: (hasil) => {
       const [p] = hasil.penduduk
       void segarkanKependudukan(queryClient)

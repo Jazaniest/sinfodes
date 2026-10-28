@@ -22,17 +22,17 @@ export function ambilRingkasanMutasi(bulan: string, signal?: AbortSignal) {
   return panggilApi('GET', '/mutasi/ringkasan', { skema: ringkasanMutasiSchema, query: { bulan }, signal })
 }
 
-export const catatLahir = (masukan: MasukanLahir) =>
-  panggilApi('POST', '/mutasi/lahir', { skema: hasilMutasiSchema, body: masukan })
+export const catatLahir = (masukan: MasukanLahir, kunciIdempotensi?: string) =>
+  panggilApi('POST', '/mutasi/lahir', { skema: hasilMutasiSchema, body: masukan, kunciIdempotensi })
 
-export const catatMeninggal = (masukan: MasukanMeninggal) =>
-  panggilApi('POST', '/mutasi/meninggal', { skema: hasilMutasiSchema, body: masukan })
+export const catatMeninggal = (masukan: MasukanMeninggal, kunciIdempotensi?: string) =>
+  panggilApi('POST', '/mutasi/meninggal', { skema: hasilMutasiSchema, body: masukan, kunciIdempotensi })
 
-export const catatPindah = (masukan: MasukanPindah) =>
-  panggilApi('POST', '/mutasi/pindah', { skema: hasilMutasiSchema, body: masukan })
+export const catatPindah = (masukan: MasukanPindah, kunciIdempotensi?: string) =>
+  panggilApi('POST', '/mutasi/pindah', { skema: hasilMutasiSchema, body: masukan, kunciIdempotensi })
 
-export const catatDatang = (masukan: MasukanDatang) =>
-  panggilApi('POST', '/mutasi/datang', { skema: hasilMutasiSchema, body: masukan })
+export const catatDatang = (masukan: MasukanDatang, kunciIdempotensi?: string) =>
+  panggilApi('POST', '/mutasi/datang', { skema: hasilMutasiSchema, body: masukan, kunciIdempotensi })
 
 export const opsiDaftarMutasi = (filter: Partial<FilterMutasi>) =>
   queryOptions({ queryKey: kunciMutasi.daftar(filter), queryFn: ({ signal }) => daftarMutasi(filter, signal) })

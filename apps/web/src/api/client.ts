@@ -35,6 +35,8 @@ type Opsi<T> = {
   signal?: AbortSignal
   /** Token yang dipakai; bawaannya token panel admin. Endpoint `/warga/…` memakai `'warga'`; website publik `null` (tanpa token). */
   sesi?: BagianSesi | null
+  /** Dikirim sebagai `Idempotency-Key`: pengiriman ulang yang sama mengembalikan hasil pertama (SPEC-V0.3 §5.4 butir 4). */
+  kunciIdempotensi?: string
 }
 
 function buatUrl(jalur: string, query?: Query): URL {
@@ -54,6 +56,7 @@ export async function panggilApi<T>(metode: Metode, jalur: string, opsi: Opsi<T>
   // FormData (unggah berkas): Content-Type beserta batasnya diisi browser sendiri.
   const formulir = opsi.body instanceof FormData
   if (opsi.body !== undefined && !formulir) headers['Content-Type'] = 'application/json'
+  if (opsi.kunciIdempotensi) headers['Idempotency-Key'] = opsi.kunciIdempotensi
   const token = opsi.sesi === null ? null : tokenSesi[opsi.sesi ?? 'admin']
   // Penanda `SESI_KUKI` bukan kredensial: sesi mode nyata dibawa cookie HttpOnly oleh peramban.
   if (token && token !== SESI_KUKI) headers.Authorization = `Bearer ${token}`

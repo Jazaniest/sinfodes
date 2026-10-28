@@ -4,6 +4,24 @@ Semua perubahan penting Sinfodes dicatat di sini. Formatnya mengikuti [Keep a Ch
 
 ## [Belum dirilis]
 
+### Ditambahkan (tahap 8E2)
+
+- **Mutasi di server nyata.** Kelahiran, kematian, kepindahan, dan kedatangan dicatat lewat `POST /mutasi/lahir`, `/meninggal`, `/pindah`, dan `/datang` (hanya Operator dan Sekretaris Desa), dibaca lewat `GET /mutasi` (Buku Mutasi, per bulan dan jenis, terbaru dulu) dan `GET /mutasi/ringkasan` (angka per jenis; bulan bawaan menurut WIB). Kepala Dusun melihat mutasi yang menyentuh dusunnya saja.
+  - Meninggal dan pindah mengubah status penduduk dan mengeluarkannya dari KK (anggota KK = penduduk Hidup); kepala yang keluar wajib diganti anggota yang tinggal, dan pengganti menjadi kepala di urutan pertama dengan perubahan hubungan tercatat di Riwayat. Seluruh anggota keluar membuat KK hilang dari daftar dan hitungan, detailnya tetap terbaca.
+  - Kelahiran memasukkan bayi tanpa NIK ke KK ibu dengan hubungan menurut hubungan ibu; kedatangan memakai NIK asal (unik per desa) ke KK baru (nomor KK baru hari ini, tepat satu kepala) atau ke KK yang ada.
+- **Laporan data warga.** `GET /laporan-data`, `GET /laporan-data/:id`, `POST /laporan-data/:id/terapkan`, dan `POST /laporan-data/:id/tolak`. Menerapkan perbaikan memakai jalur ubah penduduk yang sama dengan `PATCH /penduduk/:id` (sandi, keunikan, Riwayat) dan mencatat aktivitas `laporan-diterapkan`; laporan kelahiran diselesaikan lewat Catat kelahiran dengan `laporanId`. Pembuat laporan (portal warga) menyusul di 8G.
+- **Riwayat dan preset.** Tab Riwayat memuat entri `mutasi` (penduduk hasil kelahiran atau kedatangan tidak lagi punya entri "dibuat"); preset "Pendatang tahun ini" dihitung dari tabel mutasi menurut tahun WIB dan berfungsi di daftar, pencarian, dan ekspor. Penolakan sementara preset itu di 8E1 dicabut.
+- **Kunci idempotensi untuk `POST /mutasi/*`** (SPEC-V0.3 §5.4 butir 4). Header `Idempotency-Key` membuat pengiriman ulang mengembalikan hasil pertama (ditandai `Idempotency-Replayed: true`) dan tidak mencatat kejadian dua kali; isian atau jalur berbeda dengan kunci yang sama dijawab 409, permintaan yang ditolak tidak menyimpan kunci, dan dua permintaan serentak berurutan. Tabel `kunci_idempotensi` hanya menyimpan sidik isi dan rujukan mutasi, bukan salinan jawaban. Empat formulir mutasi di web membuat satu kunci per isian (`useKunciKirim`).
+- **Penulisan yang aman terhadap kerja serentak.** Setiap mutasi mengunci baris KK lebih dulu lalu membaca status ulang, dan laporan dikunci sebelum KK: dua petugas pada orang, KK, atau laporan yang sama berurutan (yang kedua 422 atau 409, bukan 500 atau data ganda). Tabrakan NIK serentak pada kedatangan dijawab 409 pada anggota yang bersangkutan. Efek ke bansos adalah titik sambung bertipe (`EfekSilang`) yang dipanggil dalam transaksi; isinya diganti di 8G.
+- **Basis data.** Migrasi `0008_mutasi_laporan` (tabel `mutasi` dan `mutasi_penduduk` hanya tambah bagi peran desa; `laporan_data` hanya berubah di lima kolom penanganan; CHECK: perbaikan `telepon` wajib tersandi) dan `0009_kunci_idempotensi`. Nilai telepon pada isi laporan disandikan di ruang `laporan_data.isi:<desa>`.
+- **Sesi bantuan Tim Sinfodes** otomatis tunduk pada lapisan yang ada: semua POST mutasi dan penanganan laporan ditolak, GET terbaca dengan NIK tersamar (termasuk NIK yang diketik warga di catatan laporan).
+- **Uji.** Meta basis data (tabel, hak kolom, CHECK), semai (invarian mutasi dan laporan sama dengan data demo), uji rute baca dan tulis, uji serentak dengan bukti kunci yang deterministik beserta mutasi pembuktian, uji "gagal di tengah membatalkan semuanya", uji penjaga sesi bantuan, uji kunci idempotensi, dan 27 butir konformansi baru (25 disalin dari uji tiruan, 2 untuk kunci idempotensi) ditambah dua butir 8E1 yang tertunda.
+
+### Diubah (tahap 8E2)
+
+- Beda sengaja dari API tiruan, dicatat di uji konformansi: urutan hasil `GET /mutasi` memakai ID sebagai pemutus seri; NIK pendatang unik per desa (pesan "NIK sudah terdaftar atas nama X", tanpa "di desa lain"); menerapkan laporan perbaikan juga menjalankan pemeriksaan ubah penduduk (mis. tanggal lahir di masa depan) selain skema; Buku hari ini dibaca beranda (8G); `Idempotency-Key` diperhatikan server tetapi diabaikan tiruan.
+- Pada mode nyata, kirim ulang pencatatan mutasi dari formulir yang sama tidak lagi menghasilkan kejadian ganda.
+
 ### Ditambahkan (tahap 8E1)
 
 - **Penduduk, keluarga, dan wilayah di server nyata.** Semua rute lewat `butuhAkses` (baca: `penduduk.lihat`; tulis: `penduduk.ubah`, hanya Operator dan Sekretaris Desa; wilayah: `pengaturan.kelola`):

@@ -9,7 +9,7 @@ Monorepo pnpm. Perintah dijalankan dari akar repositori.
 | Folder | Isi |
 |---|---|
 | `apps/web` | Aplikasi web (Vite, React 19, TypeScript, Tailwind v4) beserta API tiruan |
-| `apps/api` | Server API (Hono, PostgreSQL, Drizzle). Sampai tahap 8E1 memuat alamat, masuk empat pelaku (panel desa, warga, kabupaten, Konsol dengan TOTP), akses bantuan Tim Sinfodes (tiket, sesi lihat-saja, penyamaran NIK, jejak), serta penduduk, keluarga, dan susunan wilayah (baca, tambah, ubah, ganti kepala, pecah KK, ekspor). Cara menyalakan: `apps/api/README.md` |
+| `apps/api` | Server API (Hono, PostgreSQL, Drizzle). Sampai tahap 8E2 memuat alamat, masuk empat pelaku (panel desa, warga, kabupaten, Konsol dengan TOTP), akses bantuan Tim Sinfodes (tiket, sesi lihat-saja, penyamaran NIK, jejak), serta penduduk, keluarga, susunan wilayah (baca, tambah, ubah, ganti kepala, pecah KK, ekspor), mutasi (lahir, meninggal, pindah, datang) dan laporan data warga. Cara menyalakan: `apps/api/README.md` |
 | `packages/kontrak` | Skema Zod, aturan domain, dan kode galat yang dipakai bersama oleh web dan server. Paket sumber tanpa build; di web diimpor lewat alias `@/domain/...` |
 | `packages/demo` | Pembangkit dunia demo yang deterministik beserta tipe basis data tiruan. Di web diimpor lewat `@sinfodes/demo/...` |
 
