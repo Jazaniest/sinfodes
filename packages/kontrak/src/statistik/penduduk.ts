@@ -98,11 +98,17 @@ function pekerjaanTeratas(nilai: readonly (string | null)[]): Batang[] {
   return hasil
 }
 
+/** Kolom penduduk yang dibaca statistik; server membacanya tanpa membuka kolom bersandi. */
+export type PendudukStatistik = Pick<
+  Penduduk,
+  'statusDasar' | 'jenisKelamin' | 'tanggalLahir' | 'dusunId' | 'agama' | 'pendidikan' | 'pekerjaan' | 'statusPerkawinan' | 'ktpEl'
+>
+
 /**
  * Statistik penduduk hidup (SPEC §6.7). `penduduk` sudah dibatasi ke dusun terpilih (bila ada). Angka yang sama nanti
  * dipakai halaman Statistik publik, hanya dalam bentuk agregat.
  */
-export function hitungStatistik(penduduk: readonly Penduduk[], ctx: KonteksStatistik): StatistikPenduduk {
+export function hitungStatistik(penduduk: readonly PendudukStatistik[], ctx: KonteksStatistik): StatistikPenduduk {
   const hidup = penduduk.filter((p) => p.statusDasar === 'Hidup')
   const piramida: KelompokUmur[] = KELOMPOK_UMUR.map((k) => ({ label: k.label, umurMin: k.min, umurMax: k.max, laki: 0, perempuan: 0 }))
   for (const p of hidup) {

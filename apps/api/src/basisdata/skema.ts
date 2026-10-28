@@ -374,6 +374,18 @@ export const kunciIdempotensi = pgTable(
   (t) => [primaryKey({ columns: [t.desaId, t.penggunaId, t.kunci] })],
 )
 
+/** Sesi impor penduduk (8E3 Tugas 6): isi berkas yang diunggah, tersandi seluruhnya, antara unggah dan konfirmasi. */
+export const imporPenduduk = pgTable('impor_penduduk', {
+  id: text('id').primaryKey(),
+  desaId: text('desa_id').notNull(),
+  dicatatOlehId: text('dicatat_oleh_id').notNull(),
+  namaBerkas: text('nama_berkas').notNull(),
+  dibuatPada: waktu('dibuat_pada').notNull(),
+  jumlahBaris: integer('jumlah_baris').notNull(),
+  isi: text('isi'),
+  selesaiPada: waktu('selesai_pada'),
+})
+
 export const TABEL_SKEMA = {
   desa, alias_alamat: aliasAlamat, kunci_data: kunciData, dusun, pengguna, keluarga, penduduk, sesi, jejak_audit: jejakAudit,
   akun_warga: akunWarga, sesi_warga: sesiWarga, kunci_masuk_desa: kunciMasukDesa, kabupaten_mitra: kabupatenMitra,
@@ -381,5 +393,5 @@ export const TABEL_SKEMA = {
   kunci_masuk_platform: kunciMasukPlatform, jejak_audit_platform: jejakAuditPlatform,
   akses_bantuan: aksesBantuan, tiket_bantuan: tiketBantuan, sesi_bantuan: sesiBantuan, jejak_bantuan: jejakBantuan,
   riwayat_penduduk: riwayatPenduduk, aktivitas, mutasi, mutasi_penduduk: mutasiPenduduk, laporan_data: laporanData,
-  kunci_idempotensi: kunciIdempotensi,
+  kunci_idempotensi: kunciIdempotensi, impor_penduduk: imporPenduduk,
 } as const

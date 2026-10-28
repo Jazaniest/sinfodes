@@ -135,10 +135,12 @@ describe('sesi bantuan Tim Sinfodes, lihat saja (SPEC-V0.2 §5.2)', () => {
     const hasil = await cariPenduduk('Siti', {})
     expect(hasil.data.length).toBeGreaterThan(0)
     for (const p of hasil.data) if (p.nik !== null) expect(p.nik).toMatch(TERSAMAR)
-    // Perbedaan sengaja: `/cari` (pencarian global) belum ada di server; ditolak sebagai penulisan sampai modulnya dibangun.
-    expect((await minta('/cari', 'POST', { kata: 'Siti' })).status).toBe(403)
+    // `/cari` (pencarian global) ada sejak 8E3 dan termasuk jalur pencarian-baca: terbaca, NIK tersamar, tercatat.
+    const global = await minta('/cari', 'POST', { kata: 'Siti' })
+    expect(global.status).toBe(200)
+    for (const p of ((await global.json()) as { penduduk: { nik: string | null }[] }).penduduk) if (p.nik !== null) expect(p.nik).toMatch(TERSAMAR)
     const { riwayat } = await sebagaiSekdes(() => ambilAksesSinfodes())
-    expect(riwayat[0]?.sesi[0]?.halaman.map((h) => h.jalur)).toContain('/penduduk/cari')
+    expect(riwayat[0]?.sesi[0]?.halaman.map((h) => h.jalur)).toEqual(expect.arrayContaining(['/penduduk/cari', '/cari']))
   })
 
   it('selama data disamarkan, pencarian dengan angka NIK atau KK ditolak supaya NIK tidak bisa ditebak', async () => {
@@ -150,12 +152,14 @@ describe('sesi bantuan Tim Sinfodes, lihat saja (SPEC-V0.2 §5.2)', () => {
     const kk = await minta('/keluarga/cari', 'POST', { kata: '1405095203', filter: {} })
     expect(kk.status).toBe(403)
     expect(await pesanGalat(kk)).toBe(PESAN_CARI_NOMOR)
+    // `/cari` ada sejak 8E3 dan tunduk pada aturan angka yang sama.
+    const global = await minta('/cari', 'POST', { kata: '1405095203', filter: {} })
+    expect(global.status).toBe(403)
+    expect(await pesanGalat(global)).toBe(PESAN_CARI_NOMOR)
     // Perbedaan sengaja: jalur pencarian modul lain belum ada di server, jadi ditolak sebagai penulisan (403 juga).
-    for (const jalur of ['/cari', '/permohonan/cari']) {
-      const lain = await minta(jalur, 'POST', { kata: '1405095203', filter: {} })
-      expect(lain.status, jalur).toBe(403)
-      expect(await pesanGalat(lain), jalur).toBe(PESAN_LIHAT)
-    }
+    const lain = await minta('/permohonan/cari', 'POST', { kata: '1405095203', filter: {} })
+    expect(lain.status).toBe(403)
+    expect(await pesanGalat(lain)).toBe(PESAN_LIHAT)
   })
 
   it('tanpa penyamaran, pencarian dengan NIK boleh', async () => {

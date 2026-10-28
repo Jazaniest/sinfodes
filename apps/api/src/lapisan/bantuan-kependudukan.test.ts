@@ -135,8 +135,8 @@ describe('sesi bantuan tidak pernah menulis (rencana 8E1 Tugas 7)', () => {
     expect(await jejak()).toEqual([])
   })
 
-  it('daftar pencarian-baca tepat dua jalur: /penduduk/cari dan /keluarga/cari', () => {
-    expect([...JALUR_CARI_BACA]).toEqual(['/penduduk/cari', '/keluarga/cari'])
+  it('daftar pencarian-baca tepat tiga jalur: /cari, /penduduk/cari, dan /keluarga/cari', () => {
+    expect([...JALUR_CARI_BACA]).toEqual(['/cari', '/penduduk/cari', '/keluarga/cari'])
   })
 })
 

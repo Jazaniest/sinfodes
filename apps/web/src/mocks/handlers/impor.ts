@@ -1,7 +1,7 @@
 import { http, HttpResponse } from 'msw'
 import { z } from 'zod'
-import { pad2, tahunDariDuaDigit, tanggalValid } from '@/domain/format/kalender'
-import { tanggalIsoWib, waktuIsoWib } from '@/domain/format/tanggal'
+import { waktuIsoWib } from '@/domain/format/tanggal'
+import { tanggalTerbitDariNomorKk } from '@/domain/impor/terbit'
 import { cocokkanKolom, periksaPemetaan } from '@/domain/impor/kolom'
 import { periksaImpor, type BarisSiap } from '@/domain/impor/periksa'
 import { konfirmasiImporSchema, type LaporanImpor } from '@/domain/impor/schema'
@@ -45,13 +45,6 @@ function angkaTerdaftar(db: DbDemo, baris: LaporanImpor['baris']): Pick<LaporanI
   const nik = new Set(db.penduduk.flatMap((p) => (p.nik ? [p.nik] : [])))
   const kk = new Set(db.keluarga.map((k) => k.nomorKk))
   return { nikTerdaftar: [...angka].filter((a) => nik.has(a)), nomorKkTerdaftar: [...angka].filter((a) => kk.has(a)) }
-}
-
-/** Tanggal terbit dari nomor KK (DDMMYY di digit 7-12); bila tidak masuk akal, hari ini. */
-function tanggalTerbitDari(nomorKk: string, sekarang: Date): string {
-  const [hari, bulan, yy] = [nomorKk.slice(6, 8), nomorKk.slice(8, 10), nomorKk.slice(10, 12)].map(Number)
-  const tahun = tahunDariDuaDigit(yy, bulan, hari, sekarang)
-  return tanggalValid(tahun, bulan, hari) ? `${tahun}-${pad2(bulan)}-${pad2(hari)}` : tanggalIsoWib(sekarang)
 }
 
 export const handlerImpor = [
@@ -129,7 +122,7 @@ export const handlerImpor = [
           const { wilayah } = urut[0]
           const kk: Keluarga = {
             id: idBaru(d, 'kk'), desaId: pengguna.desaId, nomorKk, kepalaKeluargaId: '', dusunId: wilayah.dusunId, rw: wilayah.rw,
-            rt: wilayah.rt, tanggalTerbit: tanggalTerbitDari(nomorKk, sekarang), anggotaIds: [],
+            rt: wilayah.rt, tanggalTerbit: tanggalTerbitDariNomorKk(nomorKk, sekarang), anggotaIds: [],
           }
           d.keluarga.push(kk)
           for (const b of urut) {
