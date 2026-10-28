@@ -4,6 +4,21 @@ Semua perubahan penting Sinfodes dicatat di sini. Formatnya mengikuti [Keep a Ch
 
 ## [Belum dirilis]
 
+### Ditambahkan (tahap 8D2)
+
+- **Akses bantuan Tim Sinfodes di server nyata.** Desa memegang kuncinya:
+  - Sekretaris atau Kepala Desa memberi, melihat, dan mencabut akses lewat `GET/POST/DELETE /pengaturan/akses-sinfodes` (2 jam, 24 jam, atau 3 hari; desa Ditangguhkan tetap bisa). Memberi akses baru menutup yang lama.
+  - Konsol menerbitkan tiket lewat `POST /konsol/desa/:id/tiket-bantuan` (hanya bila desa sudah memberi akses): sekali pakai, berumur 60 detik, hanya hash yang tersimpan, 6 per menit per akun.
+  - Tiket ditukar di alamat desa lewat `POST /sesi/bantuan` menjadi sesi berperan `bantuan` di cookie panel (menganggur 30 menit, batas mutlak 8 jam, mati seketika bila akses dicabut atau habis). Semua sebab gagal menjawab satu kalimat yang sama; penukaran dibatasi 10 per menit per IP.
+- **Satu lapisan menengah untuk sesi bantuan, bukan per rute.** Semua penulisan ditolak sebelum rute dipilih (jalur baru dari modul berikutnya otomatis tertolak; hanya keluar, masuk panel, tukar tiket, dan pencarian-baca yang lolos); setiap halaman yang dibuka dicatat di jejak bantuan yang tak bisa dihapus **sebelum** data dikirim (jejak gagal berarti permintaan gagal); bila desa meminta, NIK dan nomor KK disamarkan `1405••••••••8002` di semua jawaban JSON berdasarkan isinya (bukan nama kunci), pencarian yang memuat lima angka berurutan ditolak, dan unduhan bukan-JSON ditolak.
+- **Basis data.** Migrasi `0004_akses_bantuan`: `akses_bantuan` dan `tiket_bantuan` (platform; desa menulis hanya kolom `dicabut` dan `dipakai`, Konsol hanya membaca akses dan menambah tiket), `sesi_bantuan` (desa-privat, RLS), dan `jejak_bantuan` (hanya tambah). Konsol tetap tanpa hak atas data desa-privat.
+- **Audit.** Desa mencatat pemberian, pencabutan, pemakaian tiket, dan penyamaran yang dimatikan; platform mencatat penerbitan tiket. Tanpa NIK, email, atau token. Kunci log `tiket` disamarkan.
+- **Uji.** Uji meta hak kolom dan RLS keempat tabel; uji repositori (kunci penasihat dan klaim tiket serentak), uji sesi bantuan, uji lapisan beserta mutasi pembuktian, uji rute desa dan tiket, dan kembaran konformansi dari uji tiruan `bantuan` dan `akses-sinfodes`.
+
+### Diubah (tahap 8D2)
+
+- Beda sengaja dari API tiruan, dicatat di uji konformansi: tanpa token `bantuan.` (sesi di cookie HttpOnly); email Tim kosong di alamat desa; tiket baru tidak membatalkan tiket lama yang belum dipakai; jalur `/cari`, `/keluarga/cari`, dan `/permohonan/cari` belum ada di server (ditolak sebagai penulisan sampai modulnya dibangun); penyamaran berbasis isi; jejak juga mencatat GET yang berakhir 4xx; riwayat dibatasi 20 akses dan 300 halaman per sesi; tanpa riwayat contoh.
+
 ### Ditambahkan (tahap 8D1)
 
 - **Masuk dan sesi untuk empat pelaku di server nyata.**

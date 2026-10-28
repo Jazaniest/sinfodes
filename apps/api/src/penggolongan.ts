@@ -17,6 +17,9 @@ export const GOLONGAN_TABEL: Readonly<Record<string, Golongan>> = {
   pengguna_konsol: 'platform',
   sesi_konsol: 'platform',
   kunci_masuk_platform: 'platform',
+  // Akses bantuan (SPEC-V0.3 §8.6): status dan tiket adalah data platform yang ditulis desa; keduanya ber-RLS per peran.
+  akses_bantuan: 'platform',
+  tiket_bantuan: 'platform',
   dusun: 'desa-privat',
   pengguna: 'desa-privat',
   keluarga: 'desa-privat',
@@ -24,7 +27,9 @@ export const GOLONGAN_TABEL: Readonly<Record<string, Golongan>> = {
   akun_warga: 'desa-privat',
   sesi_warga: 'desa-privat',
   kunci_masuk_desa: 'desa-privat',
+  sesi_bantuan: 'desa-privat',
   jejak_audit: 'audit',
+  jejak_bantuan: 'audit',
   jejak_audit_platform: 'audit',
 }
 

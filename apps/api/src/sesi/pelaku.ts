@@ -18,6 +18,12 @@ export const ATURAN_SESI: Readonly<Record<KeluargaPelaku, { menganggurMs: number
   kabupaten: { menganggurMs: 2 * 3600_000, mutlakMs: 12 * 3600_000 },
 }
 
+/**
+ * Sesi bantuan Tim Sinfodes (SPEC-V0.3 §8.6) hidup di keluarga panel tetapi lebih pendek, seperti sesi Konsol; batas lain adalah
+ * masa berlaku aksesnya sendiri, diperiksa pada setiap permintaan.
+ */
+export const ATURAN_SESI_BANTUAN: Readonly<{ menganggurMs: number; mutlakMs: number }> = { menganggurMs: 30 * 60_000, mutlakMs: 8 * 3600_000 }
+
 /** Jalur di bawah /api/v1 (mis. `/warga/sesi`) menjadi keluarga pelaku; selain warga, Konsol, dan kabupaten berarti panel. */
 export function keluargaDariJalur(jalur: string): KeluargaPelaku {
   if (/^\/warga(\/|$)/.test(jalur)) return 'warga'

@@ -26,6 +26,7 @@ dist-ssr
 .superpowers/
 SPEC-DESAIN-FE.md
 SPEC-V0.2.md
+SPEC-V0.3.md
 RENCANA-*.md
 PANDUAN-DEMO.md
 CLAUDE.md
@@ -33,6 +34,9 @@ CLAUDE.md
 # Berkas sementara generator rute TanStack
 .tanstack/
 .gstack/
+
+# Keluaran sementara pelari uji (laporan JSON dari wadah pembungkus vitest)
+.vitest/
 
 # Rahasia server (SPEC-V0.3 §15.1). Nilai asli hidup di apps/api/.env.local; hanya .env.example yang masuk git.
 apps/api/.env*

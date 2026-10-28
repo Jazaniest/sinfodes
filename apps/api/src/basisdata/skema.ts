@@ -246,10 +246,55 @@ export const jejakAuditPlatform = pgTable('jejak_audit_platform', {
   ringkasan: jsonb('ringkasan').notNull(),
 })
 
+/** Status akses bantuan Tim Sinfodes (SPEC-V0.3 §8.6). Platform: ditulis desa, dibaca Konsol. */
+export const aksesBantuan = pgTable('akses_bantuan', {
+  id: text('id').primaryKey(),
+  desaId: text('desa_id').notNull(),
+  diberiOlehId: text('diberi_oleh_id').notNull(),
+  diberiOlehNama: text('diberi_oleh_nama').notNull(),
+  mulai: waktu('mulai').notNull(),
+  sampai: waktu('sampai').notNull(),
+  sembunyikanDataPribadi: boolean('sembunyikan_data_pribadi').notNull(),
+  dicabut: waktu('dicabut'),
+})
+
+export const tiketBantuan = pgTable('tiket_bantuan', {
+  id: text('id').primaryKey(),
+  desaId: text('desa_id').notNull(),
+  aksesId: text('akses_id').notNull(),
+  tokenHash: text('token_hash').notNull(),
+  olehId: text('oleh_id').notNull(),
+  olehNama: text('oleh_nama').notNull(),
+  dibuat: waktu('dibuat').notNull(),
+  berlakuSampai: waktu('berlaku_sampai').notNull(),
+  dipakai: waktu('dipakai'),
+})
+
+export const sesiBantuan = pgTable('sesi_bantuan', {
+  id: text('id').primaryKey(),
+  desaId: text('desa_id').notNull(),
+  aksesId: text('akses_id').notNull(),
+  tokenHash: text('token_hash').notNull(),
+  olehId: text('oleh_id').notNull(),
+  olehNama: text('oleh_nama').notNull(),
+  dibuat: waktu('dibuat').notNull(),
+  terakhirAktif: waktu('terakhir_aktif').notNull(),
+  dicabut: waktu('dicabut'),
+})
+
+export const jejakBantuan = pgTable('jejak_bantuan', {
+  urut: bigint('urut', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
+  desaId: text('desa_id').notNull(),
+  sesiId: text('sesi_id').notNull(),
+  jalur: text('jalur').notNull(),
+  waktu: waktu('waktu').notNull(),
+})
+
 /** Tabel menurut nama SQL, dipakai uji meta. */
 export const TABEL_SKEMA = {
   desa, alias_alamat: aliasAlamat, kunci_data: kunciData, dusun, pengguna, keluarga, penduduk, sesi, jejak_audit: jejakAudit,
   akun_warga: akunWarga, sesi_warga: sesiWarga, kunci_masuk_desa: kunciMasukDesa, kabupaten_mitra: kabupatenMitra,
   pengguna_kabupaten: penggunaKabupaten, sesi_kabupaten: sesiKabupaten, pengguna_konsol: penggunaKonsol, sesi_konsol: sesiKonsol,
   kunci_masuk_platform: kunciMasukPlatform, jejak_audit_platform: jejakAuditPlatform,
+  akses_bantuan: aksesBantuan, tiket_bantuan: tiketBantuan, sesi_bantuan: sesiBantuan, jejak_bantuan: jejakBantuan,
 } as const

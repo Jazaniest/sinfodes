@@ -12,8 +12,14 @@ export type KabupatenAlamat = { kode: string; nama: string; label: string; mitra
 /** Alamat permintaan: jenisnya, desa pemilik alamat (bila ada), slug baru bila alias lama, dan kabupatennya bila alamat kabupaten. */
 export type AlamatPermintaan = { konteks: KonteksAlamat; desa: DesaRekam | null; labelBaru: string | null; kabupaten: KabupatenAlamat | null }
 
-/** Pelaku panel desa: pengguna dari sesi yang sah, plus ID sesinya (untuk keluar dan jejak audit). */
-export type PelakuPanel = PenggunaSesi & { jenis: 'panel'; sesiId: string }
+/** Batas sesi bantuan Tim Sinfodes (SPEC-V0.3 §8.6); hanya ada pada pelaku panel berperan `bantuan`. */
+export type BantuanPelaku = { aksesId: string; sampai: Date; sembunyikanDataPribadi: boolean }
+
+/**
+ * Pelaku panel desa: pengguna dari sesi yang sah, plus ID sesinya (untuk keluar dan jejak audit). Sesi bantuan Tim Sinfodes juga
+ * pelaku panel: `peran: 'bantuan'`, `sesiId` milik `sesi_bantuan`, dan `bantuan` berisi batas aksesnya.
+ */
+export type PelakuPanel = PenggunaSesi & { jenis: 'panel'; sesiId: string; bantuan?: BantuanPelaku }
 /** Nama lama dari 8C; maknanya tetap pelaku panel. */
 export type Pelaku = PelakuPanel
 export type PelakuWarga = { jenis: 'warga'; sesiId: string; pendudukId: string; desaId: string }
