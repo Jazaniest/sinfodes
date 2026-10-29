@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { berlakuSampai, hariKerjaBerlalu, lamaMenunggu } from './waktu'
+import { awalPeriode, berlakuSampai, hariKerjaBerlalu, lamaMenunggu } from './waktu'
 
 // Kamis, 24 September 2026 pukul 09.00 WIB.
 const SEKARANG = new Date('2026-09-24T02:00:00Z')
@@ -40,6 +40,18 @@ describe('lamaMenunggu', () => {
       teks: '5 hari kerja',
       nada: 'biasa',
     })
+  })
+})
+
+describe('awalPeriode (tahap 8F2a)', () => {
+  const ACUAN = new Date('2026-10-27T13:07:00Z') // Selasa 27 Oktober 2026 pukul 20.07 WIB
+  it('14 hari terakhir = hari ini dan 13 hari sebelumnya menurut WIB', () => expect(awalPeriode(14, ACUAN)).toBe('2026-10-14'))
+  it('satu hari = hari ini', () => expect(awalPeriode(1, ACUAN)).toBe('2026-10-27'))
+  it('hari ini ditentukan menurut WIB, bukan UTC', () =>
+    expect(awalPeriode(1, new Date('2026-10-27T18:00:00Z'))).toBe('2026-10-28'))
+  it('melewati pergantian tahun', () => {
+    expect(awalPeriode(365, ACUAN)).toBe('2025-10-28')
+    expect(awalPeriode(30, new Date('2026-01-05T05:00:00Z'))).toBe('2025-12-07')
   })
 })
 

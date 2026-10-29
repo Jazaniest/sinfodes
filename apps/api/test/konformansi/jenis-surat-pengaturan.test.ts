@@ -1,7 +1,7 @@
 // Kembaran dari apps/web/src/mocks/handlers/{jenis-surat,tata-letak,pengaturan}.test.ts untuk bagian 8F1: pertanyaan yang sama
 // diajukan ke server sungguhan lewat `panggilApi` dan modul `api/*` web yang sama, dan jawabannya harus sama dengan API tiruan.
-// Butir yang bergantung pada permohonan (pemakaian jenis, surat terbit, pembekuan tata letak, nomor terbit) menunggu 8F2 dan
-// ditulis sebagai `it.todo`; butir yang bergantung pada Identitas desa dan lambang (`PUT /pengaturan/desa`) menunggu 8G/8H.
+// Butir yang bergantung pada permohonan sudah menjadi uji di 8F2a (pemakaian jenis, nomor terbit); yang bergantung pada tanda tangan
+// (surat terbit, pembekuan tata letak) menunggu 8F2b dan ditulis sebagai `it.todo`; butir yang bergantung pada Identitas desa dan lambang (`PUT /pengaturan/desa`) menunggu 8G/8H.
 // Perbedaan yang sudah diputuskan ditandai `Perbedaan sengaja:` pada butirnya.
 import { describe, expect, it } from 'vitest'
 import { panggilApi } from '@/api/client'
@@ -232,16 +232,31 @@ describe('jenis surat buatan desa: hapus, arsipkan, aktifkan lagi (jenis-surat.t
       for (const aksi of [hapusJenisSurat, arsipkanJenisSurat, aktifkanLagiJenisSurat]) expect((await galatDari(aksi(j.id))).kode).toBe('FORBIDDEN')
     }
   })
-  // Perbedaan sengaja: jumlah dan "dipakai" nol sampai tabel permohonan ada (rencana 8F1 Ruling 7).
-  it('Perbedaan sengaja: jumlahPakai nol dan dipakai false pada setiap jenis sampai 8F2', async () => {
+  it('daftar jenis memuat dipakai dan jumlahPakai menurut permohonan; SKD dipakai (jenis-surat.test.ts)', async () => {
     await masukSebagai(AKUN_UJI.operator)
     const { data } = await daftarJenisSurat()
-    expect(data.every((j) => j.jumlahPakai === 0 && !j.dipakai)).toBe(true)
+    const skd = data.find((j) => j.kode === 'SKD')
+    expect(skd).toMatchObject({ dipakai: true })
+    expect(skd?.jumlahPakai).toBeGreaterThan(0)
+    // 12 bulan terakhir = 365 hari WIB dari jam uji (24 September 2026): pemakaian dihitung ulang dengan SQL lain sebagai pembanding.
+    const baris = await sql()`select jenis_id, count(*) filter (where (masuk_pada at time zone 'Asia/Jakarta')::date >= '2025-09-25')::int as jumlah from permohonan
+      where desa_id = 'desa_sungai_sialang' group by jenis_id`
+    const dariSql = new Map(baris.map((b) => [b.jenis_id as string, b.jumlah as number]))
+    for (const j of data) expect({ jumlah: j.jumlahPakai, dipakai: j.dipakai }, j.kode).toEqual({ jumlah: dariSql.get(j.id) ?? 0, dipakai: dariSql.has(j.id) })
   })
-  it.todo('8F2: hapus jenis desa yang sudah dipakai permohonan → 409 "Jenis ini sudah pernah dipakai. Arsipkan saja." (jenis-surat.test.ts)')
-  it.todo('8F2: daftar jenis memuat dipakai dan jumlahPakai menurut permohonan; SKD dipakai (jenis-surat.test.ts)')
-  it.todo('8F2: jenis arsip tidak bisa membuat permohonan baru dari loket; permohonan yang berjalan tetap bisa diselesaikan dan surat terbitnya bisa diverifikasi')
-  it.todo('8F2: ubah teks jenis tidak mengubah surat yang sudah terbit; isian wajib baru menahan tanda tangan sampai dilengkapi')
+  it('hapus jenis desa yang sudah dipakai permohonan → 409 "Jenis ini sudah pernah dipakai. Arsipkan saja." (jenis-surat.test.ts)', async () => {
+    await masukSebagai(AKUN_UJI.operator)
+    const j = await jenisBaru()
+    await sql()`insert into permohonan (id, desa_id, dusun_id, tahun, no_urut, jenis_id, kanal, pemohon_id, isian_sandi, status, masuk_pada)
+      select 'srt_uji_pakai', desa_id, dusun_id, 2026, 9000, ${j.id}, 'loket', id, 'v1.x', 'menunggu', now() from penduduk where id = 'pdk_siti_rahmah'`
+    expect(await galatDari(hapusJenisSurat(j.id))).toMatchObject({ kode: 'CONFLICT', message: 'Jenis ini sudah pernah dipakai. Arsipkan saja.' })
+    expect(Number((await sql()`select count(*)::int as n from jenis_surat where id = ${j.id}`)[0].n)).toBe(1)
+    await arsipkanJenisSurat(j.id)
+  })
+  // Jenis arsip menolak permohonan baru dari loket, permohonan berjalan tetap diproses, dan ubah teks jenis tidak mengubah lembar terbit:
+  // sudah menjadi uji di permohonan.test.ts (8F2a). Sisanya butuh tanda tangan.
+  it.todo('8F2b: permohonan jenis arsip yang berjalan bisa diselesaikan dan surat terbitnya bisa diverifikasi')
+  it.todo('8F2b: isian wajib baru pada jenis menahan tanda tangan sampai dilengkapi')
 })
 
 describe('daftar jenis surat: penyaring status (jenis-surat.test.ts, SPEC-V0.2 12.1 butir 6)', () => {
@@ -328,7 +343,7 @@ describe('GET dan PUT /surat/tata-letak (tata-letak.test.ts)', () => {
     await sql()`delete from pengaturan_surat where desa_id = 'desa_tanjung_lamo'`
     expect(await ambilTataLetak()).toEqual(pengaturanBawaan('desa_tanjung_lamo').tataLetak)
   })
-  it.todo('8F2: tata letak dan kop dibekukan saat surat terbit; surat terbit sebelum tata letak diganti tetap memakai salinannya (tata-letak.test.ts)')
+  it.todo('8F2b: tata letak dan kop dibekukan saat surat terbit; surat terbit sebelum tata letak diganti tetap memakai salinannya (tata-letak.test.ts)')
 })
 
 describe('GET dan PUT /pengaturan/penomoran (pengaturan.test.ts)', () => {
@@ -342,12 +357,11 @@ describe('GET dan PUT /pengaturan/penomoran (pengaturan.test.ts)', () => {
       expect((await galatDari(ambilPenomoran())).kode).toBe('FORBIDDEN')
     }
   })
-  // Perbedaan sengaja: tiruan menghitung contoh dari surat yang sudah terbit di data demo; server belum punya tabel permohonan (Ruling 10).
-  it('Perbedaan sengaja: format bawaan dan contoh nomor berikutnya = 1 sampai ada surat terbit (8F2); format kembar ditolak (fokus review 3)', async () => {
+  it('format bawaan dan contoh nomor berikutnya mengikuti surat yang sudah terbit; format kembar ditolak (fokus review 3)', async () => {
     await masukSebagai(AKUN_UJI.sekdes)
     const p = await ambilPenomoran()
     expect(p).toMatchObject({ formatNomor: '{klasifikasi}/{urut}/{kodeDesa}/{bulanRomawi}/{tahun}', urutan: 'per-tahun', kodeSurat: 'SS' })
-    expect(p.contoh).toMatchObject({ urutPerTahun: 1, urutPerJenis: 1 })
+    expect(p.contoh.urutPerTahun).toBeGreaterThan(1)
     const baru = await simpanPenomoran({ formatNomor: '{tahun}/{urut}/{kodeDesa}', urutan: 'per-tahun', kodeSurat: 'sl' })
     expect(baru).toMatchObject({ formatNomor: '{tahun}/{urut}/{kodeDesa}', kodeSurat: 'SL' })
     expect((await sql()`select kode_surat from desa where id = 'desa_sungai_sialang'`)[0].kode_surat).toBe('SL')
@@ -366,5 +380,10 @@ describe('GET dan PUT /pengaturan/penomoran (pengaturan.test.ts)', () => {
     expect(baru).toMatchObject({ formatNomor: '{klasifikasi}/{kodeJenis}/{urut}/{tahun}', urutan: 'per-jenis' })
     expect(baru.contoh.kode).toMatch(/^[A-Z]+$/)
   })
-  it.todo('8F2: contoh penomoran mengikuti nomor yang sudah terbit (urutPerTahun > urutPerJenis pada data demo)')
+  it('contoh penomoran: urut per tahun (satu seri semua jenis) tidak lebih kecil dari urut per jenis, dan keduanya melampaui 1 pada data demo', async () => {
+    await masukSebagai(AKUN_UJI.sekdes)
+    const { contoh } = await ambilPenomoran()
+    expect(contoh.urutPerJenis).toBeGreaterThan(1)
+    expect(contoh.urutPerTahun).toBeGreaterThanOrEqual(contoh.urutPerJenis)
+  })
 })

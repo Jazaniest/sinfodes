@@ -35,10 +35,14 @@ export async function bacaJenisDesa(db: Db): Promise<JenisSurat[]> {
   return (await db.select().from(jenisSurat).orderBy(asc(jenisSurat.urutan))).map(dariBaris)
 }
 
-/** Satu jenis menurut id, atau null bila tidak ada atau milik desa lain (RLS menyembunyikannya). `kunci` mengunci barisnya (FOR UPDATE). */
-export async function bacaJenisSatu(db: Db, id: string, opsi: { kunci?: boolean } = {}): Promise<JenisSurat | null> {
+/**
+ * Satu jenis menurut id, atau null bila tidak ada atau milik desa lain (RLS menyembunyikannya). `kunci` mengunci barisnya (FOR
+ * UPDATE, untuk mengubah jenis); `bagi` mengunci bersama (FOR SHARE, untuk permohonan yang bergantung padanya: arsip dan hapus
+ * menunggu, sisip permohonan tidak saling menunggu).
+ */
+export async function bacaJenisSatu(db: Db, id: string, opsi: { kunci?: boolean; bagi?: boolean } = {}): Promise<JenisSurat | null> {
   const kueri = db.select().from(jenisSurat).where(eq(jenisSurat.id, id))
-  const [b] = await (opsi.kunci ? kueri.for('update') : kueri)
+  const [b] = await (opsi.kunci ? kueri.for('update') : opsi.bagi ? kueri.for('share') : kueri)
   return b ? dariBaris(b) : null
 }
 

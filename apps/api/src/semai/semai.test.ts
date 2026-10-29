@@ -2,7 +2,9 @@ import { ID_SUNGAI_SIALANG, KATA_SANDI_DEMO } from '@sinfodes/demo/data/desa-dem
 import { bangkitkanDb } from '@sinfodes/demo/generator'
 import type { DbDemo } from '@sinfodes/demo/tipe-db'
 import { SEKARANG_UJI } from '@sinfodes/demo/uji-akun'
+import { waktuIsoWib } from '@sinfodes/kontrak/format/tanggal'
 import { jenisSuratSchema } from '@sinfodes/kontrak/surat/jenis'
+import { permohonanSchema, type Permohonan } from '@sinfodes/kontrak/surat/permohonan'
 import { tataLetakSuratSchema } from '@sinfodes/kontrak/surat/tata-letak'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { periksaKataSandi } from '../kripto/kata-sandi'
@@ -351,5 +353,99 @@ describe('semai jenis surat dan pengaturan surat (rencana 8F1 Tugas 3)', () => {
     expect(await hitung('pengaturan_surat')).toBe(dunia.desa.length)
     const [b] = await uji.sqlMigrasi`select format_nomor from pengaturan_surat where desa_id = ${ID_SUNGAI_SIALANG}`
     expect(b.format_nomor).toBe('{urut}/{tahun}')
+  })
+})
+
+describe('semai permohonan surat (rencana 8F2a Tugas 3)', () => {
+  const riwayatDunia = () => dunia.permohonan.reduce((n, p) => n + p.riwayat.length, 0)
+
+  it('jumlah baris permohonan dan riwayat_surat sama dengan dunia demo, distribusi status per desa sama; ringkasan memuatnya', async () => {
+    expect(dunia.permohonan.length).toBeGreaterThan(0)
+    expect(await hitung('permohonan')).toBe(dunia.permohonan.length)
+    expect(await hitung('riwayat_surat')).toBe(riwayatDunia())
+    for (const desa of dunia.desa) {
+      const baris = await uji.sqlMigrasi`select status, count(*)::int as n from permohonan where desa_id = ${desa.id} group by status`
+      const dariDb = Object.fromEntries(baris.map((b) => [b.status, b.n]))
+      const dariDunia: Record<string, number> = {}
+      for (const p of dunia.permohonan.filter((x) => x.desaId === desa.id)) dariDunia[p.status] = (dariDunia[p.status] ?? 0) + 1
+      expect(dariDb, desa.id).toEqual(dariDunia)
+    }
+    const ringkasan = await semaiDunia(uji.sqlMigrasi, penyandi, SEKARANG_UJI, opsiUji())
+    expect(ringkasan).toMatchObject({ permohonan: dunia.permohonan.length, riwayatSurat: riwayatDunia() })
+  })
+
+  it('setiap baris, dibentuk ulang bersama riwayatnya dan didekripsi, lolos permohonanSchema dan sama persis dengan dunia demo', async () => {
+    const baris = await uji.sqlMigrasi`select *, terbit_berlaku_sampai::text as berlaku from permohonan order by id`
+    const riwayat = await uji.sqlMigrasi`select * from riwayat_surat order by urutan`
+    const perPermohonan = new Map<string, Permohonan['riwayat']>()
+    for (const r of riwayat) {
+      perPermohonan.set(r.permohonan_id as string, [
+        ...(perPermohonan.get(r.permohonan_id as string) ?? []),
+        { id: r.id, kejadian: r.kejadian, waktu: waktuIsoWib(r.waktu as Date), oleh: r.oleh, catatan: r.catatan } as Permohonan['riwayat'][number],
+      ])
+    }
+    const waktu = (d: Date | null) => (d ? waktuIsoWib(d) : null)
+    const dariId = new Map(dunia.permohonan.map((p) => [p.id, p]))
+    expect(baris.length).toBe(dunia.permohonan.length)
+    for (const b of baris) {
+      const desaId = b.desa_id as string
+      const bentuk = permohonanSchema.parse({
+        id: b.id, desaId, dusunId: b.dusun_id, noUrut: b.no_urut, jenisId: b.jenis_id, kanal: b.kanal, pemohonId: b.pemohon_id,
+        subjekId: b.subjek_id, mutasiId: b.mutasi_id,
+        isian: JSON.parse(penyandi.bukaSandi(b.isian_sandi as string, ruang.permohonanIsian(desaId))),
+        status: b.status, tahap: b.tahap, dikembalikan: b.dikembalikan, penolakan: b.penolakan, pembatalan: b.pembatalan, diambil: b.diambil,
+        masukPada: waktu(b.masuk_pada as Date), ditutupPada: waktu(b.ditutup_pada as Date | null), lampiran: b.lampiran,
+        catatanInternal: b.catatan_internal, riwayat: perPermohonan.get(b.id as string) ?? [],
+        terbit: b.terbit_nomor
+          ? {
+              nomor: b.terbit_nomor, tahun: b.terbit_tahun, urut: b.terbit_urut, kodeVerifikasi: b.terbit_kode, pada: waktu(b.terbit_pada as Date),
+              penandatangan: b.terbit_penandatangan, mode: b.terbit_mode, berlakuSampai: b.berlaku,
+              lembar: JSON.parse(penyandi.bukaSandi(b.terbit_lembar_sandi as string, ruang.permohonanLembar(desaId))),
+              tataLetak: b.terbit_tata_letak, kop: b.terbit_kop,
+            }
+          : null,
+      })
+      expect(bentuk, b.id as string).toEqual(dariId.get(b.id as string))
+      expect(b.hash_dokumen, b.id as string).toBeNull()
+      expect(b.tanda_tangan, b.id as string).toBeNull()
+    }
+  })
+
+  it('no_urut unik per desa dan tahun, dan tahun = tahun masuk menurut WIB', async () => {
+    const ganda = await uji.sqlMigrasi`select desa_id, tahun, no_urut from permohonan group by desa_id, tahun, no_urut having count(*) > 1`
+    expect(ganda).toEqual([])
+    const baris = await uji.sqlMigrasi`select id, tahun, masuk_pada from permohonan`
+    expect(baris.length).toBe(dunia.permohonan.length)
+    for (const b of baris) expect(b.tahun, b.id as string).toBe(Number(waktuIsoWib(b.masuk_pada as Date).slice(0, 4)))
+  })
+
+  it('isian dan lembar tersandi (v1.), dan tak satu pun kolom teks atau jsonb lain memuat 16 angka berurutan', async () => {
+    const [{ n }] = await uji.sqlMigrasi`select count(*)::int as n from permohonan where isian_sandi not like 'v1.%'
+      or (terbit_lembar_sandi is not null and terbit_lembar_sandi not like 'v1.%')`
+    expect(n).toBe(0)
+    const kolom = await uji.sqlMigrasi`select table_name, column_name from information_schema.columns
+      where table_schema = 'public' and table_name in ('permohonan', 'riwayat_surat') and data_type in ('text', 'jsonb')
+        and column_name not in ('isian_sandi', 'terbit_lembar_sandi')`
+    expect(kolom.length).toBeGreaterThan(10)
+    for (const k of kolom) {
+      const [{ jumlah }] = await uji.sqlMigrasi.unsafe(`select count(*)::int as jumlah from ${k.table_name} where ${k.column_name}::text ~ '[0-9]{16}'`)
+      expect(jumlah, `${k.table_name}.${k.column_name}`).toBe(0)
+    }
+    // Pindaian tidak kosong makna: lembar beku memang memuat NIK, dan itu hanya ada di dalam sandi.
+    const lembar = await uji.sqlMigrasi`select desa_id, terbit_lembar_sandi from permohonan where terbit_lembar_sandi is not null limit 5`
+    expect(lembar.length).toBe(5)
+    for (const b of lembar) {
+      const teks = penyandi.bukaSandi(b.terbit_lembar_sandi as string, ruang.permohonanLembar(b.desa_id as string))
+      expect(teks).toMatch(/[0-9]{16}/)
+    }
+  })
+
+  it('semai kedua dengan acuan yang sama tidak menambah baris dan tidak menyandikan ulang isian', async () => {
+    const [sebelum] = await uji.sqlMigrasi`select id, isian_sandi from permohonan order by id limit 1`
+    const jumlah = [await hitung('permohonan'), await hitung('riwayat_surat')]
+    await semaiDunia(uji.sqlMigrasi, penyandi, SEKARANG_UJI, opsiUji())
+    expect([await hitung('permohonan'), await hitung('riwayat_surat')]).toEqual(jumlah)
+    const [sesudah] = await uji.sqlMigrasi`select id, isian_sandi from permohonan where id = ${sebelum.id}`
+    expect(sesudah.isian_sandi).toBe(sebelum.isian_sandi)
   })
 })

@@ -7,10 +7,11 @@ import { samaDenganSiap } from '@sinfodes/kontrak/surat/tata-letak-siap'
 import { detailJenisSuratSchema, periksaJenisSurat, ubahJenisSuratSchema, type DetailJenisSurat } from '@sinfodes/kontrak/surat/ubah-jenis'
 import { randomUUID } from 'node:crypto'
 import { z } from 'zod'
-import { pelanggaranUnik } from '../../basisdata/galat-pg'
+import { pelanggaranKunciAsing, pelanggaranUnik } from '../../basisdata/galat-pg'
 import type { Db } from '../../basisdata/klien'
 import { GalatApp } from '../../galat'
 import { galatField, galatIsian } from '../../galat-isian'
+import { KENDALA_JENIS } from '../permohonan/repositori-tulis'
 import { namaPejabat } from '../pengaturan-surat/pejabat'
 import { bacaPengaturanSurat } from '../pengaturan-surat/repositori'
 import { pemakaianJenis } from './pemakaian'
@@ -31,8 +32,8 @@ export function bacaStatusJenis(mentah: string | undefined): StatusJenis | null 
 }
 
 /** Katalog jenis surat desa beserta pemakaiannya, satu halaman (SPEC §3.4), opsional disaring menurut status. */
-export async function daftarJenis(k: Pick<KonteksJenis, 'db' | 'desaId'>, status: StatusJenis | null): Promise<HasilDaftarJenis> {
-  const pakai = await pemakaianJenis(k.db, k.desaId)
+export async function daftarJenis(k: Pick<KonteksJenis, 'db' | 'desaId' | 'sekarang'>, status: StatusJenis | null): Promise<HasilDaftarJenis> {
+  const pakai = await pemakaianJenis(k.db, k.desaId, k.sekarang)
   const data = (await bacaJenisDesa(k.db))
     .filter((j) => status === null || statusJenis(j) === status)
     .map((j) => ({ ...j, jumlahPakai: pakai.jumlah.get(j.id) ?? 0, dipakai: pakai.dipakai.has(j.id) }))
@@ -47,7 +48,7 @@ export async function daftarJenis(k: Pick<KonteksJenis, 'db' | 'desaId'>, status
 export async function detailJenis(k: KonteksJenis, id: string): Promise<DetailJenisSurat> {
   const jenis = await bacaJenisSatu(k.db, id)
   if (!jenis) throw new GalatApp('NOT_FOUND', PESAN_TIDAK_DITEMUKAN, 404)
-  const pakai = await pemakaianJenis(k.db, k.desaId)
+  const pakai = await pemakaianJenis(k.db, k.desaId, k.sekarang)
   return detailJenisSuratSchema.parse({
     jenis: { ...jenis, jumlahPakai: pakai.jumlah.get(jenis.id) ?? 0, dipakai: pakai.dipakai.has(jenis.id) },
     contoh: { pemohon: pemohonContoh(k.desaId, k.sekarang), tiruan: true, subjek: null, mutasi: null, isian: {} },
@@ -58,6 +59,7 @@ export async function detailJenis(k: KonteksJenis, id: string): Promise<DetailJe
 
 const PESAN_BAWAAN = 'Jenis bawaan tidak bisa dihapus atau diarsipkan.'
 const PESAN_KODE_DIPAKAI = 'Kode sudah dipakai jenis surat lain.'
+const PESAN_JENIS_TERPAKAI = 'Jenis ini sudah pernah dipakai. Arsipkan saja.'
 const tidakAda = () => new GalatApp('NOT_FOUND', PESAN_TIDAK_DITEMUKAN, 404)
 
 /** Jenis milik desa pada konteks, dikunci barisnya (FOR UPDATE), atau 404. Dipakai semua perubahan satu jenis. */
@@ -121,12 +123,18 @@ export async function ubahJenis(k: KonteksJenis, id: string, mentah: unknown): P
 }
 
 /** Menghapus jenis buatan desa yang belum dipakai permohonan mana pun; selebihnya diarsipkan (SPEC-V0.2 12.1). */
-export async function hapusJenis(k: Pick<KonteksJenis, 'db' | 'desaId'>, id: string): Promise<{ id: string }> {
+export async function hapusJenis(k: Pick<KonteksJenis, 'db' | 'desaId' | 'sekarang'>, id: string): Promise<{ id: string }> {
   const jenis = await ambilTerkunci(k.db, id)
   if (jenis.asal === 'bawaan') throw new GalatApp('VALIDATION', PESAN_BAWAAN, 422)
-  const pakai = await pemakaianJenis(k.db, k.desaId)
-  if (!bolehDihapus(jenis, pakai.dipakai.has(jenis.id))) throw new GalatApp('CONFLICT', 'Jenis ini sudah pernah dipakai. Arsipkan saja.', 409)
-  if ((await hapusBarisJenis(k.db, jenis.id)) !== 1) throw tidakAda()
+  const pakai = await pemakaianJenis(k.db, k.desaId, k.sekarang)
+  if (!bolehDihapus(jenis, pakai.dipakai.has(jenis.id))) throw new GalatApp('CONFLICT', PESAN_JENIS_TERPAKAI, 409)
+  try {
+    if ((await hapusBarisJenis(k.db, jenis.id)) !== 1) throw tidakAda()
+  } catch (e) {
+    // Lapis kedua: pemeriksaan di atas sudah menolak jenis terpakai, dan kunci asing RESTRICT menjaga yang lolos (rencana 8F2a Ruling 8).
+    if (pelanggaranKunciAsing(e, KENDALA_JENIS)) throw new GalatApp('CONFLICT', PESAN_JENIS_TERPAKAI, 409)
+    throw e
+  }
   return { id: jenis.id }
 }
 

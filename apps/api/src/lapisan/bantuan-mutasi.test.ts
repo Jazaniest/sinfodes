@@ -136,7 +136,7 @@ describe('sesi bantuan tidak pernah menulis mutasi dan laporan (rencana 8E2 Tuga
     expect(await jejak()).toEqual([])
   })
 
-  it('daftar pencarian-baca tepat tiga jalur: tidak ada rute mutasi atau laporan yang ikut', () => {
-    expect([...JALUR_CARI_BACA]).toEqual(['/cari', '/penduduk/cari', '/keluarga/cari'])
+  it('daftar pencarian-baca tepat empat jalur: tidak ada rute mutasi atau laporan yang ikut', () => {
+    expect([...JALUR_CARI_BACA]).toEqual(['/cari', '/penduduk/cari', '/keluarga/cari', '/permohonan/cari'])
   })
 })

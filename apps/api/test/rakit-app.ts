@@ -8,6 +8,7 @@ import { muatKonfigurasi, type Konfigurasi } from '../src/konfigurasi'
 import { buatPenyandi, buatKunciDataBaru, type Penyandi } from '../src/kripto/penyandi'
 import { buatTokenSesi } from '../src/kripto/token'
 import type { EfekSilang } from '../src/modul/mutasi/efek-silang'
+import type { EfekSurat } from '../src/modul/permohonan/efek-surat'
 import { buatPencatat } from '../src/log'
 import { KID_UJI, KUNCI_INDEKS_UJI, KUNCI_UTAMA_UJI } from './env-uji'
 
@@ -53,6 +54,8 @@ export type OpsiRakit = {
   ipKlien?: (c: Context) => string
   /** Menyuntik efek silang mutasi (mata-mata di uji); bawaan tanpa kerja. */
   efekSilang?: EfekSilang
+  /** Menyuntik efek aksi surat (mata-mata di uji); bawaan tanpa kerja. */
+  efekSurat?: EfekSurat
 }
 
 export function rakitApp(opsi: OpsiRakit = {}) {
@@ -67,6 +70,7 @@ export function rakitApp(opsi: OpsiRakit = {}) {
     penyandi: opsi.penyandi ?? penyandiTanpaDb(),
     ipKlien: opsi.ipKlien ?? ipUji,
     efekSilang: opsi.efekSilang,
+    efekSurat: opsi.efekSurat,
   })
   return { app, baris, json: () => baris.map((b) => JSON.parse(b) as Record<string, unknown>) }
 }

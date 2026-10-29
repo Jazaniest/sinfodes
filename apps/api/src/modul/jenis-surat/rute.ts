@@ -15,7 +15,7 @@ export function ruteJenisSurat(): Hono<LingkunganApp> {
 
   rute.get('/', async (c) => {
     const { db, desa } = butuhAkses(c, 'surat.lihat', TIDAK_BOLEH_LIHAT)
-    return c.json(await daftarJenis({ db, desaId: desa.desa.id }, bacaStatusJenis(c.req.query('status'))))
+    return c.json(await daftarJenis({ db, desaId: desa.desa.id, sekarang: c.get('waktu')() }, bacaStatusJenis(c.req.query('status'))))
   })
 
   rute.get('/:id', async (c) => {
@@ -35,7 +35,7 @@ export function ruteJenisSurat(): Hono<LingkunganApp> {
 
   rute.delete('/:id', async (c) => {
     const { db, desa } = butuhAkses(c, 'pengaturan.kelola', TIDAK_BOLEH_UBAH)
-    return c.json(await hapusJenis({ db, desaId: desa.desa.id }, c.req.param('id')))
+    return c.json(await hapusJenis({ db, desaId: desa.desa.id, sekarang: c.get('waktu')() }, c.req.param('id')))
   })
 
   rute.post('/:id/arsipkan', async (c) => {

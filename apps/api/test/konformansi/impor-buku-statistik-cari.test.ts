@@ -1,7 +1,7 @@
 // Kembaran dari apps/web/src/mocks/handlers/{impor,buku,statistik-ekspor,beranda-cari}.test.ts untuk bagian 8E3: pertanyaan yang sama
 // diajukan ke server sungguhan lewat `panggilApi` dan modul `api/*` web yang sama, dan jawabannya harus sama dengan API tiruan.
 // Perbedaan yang sudah diputuskan (rencana 8E3) ditandai `Perbedaan sengaja:`. Butir yang membaca "Buku hari ini" lewat beranda
-// diperiksa lewat SQL karena Beranda baru ada di 8G; butir surat pada Cari global menunggu 8F.
+// diperiksa lewat SQL karena Beranda baru ada di 8G.
 import { describe, expect, it } from 'vitest'
 import { ambilIsiBuku, daftarBuku } from '@/api/buku'
 import { cari } from '@/api/cari'
@@ -242,6 +242,24 @@ describe('POST /cari (SPEC §5.4)', () => {
     expect((await cari('1405095203918002')).penduduk).toEqual([])
   })
 
-  it.todo('POST /cari: nomor surat (bergaris miring) → surat itu; nama pemohon → permohonannya (menunggu surat, 8F)')
-  it.todo('POST /cari: Kepala Dusun hanya mendapat surat dari dusunnya (menunggu surat, 8F; fokus review 5)')
+  it('POST /cari: nomor surat (bergaris miring) → surat itu; nama pemohon → permohonannya', async () => {
+    await masukSebagai(AKUN_UJI.operator)
+    const [contoh] = await sql()`select p.id, p.terbit_nomor, d.nama from permohonan p join penduduk d on d.id = p.pemohon_id
+      where p.desa_id = 'desa_sungai_sialang' and p.terbit_nomor is not null order by p.masuk_pada desc, p.id limit 1`
+    const dariNomor = await cari(contoh.terbit_nomor as string)
+    expect(dariNomor.surat.map((s) => s.id)).toContain(contoh.id)
+    expect(dariNomor.surat.every((s) => s.nomor?.includes((contoh.terbit_nomor as string).toUpperCase()))).toBe(true)
+    const dariNama = await cari(contoh.nama as string)
+    expect(dariNama.surat.length).toBeGreaterThan(0)
+    expect(dariNama.surat.length).toBeLessThanOrEqual(5)
+    expect(dariNama.surat.every((s) => s.pemohon.toLowerCase().includes((contoh.nama as string).toLowerCase().split(' ')[0]))).toBe(true)
+  })
+
+  it('POST /cari: Kepala Dusun hanya mendapat surat dari dusunnya (fokus review 5)', async () => {
+    const [dalam] = await sql()`select terbit_nomor from permohonan where desa_id = 'desa_sungai_sialang' and dusun_id = 'dsn_ss_2' and terbit_nomor is not null limit 1`
+    const [luar] = await sql()`select terbit_nomor from permohonan where desa_id = 'desa_sungai_sialang' and dusun_id <> 'dsn_ss_2' and terbit_nomor is not null limit 1`
+    await masukSebagai(AKUN_UJI.kadus)
+    expect((await cari(dalam.terbit_nomor as string)).surat.length).toBeGreaterThan(0)
+    expect((await cari(luar.terbit_nomor as string)).surat).toEqual([])
+  })
 })

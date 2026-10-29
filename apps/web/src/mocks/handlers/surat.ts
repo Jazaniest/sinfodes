@@ -1,6 +1,5 @@
 import { http, HttpResponse } from 'msw'
 import { z } from 'zod'
-import { tanggalIsoWib } from '@/domain/format/tanggal'
 import { cocokPenduduk } from '@/domain/penduduk/cari'
 import type { Penduduk } from '@/domain/penduduk/schema'
 import type { Peran } from '@/domain/pengguna/schema'
@@ -12,12 +11,12 @@ import {
   cariPermohonanSchema, filterPermohonanSchema, STATUS_PERMOHONAN, STATUS_TERBUKA,
   type BarisPermohonan, type DetailPermohonan, type Permohonan, type StatusPermohonan,
 } from '@/domain/surat/permohonan'
+import { awalPeriode } from '@/domain/surat/waktu'
 import { dataMilik } from '../cakupan'
 import { API, balasDaftar, balasGalat, denganJaringan } from '../http'
 import type { DbDemo } from '@sinfodes/demo/tipe-db'
 import { bacaJson, balasField, balasIsianTidakValid, butuhKemampuan } from '../tulis'
 
-const HARI_MS = 86_400_000
 export const PERMOHONAN_TIDAK_DITEMUKAN = 'Permohonan tidak ditemukan.'
 const butuhPembaca = (request: Request) =>
   butuhKemampuan(request, 'surat.lihat', 'Peran Anda tidak berhak membuka Layanan Surat.')
@@ -81,12 +80,9 @@ export function suratMilik(pengguna: Parameters<typeof dataMilik>[0]) {
   }
 }
 
-/** Tanggal pertama periode (YYYY-MM-DD WIB): 14 hari terakhir berarti hari ini dan 13 hari sebelumnya. */
-const awalPeriode = (hari: number) => tanggalIsoWib(new Date(Date.now() - (hari - 1) * HARI_MS))
-
 /** Jumlah permohonan per jenis surat 12 bulan terakhir: urutan langkah 1 Buat surat dan halaman Jenis Surat. */
 export function hitungPakai(permohonan: readonly Permohonan[]): Map<string, number> {
-  const awal = awalPeriode(365)
+  const awal = awalPeriode(365, new Date())
   const pakai = new Map<string, number>()
   for (const p of permohonan) if (p.masukPada.slice(0, 10) >= awal) pakai.set(p.jenisId, (pakai.get(p.jenisId) ?? 0) + 1)
   return pakai
@@ -133,7 +129,7 @@ export const handlerSurat = [
       if (!filter.success) return balasGalat('VALIDATION', 'Filter tidak valid.', 422)
       const { permohonan, jenisSurat } = dataMilik(pengguna)
       const idJenis = idJenisDariKode(jenisSurat, filter.data.jenis)
-      const awal = awalPeriode(filter.data.periode)
+      const awal = awalPeriode(filter.data.periode, new Date())
       const status = Object.fromEntries(STATUS_PERMOHONAN.map((s) => [s, 0])) as Record<StatusPermohonan, number>
       for (const p of permohonan) {
         if ((idJenis === null || p.jenisId === idJenis) && dalamPeriode(p, awal)) status[p.status] += 1
@@ -151,7 +147,7 @@ export const handlerSurat = [
       const f = filter.data
       const { permohonan, jenisSurat, petaJenis, petaPenduduk } = suratMilik(pengguna)
       const idJenis = idJenisDariKode(jenisSurat, f.jenis)
-      const awal = awalPeriode(f.periode)
+      const awal = awalPeriode(f.periode, new Date())
       const daftar = permohonan
         .filter((p) => p.status === f.status && (idJenis === null || p.jenisId === idJenis) && dalamPeriode(p, awal))
         .sort(urutkan(f.status))

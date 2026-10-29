@@ -1,15 +1,12 @@
+import { awalPeriode } from '@sinfodes/kontrak/surat/waktu'
 import type { Db } from '../../basisdata/klien'
+import { bacaPemakaianJenis } from '../permohonan/repositori'
 
 /** `jumlah`: permohonan 12 bulan terakhir per jenis. `dipakai`: jenis yang pernah dipakai permohonan mana pun, kapan pun. */
 export type Pemakaian = { jumlah: ReadonlyMap<string, number>; dipakai: ReadonlySet<string> }
 
 /**
- * Titik sambung pemakaian jenis surat oleh permohonan (rencana 8F1 Ruling 7). Tabel permohonan baru ada di tahap 8F2, jadi sampai
- * itu jawabannya selalu kosong: belum ada jenis yang dipakai. 8F2 mengganti isi fungsi ini dan memasang kunci asing
- * `ON DELETE RESTRICT`, lalu mengubah `it.todo` penghapusan jenis terpakai menjadi uji sungguhan.
+ * Pemakaian jenis surat oleh permohonan (rencana 8F1 Ruling 7, diisi 8F2a). "12 bulan terakhir" = 365 hari menurut WIB,
+ * sama dengan tiruan. `dipakai` menentukan apakah jenis boleh dihapus; kunci asing `ON DELETE RESTRICT` menjaga yang serentak.
  */
-export function pemakaianJenis(db: Db, desaId: string): Promise<Pemakaian> {
-  void db
-  void desaId
-  return Promise.resolve({ jumlah: new Map(), dipakai: new Set() })
-}
+export const pemakaianJenis = (db: Db, desaId: string, sekarang: Date): Promise<Pemakaian> => bacaPemakaianJenis(db, desaId, awalPeriode(365, sekarang))

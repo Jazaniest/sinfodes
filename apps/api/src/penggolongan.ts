@@ -42,6 +42,9 @@ export const GOLONGAN_TABEL: Readonly<Record<string, Golongan>> = {
   // Jenis surat dan pengaturan surat desa (8F1): katalog jenis, tata letak, dan format nomor.
   jenis_surat: 'desa-privat',
   pengaturan_surat: 'desa-privat',
+  // Permohonan surat dan riwayatnya (8F2a): isian dan lembar beku tersandi; riwayat hanya tambah.
+  permohonan: 'desa-privat',
+  riwayat_surat: 'desa-privat',
   jejak_audit: 'audit',
   jejak_bantuan: 'audit',
   jejak_audit_platform: 'audit',

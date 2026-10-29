@@ -18,7 +18,7 @@ export const PESAN_UNDUHAN = 'Unduhan tidak tersedia selama data pribadi warga d
  * Jalur POST yang hanya membaca (pencarian memakai POST supaya kata kunci tidak masuk URL). Setiap jalur di sini lolos dari
  * penolakan tulis: modul baru menambahkan jalur pencariannya sendiri di sini setelah memastikan ia tidak mengubah data.
  */
-export const JALUR_CARI_BACA: ReadonlySet<string> = new Set(['/cari', '/penduduk/cari', '/keluarga/cari'])
+export const JALUR_CARI_BACA: ReadonlySet<string> = new Set(['/cari', '/penduduk/cari', '/keluarga/cari', '/permohonan/cari'])
 
 /**
  * Jalur POST yang hanya mengganti atau mengakhiri sesi peramban itu sendiri (keluar, masuk panel, menukar tiket baru). Tanpa

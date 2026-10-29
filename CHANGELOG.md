@@ -4,6 +4,23 @@ Semua perubahan penting Sinfodes dicatat di sini. Formatnya mengikuti [Keep a Ch
 
 ## [Belum dirilis]
 
+### Ditambahkan (tahap 8F2a)
+
+- **Permohonan surat di server nyata (baca).** `GET /permohonan` (satu tab status, `?jenis=<kode>`, `?periode=`, halaman), `GET /permohonan/jumlah` (angka tab dan angka menu "perlu tindakan" peran aktif), `GET /permohonan/antrian-ttd` (tumpukan tanda tangan Kepala Desa atau Sekretaris Desa), `GET /permohonan/penduduk/:id`, `GET /permohonan/:id` (detail lengkap beserta surat terbit beku), `POST /permohonan/cari` (nama, potongan NIK, atau nomor surat; kata di badan, tidak pernah di URL), dan `GET /permohonan/saran` (isian awal dari mutasi kelahiran, kematian, atau kepindahan). Cari global kini juga menemukan surat.
+- **Membuat dan mengubah dari loket.** `POST /permohonan` (simpan draf atau langsung ajukan) dan `PATCH /permohonan/:id` (isian saat Diproses, catatan internal kapan saja). Hanya Operator dan Sekretaris Desa.
+- **Lima aksi status.** `POST /permohonan/:id/proses|tolak|ajukan-ttd|paraf|kembalikan`, dengan urutan pemeriksaan dan pesan yang sama dengan API tiruan. Aksi yang dibuka dengan hak melihat tetap menolak desa yang Ditangguhkan.
+- **Basis data.** Tabel `permohonan` dan `riwayat_surat` (migrasi `0012`). Isian surat dan lembar beku disimpan sebagai satu sandi tiap baris, tidak pernah polos. Kolom surat terbit (`terbit_*`, `hash_dokumen`, `tanda_tangan`), `pembatalan`, dan `diambil` sudah ada tetapi peran desa belum boleh menulisnya sampai 8F2b. CHECK menjaga kesesuaian status dengan kolomnya (tahap hanya pada Perlu TTD, surat terbit hanya pada Selesai dan Dibatalkan, penolakan hanya pada Ditolak, dan seterusnya) dan menolak 16 angka berurutan pada catatan petugas. Menghapus jenis surat yang sudah dipakai ditolak basis data (`ON DELETE RESTRICT`).
+- **Kunci.** Nomor urut permohonan dialokasikan di bawah kunci penasihat per desa dan tahun (nomor berurutan tanpa lubang atau ganda, termasuk lintas pergantian tahun menurut WIB); membuat permohonan mengunci baris jenis bersama (arsip atau hapus jenis serentak menunggu, atau sudah selesai lebih dulu dan terbaca); setiap perubahan satu permohonan mengunci barisnya lalu membaca ulang statusnya, jadi dua orang yang menekan aksi yang sama hanya satu yang menang. Kelima bukti kunci dibuktikan dengan mutasi: kunci dimatikan, uji merah.
+- **Titik sambung 8F1 terisi.** Jumlah pemakaian dan "pernah dipakai" pada daftar jenis, contoh halaman Penomoran dari nomor yang sudah terbit, dan Cari global untuk surat. Hapus jenis yang sudah dipakai kini 409 "Jenis ini sudah pernah dipakai. Arsipkan saja."
+- **Semai.** 792 permohonan dan 3.318 baris riwayat ikut dunia demo (`db:semai` tambah-saja).
+- **Kontrak bersama.** `awalPeriode(hari, sekarang)` dan aturan "tanpa NIK di catatan" (`PESAN_CATATAN_NIK`) ditarik ke `packages/kontrak`; API tiruan memakainya dari sana.
+- **Uji.** Meta basis data, semai, rute baca, cari, saran, tulis, aksi, sesi bantuan, dan 34 butir konformansi baru ditambah tiga butir yang menunggu 8F2b.
+
+### Diubah (tahap 8F2a)
+
+- Beda sengaja dari API tiruan, dicatat di uji konformansi: catatan petugas yang memuat 16 angka berurutan ditolak (422 `Jangan menulis NIK atau nomor 16 angka di catatan.`; tiruan lama menerimanya, dan kini ikut memakai skema yang sama); tanda tangan, batal, tandai diambil, dan kirim WhatsApp menjawab 404 "Aksi ini belum tersedia di server nyata." sampai 8F2b; Tim Sinfodes (sesi bantuan) hanya melihat permohonan dan tidak bisa mencari dengan angka NIK.
+- Belum ada kunci idempotensi untuk `POST /permohonan`: klik ganda membuat dua permohonan, sama dengan tiruan.
+
 ### Ditambahkan (tahap 8F1)
 
 - **Jenis surat di server nyata.** `GET /jenis-surat` (katalog desa dalam urutan semai, `?status=aktif|dihentikan|diarsipkan`), `GET /jenis-surat/:id` (jenis beserta bahan pratinjau), `POST /jenis-surat` (kosong atau salinan), `PATCH /jenis-surat/:id`, `DELETE /jenis-surat/:id`, `POST /jenis-surat/:id/arsipkan`, dan `POST /jenis-surat/:id/aktifkan-lagi`. Membaca butuh hak melihat Layanan Surat; menulis hanya Operator dan Sekretaris Desa.

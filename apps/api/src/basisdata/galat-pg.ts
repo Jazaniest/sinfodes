@@ -1,3 +1,11 @@
+/** Apakah galat ini pelanggaran kunci asing bernama `kendala` (kode PostgreSQL 23503)? Telusur rantai `cause` seperti `pelanggaranUnik`. */
+export function pelanggaranKunciAsing(galat: unknown, kendala: string): boolean {
+  for (let x = galat as { code?: string; constraint_name?: string; cause?: unknown } | undefined; x; x = x.cause as typeof x) {
+    if (x.code === '23503' && x.constraint_name === kendala) return true
+  }
+  return false
+}
+
 /**
  * Apakah galat ini tabrakan indeks unik bernama `indeks` (kode PostgreSQL 23505)? Drizzle membungkus galat basis data di
  * `cause`, jadi rantainya ditelusuri. Dipakai untuk mengubah permintaan serentak yang kalah menjadi 409, bukan 500.

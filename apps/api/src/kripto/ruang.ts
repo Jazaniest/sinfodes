@@ -13,6 +13,10 @@ export const ruang = {
   laporan: (desaId: string): string => `laporan_data.isi:${desaId}`,
   /** Seluruh tabel berkas impor penduduk yang menunggu konfirmasi (memuat NIK dan telepon polos dari berkas). */
   impor: (desaId: string): string => `impor_penduduk.isi:${desaId}`,
+  /** Peta isian satu permohonan surat (isian jenis buatan desa bisa memuat nomor apa pun). */
+  permohonanIsian: (desaId: string): string => `permohonan.isian:${desaId}`,
+  /** Lembar surat yang dibekukan saat ditandatangani; memuat NIK pemohon dan subjek. */
+  permohonanLembar: (desaId: string): string => `permohonan.lembar:${desaId}`,
   /** Nomor WhatsApp akun warga, disandikan seperti telepon penduduk. */
   whatsapp: (desaId: string): string => `akun_warga.whatsapp:${desaId}`,
   /** Rahasia TOTP akun Konsol (lintas desa, jadi satu ruang tetap). */

@@ -422,6 +422,87 @@ export const pengaturanSurat = pgTable('pengaturan_surat', {
   urutan: text('urutan').notNull(),
 })
 
+/**
+ * Permohonan surat (8F2a). Isian dan lembar beku disimpan sebagai satu sandi tiap baris; catatan petugas (`dikembalikan`,
+ * `penolakan`, `pembatalan`, `diambil`, `lampiran`) dijaga `permohonanSchema` kontrak di aplikasi. Kolom `terbit_*`,
+ * `pembatalan`, dan `diambil` belum ditulis peran desa sampai 8F2b (migrasi 0012).
+ */
+export const permohonan = pgTable('permohonan', {
+  id: text('id').primaryKey(),
+  desaId: text('desa_id').notNull(),
+  dusunId: text('dusun_id').notNull(),
+  tahun: integer('tahun').notNull(),
+  noUrut: integer('no_urut').notNull(),
+  jenisId: text('jenis_id').notNull(),
+  kanal: text('kanal').notNull(),
+  pemohonId: text('pemohon_id').notNull(),
+  subjekId: text('subjek_id'),
+  mutasiId: text('mutasi_id'),
+  isianSandi: text('isian_sandi').notNull(),
+  status: text('status').notNull(),
+  tahap: text('tahap'),
+  dikembalikan: jsonb('dikembalikan').$type<Record<string, unknown> | null>(),
+  penolakan: jsonb('penolakan').$type<Record<string, unknown> | null>(),
+  pembatalan: jsonb('pembatalan').$type<Record<string, unknown> | null>(),
+  diambil: jsonb('diambil').$type<Record<string, unknown> | null>(),
+  masukPada: waktu('masuk_pada').notNull(),
+  ditutupPada: waktu('ditutup_pada'),
+  lampiran: jsonb('lampiran').notNull().$type<unknown[]>(),
+  catatanInternal: text('catatan_internal'),
+  terbitNomor: text('terbit_nomor'),
+  terbitTahun: integer('terbit_tahun'),
+  terbitUrut: integer('terbit_urut'),
+  terbitKode: text('terbit_kode'),
+  terbitPada: waktu('terbit_pada'),
+  terbitPenandatangan: jsonb('terbit_penandatangan').$type<Record<string, unknown> | null>(),
+  terbitMode: text('terbit_mode'),
+  terbitBerlakuSampai: date('terbit_berlaku_sampai', { mode: 'string' }),
+  terbitLembarSandi: text('terbit_lembar_sandi'),
+  terbitTataLetak: jsonb('terbit_tata_letak').$type<Record<string, unknown> | null>(),
+  terbitKop: jsonb('terbit_kop').$type<Record<string, unknown> | null>(),
+  hashDokumen: text('hash_dokumen'),
+  tandaTangan: text('tanda_tangan'),
+})
+
+/**
+ * Kolom `permohonan` yang boleh diisi peran desa saat sisip (hak kolom migrasi 0012). Khusus INSERT: Drizzle menyebut semua kolom
+ * tabel dalam perintah sisip (yang tak diisi diberi DEFAULT), dan PostgreSQL menolak seluruh perintah bila satu kolom yang disebut
+ * tak punya hak, walau nilainya DEFAULT. Tidak masuk `TABEL_SKEMA`: tabelnya sama dengan `permohonan`.
+ */
+export const permohonanSisip = pgTable('permohonan', {
+  id: text('id').primaryKey(),
+  desaId: text('desa_id').notNull(),
+  dusunId: text('dusun_id').notNull(),
+  tahun: integer('tahun').notNull(),
+  noUrut: integer('no_urut').notNull(),
+  jenisId: text('jenis_id').notNull(),
+  kanal: text('kanal').notNull(),
+  pemohonId: text('pemohon_id').notNull(),
+  subjekId: text('subjek_id'),
+  mutasiId: text('mutasi_id'),
+  isianSandi: text('isian_sandi').notNull(),
+  status: text('status').notNull(),
+  tahap: text('tahap'),
+  dikembalikan: jsonb('dikembalikan').$type<Record<string, unknown> | null>(),
+  penolakan: jsonb('penolakan').$type<Record<string, unknown> | null>(),
+  masukPada: waktu('masuk_pada').notNull(),
+  ditutupPada: waktu('ditutup_pada'),
+  lampiran: jsonb('lampiran').notNull().$type<unknown[]>(),
+  catatanInternal: text('catatan_internal'),
+})
+
+/** Riwayat kejadian permohonan (8F2a); hanya tambah. `urutan` (identitas) menjaga urutan kejadian dan tidak masuk jawaban. */
+export const riwayatSurat = pgTable('riwayat_surat', {
+  urutan: bigint('urutan', { mode: 'number' }).generatedAlwaysAsIdentity(),
+  id: text('id').primaryKey(),
+  desaId: text('desa_id').notNull(),
+  permohonanId: text('permohonan_id').notNull(),
+  kejadian: text('kejadian').notNull(),
+  waktu: waktu('waktu').notNull(),
+  oleh: jsonb('oleh').notNull().$type<Record<string, unknown>>(),
+  catatan: text('catatan'),
+})
+
 export const TABEL_SKEMA = {
   desa, alias_alamat: aliasAlamat, kunci_data: kunciData, dusun, pengguna, keluarga, penduduk, sesi, jejak_audit: jejakAudit,
   akun_warga: akunWarga, sesi_warga: sesiWarga, kunci_masuk_desa: kunciMasukDesa, kabupaten_mitra: kabupatenMitra,
@@ -430,4 +511,5 @@ export const TABEL_SKEMA = {
   akses_bantuan: aksesBantuan, tiket_bantuan: tiketBantuan, sesi_bantuan: sesiBantuan, jejak_bantuan: jejakBantuan,
   riwayat_penduduk: riwayatPenduduk, aktivitas, mutasi, mutasi_penduduk: mutasiPenduduk, laporan_data: laporanData,
   kunci_idempotensi: kunciIdempotensi, impor_penduduk: imporPenduduk, jenis_surat: jenisSurat, pengaturan_surat: pengaturanSurat,
+  permohonan, riwayat_surat: riwayatSurat,
 } as const
