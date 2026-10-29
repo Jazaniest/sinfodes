@@ -1,8 +1,8 @@
 import { http, HttpResponse } from 'msw'
 import { waktuIsoWib } from '@/domain/format/tanggal'
-import type { Penduduk } from '@/domain/penduduk/schema'
 import type { PenggunaSesi } from '@/domain/pengguna/schema'
 import { bolehDiarsipkan, bolehDihapus, jenisKosong, salinJenis, tambahJenisSchema, type JenisSurat } from '@/domain/surat/jenis'
+import { pemohonContoh } from '@/domain/surat/pemohon-contoh'
 import type { Permohonan } from '@/domain/surat/permohonan'
 import { samaDenganSiap } from '@/domain/surat/tata-letak-siap'
 import { periksaJenisSurat, ubahJenisSuratSchema, type DetailJenisSurat } from '@/domain/surat/ubah-jenis'
@@ -18,21 +18,6 @@ const PESAN_BAWAAN = 'Jenis bawaan tidak bisa dihapus atau diarsipkan.'
 const PESAN_TIDAK_BERHAK = 'Peran Anda tidak berhak mengubah jenis surat.'
 
 /**
- * Pemohon tiruan untuk pratinjau di desa yang belum punya penduduk (tahap 6C). Tanpa NIK dan tanpa data desa lain, jadi
- * pratinjau tidak pernah menampilkan data pribadi siapa pun.
- */
-function pemohonContoh(desaId: string): Penduduk {
-  const waktu = waktuIsoWib(new Date())
-  return {
-    id: 'pemohon-contoh', desaId, nik: null, nama: 'Nama Pemohon', jenisKelamin: 'L', golonganDarah: 'Tidak Tahu', agama: 'Islam',
-    kewarganegaraan: 'WNI', tempatLahir: 'Tempat Lahir', tanggalLahir: '1990-01-01', nomorAktaLahir: null, keluargaId: '',
-    hubunganKeluarga: 'Kepala Keluarga', namaAyah: '', namaIbu: '', dusunId: '', rw: '001', rt: '001', pendidikan: null,
-    pekerjaan: null, statusPerkawinan: null, statusDasar: 'Hidup', statusPenduduk: 'Tetap', ktpEl: 'Belum rekam', telepon: null,
-    catatan: null, dibuatPada: waktu, diubahPada: waktu,
-  }
-}
-
-/**
  * Jenis surat beserta bahan pratinjau halaman ubah. Contohnya permohonan terakhir jenis ini (pemohon, bayi/almarhum,
  * mutasi, dan isiannya), supaya pratinjau tampak seperti surat sungguhan. Desa yang belum punya penduduk memakai pemohon
  * contoh (tahap 6C).
@@ -46,7 +31,7 @@ function detailJenis(db: DbDemo, jenis: JenisSurat, permohonan: readonly Permoho
   return {
     jenis: { ...jenis, jumlahPakai: hitungPakai(permohonan).get(jenis.id) ?? 0, dipakai: idJenisDipakai(db, jenis.desaId).has(jenis.id) },
     contoh: {
-      pemohon: pemohon ?? pemohonContoh(jenis.desaId),
+      pemohon: pemohon ?? pemohonContoh(jenis.desaId, new Date()),
       tiruan: !pemohon,
       subjek: orang(terakhir?.subjekId),
       mutasi: terakhir?.mutasiId ? (db.mutasi.find((m) => m.id === terakhir.mutasiId) ?? null) : null,

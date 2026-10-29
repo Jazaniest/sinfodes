@@ -386,6 +386,42 @@ export const imporPenduduk = pgTable('impor_penduduk', {
   selesaiPada: waktu('selesai_pada'),
 })
 
+/**
+ * Katalog jenis surat tiap desa (8F1). `isian`, `syarat`, dan `tataLetak` dijaga `jenisSuratSchema` kontrak di aplikasi (ditulis dan
+ * dibaca, gagal tertutup). `urutan` (identitas) menjaga urutan katalog dan tidak masuk jawaban. Peran desa tidak bisa mengubah
+ * `kode`, `subjek`, `asal`, dan tidak bisa menghapus jenis bawaan (migrasi 0011).
+ */
+export const jenisSurat = pgTable('jenis_surat', {
+  urutan: bigint('urutan', { mode: 'number' }).generatedAlwaysAsIdentity(),
+  id: text('id').primaryKey(),
+  desaId: text('desa_id').notNull(),
+  kode: text('kode').notNull(),
+  nama: text('nama').notNull(),
+  klasifikasi: text('klasifikasi').notNull(),
+  subjek: text('subjek').notNull(),
+  isian: jsonb('isian').notNull().$type<unknown[]>(),
+  bolehAtasNama: boolean('boleh_atas_nama').notNull(),
+  wajibParaf: boolean('wajib_paraf').notNull(),
+  masaBerlakuBulan: integer('masa_berlaku_bulan'),
+  online: boolean('online').notNull(),
+  syarat: jsonb('syarat').notNull().$type<unknown[]>(),
+  teks: text('teks').notNull(),
+  aktif: boolean('aktif').notNull(),
+  asal: text('asal').notNull(),
+  diarsipkan: waktu('diarsipkan'),
+  tataLetak: jsonb('tata_letak').$type<Record<string, unknown> | null>(),
+  dibuatPada: waktu('dibuat_pada').notNull().defaultNow(),
+})
+
+/** Satu baris per desa (8F1). Tata letak dan penomoran masing-masing menulis kolomnya sendiri; `mode_tanda_tangan` tidak bisa diubah desa. */
+export const pengaturanSurat = pgTable('pengaturan_surat', {
+  desaId: text('desa_id').primaryKey(),
+  tataLetak: jsonb('tata_letak').notNull().$type<Record<string, unknown>>(),
+  modeTandaTangan: text('mode_tanda_tangan').notNull(),
+  formatNomor: text('format_nomor').notNull(),
+  urutan: text('urutan').notNull(),
+})
+
 export const TABEL_SKEMA = {
   desa, alias_alamat: aliasAlamat, kunci_data: kunciData, dusun, pengguna, keluarga, penduduk, sesi, jejak_audit: jejakAudit,
   akun_warga: akunWarga, sesi_warga: sesiWarga, kunci_masuk_desa: kunciMasukDesa, kabupaten_mitra: kabupatenMitra,
@@ -393,5 +429,5 @@ export const TABEL_SKEMA = {
   kunci_masuk_platform: kunciMasukPlatform, jejak_audit_platform: jejakAuditPlatform,
   akses_bantuan: aksesBantuan, tiket_bantuan: tiketBantuan, sesi_bantuan: sesiBantuan, jejak_bantuan: jejakBantuan,
   riwayat_penduduk: riwayatPenduduk, aktivitas, mutasi, mutasi_penduduk: mutasiPenduduk, laporan_data: laporanData,
-  kunci_idempotensi: kunciIdempotensi, impor_penduduk: imporPenduduk,
+  kunci_idempotensi: kunciIdempotensi, impor_penduduk: imporPenduduk, jenis_surat: jenisSurat, pengaturan_surat: pengaturanSurat,
 } as const

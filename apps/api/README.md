@@ -22,6 +22,9 @@ Server API Sinfodes: Hono, PostgreSQL, dan Drizzle. Sampai tahap 8E3 server memu
 | `GET /api/v1/statistik/penduduk` | Angka agregat penduduk Hidup (`?dusun=` nomor dusun; Kepala Dusun selalu dusunnya) |
 | `POST /api/v1/cari` | Pencarian cepat penduduk dan KK (kata di badan, bukan URL); surat menyusul di 8F |
 | `GET/PUT /api/v1/pengaturan/wilayah` | Istilah wilayah dan susunan dusun, RW, RT (terbuka selama desa belum punya penduduk) |
+| `GET /api/v1/jenis-surat` (`?status=aktif\|dihentikan\|diarsipkan`), `GET /api/v1/jenis-surat/:id` | Katalog jenis surat desa dan satu jenis beserta pratinjau (pemohon contoh tanpa NIK); butuh hak melihat Layanan Surat |
+| `POST /api/v1/jenis-surat`, `PATCH`/`DELETE /api/v1/jenis-surat/:id`, `POST /api/v1/jenis-surat/:id/arsipkan`, `/aktifkan-lagi` | Tambah (kosong atau salinan), sunting, hapus (hanya jenis buatan desa), arsipkan, dan aktifkan lagi; hanya Operator dan Sekretaris Desa. Jenis bawaan tidak bisa dihapus atau diarsipkan |
+| `GET/PUT /api/v1/surat/tata-letak`, `GET/PUT /api/v1/pengaturan/penomoran` | Tata letak surat desa (`siap` dihitung server) dan format nomor, urutan, serta kode surat desa; hanya yang berhak mengelola Pengaturan desa |
 | `POST /api/v1/warga/masuk`, `/warga/lupa-pin`, `GET /warga/sesi`, `PATCH /warga/akun`, `POST /warga/sesi/keluar` | Layanan warga: NIK dan PIN di alamat desa, cookie `__Host-warga` |
 | `POST /api/v1/kabupaten/sesi/masuk`, `GET /kabupaten/sesi`, `POST /kabupaten/sesi/keluar` | Dasbor kabupaten di alamat `kab-...`, cookie `__Host-kab` |
 | `POST /api/v1/konsol/sesi/masuk`, `GET /konsol/sesi`, `POST /konsol/sesi/keluar` | Konsol di alamat `konsol`, dengan kode TOTP, cookie `__Host-konsol` |

@@ -39,6 +39,9 @@ export const GOLONGAN_TABEL: Readonly<Record<string, Golongan>> = {
   kunci_idempotensi: 'desa-privat',
   // Sesi impor penduduk (8E3 Tugas 6): isi berkas tersandi, berlaku 24 jam.
   impor_penduduk: 'desa-privat',
+  // Jenis surat dan pengaturan surat desa (8F1): katalog jenis, tata letak, dan format nomor.
+  jenis_surat: 'desa-privat',
+  pengaturan_surat: 'desa-privat',
   jejak_audit: 'audit',
   jejak_bantuan: 'audit',
   jejak_audit_platform: 'audit',

@@ -4,6 +4,22 @@ Semua perubahan penting Sinfodes dicatat di sini. Formatnya mengikuti [Keep a Ch
 
 ## [Belum dirilis]
 
+### Ditambahkan (tahap 8F1)
+
+- **Jenis surat di server nyata.** `GET /jenis-surat` (katalog desa dalam urutan semai, `?status=aktif|dihentikan|diarsipkan`), `GET /jenis-surat/:id` (jenis beserta bahan pratinjau), `POST /jenis-surat` (kosong atau salinan), `PATCH /jenis-surat/:id`, `DELETE /jenis-surat/:id`, `POST /jenis-surat/:id/arsipkan`, dan `POST /jenis-surat/:id/aktifkan-lagi`. Membaca butuh hak melihat Layanan Surat; menulis hanya Operator dan Sekretaris Desa.
+  - Tabel baru `jenis_surat` (migrasi `0011`). Isian tambahan, syarat, dan tata letak per jenis disimpan sebagai `jsonb` yang dijaga skema kontrak saat ditulis dan dibaca. Jenis bawaan tidak pernah bisa dihapus atau diarsipkan, bahkan bila aplikasi lupa memeriksanya (kebijakan hapus dan CHECK di basis data); kode, subjek, dan asal tidak bisa diubah sesudah dibuat (hak kolom).
+  - Kode jenis unik per desa, termasuk terhadap jenis arsip. Dua operator yang menambah kode sama serentak: satu berhasil, satu mendapat 422 pada field `kode`. Semua perubahan satu jenis mengunci barisnya lebih dulu lalu membaca ulang, jadi menyunting jenis yang baru saja diarsipkan operator lain dijawab 409, bukan menimpanya.
+  - Nilai `siap` pada tata letak per jenis selalu dihitung ulang server dari isinya; kiriman klien yang berbohong dikoreksi.
+- **Tata letak surat dan penomoran di server nyata.** `GET/PUT /surat/tata-letak` dan `GET/PUT /pengaturan/penomoran` (hanya yang berhak mengelola Pengaturan desa). Tabel baru `pengaturan_surat` satu baris per desa; setiap PUT hanya menulis kolomnya sendiri, jadi dua PUT serentak pada desa yang belum punya baris tidak saling menimpa. Kode surat desa diubah bersama format dan urutan dalam satu transaksi, dan format yang ditolak tidak ikut mengubah kode surat.
+- **Kontrak bersama.** `susunPenomoran` (jawaban halaman Penomoran beserta contohnya) dan `pemohonContoh` (pemohon pratinjau tanpa NIK) ditarik ke `packages/kontrak`; API tiruan memakainya dari sana. Aturan baru `periksaJenisSurat`: kunci isian tidak boleh sama dengan sisipan bawaan (`nama`, `nik`, `tabelRincian`, dan seterusnya).
+- **Semai.** Katalog 24 jenis surat dan 47 baris pengaturan surat ikut dunia demo (`db:semai` tambah-saja, data uji yang sudah ada tidak terhapus).
+- **Uji.** Meta basis data (hak kolom, kebijakan hapus, CHECK arsip, kunci unik), rute baca dan tulis jenis surat, tata letak, dan penomoran, sesi bantuan, serta 36 butir konformansi baru ditambah enam butir yang menunggu 8F2. Dua bukti kunci yang deterministik (kunci baris jenis, pemetaan tabrakan kode) dan satu bukti upsert kolom-saja masing-masing dibuktikan dengan mutasi: pengaman dimatikan, uji merah.
+
+### Diubah (tahap 8F1)
+
+- Beda sengaja dari API tiruan, dicatat di uji konformansi: pratinjau jenis surat selalu memakai pemohon contoh tanpa NIK (tiruan memakai kepala keluarga sungguhan, yang di server bisa dari dusun lain daripada Kepala Dusun yang membuka halaman); jumlah pemakaian jenis dan contoh penomoran bernilai awal sampai tabel permohonan ada di 8F2; Tim Sinfodes (sesi bantuan) tidak bisa membuka tata letak dan penomoran karena perannya tanpa hak mengelola pengaturan, sama dengan Wilayah.
+- Pengaturan Identitas desa (nama, alamat, lambang) belum jalan di mode nyata; itu pekerjaan 8G dan 8H.
+
 ### Ditambahkan (tahap 8E3)
 
 - **Impor penduduk dari Excel atau CSV di server nyata.** `POST /impor/penduduk` membaca berkas sungguhan (`.xlsx` lembar pertama, atau `.csv` berpemisah koma, titik koma, atau tab, UTF-8 atau Windows-1252) dan `POST /impor/penduduk/:id/konfirmasi` menjalankannya setelah dipetakan dan diperbaiki di layar. Hanya Operator dan Sekretaris Desa; desa yang belum punya dusun ditolak dengan arahan ke Pengaturan, Wilayah.
