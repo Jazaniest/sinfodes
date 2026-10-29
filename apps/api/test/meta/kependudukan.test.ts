@@ -136,7 +136,8 @@ describe('desa menulis istilah wilayahnya sendiri (rencana 8E1 Ruling 12, migras
     expect(await ubahDesa(undefined, `update desa set istilah_wilayah = ${ISTILAH} where id = 'desa_a'`)).toBe(0)
     const [b] = await uji.sqlMigrasi`select istilah_wilayah from desa where id = 'desa_b'`
     expect(b.istilah_wilayah).toEqual({ dusun: 'Dusun', rw: 'RW', rt: 'RT' })
-    for (const kolom of ['nama', 'slug', 'status', 'kode_surat', 'modul']) {
+    // `kode_surat` sengaja dibuka di 0011 (rencana 8F1 Ruling 10); uji hak kolomnya ada di test/meta/surat.test.ts.
+    for (const kolom of ['nama', 'slug', 'status', 'modul']) {
       expect(kodePg(await jalankan('desa', 'desa_a', `update desa set ${kolom} = ${kolom} where id = 'desa_a'`)), kolom).toBe('42501')
     }
     expect(kodePg(await jalankan('desa', 'desa_a', `delete from desa where id = 'desa_a'`))).toBe('42501')

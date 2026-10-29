@@ -6,8 +6,8 @@ import { jabatanBawaan } from '@/domain/pengaturan/pengguna'
 import { ubahPenomoranSchema, type Penomoran } from '@/domain/pengaturan/penomoran'
 import { nomoriSusunan, susunanSama, ubahWilayahSchema, type UbahWilayah, type WilayahDesa } from '@/domain/pengaturan/wilayah'
 import type { PenggunaSesi } from '@/domain/pengguna/schema'
-import { urutBerikutnya } from '@/domain/surat/nomor-surat'
 import { pengaturanBawaan } from '@/domain/surat/pengaturan-bawaan'
+import { susunPenomoran } from '@/domain/surat/penomoran'
 import { tataLetakSuratSchema } from '@/domain/surat/tata-letak'
 import { samaDenganSiap } from '@/domain/surat/tata-letak-siap'
 import { namaDusun } from '@/domain/wilayah/alamat'
@@ -114,29 +114,17 @@ function selaraskanLembaga(db: DbDemo, dusun: readonly Dusun[]): void {
   }
 }
 
-/** Pengaturan nomor surat, dengan contoh dari jenis surat yang paling sering terbit (pratinjau SPEC §7.2). */
+/** Pengaturan nomor surat, dengan contoh dari jenis surat yang paling sering terbit (pratinjau SPEC §7.2). Susunannya di kontrak, dipakai server juga. */
 function penomoranDari(db: DbDemo, desa: Desa): Penomoran {
   const pengaturan = pengaturanDesa(db, desa.id)
-  const jenis = db.jenisSurat.filter((j) => j.desaId === desa.id)
-  const kodeJenis = new Map(jenis.map((j) => [j.id, j.kode]))
-  const terbit = db.permohonan.filter((p) => p.desaId === desa.id && p.terbit !== null)
-  const terpakai = terbit.flatMap((p) => (p.terbit ? [{ tahun: p.terbit.tahun, urut: p.terbit.urut, jenisKode: kodeJenis.get(p.jenisId) ?? '' }] : []))
-  const jumlah = (id: string) => terbit.filter((p) => p.jenisId === id).length
-  const contoh = [...jenis].sort((a, b) => jumlah(b.id) - jumlah(a.id) || a.kode.localeCompare(b.kode))[0]
-  const tahun = Number(tanggalIsoWib(new Date()).slice(0, 4))
-  const jenisKode = contoh?.kode ?? ''
-  return {
+  return susunPenomoran({
     formatNomor: pengaturan.formatNomor,
     urutan: pengaturan.urutan,
     kodeSurat: desa.kodeSurat,
-    contoh: {
-      jenis: contoh?.nama ?? 'Surat keterangan',
-      kode: contoh?.kode ?? 'SKD',
-      klasifikasi: contoh?.klasifikasi ?? '470',
-      urutPerTahun: urutBerikutnya(terpakai, { tahun, jenisKode, mode: 'per-tahun' }),
-      urutPerJenis: urutBerikutnya(terpakai, { tahun, jenisKode, mode: 'per-jenis' }),
-    },
-  }
+    jenis: db.jenisSurat.filter((j) => j.desaId === desa.id),
+    terbit: db.permohonan.flatMap((p) => (p.desaId === desa.id && p.terbit ? [{ jenisId: p.jenisId, tahun: p.terbit.tahun, urut: p.terbit.urut }] : [])),
+    tahun: Number(tanggalIsoWib(new Date()).slice(0, 4)),
+  })
 }
 
 /** Pengaturan desa (SPEC §8): Identitas, Wilayah, Penomoran, dan Tata letak surat. Tab Pengguna ada di `pengaturan-pengguna.ts`. */

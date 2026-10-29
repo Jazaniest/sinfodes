@@ -28,6 +28,8 @@ import { efekSilangBawaan, type EfekSilang } from './modul/mutasi/efek-silang'
 import { ruteMutasi } from './modul/mutasi/rute'
 import { rutePenduduk } from './modul/penduduk/rute'
 import { ruteStatistik } from './modul/statistik/rute'
+import { ruteJenisSurat } from './modul/jenis-surat/rute'
+import { rutePenomoran, ruteTataLetakSurat } from './modul/pengaturan-surat/rute'
 import { ruteWilayah } from './modul/wilayah/rute'
 import { ruteSesi } from './modul/sesi/rute'
 import { ruteWarga } from './modul/warga/rute'
@@ -127,6 +129,9 @@ export function buatApp(deps: DepsApp): Hono<LingkunganApp> {
   app.route('/api/v1/buku-administrasi', ruteBuku({ penyandi }))
   app.route('/api/v1/cari', ruteCari({ penyandi }))
   app.route('/api/v1/impor', ruteImpor({ penyandi }))
+  app.route('/api/v1/jenis-surat', ruteJenisSurat())
+  app.route('/api/v1/surat/tata-letak', ruteTataLetakSurat())
+  app.route('/api/v1/pengaturan/penomoran', rutePenomoran())
   app.route('/api/v1/pengaturan/wilayah', ruteWilayah())
   app.route('/api/v1/pengaturan/akses-sinfodes', ruteAksesSinfodes())
   // Akses bantuan (SPEC-V0.3 §8.6): tiket dari Konsol (6 per menit per akun) dan penukarannya di alamat desa (10 per menit per IP).

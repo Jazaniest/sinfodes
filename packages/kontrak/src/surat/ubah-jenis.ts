@@ -58,6 +58,7 @@ export function sisipanTersedia(isian: readonly Pick<IsianTambahan, 'kunci' | 'l
 }
 
 const POLA_KLASIFIKASI = /^\d{3}(\.\d+)?$/
+const SISIPAN_BAWAAN: ReadonlySet<string> = new Set<string>([...SISIPAN_UMUM.map((s) => s.kunci), PENANDA_TABEL])
 const kecil = (s: string) => s.trim().toLocaleLowerCase('id-ID')
 
 /** Pesan galat per kolom sebelum jenis surat disimpan; objek kosong berarti sah. Dipakai layar dan API tiruan. */
@@ -77,6 +78,9 @@ export function periksaJenisSurat(f: FormJenisSurat): Record<string, string> {
   f.isian.forEach((d, i) => {
     if (d.label.trim() === '') galat[`isian.${i}.label`] = 'Label isian wajib diisi'
     else if (label.has(kecil(d.label)) || kunci.has(d.kunci)) galat[`isian.${i}.label`] = 'Label isian sudah dipakai'
+    // Kunci sekaligus nama sisipan: kunci yang sama dengan sisipan bawaan akan menimpa data pemohon di surat. Layar tak pernah
+    // membuatnya (kunciDariLabel menghindarinya), jadi hanya klien lain yang kena aturan ini.
+    else if (SISIPAN_BAWAAN.has(d.kunci)) galat[`isian.${i}.label`] = 'Kunci isian bentrok dengan sisipan bawaan. Ubah labelnya.'
     label.add(kecil(d.label))
     kunci.add(d.kunci)
     if (d.jenis === 'pilihan' && (d.pilihan ?? []).filter((p) => p.trim() !== '').length < 2) {

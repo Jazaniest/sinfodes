@@ -28,6 +28,18 @@ describe('periksa jenis surat sebelum disimpan (SPEC §7.4 layar 6, fokus review
       'isian.2.label': 'Label isian sudah dipakai',
     })
   })
+  it('kunci isian tidak boleh sama dengan sisipan bawaan atau penanda tabel (rencana 8F1 fokus 3)', () => {
+    const f = sktm()
+    const isian = [
+      { ...f.isian[0], kunci: 'nama' },
+      { ...f.isian[1], kunci: 'tabelRincian' },
+      { ...f.isian[2], kunci: 'berlakuSampai' },
+    ]
+    const galat = periksaJenisSurat({ ...f, isian, teks: 'Benar [nama] dan [tabelRincian].' })
+    expect(galat['isian.0.label']).toBe('Kunci isian bentrok dengan sisipan bawaan. Ubah labelnya.')
+    expect(galat['isian.1.label']).toBe('Kunci isian bentrok dengan sisipan bawaan. Ubah labelnya.')
+    expect(galat['isian.2.label']).toBe('Kunci isian bentrok dengan sisipan bawaan. Ubah labelnya.')
+  })
   it('nama, klasifikasi, masa berlaku, syarat, dan teks', () => {
     expect(periksaJenisSurat({ ...sktm(), nama: ' ', klasifikasi: '47', masaBerlakuBulan: 0, syarat: ['KTP', ''], teks: '' })).toEqual({
       nama: 'Nama surat wajib diisi',

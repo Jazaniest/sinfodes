@@ -2,6 +2,8 @@ import { ID_SUNGAI_SIALANG, KATA_SANDI_DEMO } from '@sinfodes/demo/data/desa-dem
 import { bangkitkanDb } from '@sinfodes/demo/generator'
 import type { DbDemo } from '@sinfodes/demo/tipe-db'
 import { SEKARANG_UJI } from '@sinfodes/demo/uji-akun'
+import { jenisSuratSchema } from '@sinfodes/kontrak/surat/jenis'
+import { tataLetakSuratSchema } from '@sinfodes/kontrak/surat/tata-letak'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { periksaKataSandi } from '../kripto/kata-sandi'
 import { ruang } from '../kripto/ruang'
@@ -299,5 +301,55 @@ describe('semai mutasi dan laporan data (rencana 8E2 Tugas 1)', () => {
     expect(b.teks.includes('081377712345')).toBe(false)
     expect(penyandi.bukaSandi(b.isi.nilaiBaru, `laporan_data.isi:${dasar.desaId}`)).toBe('081377712345')
     await uji.sqlMigrasi`delete from laporan_data where id = 'lap_uji_telepon'`
+  })
+})
+
+describe('semai jenis surat dan pengaturan surat (rencana 8F1 Tugas 3)', () => {
+  it('jumlah baris jenis_surat dan urutan kode per desa sama dengan dunia demo; ringkasan memuatnya', async () => {
+    expect(dunia.jenisSurat.length).toBeGreaterThan(0)
+    expect(await hitung('jenis_surat')).toBe(dunia.jenisSurat.length)
+    for (const desa of dunia.desa) {
+      const baris = await uji.sqlMigrasi`select kode from jenis_surat where desa_id = ${desa.id} order by urutan`
+      expect(baris.map((b) => b.kode), desa.id).toEqual(dunia.jenisSurat.filter((j) => j.desaId === desa.id).map((j) => j.kode))
+    }
+    const ringkasan = await semaiDunia(uji.sqlMigrasi, penyandi, SEKARANG_UJI, opsiUji())
+    expect(ringkasan).toMatchObject({ jenisSurat: dunia.jenisSurat.length, pengaturanSurat: dunia.desa.length })
+  })
+
+  it('setiap baris, dibentuk ulang, lolos jenisSuratSchema dan sama dengan jenis dunia demo; jenis bawaan tidak diarsipkan', async () => {
+    const baris = await uji.sqlMigrasi`select * from jenis_surat order by urutan`
+    expect(baris.length).toBe(dunia.jenisSurat.length)
+    for (const [i, b] of baris.entries()) {
+      const jenis = jenisSuratSchema.parse({
+        id: b.id, desaId: b.desa_id, kode: b.kode, nama: b.nama, klasifikasi: b.klasifikasi, subjek: b.subjek, isian: b.isian,
+        bolehAtasNama: b.boleh_atas_nama, wajibParaf: b.wajib_paraf, masaBerlakuBulan: b.masa_berlaku_bulan, online: b.online, syarat: b.syarat,
+        teks: b.teks, aktif: b.aktif, asal: b.asal, diarsipkan: b.diarsipkan ? (b.diarsipkan as Date).toISOString() : null, tataLetak: b.tata_letak,
+      })
+      expect(jenis.id, `urutan ${i}`).toBe(dunia.jenisSurat[i].id)
+      expect({ ...jenis, diarsipkan: null }, jenis.id).toEqual({ ...dunia.jenisSurat[i], diarsipkan: null })
+      if (jenis.asal === 'bawaan') expect(b.diarsipkan, jenis.id).toBeNull()
+    }
+  })
+
+  it('pengaturan_surat: satu baris per desa, tata letak lolos tataLetakSuratSchema, mode tanda tangan tte', async () => {
+    expect(await hitung('pengaturan_surat')).toBe(dunia.desa.length)
+    const baris = await uji.sqlMigrasi`select desa_id, tata_letak, mode_tanda_tangan, format_nomor, urutan from pengaturan_surat order by desa_id`
+    expect(baris.map((b) => b.desa_id)).toEqual(dunia.desa.map((d) => d.id).sort())
+    for (const b of baris) {
+      expect(() => tataLetakSuratSchema.parse(b.tata_letak), b.desa_id).not.toThrow()
+      expect(b.mode_tanda_tangan).toBe('tte')
+      const dari = dunia.pengaturanSurat.find((p) => p.desaId === b.desa_id)
+      if (dari) expect({ formatNomor: b.format_nomor, urutan: b.urutan }, b.desa_id).toEqual({ formatNomor: dari.formatNomor, urutan: dari.urutan })
+    }
+  })
+
+  it('semai kedua kali dengan acuan yang sama tidak mengubah apa pun, dan tidak menimpa pengaturan yang sudah diubah desa', async () => {
+    const sebelum = await uji.sqlMigrasi`select id, kode, urutan from jenis_surat order by urutan`
+    await uji.sqlMigrasi`update pengaturan_surat set format_nomor = '{urut}/{tahun}' where desa_id = ${ID_SUNGAI_SIALANG}`
+    await semaiDunia(uji.sqlMigrasi, penyandi, SEKARANG_UJI, opsiUji())
+    expect(await uji.sqlMigrasi`select id, kode, urutan from jenis_surat order by urutan`).toEqual(sebelum)
+    expect(await hitung('pengaturan_surat')).toBe(dunia.desa.length)
+    const [b] = await uji.sqlMigrasi`select format_nomor from pengaturan_surat where desa_id = ${ID_SUNGAI_SIALANG}`
+    expect(b.format_nomor).toBe('{urut}/{tahun}')
   })
 })
