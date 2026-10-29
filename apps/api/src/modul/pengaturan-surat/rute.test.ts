@@ -8,6 +8,7 @@ import { FORMAT_NOMOR_BAWAAN } from '@sinfodes/kontrak/surat/nomor-surat'
 import { pengaturanBawaan } from '@sinfodes/kontrak/surat/pengaturan-bawaan'
 import { tataLetakSuratSchema } from '@sinfodes/kontrak/surat/tata-letak'
 import { salinTataLetak, samaDenganSiap, TATA_LETAK_SIAP } from '@sinfodes/kontrak/surat/tata-letak-siap'
+import { susunPenomoran } from '@sinfodes/kontrak/surat/penomoran'
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { buatDbUji, penyandiUji, type DbUji } from '../../../test/basisdata'
 import { ambil, kirimDenganMetode, masukLewatRute, rakitApp } from '../../../test/rakit-app'
@@ -165,18 +166,18 @@ describe('GET dan PUT /surat/tata-letak (rencana 8F1 Tugas 6)', () => {
 describe('GET dan PUT /pengaturan/penomoran (rencana 8F1 Tugas 6)', () => {
   const jenisSs = () => dunia.jenisSurat.filter((j) => j.desaId === ID_SUNGAI_SIALANG)
 
-  it('GET: format, urutan, kode surat, dan contoh dari jenis pertama menurut kode (belum ada surat terbit)', async () => {
+  it('GET: format, urutan, kode surat, dan contoh dari jenis yang paling sering terbit (nomor dari permohonan)', async () => {
     const r = await penomoran()
     expect(r.status).toBe(200)
     const badan = penomoranSchema.parse(await r.json())
-    const pertama = [...jenisSs()].sort((a, b) => a.kode.localeCompare(b.kode))[0]
     const ss = dunia.pengaturanSurat.find((p) => p.desaId === ID_SUNGAI_SIALANG) ?? pengaturanBawaan(ID_SUNGAI_SIALANG)
-    expect(badan).toEqual({
-      formatNomor: ss.formatNomor,
-      urutan: ss.urutan,
-      kodeSurat: dunia.desa.find((d) => d.id === ID_SUNGAI_SIALANG)?.kodeSurat,
-      contoh: { jenis: pertama.nama, kode: pertama.kode, klasifikasi: pertama.klasifikasi, urutPerTahun: 1, urutPerJenis: 1 },
-    })
+    const kodeSurat = dunia.desa.find((d) => d.id === ID_SUNGAI_SIALANG)?.kodeSurat as string
+    // Nomor yang sudah terbit datang dari permohonan dunia demo (8F2a); rumus contoh tetap milik kontrak.
+    const terbit = dunia.permohonan.flatMap((p) => (p.desaId === ID_SUNGAI_SIALANG && p.terbit ? [{ jenisId: p.jenisId, tahun: p.terbit.tahun, urut: p.terbit.urut }] : []))
+    expect(terbit.length).toBeGreaterThan(0)
+    const harapan = susunPenomoran({ formatNomor: ss.formatNomor, urutan: ss.urutan, kodeSurat, jenis: jenisSs(), terbit, tahun: 2026 })
+    expect(badan).toEqual(harapan)
+    expect(badan.contoh.urutPerTahun).toBeGreaterThan(1)
   })
 
   it('GET desa tanpa baris pengaturan: nilai bawaan, tidak menulis baris', async () => {

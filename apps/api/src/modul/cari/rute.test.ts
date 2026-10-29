@@ -4,7 +4,7 @@ import type { DbDemo } from '@sinfodes/demo/tipe-db'
 import { SEKARANG_UJI } from '@sinfodes/demo/uji-akun'
 import { galatSchema } from '@sinfodes/kontrak/api'
 import { hasilCariSchema, type HasilCari } from '@sinfodes/kontrak/cari/schema'
-import { cocokPenduduk } from '@sinfodes/kontrak/penduduk/cari'
+import { cocokNama, cocokPenduduk } from '@sinfodes/kontrak/penduduk/cari'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { buatDbUji, penyandiUji, type DbUji } from '../../../test/basisdata'
 import { kirimJson, masukLewatRute, rakitApp } from '../../../test/rakit-app'
@@ -108,13 +108,55 @@ describe('POST /cari (SPEC-V0.2 §5.4)', () => {
     expect((await kirim({ kata: 'siti' }, null)).status).toBe(401)
   })
 
-  it('surat dikosongkan sampai 8F (titik sambung cariSurat)', async () => {
-    expect((await cari('siti')).surat).toEqual([])
-    expect((await cari('B-01/SKTM/2026')).surat).toEqual([])
-  })
 })
 
-describe('POST /cari: surat (menunggu 8F)', () => {
-  it.todo('nomor surat (bergaris miring) → surat itu; nama pemohon → permohonannya (8F)')
-  it.todo('Kepala Dusun hanya mendapat surat dari dusunnya (8F, fokus review 5)')
+describe('POST /cari: surat (rencana 8F2a Tugas 5)', () => {
+  const suratDunia = () => dunia.permohonan.filter((p) => p.desaId === ID_SUNGAI_SIALANG)
+  const namaPemohon = (id: string) => dunia.penduduk.find((p) => p.id === id)?.nama ?? ''
+  const harapanNama = (daftar: typeof dunia.permohonan, kata: string) =>
+    daftar
+      .filter((p) => cocokNama(namaPemohon(p.pemohonId), kata))
+      .sort((a, b) => b.masukPada.localeCompare(a.masukPada) || (a.id < b.id ? -1 : 1))
+      .slice(0, 5)
+  const ringkas = (p: (typeof dunia.permohonan)[number]) => {
+    const jenis = dunia.jenisSurat.find((j) => j.id === p.jenisId)
+    return { id: p.id, kode: jenis?.kode, jenisNama: jenis?.nama, pemohon: namaPemohon(p.pemohonId), nomor: p.terbit?.nomor ?? null, status: p.status }
+  }
+
+  it('nama pemohon → permohonannya: paling banyak lima, terbaru dulu, semua status', async () => {
+    const harapan = harapanNama(suratDunia(), 'siti')
+    expect(harapan.length).toBe(5)
+    expect((await cari('siti')).surat).toEqual(harapan.map(ringkas))
+  })
+
+  it('nomor surat (bergaris miring) → surat itu, huruf besar dan kecil sama', async () => {
+    const p = suratDunia().find((x) => x.terbit) as (typeof dunia.permohonan)[number]
+    const nomor = p.terbit?.nomor as string
+    const harapan = suratDunia()
+      .filter((x) => x.terbit?.nomor.includes(nomor.toUpperCase()))
+      .sort((a, b) => b.masukPada.localeCompare(a.masukPada) || (a.id < b.id ? -1 : 1))
+      .slice(0, 5)
+    expect(harapan.map((x) => x.id)).toContain(p.id)
+    expect((await cari(nomor)).surat).toEqual(harapan.map(ringkas))
+    expect((await cari(nomor.toLowerCase())).surat.map((s) => s.id)).toEqual(harapan.map((x) => x.id))
+    expect((await cari('9999/ZZZ/XX')).surat).toEqual([])
+  })
+
+  it('Kepala Dusun hanya mendapat surat dari dusunnya (fokus review 5)', async () => {
+    const dusun = dunia.pengguna.find((u) => u.email === 'sukardi@sungaisialang.desa.id')?.dusunId
+    const semua = suratDunia()
+    const dalam = semua.filter((p) => p.dusunId === dusun)
+    const luar = semua.find((p) => p.dusunId !== dusun && p.terbit) as (typeof dunia.permohonan)[number]
+    expect(dalam.length).toBeGreaterThan(0)
+    expect((await cari(luar.terbit?.nomor as string, kuki.kadus)).surat).toEqual([])
+    expect((await cari(luar.terbit?.nomor as string)).surat.map((s) => s.id)).toContain(luar.id)
+    const nama = namaPemohon(dalam[0].pemohonId)
+    const hasil = (await cari(nama, kuki.kadus)).surat
+    expect(hasil.map((s) => s.id)).toEqual(harapanNama(dalam, nama).map((p) => p.id))
+    expect(hasil.every((s) => dalam.some((p) => p.id === s.id))).toBe(true)
+  })
+
+  it('peran tanpa hak melihat penduduk mendapat tiga larik kosong, bukan galat', async () => {
+    expect(await cari('siti', kuki.kaur)).toEqual(KOSONG)
+  })
 })

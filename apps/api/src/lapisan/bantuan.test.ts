@@ -71,8 +71,8 @@ describe('lapisan bantuan: lihat saja', () => {
     expect((await kirim(app, 'POST', '/sesi/keluar', sesi.kuki, {})).status).toBe(204)
   })
 
-  it('daftar jalur pencarian-baca hanya memuat /cari, /penduduk/cari, dan /keluarga/cari (modul baru menambah sendiri)', () => {
-    expect([...JALUR_CARI_BACA]).toEqual(['/cari', '/penduduk/cari', '/keluarga/cari'])
+  it('daftar jalur pencarian-baca hanya memuat /cari, /penduduk/cari, /keluarga/cari, dan /permohonan/cari (modul baru menambah sendiri)', () => {
+    expect([...JALUR_CARI_BACA]).toEqual(['/cari', '/penduduk/cari', '/keluarga/cari', '/permohonan/cari'])
   })
 
   it('pelaku panel biasa tidak terpengaruh: ia tetap bisa melakukan POST yang sah', async () => {

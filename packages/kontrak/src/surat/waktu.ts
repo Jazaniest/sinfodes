@@ -1,5 +1,5 @@
 import { pad2 } from '../format/kalender'
-import { keWaktuWib, waktuIsoWib } from '../format/tanggal'
+import { keWaktuWib, tanggalIsoWib, waktuIsoWib } from '../format/tanggal'
 
 const HARI_MS = 86_400_000
 
@@ -19,6 +19,10 @@ export function hariKerjaBerlalu(mulai: string, sampai: string): number {
   for (let h = nomorHari(mulai) + 1; h <= nomorHari(sampai); h++) if (hariKerja(h)) jumlah++
   return jumlah
 }
+
+/** Tanggal pertama periode (YYYY-MM-DD WIB): 14 hari terakhir berarti hari ini dan 13 hari sebelumnya. */
+export const awalPeriode = (hari: number, sekarang: Date): string =>
+  tanggalIsoWib(new Date(sekarang.getTime() - (hari - 1) * HARI_MS))
 
 export type NadaTunggu = 'biasa' | 'oker' | 'merah'
 export type LamaMenunggu = { hari: number; teks: string; nada: NadaTunggu }

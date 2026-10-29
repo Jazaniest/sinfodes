@@ -156,8 +156,12 @@ describe('sesi bantuan Tim Sinfodes, lihat saja (SPEC-V0.2 §5.2)', () => {
     const global = await minta('/cari', 'POST', { kata: '1405095203', filter: {} })
     expect(global.status).toBe(403)
     expect(await pesanGalat(global)).toBe(PESAN_CARI_NOMOR)
+    // `/permohonan/cari` ada sejak 8F2a dan tunduk pada aturan angka yang sama.
+    const surat = await minta('/permohonan/cari', 'POST', { kata: '1405095203', jenis: null })
+    expect(surat.status).toBe(403)
+    expect(await pesanGalat(surat)).toBe(PESAN_CARI_NOMOR)
     // Perbedaan sengaja: jalur pencarian modul lain belum ada di server, jadi ditolak sebagai penulisan (403 juga).
-    const lain = await minta('/permohonan/cari', 'POST', { kata: '1405095203', filter: {} })
+    const lain = await minta('/pengaduan/cari', 'POST', { kata: '1405095203', filter: {} })
     expect(lain.status).toBe(403)
     expect(await pesanGalat(lain)).toBe(PESAN_LIHAT)
   })

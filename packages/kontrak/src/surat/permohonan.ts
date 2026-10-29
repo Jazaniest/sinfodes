@@ -182,13 +182,20 @@ export type DetailPermohonan = z.infer<typeof detailPermohonanSchema>
 const teksWajib = (pesan: string) => z.string().trim().min(1, pesan).max(500, 'Paling banyak 500 karakter')
 const isianSchema = z.record(z.string(), z.string().max(500))
 
-export const alasanSchema = z.object({ alasan: teksWajib('Alasan wajib diisi') })
-export const catatanKembaliSchema = z.object({ catatan: teksWajib('Catatan wajib diisi') })
+export const PESAN_CATATAN_NIK = 'Jangan menulis NIK atau nomor 16 angka di catatan.'
+/** Harus sama persis dengan CHECK `permohonan` di migrasi 0012: 16 angka berurutan yang tidak bersambung angka lain. */
+const POLA_NIK_DI_CATATAN = /(?<!\d)\d{16}(?!\d)/
+const tanpaNik = (teks: string) => !POLA_NIK_DI_CATATAN.test(teks)
+
+export const alasanSchema = z.object({ alasan: teksWajib('Alasan wajib diisi').refine(tanpaNik, PESAN_CATATAN_NIK) })
+export const catatanKembaliSchema = z.object({
+  catatan: teksWajib('Catatan wajib diisi').refine(tanpaNik, PESAN_CATATAN_NIK),
+})
 export const tandaTanganSchema = z.object({ passphrase: z.string().min(1, 'Passphrase wajib diisi') })
 export const ajukanTtdSchema = z.object({ isian: isianSchema.optional() })
 export const ubahPermohonanSchema = z.object({
   isian: isianSchema.optional(),
-  catatanInternal: z.string().trim().max(1000).nullable().optional(),
+  catatanInternal: z.string().trim().max(1000).refine(tanpaNik, PESAN_CATATAN_NIK).nullable().optional(),
 })
 export const cariPermohonanSchema = z.object({ kata: z.string().trim().min(1).max(100), jenis: kodeJenis.nullable() })
 

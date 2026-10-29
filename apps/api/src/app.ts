@@ -29,6 +29,8 @@ import { ruteMutasi } from './modul/mutasi/rute'
 import { rutePenduduk } from './modul/penduduk/rute'
 import { ruteStatistik } from './modul/statistik/rute'
 import { ruteJenisSurat } from './modul/jenis-surat/rute'
+import { efekSuratBawaan, type EfekSurat } from './modul/permohonan/efek-surat'
+import { rutePermohonan } from './modul/permohonan/rute'
 import { rutePenomoran, ruteTataLetakSurat } from './modul/pengaturan-surat/rute'
 import { ruteWilayah } from './modul/wilayah/rute'
 import { ruteSesi } from './modul/sesi/rute'
@@ -45,6 +47,8 @@ export type DepsApp = {
   ipKlien?: (c: Context) => string
   /** Efek mutasi ke modul yang belum ada (bansos, 8G); bawaan tanpa kerja. Uji menyuntik mata-mata. */
   efekSilang?: EfekSilang
+  /** Efek aksi surat ke modul lain (notifikasi, 8G); bawaannya tidak melakukan apa pun. */
+  efekSurat?: EfekSurat
 }
 
 /** Batas badan permintaan untuk /api/v1; rute yang butuh lebih (unggahan) menyetel batasnya sendiri. */
@@ -130,6 +134,7 @@ export function buatApp(deps: DepsApp): Hono<LingkunganApp> {
   app.route('/api/v1/cari', ruteCari({ penyandi }))
   app.route('/api/v1/impor', ruteImpor({ penyandi }))
   app.route('/api/v1/jenis-surat', ruteJenisSurat())
+  app.route('/api/v1/permohonan', rutePermohonan({ penyandi, efek: deps.efekSurat ?? efekSuratBawaan }))
   app.route('/api/v1/surat/tata-letak', ruteTataLetakSurat())
   app.route('/api/v1/pengaturan/penomoran', rutePenomoran())
   app.route('/api/v1/pengaturan/wilayah', ruteWilayah())

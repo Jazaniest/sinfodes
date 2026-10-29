@@ -6,6 +6,7 @@ import { SEKARANG_UJI } from '@sinfodes/demo/uji-akun'
 import { pengaturanBawaan } from '@sinfodes/kontrak/surat/pengaturan-bawaan'
 import { jenisDenganPakaiSchema, STATUS_DAFTAR_JENIS, statusJenis } from '@sinfodes/kontrak/surat/jenis'
 import { detailJenisSuratSchema } from '@sinfodes/kontrak/surat/ubah-jenis'
+import { awalPeriode } from '@sinfodes/kontrak/surat/waktu'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { z } from 'zod'
 import { buatDbUji, penyandiUji, type DbUji } from '../../../test/basisdata'
@@ -38,19 +39,25 @@ afterAll(async () => {
 })
 
 const katalogSs = () => dunia.jenisSurat.filter((j) => j.desaId === ID_SUNGAI_SIALANG)
+/** Pemakaian menurut dunia demo (8F2a): 12 bulan terakhir (365 hari WIB) untuk jumlah, kapan pun untuk "pernah dipakai". */
+const pakaiDunia = (jenisId: string) => {
+  const p = dunia.permohonan.filter((x) => x.desaId === ID_SUNGAI_SIALANG && x.jenisId === jenisId)
+  return { jumlahPakai: p.filter((x) => x.masukPada.slice(0, 10) >= awalPeriode(365, SEKARANG_UJI)).length, dipakai: p.length > 0 }
+}
 const daftar = async (peran: string, query = '', basis = SS) => ambil(app, `${basis}/api/v1/jenis-surat${query}`, kuki[peran])
 const galat = async (r: Response) => galatSchema.parse(await r.json()).error
 
 describe('GET /jenis-surat (rencana 8F1 Tugas 4)', () => {
-  it('memuat seluruh katalog desa dalam urutan semai, belum dipakai siapa pun, dalam satu halaman', async () => {
+  it('memuat seluruh katalog desa dalam urutan semai, dengan pemakaian dari permohonan, dalam satu halaman', async () => {
     const r = await daftar('operator')
     expect(r.status).toBe(200)
     const badan = daftarSchema.parse(await r.json())
     expect(badan.data.map((j) => j.kode)).toEqual([...katalogSs().map((j) => j.kode), 'ARSP'])
     expect(badan.meta).toEqual({ page: 1, pageSize: badan.data.length, total: badan.data.length })
-    for (const j of badan.data) expect({ pakai: j.jumlahPakai, dipakai: j.dipakai, desa: j.desaId }, j.kode).toEqual({ pakai: 0, dipakai: false, desa: ID_SUNGAI_SIALANG })
+    for (const j of badan.data) expect({ ...pakaiDunia(j.id), desa: j.desaId }, j.kode).toEqual({ jumlahPakai: j.jumlahPakai, dipakai: j.dipakai, desa: ID_SUNGAI_SIALANG })
+    expect(badan.data.some((j) => j.jumlahPakai > 0)).toBe(true)
     const contoh = katalogSs()[0]
-    expect(badan.data[0]).toEqual({ ...contoh, jumlahPakai: 0, dipakai: false })
+    expect(badan.data[0]).toEqual({ ...contoh, ...pakaiDunia(contoh.id) })
   })
 
   it('waktu arsip ditulis ISO WIB, bukan UTC', async () => {
@@ -101,7 +108,7 @@ describe('GET /jenis-surat/:id (rencana 8F1 Tugas 4)', () => {
     const r = await detail('operator', jenis.id)
     expect(r.status).toBe(200)
     const badan = detailJenisSuratSchema.parse(await r.json())
-    expect(badan.jenis).toEqual({ ...jenis, jumlahPakai: 0, dipakai: false })
+    expect(badan.jenis).toEqual({ ...jenis, ...pakaiDunia(jenis.id) })
     expect(badan.contoh).toMatchObject({ tiruan: true, subjek: null, mutasi: null, isian: {} })
     expect(badan.contoh.pemohon).toMatchObject({ nik: null, nama: 'Nama Pemohon', desaId: ID_SUNGAI_SIALANG })
     const bawaan = dunia.pengaturanSurat.find((p) => p.desaId === ID_SUNGAI_SIALANG) ?? pengaturanBawaan(ID_SUNGAI_SIALANG)
