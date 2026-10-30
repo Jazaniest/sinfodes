@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { TextField } from '@/ui/isian/TextField'
 import { Dialog } from '@/ui/lapisan/Dialog'
 import { Tombol } from '@/ui/tombol/Tombol'
-import { MODE_DEMO } from './lembar'
+import { DialogAturPassphrase } from './DialogAturPassphrase'
+import { usePassphraseTtd } from './usePassphraseTtd'
 
 type Props = {
   judulSurat: string
@@ -17,8 +18,39 @@ type Props = {
   onTutup: () => void
 }
 
-/** Tanda tangan elektronik dengan passphrase (SPEC §7.4). Di demo, TTE disimulasikan. */
-export function DialogTandaTangani({ judulSurat, pemohon, atasNama, memuat, galat, onSetuju, onSetujuLanjut, onTutup }: Props) {
+/** Dibaca saat render (bukan konstanta modul) supaya uji bisa berganti mode. */
+const modeDemo = (): boolean => import.meta.env.VITE_DEMO === 'true'
+
+/**
+ * Tanda tangan elektronik dengan passphrase (SPEC §7.4). Di demo, TTE disimulasikan dengan passphrase tetap. Di server nyata,
+ * pengguna yang belum punya passphrase menetapkannya lebih dulu di dialog yang sama (Ruling 1 tahap 8F2b).
+ */
+export function DialogTandaTangani(props: Props) {
+  return modeDemo() ? <DialogMasukkanPassphrase {...props} /> : <DialogDenganPassphraseServer {...props} />
+}
+
+function DialogDenganPassphraseServer(props: Props) {
+  const { diatur, atur, memuat } = usePassphraseTtd()
+  const [ubah, setUbah] = useState(false)
+  if (diatur === false || ubah) {
+    return (
+      <DialogAturPassphrase
+        ganti={diatur === true}
+        memuat={memuat}
+        onAtur={async (masukan) => {
+          await atur(masukan)
+          setUbah(false)
+        }}
+        onTutup={() => (diatur === false ? props.onTutup() : setUbah(false))}
+      />
+    )
+  }
+  return <DialogMasukkanPassphrase {...props} onUbahPassphrase={diatur === true ? () => setUbah(true) : undefined} />
+}
+
+function DialogMasukkanPassphrase({
+  judulSurat, pemohon, atasNama, memuat, galat, onSetuju, onSetujuLanjut, onTutup, onUbahPassphrase,
+}: Props & { onUbahPassphrase?: () => void }) {
   const [passphrase, setPassphrase] = useState('')
   const [kosong, setKosong] = useState(false)
   const kirim = (setuju: (passphrase: string) => void) => {
@@ -74,10 +106,17 @@ export function DialogTandaTangani({ judulSurat, pemohon, atasNama, memuat, gala
             if (e.key === 'Enter') kirim(utama)
           }}
           galat={kosong ? 'Passphrase wajib diisi' : galat}
-          keterangan={MODE_DEMO ? 'Simulasi TTE: passphrase demo tertulis di halaman demo.' : undefined}
+          keterangan={modeDemo() ? 'Simulasi TTE: passphrase demo tertulis di halaman demo.' : undefined}
           autoComplete="off"
           autoFocus
         />
+        {onUbahPassphrase && (
+          <div>
+            <Tombol varian="teks" onPress={onUbahPassphrase}>
+              Ubah passphrase
+            </Tombol>
+          </div>
+        )}
       </div>
     </Dialog>
   )

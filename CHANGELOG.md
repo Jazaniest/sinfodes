@@ -4,6 +4,16 @@ Semua perubahan penting Sinfodes dicatat di sini. Formatnya mengikuti [Keep a Ch
 
 ## [Belum dirilis]
 
+### Ditambahkan (tahap 8F2b)
+
+- **Tanda tangan surat di server nyata.** `POST /permohonan/:id/tandatangani` untuk Kepala Desa, atau Sekretaris Desa atas nama bila jenis suratnya mengizinkan. Surat mendapat nomor (satu kunci per desa dan tahun untuk kedua mode urutan; tahun menurut WIB) dan kode verifikasi (sumber acak aman, dicek ganda), lembar, tata letak, dan kop dibekukan dari keadaan saat itu, dan hash dokumen beserta tanda tangan simulator disimpan. Tidak ada nomor ganda atau berlubang pada tanda tangan serentak.
+- **Passphrase tanda tangan.** `GET` dan `PUT /sesi/passphrase-tanda-tangan` (hash argon2id, kata sandi akun diminta ulang saat menetapkan). Percobaan salah dihitung dengan pengunci bertingkat yang sama dengan masuk (5 kali, 15 menit, berlipat sampai 24 jam), tebakan serentak diserialkan per pengguna, dan hitungan serta jejak audit tersimpan walau jawabannya 422 (`GalatDisimpan`). Dialog **Tanda tangani** di web mendapat formulir menetapkan atau mengubah passphrase (mode demo tidak berubah).
+- **Batalkan, tandai diambil, kirim WhatsApp.** Surat dibatalkan tetap membawa surat terbitnya dan nomornya tidak dipakai ulang; tandai diambil sekali saja; kirim WhatsApp memakai colokan `Pengirim` (simulator, tidak mengirim apa pun) dan riwayat hanya memuat nomor tersamar.
+- **Verifikasi publik.** `POST /publik/:slug/verifikasi` berjalan di transaksi peran `sinfodes_publik` yang hanya boleh memanggil fungsi `verifikasi_surat` (`SECURITY DEFINER`): hasil minimal dengan nama tersamar, 10 kode salah dalam 10 menit mengunci verifikasi desa itu 10 menit, ditambah batas 30 permintaan per menit per IP. Surat dibatalkan tetap ditemukan dengan status Dibatalkan.
+- **Basis data.** Migrasi `0013`: tabel `passphrase_tanda_tangan` dan `percobaan_verifikasi`, jenis kunci `passphrase`, hak kolom penerbitan, pemicu `permohonan_beku` (berlaku untuk semua peran), dan fungsi `verifikasi_surat`.
+- **Kontrak bersama.** Skema passphrase, `BATAS_VERIFIKASI`, dan pesan verifikasi ditarik ke `packages/kontrak`; API tiruan memakainya dari sana.
+- **Uji.** Meta basis data (hak kolom, pemicu, fungsi, peran publik), passphrase, lapisan, nomor dan kode, tanda tangan, serah terima, verifikasi publik, sesi bantuan, matriks peran, dan skenario "SKTM sampai verifikasi QR"; bukti mutasi untuk kunci pengguna, kunci nomor, kunci baris, dan kunci fungsi verifikasi.
+
 ### Ditambahkan (tahap 8F2a)
 
 - **Permohonan surat di server nyata (baca).** `GET /permohonan` (satu tab status, `?jenis=<kode>`, `?periode=`, halaman), `GET /permohonan/jumlah` (angka tab dan angka menu "perlu tindakan" peran aktif), `GET /permohonan/antrian-ttd` (tumpukan tanda tangan Kepala Desa atau Sekretaris Desa), `GET /permohonan/penduduk/:id`, `GET /permohonan/:id` (detail lengkap beserta surat terbit beku), `POST /permohonan/cari` (nama, potongan NIK, atau nomor surat; kata di badan, tidak pernah di URL), dan `GET /permohonan/saran` (isian awal dari mutasi kelahiran, kematian, atau kepindahan). Cari global kini juga menemukan surat.

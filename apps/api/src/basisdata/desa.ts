@@ -65,6 +65,16 @@ export async function daftarDusunDesa(db: Db): Promise<Dusun[]> {
   return baris.map((b) => dusunSchema.parse({ id: b.id, desaId: b.desaId, nomor: b.nomor, nama: b.nama, kepalaDusun: b.kepalaDusun, posyandu: b.posyandu, rw: b.rw }))
 }
 
+/**
+ * Desa menurut basis data saat ini, bukan `DesaRekam` permintaan (cache alamat 30 detik): kode surat, lambang, dan istilah
+ * wilayah yang dibekukan ke surat terbit harus yang berlaku pada saat tanda tangan (rencana 8F2b Ruling 8 dan 10).
+ */
+export async function bacaDesaTerbaru(db: Db, desaId: string): Promise<Desa> {
+  const [b] = await db.select().from(desa).where(eq(desa.id, desaId)).limit(1)
+  if (!b) throw new Error('Desa tidak ditemukan saat membaca data terbaru.')
+  return dariBarisDesa(b).desa
+}
+
 /** Slug desa menurut ID, atau null. Dibaca Konsol untuk membentuk alamat tujuan tiket bantuan tanpa memuat isi desa. */
 export async function cariSlugDesaMenurutId(db: Db, id: string): Promise<string | null> {
   const [b] = await db.select({ slug: desa.slug }).from(desa).where(eq(desa.id, id)).limit(1)

@@ -39,6 +39,7 @@ import { handlerPembangunan } from './pembangunan'
 import { handlerPeringkat } from './peringkat'
 import { handlerPengaduan } from './pengaduan'
 import { handlerPengaturan } from './pengaturan'
+import { handlerPassphrase } from './passphrase'
 import { handlerPenggunaDesa } from './pengaturan-pengguna'
 import { handlerPenduduk } from './penduduk'
 import { handlerPublik } from './publik'
@@ -61,7 +62,7 @@ export const handlers = [
   ...handlerAlamat, ...handlerInduk, ...handlerArsip,
   ...handlerSesi, ...handlerBeranda, ...handlerCari, ...handlerPenduduk, ...handlerPendudukTulis, ...handlerKeluarga,
   ...handlerKeluargaTulis, ...handlerMutasi, ...handlerStatistik, ...handlerLaporan, ...handlerImpor, ...handlerJenisSurat, ...handlerModul,
-  ...handlerSuratLoket, ...handlerSurat, ...handlerSuratAksi,
+  ...handlerSuratLoket, ...handlerSurat, ...handlerSuratAksi, ...handlerPassphrase,
   ...handlerNotifikasi, ...handlerPengaduan, ...handlerBansos, ...handlerKesehatan,
   ...handlerKeuangan, ...handlerPembangunan, ...handlerTataKelola,
   ...handlerPengaturan, ...handlerPenggunaDesa, ...handlerAksesSinfodes, ...handlerWebsite, ...handlerBuku,

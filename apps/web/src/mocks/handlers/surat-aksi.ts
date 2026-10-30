@@ -12,6 +12,7 @@ import {
   AKSI_SURAT, ajukanTtdSchema, alasanSchema, catatanKembaliSchema, tandaTanganSchema, ubahPermohonanSchema,
   type AksiSurat, type KejadianSurat, type Permohonan,
 } from '@/domain/surat/permohonan'
+import { PESAN_PASSPHRASE_SALAH } from '@/domain/surat/passphrase'
 import { tataLetakBerlaku } from '@/domain/surat/tata-letak-siap'
 import { buatKodeVerifikasi } from '@/domain/surat/verifikasi'
 import { berlakuSampai } from '@/domain/surat/waktu'
@@ -179,7 +180,7 @@ export const handlerSuratAksi = [
           if (kurang.length > 0) {
             return balasGalat('VALIDATION', `Isian surat belum lengkap (${kurang.join(', ')}). Kembalikan ke operator untuk dilengkapi.`, 422)
           }
-          if (isian.data.passphrase !== PASSPHRASE_TTE_DEMO) return balasField('passphrase', 'Passphrase salah. Periksa kembali, lalu coba lagi.')
+          if (isian.data.passphrase !== PASSPHRASE_TTE_DEMO) return balasField('passphrase', PESAN_PASSPHRASE_SALAH)
           const tanggal = tanggalIsoWib(sekarang)
           const { tahun, urut, nomor, kode, mode } = nomorBaru(db, p, jenis, tanggal, desa.kodeSurat)
           const lembar = susunLembar({

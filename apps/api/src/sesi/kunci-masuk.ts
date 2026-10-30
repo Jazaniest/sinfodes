@@ -8,7 +8,7 @@ import type { Db } from '../basisdata/klien'
  * persis seperti yang ada dan tidak ada yang membedakan keduanya.
  */
 export type RuangKunci =
-  | { tabel: 'desa'; desaId: string; jenis: 'warga' | 'panel' }
+  | { tabel: 'desa'; desaId: string; jenis: 'warga' | 'panel' | 'passphrase' }
   | { tabel: 'platform'; jenis: 'konsol' | 'kabupaten' }
 
 export const AMBANG_GAGAL = 5

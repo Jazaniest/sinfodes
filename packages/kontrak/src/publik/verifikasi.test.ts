@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { hitungBerlaku, kodeSah, rapikanKode, samarkanNama, teksBerlaku } from './verifikasi'
+import {
+  BATAS_VERIFIKASI, hitungBerlaku, kodeSah, PESAN_KODE_FORMAT, PESAN_KODE_TIDAK_DITEMUKAN, PESAN_VERIFIKASI_TERKUNCI, rapikanKode,
+  samarkanNama, teksBerlaku,
+} from './verifikasi'
 
 describe('verifikasi surat: aturan (SPEC §7.6)', () => {
   it('nama disamarkan: huruf pertama setiap kata, huruf lainnya bintang', () => {
@@ -30,5 +33,16 @@ describe('verifikasi surat: aturan (SPEC §7.6)', () => {
     expect(teksBerlaku({ status: 'berlaku', sampai: null })).toBe('Berlaku')
     expect(teksBerlaku({ status: 'kedaluwarsa', sampai: '2026-09-01' })).toBe('Kedaluwarsa (berlaku sampai 1 Sep 2026)')
     expect(teksBerlaku({ status: 'dibatalkan', pada: '2026-10-03T09:00:00+07:00' })).toBe('Dibatalkan pada 3 Okt 2026')
+  })
+})
+
+describe('pengaman verifikasi (SPEC-V0.2 §3.4, Ruling 12 tahap 8F2b)', () => {
+  it('sepuluh kode salah dalam sepuluh menit mengunci sepuluh menit', () => {
+    expect(BATAS_VERIFIKASI).toEqual({ gagal: 10, jendelaMs: 600_000, kunciMs: 600_000 })
+  })
+  it('pesan dipertahankan persis dari tiruan', () => {
+    expect(PESAN_VERIFIKASI_TERKUNCI).toBe('Terlalu banyak percobaan. Coba lagi dalam 10 menit.')
+    expect(PESAN_KODE_FORMAT).toBe('Kode verifikasi berbentuk seperti SS-7K3M-Q9TD.')
+    expect(PESAN_KODE_TIDAK_DITEMUKAN).toBe('Kode tidak ditemukan. Periksa kembali, atau hubungi kantor desa.')
   })
 })

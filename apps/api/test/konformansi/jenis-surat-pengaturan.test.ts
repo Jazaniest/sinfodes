@@ -1,15 +1,17 @@
 // Kembaran dari apps/web/src/mocks/handlers/{jenis-surat,tata-letak,pengaturan}.test.ts untuk bagian 8F1: pertanyaan yang sama
 // diajukan ke server sungguhan lewat `panggilApi` dan modul `api/*` web yang sama, dan jawabannya harus sama dengan API tiruan.
 // Butir yang bergantung pada permohonan sudah menjadi uji di 8F2a (pemakaian jenis, nomor terbit); yang bergantung pada tanda tangan
-// (surat terbit, pembekuan tata letak) menunggu 8F2b dan ditulis sebagai `it.todo`; butir yang bergantung pada Identitas desa dan lambang (`PUT /pengaturan/desa`) menunggu 8G/8H.
+// (surat terbit, pembekuan tata letak) sudah menjadi uji di 8F2b; butir yang bergantung pada Identitas desa dan lambang (`PUT /pengaturan/desa`) menunggu 8G/8H.
 // Perbedaan yang sudah diputuskan ditandai `Perbedaan sengaja:` pada butirnya.
 import { describe, expect, it } from 'vitest'
 import { panggilApi } from '@/api/client'
 import { GalatApi } from '@/api/galat'
 import { ambilPenomoran, simpanPenomoran } from '@/api/pengaturan'
 import {
-  aktifkanLagiJenisSurat, ambilJenisSurat, arsipkanJenisSurat, daftarJenisSurat, hapusJenisSurat, tambahJenisSurat, ubahJenisSurat,
+  aktifkanLagiJenisSurat, ambilJenisSurat, ambilPermohonan, arsipkanJenisSurat, aturPassphrase, buatPermohonan, daftarJenisSurat, hapusJenisSurat,
+  jalankanAksi, tambahJenisSurat, ubahJenisSurat, ubahPermohonan,
 } from '@/api/surat'
+import { verifikasiSurat } from '@/api/publik'
 import { ambilTataLetak, simpanTataLetak } from '@/api/tata-letak'
 import { pengaturanBawaan } from '@/domain/surat/pengaturan-bawaan'
 import { tataLetakSuratSchema, type TataLetakSurat } from '@/domain/surat/tata-letak'
@@ -255,8 +257,47 @@ describe('jenis surat buatan desa: hapus, arsipkan, aktifkan lagi (jenis-surat.t
   })
   // Jenis arsip menolak permohonan baru dari loket, permohonan berjalan tetap diproses, dan ubah teks jenis tidak mengubah lembar terbit:
   // sudah menjadi uji di permohonan.test.ts (8F2a). Sisanya butuh tanda tangan.
-  it.todo('8F2b: permohonan jenis arsip yang berjalan bisa diselesaikan dan surat terbitnya bisa diverifikasi')
-  it.todo('8F2b: isian wajib baru pada jenis menahan tanda tangan sampai dilengkapi')
+  const PASSPHRASE = { passphrase: 'sialang2026' }
+  const siapkanKades = async () => {
+    await masukSebagai(AKUN_UJI.kades)
+    await aturPassphrase({ kataSandi: 'demo', passphrase: PASSPHRASE.passphrase })
+  }
+  const permohonanBaru = (jenisId: string, ajukan = false) =>
+    buatPermohonan({ jenisId, pemohonId: 'pdk_siti_rahmah', subjekId: null, mutasiId: null, isian: {}, ajukan })
+  it('permohonan jenis arsip yang berjalan bisa diselesaikan dan surat terbitnya bisa diverifikasi', async () => {
+    await masukSebagai(AKUN_UJI.operator)
+    const j = await jenisBaru()
+    await ubahJenisSurat(j.id, { aktif: true })
+    const { permohonan: p } = await permohonanBaru(j.id)
+    await arsipkanJenisSurat(j.id)
+    expect((await jalankanAksi(p.id, 'ajukan-ttd', { isian: {} })).permohonan.status).toBe('perlu-ttd')
+    await siapkanKades()
+    const terbit = (await jalankanAksi(p.id, 'tandatangani', PASSPHRASE)).permohonan.terbit
+    expect(terbit).not.toBeNull()
+    expect(await verifikasiSurat('sungaisialang', terbit?.kodeVerifikasi ?? '-')).toMatchObject({
+      jenis: 'Surat Pengantar Kerja', nomor: terbit?.nomor, berlaku: { status: 'berlaku' },
+    })
+  })
+  it('isian wajib baru pada jenis menahan tanda tangan sampai dilengkapi', async () => {
+    await masukSebagai(AKUN_UJI.operator)
+    const j = await jenisBaru()
+    await ubahJenisSurat(j.id, { aktif: true })
+    const { permohonan: p } = await permohonanBaru(j.id, true)
+    await ubahJenisSurat(j.id, {
+      isian: [{ kunci: 'keperluan', label: 'Keperluan', jenis: 'teks', wajib: true, pilihan: null, rupiah: false, diTabel: false, keterangan: null }],
+    })
+    await siapkanKades()
+    const g = await galatDari(jalankanAksi(p.id, 'tandatangani', PASSPHRASE))
+    expect(g).toMatchObject({ kode: 'VALIDATION', status: 422 })
+    expect(g.message).toMatch(/^Isian surat belum lengkap \(.+\)\. Kembalikan ke operator untuk dilengkapi\.$/)
+    expect((await ambilPermohonan(p.id)).permohonan).toMatchObject({ status: 'perlu-ttd', terbit: null })
+    await jalankanAksi(p.id, 'kembalikan', { catatan: 'Lengkapi keperluan.' })
+    await masukSebagai(AKUN_UJI.operator)
+    await ubahPermohonan(p.id, { isian: { keperluan: 'Melamar pekerjaan' } })
+    await jalankanAksi(p.id, 'ajukan-ttd', { isian: { keperluan: 'Melamar pekerjaan' } })
+    await masukSebagai(AKUN_UJI.kades)
+    expect((await jalankanAksi(p.id, 'tandatangani', PASSPHRASE)).permohonan.status).toBe('selesai')
+  })
 })
 
 describe('daftar jenis surat: penyaring status (jenis-surat.test.ts, SPEC-V0.2 12.1 butir 6)', () => {
@@ -343,7 +384,19 @@ describe('GET dan PUT /surat/tata-letak (tata-letak.test.ts)', () => {
     await sql()`delete from pengaturan_surat where desa_id = 'desa_tanjung_lamo'`
     expect(await ambilTataLetak()).toEqual(pengaturanBawaan('desa_tanjung_lamo').tataLetak)
   })
-  it.todo('8F2b: tata letak dan kop dibekukan saat surat terbit; surat terbit sebelum tata letak diganti tetap memakai salinannya (tata-letak.test.ts)')
+  it('tata letak dibekukan saat surat terbit: mengganti tata letak desa sesudahnya tidak mengubah salinan di surat', async () => {
+    const [{ id }] = await sql()`select id from permohonan where desa_id = 'desa_sungai_sialang' and status = 'perlu-ttd' and tahap = 'tanda-tangan' limit 1`
+    await masukSebagai(AKUN_UJI.kades)
+    await aturPassphrase({ kataSandi: 'demo', passphrase: 'sialang2026' })
+    const terbit = (await jalankanAksi(id as string, 'tandatangani', { passphrase: 'sialang2026' })).permohonan.terbit
+    expect(terbit?.tataLetak.siap).toBe('standar')
+    expect(terbit?.kop).toEqual({ lambang: null, lambangKabupaten: null })
+    await masukSebagai(AKUN_UJI.sekdes)
+    await simpanTataLetak(rataTengahArimo())
+    const detail = await ambilPermohonan(id as string)
+    expect(detail.permohonan.terbit?.tataLetak).toEqual(terbit?.tataLetak)
+    expect(detail.pengaturan.tataLetak.huruf.keluarga).toBe('Arimo')
+  })
 })
 
 describe('GET dan PUT /pengaturan/penomoran (pengaturan.test.ts)', () => {

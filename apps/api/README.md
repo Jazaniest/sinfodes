@@ -116,6 +116,24 @@ Daftar pencarian-baca kini `/penduduk/cari` dan `/keluarga/cari`. `POST /pendudu
 - Berkas contoh untuk pengujian: `apps/api/test/contoh/impor-3-baris.csv` dan `.xlsx` (dibuat oleh `skrip/buat-contoh-impor.ts`).
 - Jalur `{ "contoh": true }` (tombol "Coba dengan file contoh") memasukkan penduduk fiktif; penutupannya untuk produksi menunggu 8K.
 
+## Tanda tangan dan verifikasi surat
+
+Rute (tahap 8F2b):
+
+- `GET` dan `PUT /api/v1/sesi/passphrase-tanda-tangan`: status passphrase penanda tangan dan penetapannya (kata sandi akun diminta ulang). Hanya peran yang boleh menandatangani.
+- `POST /api/v1/permohonan/:id/tandatangani|batalkan|tandai-diambil|kirim-wa`: empat aksi surat terbit, dengan urutan pemeriksaan dan pesan yang sama dengan API tiruan.
+- `POST /api/v1/publik/:slug/verifikasi`: verifikasi kode surat tanpa sesi. Berjalan di transaksi peran `sinfodes_publik`, hanya di alamat desa, dan `:slug` harus slug desa alamat itu.
+
+Menetapkan passphrase di basis data dev: masuk sebagai Kepala Desa atau Sekretaris Desa, buka dialog **Tanda tangani** pada surat di tahap tanda tangan; formulir "Tetapkan passphrase" muncul bila belum diatur. Tidak ada passphrase bawaan di server (passphrase demo hanya ada di mode demo web).
+
+Aturan yang harus dipegang kode baru:
+
+- **Urutan kunci tetap, tidak boleh dibalik**: (1) baris permohonan `FOR UPDATE`, (2) kunci penasihat pengguna untuk percobaan passphrase, (3) kunci penasihat nomor surat per desa dan tahun. Kunci nomor urut permohonan (`permohonan-nourut`) tidak dipegang bersama ketiganya.
+- **`GalatDisimpan`** (`src/galat.ts`) menjawab 4xx tanpa membatalkan transaksi permintaan, supaya hitungan percobaan dan jejak audit tersimpan. Lempar hanya sebelum ada tulis domain apa pun selain pencatat itu; `lapisanTransaksi` tetap membatalkan untuk galat biasa dan status 5xx.
+- **Pemicu `permohonan_beku`** (migrasi `0013`) menjaga surat terbit: berlaku untuk semua peran termasuk pemilik skema. Pemeliharaan harus eksplisit lewat `ALTER TABLE permohonan DISABLE TRIGGER permohonan_beku`, bukan kebetulan hak.
+- **Peran `sinfodes_publik`** tidak punya hak tabel apa pun; ia hanya boleh `EXECUTE verifikasi_surat(desa, kode, waktu)`, fungsi `SECURITY DEFINER` yang mencari kode dan mengelola pencacah percobaan salah di tabel `percobaan_verifikasi`. Ambang (10 kode salah dalam 10 menit mengunci 10 menit per desa) sama dengan `BATAS_VERIFIKASI` di kontrak; uji meta membandingkannya.
+- Colokan `Penandatangan` dan `Pengirim` disuntik lewat `DepsApp` (simulator bawaan): tanda tangan simulator berawalan `sim1.` dan belum tersertifikasi; pengirim WhatsApp tidak mengirim apa pun. Kode verifikasi memakai `crypto.randomInt`, bukan `Math.random`.
+
 ## Uji
 
 ```bash
@@ -147,6 +165,9 @@ pnpm --filter @sinfodes/api test
 - Tabel `kunci_idempotensi` menyimpan hanya sidik isi dan rujukan mutasi, bukan salinan jawaban, jadi NIK pendatang tidak tersalin ke sana.
 - Isi berkas impor yang menunggu konfirmasi (`impor_penduduk`) disimpan sebagai satu sandi, berlaku 24 jam, dikosongkan sesudah selesai; NIK dan telepon dari berkas tidak pernah polos di tabel.
 - Rahasia hanya di `.env.local` (tidak dilacak git). Server menolak mulai di staging atau produksi bila rahasia tampak seperti nilai contoh.
+- Passphrase tanda tangan disimpan sebagai hash argon2id dan hanya mencegah tanda tangan lewat sesi yang dibiarkan terbuka; percobaan salah memakai pengunci bertingkat yang sama dengan masuk, dan tebakan serentak dari satu pengguna diserialkan dengan kunci penasihat (tanpa itu seratus tebakan paralel lolos sebelum hitungan naik).
+- Surat terbit beku: nomor, kode, lembar, tata letak, kop, hash dokumen, dan tanda tangan tidak bisa diubah siapa pun lewat SQL (pemicu), dan hanya `status`, `pembatalan`, `diambil`, dan `catatan_internal` yang masih boleh berubah.
+- Verifikasi publik tidak membocorkan NIK, NIP, id, isian, alamat, atau alasan pembatalan; nama disamarkan. Risiko yang diterima: penyerang dari banyak alamat bisa mengunci verifikasi satu desa selama 10 menit (tidak ada data bocor; kunci berhenti sendiri).
 - Log JSON dengan penyamaran kunci sensitif; jawaban galat tidak memuat tumpukan atau isi basis data.
 
 Pengerasan tambahan sebelum peluncuran dicatat di `SPEC-V0.3.md` §15.2.

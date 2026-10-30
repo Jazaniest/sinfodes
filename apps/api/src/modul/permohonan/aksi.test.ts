@@ -16,7 +16,6 @@ const TL = 'http://tanjunglamo.sinfodes.localhost'
 const PESAN_LIHAT = 'Peran Anda tidak berhak membuka Layanan Surat.'
 const PESAN_BERUBAH = 'Status permohonan ini sudah berubah. Muat ulang halaman untuk melihat keadaan terbarunya.'
 const PESAN_DITANGGUHKAN = 'Langganan desa ditangguhkan. Panel hanya bisa dilihat.'
-const PESAN_BELUM_ADA = 'Aksi ini belum tersedia di server nyata.'
 const TIDAK_BERHAK = {
   proses: 'Peran Anda tidak berhak memproses permohonan.',
   tolak: 'Peran Anda tidak berhak menolak permohonan.',
@@ -35,6 +34,9 @@ const efekUji: EfekSurat = {
   async suratDikembalikan(...args) {
     efek.panggilan.push(args)
     if (efek.gagal) throw new Error('efek gagal')
+  },
+  async suratDitandatangani() {
+    // Dipakai uji tanda tangan (tandatangan.test.ts).
   },
 }
 beforeAll(async () => {
@@ -268,21 +270,6 @@ describe('hak, urutan pemeriksaan, dan aksi yang belum tersedia', () => {
     const r = await aksi('proses', dalam.id, {}, 'kadus')
     expect(r.status).toBe(403)
     expect((await galat(r)).message).toBe(TIDAK_BERHAK.proses)
-  })
-
-  it('empat aksi belum tersedia menjawab 404 "Aksi ini belum tersedia di server nyata."; hak dasar tetap diperiksa lebih dulu', async () => {
-    const p = await perluTtd()
-    for (const nama of ['tandatangani', 'batalkan', 'tandai-diambil', 'kirim-wa']) {
-      const r = await aksi(nama, p.id, { passphrase: 'x', alasan: 'x' }, 'kades')
-      expect(r.status, nama).toBe(404)
-      expect((await galat(r)).message, nama).toBe(PESAN_BELUM_ADA)
-      expect((await aksi(nama, 'srt_tidak_ada', {}, 'kades')).status).toBe(404)
-      const kaur = await aksi(nama, p.id, {}, 'kaur')
-      expect(kaur.status, nama).toBe(403)
-      expect((await galat(kaur)).message).toBe(PESAN_LIHAT)
-      expect((await aksi(nama, p.id, {}, null)).status).toBe(401)
-    }
-    expect(await barisDb(p.id)).toMatchObject({ status: 'perlu-ttd', tahap: 'tanda-tangan', terbit_nomor: null })
   })
 
   it('desa Ditangguhkan menolak semua aksi, termasuk yang dibuka dengan surat.lihat; membaca tetap boleh', async () => {

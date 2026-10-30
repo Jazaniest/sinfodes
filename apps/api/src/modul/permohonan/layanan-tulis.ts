@@ -1,11 +1,10 @@
 import { tanggalIsoWib, waktuIsoWib } from '@sinfodes/kontrak/format/tanggal'
-import type { Pelaku } from '@sinfodes/kontrak/mutasi/schema'
 import { cakupanDusun } from '@sinfodes/kontrak/pengguna/hak-akses'
 import { peranMengizinkan, statusMengizinkan, tahapAwalTtd } from '@sinfodes/kontrak/surat/alur'
 import { dilayani, periksaIsian, samaIsian, saringIsian } from '@sinfodes/kontrak/surat/jenis'
 import { periksaPemohon } from '@sinfodes/kontrak/surat/pemohon'
 import {
-  ajukanTtdSchema, alasanSchema, buatPermohonanSchema, catatanKembaliSchema, ubahPermohonanSchema, type AksiSurat, type DetailPermohonan, type KejadianSurat, type Permohonan,
+  ajukanTtdSchema, alasanSchema, buatPermohonanSchema, catatanKembaliSchema, ubahPermohonanSchema, type AksiSurat, type DetailPermohonan, type Permohonan,
 } from '@sinfodes/kontrak/surat/permohonan'
 import type { Desa } from '@sinfodes/kontrak/wilayah/schema'
 import { randomUUID } from 'node:crypto'
@@ -25,8 +24,13 @@ import { bacaPendudukSatu } from '../penduduk/repositori'
 import type { EfekSurat } from './efek-surat'
 import { PESAN_DATA_TIDAK_UTUH } from './bentuk'
 import { bentukDetail, permohonanTidakAda } from './layanan'
+import { batalkanSurat, kirimWhatsApp, tandaiDiambil } from './layanan-serah-terima'
+import { terbitkanSurat } from './layanan-terbit'
+import type { Pengirim } from './pengirim'
+import type { Penandatangan } from './penandatangan'
+import { catatRiwayatSurat } from './riwayat-surat'
 import { bacaPermohonanSatu } from './repositori'
-import { alokasiNoUrut, KENDALA_JENIS, sisipPermohonan, sisipRiwayatSurat, ubahKolomPermohonan, type KolomUbahPermohonan } from './repositori-tulis'
+import { alokasiNoUrut, KENDALA_JENIS, sisipPermohonan, ubahKolomPermohonan, type KolomUbahPermohonan } from './repositori-tulis'
 
 export type KonteksTulisSurat = { db: Db; penyandi: Penyandi; pelaku: PelakuPanel; desa: Desa; sekarang: Date }
 
@@ -35,18 +39,6 @@ export const PESAN_JENIS_TIDAK_TERSEDIA = 'Jenis surat ini tidak tersedia.'
 export const PESAN_ISIAN_BELUM_LENGKAP = 'Isian surat belum lengkap.'
 export const PESAN_ISIAN_HANYA_DIPROSES = 'Isian hanya bisa diubah saat permohonan berstatus Diproses.'
 const dataTidakUtuh = () => new GalatApp('SERVER', PESAN_DATA_TIDAK_UTUH, 500)
-
-/** Satu baris riwayat permohonan. Dipanggil dalam transaksi permintaan yang sama dengan perubahan statusnya. */
-export async function catatRiwayatSurat(
-  db: Db,
-  p: { id: string; desaId: string },
-  kejadian: KejadianSurat,
-  oleh: Pelaku,
-  waktu: Date,
-  catatan: string | null = null,
-): Promise<void> {
-  await sisipRiwayatSurat(db, { id: `rws_${randomUUID()}`, desaId: p.desaId, permohonanId: p.id, kejadian, waktu, oleh, catatan })
-}
 
 /** Isian yang gagal diperiksa menjadi 422 dengan satu pesan per field `isian.<kunci>` (SPEC §7.4 langkah 3). */
 export const galatIsianSurat = (galat: Record<string, string>): GalatApp =>
@@ -163,17 +155,21 @@ export const PESAN_SUDAH_BERUBAH = 'Status permohonan ini sudah berubah. Muat ul
 export const PESAN_AKSI_BELUM_ADA = 'Aksi ini belum tersedia di server nyata.'
 export const PESAN_AKSI_TIDAK_DIKENAL = 'Aksi tidak dikenal.'
 
-/** Aksi yang sudah hidup di 8F2a; tanda tangan, batal, serah terima, dan kirim WhatsApp datang di 8F2b. */
-const AKSI_AKTIF: readonly AksiSurat[] = ['proses', 'tolak', 'ajukan-ttd', 'paraf', 'kembalikan']
+/** Aksi yang sudah hidup: lima aksi alur (8F2a), tanda tangan, batal, serah terima, dan kirim WhatsApp (8F2b). */
+const AKSI_AKTIF: readonly AksiSurat[] = ['proses', 'tolak', 'ajukan-ttd', 'paraf', 'kembalikan', 'tandatangani', 'batalkan', 'tandai-diambil', 'kirim-wa']
 const TIDAK_BERHAK: Readonly<Record<string, string>> = {
   proses: 'Peran Anda tidak berhak memproses permohonan.',
   tolak: 'Peran Anda tidak berhak menolak permohonan.',
   'ajukan-ttd': 'Peran Anda tidak berhak mengajukan tanda tangan.',
   paraf: 'Hanya Sekretaris Desa yang memaraf surat.',
   kembalikan: 'Hanya Sekretaris Desa dan Kepala Desa yang bisa mengembalikan surat.',
+  tandatangani: 'Surat ini harus ditandatangani Kepala Desa.',
+  batalkan: 'Hanya Sekretaris Desa dan Kepala Desa yang bisa membatalkan surat.',
+  'tandai-diambil': 'Peran Anda tidak berhak mengubah permohonan.',
+  'kirim-wa': 'Peran Anda tidak berhak mengirim surat.',
 }
 
-export type KonteksAksi = KonteksTulisSurat & { efek: EfekSurat }
+export type KonteksAksi = KonteksTulisSurat & { efek: EfekSurat; penandatangan: Penandatangan; pengirim: Pengirim; acak: () => number }
 
 /**
  * Menjalankan satu aksi status (SPEC §7.1). Urutan pemeriksaan sama dengan API tiruan: permohonan dalam cakupan (404), hak per aksi
@@ -245,6 +241,18 @@ export async function jalankanAksi(k: KonteksAksi, id: string, aksi: AksiSurat, 
       await k.efek.suratDikembalikan(k.db, rekam, jenis, { id: pemohon.id, nama: pemohon.nama }, isian.data.catatan, oleh)
       break
     }
+    case 'tandatangani':
+      await terbitkanSurat(k, rekam, jenis, pemohon, badan)
+      break
+    case 'batalkan':
+      await batalkanSurat(k, rekam, jenis, badan)
+      break
+    case 'tandai-diambil':
+      await tandaiDiambil(k, rekam)
+      break
+    case 'kirim-wa':
+      await kirimWhatsApp(k, rekam, jenis, pemohon)
+      break
     default:
       throw new GalatApp('NOT_FOUND', PESAN_AKSI_BELUM_ADA, 404)
   }

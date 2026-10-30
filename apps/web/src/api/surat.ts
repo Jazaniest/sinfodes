@@ -6,6 +6,7 @@ import {
   barisPermohonanSchema, detailPermohonanSchema, jumlahPermohonanSchema, saranSuratSchema,
   type AksiSurat, type BuatPermohonan, type FilterPermohonan, type PeriodePermohonan,
 } from '@/domain/surat/permohonan'
+import { statusPassphraseSchema, type AturPassphrase } from '@/domain/surat/passphrase'
 import { detailJenisSuratSchema, type UbahJenisSurat } from '@/domain/surat/ubah-jenis'
 import { panggilApi } from './client'
 
@@ -24,6 +25,8 @@ export const kunciSurat = {
   antrian: ['permohonan', 'antrian-ttd'] as const,
   penduduk: (id: string) => ['permohonan', 'penduduk', id] as const,
   saran: (jenis: string, pemohon: string | null, subjek: string | null) => ['permohonan', 'saran', jenis, pemohon, subjek] as const,
+  /** Status passphrase tanda tangan pengguna (server nyata, 8F2b). */
+  passphrase: ['passphrase-ttd'] as const,
 }
 
 /** Tanpa `status`, semua jenis desa (aktif, dihentikan, dan diarsipkan). */
@@ -112,6 +115,16 @@ export function ambilAntrianTtd(signal?: AbortSignal) {
 
 /** Surat yang menunggu tanda tangan pengguna, terlama dulu (SPEC §7.4 layar 4). */
 export const opsiAntrianTtd = () => queryOptions({ queryKey: kunciSurat.antrian, queryFn: ({ signal }) => ambilAntrianTtd(signal) })
+
+/** Apakah pengguna sudah menetapkan passphrase tanda tangan (Ruling 1 tahap 8F2b). */
+export function bacaStatusPassphrase(signal?: AbortSignal) {
+  return panggilApi('GET', '/sesi/passphrase-tanda-tangan', { skema: statusPassphraseSchema, signal })
+}
+
+/** Menetapkan atau mengganti passphrase; kata sandi akun diperiksa ulang di server. */
+export function aturPassphrase(masukan: AturPassphrase) {
+  return panggilApi('PUT', '/sesi/passphrase-tanda-tangan', { skema: statusPassphraseSchema, body: masukan })
+}
 
 export function daftarSuratPenduduk(id: string, signal?: AbortSignal) {
   return panggilApi('GET', `/permohonan/penduduk/${encodeURIComponent(id)}`, { skema: daftarPermohonanSchema, signal })
