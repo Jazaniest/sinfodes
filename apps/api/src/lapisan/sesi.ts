@@ -86,8 +86,10 @@ export function lapisanSesi(deps: { cookieAwalan: Konfigurasi['cookieAwalan']; w
   return async (c, next) => {
     c.set('pelaku', null)
     const db = c.get('dbTransaksi')
-    if (db) {
-      const keluarga = keluargaDariJalur(new URL(c.req.url).pathname.replace(/^\/api\/v1/, ''))
+    const jalur = new URL(c.req.url).pathname.replace(/^\/api\/v1/, '')
+    // Jalur publik tidak punya pelaku dan berjalan dengan peran `publik` yang tidak boleh membaca tabel sesi: cookie diabaikan.
+    if (db && !/^\/publik(\/|$)/.test(jalur)) {
+      const keluarga = keluargaDariJalur(jalur)
       const token = bacaKuki(c, keluarga, deps.cookieAwalan)
       if (token && bentukTokenSah(token)) {
         const pelaku = await cariPelaku(db, keluarga, c.get('alamat'), hashToken(token), deps.waktu())

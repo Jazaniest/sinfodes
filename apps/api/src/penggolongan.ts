@@ -45,6 +45,9 @@ export const GOLONGAN_TABEL: Readonly<Record<string, Golongan>> = {
   // Permohonan surat dan riwayatnya (8F2a): isian dan lembar beku tersandi; riwayat hanya tambah.
   permohonan: 'desa-privat',
   riwayat_surat: 'desa-privat',
+  // Passphrase tanda tangan dan pencacah verifikasi publik (8F2b): hash argon2id saja; pencacah hanya ditulis fungsi verifikasi_surat.
+  passphrase_tanda_tangan: 'desa-privat',
+  percobaan_verifikasi: 'desa-privat',
   jejak_audit: 'audit',
   jejak_bantuan: 'audit',
   jejak_audit_platform: 'audit',

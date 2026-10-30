@@ -6,7 +6,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { buatDbUji, type DbUji } from '../../test/basisdata'
 import { klienTanpaDb, rakitApp, sisipSesiUji } from '../../test/rakit-app'
 import { buatKlien, type Klien } from '../basisdata/klien'
-import { GalatApp } from '../galat'
+import { GalatApp, GalatDisimpan } from '../galat'
 import { butuhAkses, butuhDesa, butuhPelakuPanel, dbTanpaPelaku } from './akses'
 import { batasiLaju, buatBatasLaju } from './batas-laju'
 
@@ -79,6 +79,16 @@ function rakitDenganRute(opsi: { klien?: Klien; waktu?: () => Date; ipKlien?: (c
     const { db } = butuhAkses(c, 'penduduk.ubah')
     await db.execute(dsql`update penduduk set catatan = 'dari-uji-lapisan' where id = 'pdk_siti_rahmah'`)
     return c.json({ error: { code: 'VALIDATION', message: 'Ditolak, tetapi jejaknya tersimpan.' } }, 400)
+  })
+  app.post('/api/v1/contoh/tulis-lalu-disimpan', async (c) => {
+    const { db } = butuhAkses(c, 'penduduk.ubah')
+    await db.execute(dsql`update penduduk set catatan = 'dari-uji-lapisan' where id = 'pdk_siti_rahmah'`)
+    throw new GalatDisimpan('VALIDATION', 'Ditolak, tetapi hitungannya tersimpan.', 422, { passphrase: 'Ditolak, tetapi hitungannya tersimpan.' })
+  })
+  app.post('/api/v1/contoh/tulis-lalu-disimpan-5xx', async (c) => {
+    const { db } = butuhAkses(c, 'penduduk.ubah')
+    await db.execute(dsql`update penduduk set catatan = 'dari-uji-lapisan' where id = 'pdk_siti_rahmah'`)
+    throw new GalatDisimpan('SERVER', 'Galat server.', 500)
   })
   app.post('/api/v1/contoh/tanpa-pelaku', async (c) => {
     const { db } = dbTanpaPelaku(c)
@@ -230,6 +240,26 @@ describe('lapisan transaksi dan akses', () => {
     expect(tolak.status).toBe(400)
     expect(await catatan()).toBe('dari-uji-lapisan')
     await uji.sqlMigrasi`update penduduk set catatan = ${awal} where id = 'pdk_siti_rahmah'`
+  })
+
+  it('GalatDisimpan menjawab 4xx dengan field-nya tetapi menyimpan tulisan; GalatApp biasa dan 5xx tetap membatalkan', async () => {
+    const { app } = rakitDenganRute()
+    const s = await sisipSesiUji(uji.sqlMigrasi, { penggunaId: 'pgn_rosmiati', desaId: DESA_SS, dibuat: AWAL })
+    const catatan = async () => (await uji.sqlMigrasi`select catatan from penduduk where id = 'pdk_siti_rahmah'`)[0].catatan as string | null
+    const awal = await catatan()
+    const disimpan = await kirim(app, `${SS}/api/v1/contoh/tulis-lalu-disimpan`, s.kuki)
+    expect(disimpan.status).toBe(422)
+    expect(galatSchema.parse(await disimpan.json()).error).toEqual({
+      code: 'VALIDATION', message: 'Ditolak, tetapi hitungannya tersimpan.', fields: { passphrase: 'Ditolak, tetapi hitungannya tersimpan.' },
+    })
+    expect(await catatan()).toBe('dari-uji-lapisan')
+    await uji.sqlMigrasi`update penduduk set catatan = ${awal} where id = 'pdk_siti_rahmah'`
+    const biasa = await kirim(app, `${SS}/api/v1/contoh/tulis-lalu-gagal`, s.kuki)
+    expect(biasa.status).toBe(409)
+    expect(await catatan()).toBe(awal)
+    const lima = await kirim(app, `${SS}/api/v1/contoh/tulis-lalu-disimpan-5xx`, s.kuki)
+    expect(lima.status).toBe(500)
+    expect(await catatan()).toBe(awal)
   })
 
   it('akses tanpa pelaku hanya lewat dbTanpaPelaku dan tetap dibatasi konteks desa alamat', async () => {

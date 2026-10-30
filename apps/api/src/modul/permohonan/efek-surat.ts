@@ -17,10 +17,25 @@ export type EfekSurat = {
     catatan: string,
     oleh: Pelaku,
   ): Promise<void>
+  /**
+   * Surat selesai ditandatangani: pemohon diberi tahu lewat notifikasi (tabelnya ada di 8G). `nomor` sudah berformat; `oleh`
+   * adalah penanda tangan (Kepala Desa, atau Sekretaris Desa atas nama).
+   */
+  suratDitandatangani(
+    db: Db,
+    permohonan: { id: string; desaId: string; dusunId: string },
+    jenis: Pick<JenisSurat, 'id' | 'kode'>,
+    pemohon: { id: string; nama: string },
+    nomor: string,
+    oleh: Pelaku,
+  ): Promise<void>
 }
 
 export const efekSuratBawaan: EfekSurat = {
   async suratDikembalikan() {
+    // Menunggu tabel notifikasi (8G).
+  },
+  async suratDitandatangani() {
     // Menunggu tabel notifikasi (8G).
   },
 }

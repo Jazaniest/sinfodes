@@ -9,8 +9,9 @@ import { describe, expect, it, vi } from 'vitest'
 import { z } from 'zod'
 import { panggilApi } from '@/api/client'
 import { GalatApi } from '@/api/galat'
+import { verifikasiSurat } from '@/api/publik'
 import {
-  ambilAntrianTtd, ambilJumlahPermohonan, ambilPermohonan, ambilSaranSurat, arsipkanJenisSurat, buatPermohonan, cariPermohonan, daftarJenisSurat,
+  aturPassphrase, bacaStatusPassphrase, ambilAntrianTtd, ambilJumlahPermohonan, ambilPermohonan, ambilSaranSurat, arsipkanJenisSurat, buatPermohonan, cariPermohonan, daftarJenisSurat,
   daftarPermohonan, daftarSuratPenduduk, jalankanAksi, tambahJenisSurat, ubahPermohonan,
 } from '@/api/surat'
 import type { BuatPermohonan, Permohonan } from '@/domain/surat/permohonan'
@@ -346,21 +347,122 @@ describe('Perbedaan sengaja pada permohonan (rencana 8F2a)', () => {
     await masukSebagai(AKUN_UJI.kades)
     expect((await galatDari(jalankanAksi(ttdDomisili().id, 'kembalikan', { catatan: '1405095203918002' }))).fields).toEqual({ catatan: 'Jangan menulis NIK atau nomor 16 angka di catatan.' })
   })
-  it('Perbedaan sengaja: tanda tangan, batal, tandai diambil, dan kirim WhatsApp belum tersedia (8F2b) dan menjawab 404', async () => {
+})
+
+describe('Tanda tangan (kembaran surat-aksi.test.ts, rencana 8F2b Tugas 6)', () => {
+  const urutTerakhir2026 = () => Math.max(...dunia.permohonan.flatMap((p) => (p.terbit?.tahun === 2026 ? [p.terbit.urut] : [])))
+  it('SKTM: Sekdes memaraf, Kades menetapkan passphrase lalu menandatangani; nomor dan kode diberikan saat tanda tangan dan surat dibekukan', async () => {
+    const id = paraf().id
+    const urutSebelum = urutTerakhir2026()
+    await masukSebagai(AKUN_UJI.sekdes)
+    expect((await jalankanAksi(id, 'paraf')).permohonan).toMatchObject({ status: 'perlu-ttd', tahap: 'tanda-tangan', terbit: null })
     await masukSebagai(AKUN_UJI.kades)
+    // Perbedaan sengaja: server tidak punya passphrase demo; Kepala Desa menetapkannya lebih dulu (Ruling 1 8F2b).
+    expect(await bacaStatusPassphrase()).toEqual({ diatur: false })
+    expect((await galatDari(jalankanAksi(id, 'tandatangani', { passphrase: 'sialang2026' }))).fields).toEqual({ passphrase: 'Anda belum menetapkan passphrase tanda tangan.' })
+    expect(await aturPassphrase({ kataSandi: 'demo', passphrase: 'sialang2026' })).toEqual({ diatur: true })
+    const salah = await galatDari(jalankanAksi(id, 'tandatangani', { passphrase: 'salah' }))
+    expect(salah.fields).toEqual({ passphrase: 'Passphrase salah. Periksa kembali, lalu coba lagi.' })
+    const { permohonan: p } = await jalankanAksi(id, 'tandatangani', { passphrase: 'sialang2026' })
+    expect(p.status).toBe('selesai')
+    expect(p.terbit).toMatchObject({
+      tahun: 2026, urut: urutSebelum + 1, berlakuSampai: '2026-12-24', mode: 'tte', penandatangan: { nama: 'H. Muhammad Nasir', peran: 'kades' },
+    })
+    expect(p.terbit?.nomor).toBe(`400/${String(urutSebelum + 1).padStart(3, '0')}/SS/IX/2026`)
+    expect(p.terbit?.kodeVerifikasi).toMatch(/^SS-[A-HJ-NP-Z2-9]{4}-[A-HJ-NP-Z2-9]{4}$/)
+    expect(p.terbit?.lembar.judul).toBe('SURAT KETERANGAN TIDAK MAMPU')
+    expect(p.riwayat.slice(-2).map((r) => r.kejadian)).toEqual(['paraf', 'tandatangani'])
+    expect(p.riwayat.at(-1)?.catatan).toBe(p.terbit?.nomor)
+    const buku = await sql()`select ringkasan from aktivitas where jenis = 'surat-terbit' and rujukan_id = ${id}`
+    expect(buku.map((b) => b.ringkasan as string)).toEqual([expect.stringContaining(p.terbit?.nomor ?? '-')])
+  })
+  it('dua tanda tangan bersamaan pada satu permohonan: satu berhasil, satu CONFLICT, satu nomor', async () => {
     const id = ttdDomisili().id
-    for (const aksi of ['tandatangani', 'batalkan', 'tandai-diambil', 'kirim-wa'] as const) {
-      expect(await galatDari(jalankanAksi(id, aksi, { passphrase: 'sialang2026', alasan: 'x' })), aksi).toMatchObject({
-        kode: 'NOT_FOUND',
-        message: 'Aksi ini belum tersedia di server nyata.',
-      })
-    }
-    expect((await ambilPermohonan(id)).permohonan).toMatchObject({ status: 'perlu-ttd', tahap: 'tanda-tangan', terbit: null })
+    await masukSebagai(AKUN_UJI.kades)
+    await aturPassphrase({ kataSandi: 'demo', passphrase: 'sialang2026' })
+    const hasil = await Promise.allSettled([jalankanAksi(id, 'tandatangani', { passphrase: 'sialang2026' }), jalankanAksi(id, 'tandatangani', { passphrase: 'sialang2026' })])
+    expect(hasil.filter((h) => h.status === 'fulfilled')).toHaveLength(1)
+    const ditolak = hasil.filter((h): h is PromiseRejectedResult => h.status === 'rejected')
+    expect(ditolak).toHaveLength(1)
+    expect(ditolak[0].reason).toMatchObject({ kode: 'CONFLICT' })
+    expect((await ambilPermohonan(id)).permohonan.riwayat.filter((r) => r.kejadian === 'tandatangani')).toHaveLength(1)
+  })
+  it('surat dibekukan: mengganti teks jenis tidak mengubah lembar surat yang baru terbit', async () => {
+    const id = ttdDomisili().id
+    await masukSebagai(AKUN_UJI.kades)
+    await aturPassphrase({ kataSandi: 'demo', passphrase: 'sialang2026' })
+    const terbit = (await jalankanAksi(id, 'tandatangani', { passphrase: 'sialang2026' })).permohonan.terbit
+    await masukSebagai(AKUN_UJI.operator)
+    await panggilApi('PATCH', '/jenis-surat/js_ss_skd', { skema: z.unknown(), body: { teks: 'Teks surat yang sama sekali baru untuk jenis ini.' } })
+    expect((await ambilPermohonan(id)).permohonan.terbit).toEqual(terbit)
   })
 })
 
-describe('menunggu 8F2b', () => {
-  it.todo('8F2b: tanda tangan memberi nomor dan kode verifikasi, membekukan lembar, tata letak, dan kop; satu nomor untuk dua tanda tangan bersamaan')
-  it.todo('8F2b: batalkan, tandai diambil, dan kirim WhatsApp (nomor tersamar di riwayat)')
-  it.todo('8F2b: verifikasi surat publik, termasuk surat dari jenis yang kemudian diarsipkan')
+describe('Batal dan serah terima (kembaran surat-aksi.test.ts, rencana 8F2b Tugas 7)', () => {
+  const urutTerakhir2026 = () => Math.max(...dunia.permohonan.flatMap((p) => (p.terbit?.tahun === 2026 ? [p.terbit.urut] : [])))
+  const siapkanPassphrase = async () => {
+    await masukSebagai(AKUN_UJI.kades)
+    await aturPassphrase({ kataSandi: 'demo', passphrase: 'sialang2026' })
+  }
+  it('Batalkan: hanya Sekdes dan Kades; nomor tetap tercatat dan tidak dipakai ulang', async () => {
+    const selesai = cari((p) => p.status === 'selesai')
+    await masukSebagai(AKUN_UJI.operator)
+    expect((await galatDari(jalankanAksi(selesai.id, 'batalkan', { alasan: 'x' }))).kode).toBe('FORBIDDEN')
+    await siapkanPassphrase()
+    expect((await galatDari(jalankanAksi(selesai.id, 'batalkan', { alasan: ' ' }))).kode).toBe('VALIDATION')
+    const { permohonan: p } = await jalankanAksi(selesai.id, 'batalkan', { alasan: 'Salah ketik nama usaha.' })
+    expect(p.status).toBe('dibatalkan')
+    expect(p.terbit?.nomor).toBe(selesai.terbit?.nomor)
+    expect(p.pembatalan?.catatan).toBe('Salah ketik nama usaha.')
+    const urutSebelum = urutTerakhir2026()
+    const baru = await jalankanAksi(ttdDomisili().id, 'tandatangani', { passphrase: 'sialang2026' })
+    expect(baru.permohonan.terbit?.urut).toBe(urutSebelum + 1)
+  })
+  it('Tandai sudah diambil sekali saja; kirim WhatsApp tercatat dengan nomor tersamar', async () => {
+    const id = domisiliSiti().id
+    await masukSebagai(AKUN_UJI.operator)
+    await jalankanAksi(id, 'ajukan-ttd')
+    await siapkanPassphrase()
+    await jalankanAksi(id, 'tandatangani', { passphrase: 'sialang2026' })
+    await masukSebagai(AKUN_UJI.operator)
+    expect((await jalankanAksi(id, 'tandai-diambil')).permohonan.diambil?.oleh.nama).toBe('Rosmiati')
+    expect((await galatDari(jalankanAksi(id, 'tandai-diambil'))).kode).toBe('CONFLICT')
+    const { permohonan: p } = await jalankanAksi(id, 'kirim-wa')
+    expect(p.riwayat.at(-1)).toMatchObject({ kejadian: 'kirim-wa', catatan: 'Ke 0812-••••-2231' })
+  })
+  it('kirim WhatsApp tanpa nomor telepon pemohon → VALIDATION', async () => {
+    const p = cari((x) => x.status === 'selesai' && dunia.penduduk.find((o) => o.id === x.pemohonId)?.telepon === null)
+    await masukSebagai(AKUN_UJI.operator)
+    expect((await galatDari(jalankanAksi(p.id, 'kirim-wa'))).kode).toBe('VALIDATION')
+  })
+})
+
+describe('Verifikasi publik (kembaran publik.test.ts, rencana 8F2b Tugas 8)', () => {
+  const ABJAD = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+  const kodeSalah = (i: number) => `SS-${ABJAD[(i >> 5) & 31]}${ABJAD[i & 31]}ZZ-ZZZZ`
+  const terbitkan = async (id: string) => {
+    await masukSebagai(AKUN_UJI.kades)
+    await aturPassphrase({ kataSandi: 'demo', passphrase: 'sialang2026' })
+    return (await jalankanAksi(id, 'tandatangani', { passphrase: 'sialang2026' })).permohonan.terbit
+  }
+  it('surat yang baru terbit bisa diverifikasi dengan nama tersamar; sesudah dibatalkan berstatus Dibatalkan', async () => {
+    const id = ttdDomisili().id
+    const terbit = await terbitkan(id)
+    const h = await verifikasiSurat('sungaisialang', terbit?.kodeVerifikasi ?? '-')
+    expect(h).toMatchObject({ jenis: 'Surat Keterangan Domisili', nomor: terbit?.nomor, berlaku: { status: 'berlaku' }, penandatangan: { jabatan: 'Kepala Desa', nama: 'H. Muhammad Nasir' } })
+    expect(h.nama).toContain('*')
+    expect(JSON.stringify(h)).not.toMatch(/[0-9]{16}/)
+    await jalankanAksi(id, 'batalkan', { alasan: 'Salah ketik nama.' })
+    expect((await verifikasiSurat('sungaisialang', terbit?.kodeVerifikasi ?? '-')).berlaku.status).toBe('dibatalkan')
+  })
+  it('kode tidak ditemukan NOT_FOUND; sepuluh kode salah dalam sepuluh menit mengunci verifikasi, kode benar pun', async () => {
+    const terbit = await terbitkan(ttdDomisili().id)
+    for (let i = 1; i <= 9; i++) expect((await galatDari(verifikasiSurat('sungaisialang', kodeSalah(i)))).kode, `salah ke-${i}`).toBe('NOT_FOUND')
+    expect((await galatDari(verifikasiSurat('sungaisialang', kodeSalah(10)))).kode).toBe('RATE_LIMITED')
+    expect((await galatDari(verifikasiSurat('sungaisialang', terbit?.kodeVerifikasi ?? '-'))).kode).toBe('RATE_LIMITED')
+  })
+  it('kode berbentuk salah VALIDATION dan tidak dihitung', async () => {
+    for (let i = 0; i < 12; i++) expect((await galatDari(verifikasiSurat('sungaisialang', 'halo'))).kode).toBe('VALIDATION')
+    expect((await galatDari(verifikasiSurat('sungaisialang', kodeSalah(1)))).kode).toBe('NOT_FOUND')
+  })
 })

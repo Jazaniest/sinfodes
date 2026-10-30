@@ -69,6 +69,12 @@ export async function cabutSesi(db: Db, sesiId: string, sekarang: Date): Promise
   await db.update(sesi).set({ dicabut: sekarang }).where(eq(sesi.id, sesiId))
 }
 
+/** Pengguna desa (dibatasi RLS ke desa pada konteks) menurut id, atau null. */
+export async function cariPenggunaMenurutId(db: Db, id: string): Promise<typeof pengguna.$inferSelect | null> {
+  const [b] = await db.select().from(pengguna).where(eq(pengguna.id, id)).limit(1)
+  return b ?? null
+}
+
 /** Pengguna desa (dibatasi RLS ke desa pada konteks) menurut email huruf kecil, atau null. */
 export async function cariPenggunaMenurutEmail(db: Db, emailKecil: string): Promise<typeof pengguna.$inferSelect | null> {
   const [b] = await db.select().from(pengguna).where(eq(pengguna.email, emailKecil)).limit(1)

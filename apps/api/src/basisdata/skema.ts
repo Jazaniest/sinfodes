@@ -503,6 +503,21 @@ export const riwayatSurat = pgTable('riwayat_surat', {
   catatan: text('catatan'),
 })
 
+/** Hash passphrase tanda tangan (8F2b), satu per pengguna penanda tangan. */
+export const passphraseTandaTangan = pgTable('passphrase_tanda_tangan', {
+  penggunaId: text('pengguna_id').primaryKey(),
+  desaId: text('desa_id').notNull(),
+  hash: text('hash').notNull(),
+  diaturPada: waktu('diatur_pada').notNull(),
+})
+
+/** Pencacah verifikasi publik per desa (8F2b). Hanya fungsi `verifikasi_surat` yang menulisnya. */
+export const percobaanVerifikasi = pgTable('percobaan_verifikasi', {
+  desaId: text('desa_id').primaryKey(),
+  gagalPada: timestamp('gagal_pada', { withTimezone: true, mode: 'date' }).array().notNull(),
+  terkunciSampai: waktu('terkunci_sampai'),
+})
+
 export const TABEL_SKEMA = {
   desa, alias_alamat: aliasAlamat, kunci_data: kunciData, dusun, pengguna, keluarga, penduduk, sesi, jejak_audit: jejakAudit,
   akun_warga: akunWarga, sesi_warga: sesiWarga, kunci_masuk_desa: kunciMasukDesa, kabupaten_mitra: kabupatenMitra,
@@ -511,5 +526,5 @@ export const TABEL_SKEMA = {
   akses_bantuan: aksesBantuan, tiket_bantuan: tiketBantuan, sesi_bantuan: sesiBantuan, jejak_bantuan: jejakBantuan,
   riwayat_penduduk: riwayatPenduduk, aktivitas, mutasi, mutasi_penduduk: mutasiPenduduk, laporan_data: laporanData,
   kunci_idempotensi: kunciIdempotensi, impor_penduduk: imporPenduduk, jenis_surat: jenisSurat, pengaturan_surat: pengaturanSurat,
-  permohonan, riwayat_surat: riwayatSurat,
+  permohonan, riwayat_surat: riwayatSurat, passphrase_tanda_tangan: passphraseTandaTangan, percobaan_verifikasi: percobaanVerifikasi,
 } as const

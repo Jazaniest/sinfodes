@@ -51,8 +51,14 @@ const kolomTabel = async (tabel: string) =>
   (await uji.sqlMigrasi`select column_name from information_schema.columns where table_schema = 'public' and table_name = ${tabel}`).map((b) => b.column_name as string)
 
 const TABEL = ['permohonan', 'riwayat_surat'] as const
-/** Kolom yang boleh diubah peran desa (rencana 8F2a Tugas 2). */
-const KOLOM_UBAH = ['isian_sandi', 'status', 'tahap', 'dikembalikan', 'penolakan', 'ditutup_pada', 'catatan_internal']
+/** Kolom penanganan yang boleh diubah peran desa (rencana 8F2a Tugas 2). */
+const KOLOM_PENANGANAN = ['isian_sandi', 'status', 'tahap', 'dikembalikan', 'penolakan', 'ditutup_pada', 'catatan_internal']
+/** Kolom penerbitan, pembatalan, dan serah terima yang dibuka migrasi 0013 (8F2b); kebenarannya dijaga pemicu `permohonan_beku`. */
+const KOLOM_TERBIT = [
+  'terbit_nomor', 'terbit_tahun', 'terbit_urut', 'terbit_kode', 'terbit_pada', 'terbit_penandatangan', 'terbit_mode', 'terbit_berlaku_sampai',
+  'terbit_lembar_sandi', 'terbit_tata_letak', 'terbit_kop', 'hash_dokumen', 'tanda_tangan', 'pembatalan', 'diambil',
+]
+const KOLOM_UBAH = [...KOLOM_PENANGANAN, ...KOLOM_TERBIT]
 /** Kolom yang belum bisa ditulis peran desa di 8F2a (ditulis tahap 8F2b). */
 const KOLOM_TERTUTUP = [
   'pembatalan', 'diambil', 'terbit_nomor', 'terbit_tahun', 'terbit_urut', 'terbit_kode', 'terbit_pada', 'terbit_penandatangan', 'terbit_mode',
@@ -174,10 +180,10 @@ describe('permohonan dan riwayat surat (rencana 8F2a Tugas 2)', () => {
     await uji.sqlMigrasi`delete from permohonan`
   })
 
-  it('permohonan: hak UPDATE per kolom hanya pada tujuh kolom penanganan', async () => {
+  it('permohonan: hak UPDATE per kolom hanya pada kolom penanganan dan penerbitan (0013); kolom tetap tertutup', async () => {
     for (const k of await kolomTabel('permohonan')) expect(await punyaHakKolom('sinfodes_desa', 'permohonan', k, 'UPDATE'), k).toBe(KOLOM_UBAH.includes(k))
     const id = await sisipOk(baru('desa_a'))
-    for (const k of ['desa_id', 'dusun_id', 'jenis_id', 'pemohon_id', 'kanal', 'no_urut', 'masuk_pada', 'terbit_nomor', 'pembatalan', 'diambil', 'tahun', 'id']) {
+    for (const k of ['desa_id', 'dusun_id', 'jenis_id', 'pemohon_id', 'kanal', 'no_urut', 'masuk_pada', 'tahun', 'id']) {
       expect(kodePg(await jalankan('desa', 'desa_a', `update permohonan set ${k} = ${k} where id = '${id}'`)), k).toBe('42501')
     }
     expect(await ubah('desa_a', `update permohonan set status = 'diproses' where id = '${id}'`)).toBe(1)

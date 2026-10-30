@@ -6,7 +6,10 @@ import {
   verifikasiMasukanSchema, type ArtikelPublik, type BerandaPublik,
   type HasilVerifikasi, type IdentitasPublik, type KreditFotoPublik, type LayananPublik,
 } from '@/domain/publik/schema'
-import { hitungBerlaku, kodeSah, rapikanKode, samarkanNama } from '@/domain/publik/verifikasi'
+import {
+  BATAS_VERIFIKASI, hitungBerlaku, kodeSah, PESAN_KODE_FORMAT, PESAN_KODE_TIDAK_DITEMUKAN, PESAN_VERIFIKASI_TERKUNCI, rapikanKode,
+  samarkanNama,
+} from '@/domain/publik/verifikasi'
 import { dilayani } from '@/domain/surat/jenis'
 import { namaDusun } from '@/domain/wilayah/alamat'
 import type { Desa } from '@/domain/wilayah/schema'
@@ -51,12 +54,6 @@ function identitas(db: DbDemo, d: Desa): IdentitasPublik {
     tema, favicon: d.lambang ?? null, menu: menuSitus(d, versi.susunan), cssKustom,
   }
 }
-
-const MENIT_MS = 60_000
-/** Pengaman verifikasi (SPEC §3.4, fokus review 3): 10 kode salah dalam 10 menit mengunci verifikasi desa itu 10 menit. */
-export const BATAS_VERIFIKASI = { gagal: 10, jendelaMs: 10 * MENIT_MS, kunciMs: 10 * MENIT_MS } as const
-const PESAN_TERKUNCI = 'Terlalu banyak percobaan. Coba lagi dalam 10 menit.'
-const PESAN_FORMAT = 'Kode verifikasi berbentuk seperti SS-7K3M-Q9TD.'
 
 function terkunci(db: DbDemo, desaId: string, sekarang: Date): boolean {
   const c = db.percobaanVerifikasi.find((x) => x.desaId === desaId)
@@ -174,18 +171,18 @@ export const handlerPublik = [
       if (c instanceof Response) return c
       const { db, desa } = c
       const sekarang = new Date()
-      if (terkunci(db, desa.id, sekarang)) return balasGalat('RATE_LIMITED', PESAN_TERKUNCI, 429)
+      if (terkunci(db, desa.id, sekarang)) return balasGalat('RATE_LIMITED', PESAN_VERIFIKASI_TERKUNCI, 429)
       const masukan = verifikasiMasukanSchema.safeParse(await bacaJson(request))
       const kode = masukan.success ? rapikanKode(masukan.data.kode) : ''
       // Format yang jelas salah ditolak sebelum mencari, dan tidak dihitung sebagai percobaan.
-      if (!kodeSah(kode)) return balasGalat('VALIDATION', PESAN_FORMAT, 422, { kode: PESAN_FORMAT })
+      if (!kodeSah(kode)) return balasGalat('VALIDATION', PESAN_KODE_FORMAT, 422, { kode: PESAN_KODE_FORMAT })
       // Hanya surat yang pernah terbit yang punya kode: Selesai, atau Dibatalkan sesudah terbit (fokus review 2).
       const p = db.permohonan.find(
         (x) => x.desaId === desa.id && x.terbit?.kodeVerifikasi === kode && (x.status === 'selesai' || x.status === 'dibatalkan'),
       )
       if (!p?.terbit) {
-        if (catatKodeSalah(desa.id, sekarang)) return balasGalat('RATE_LIMITED', PESAN_TERKUNCI, 429)
-        return balasGalat('NOT_FOUND', 'Kode tidak ditemukan. Periksa kembali, atau hubungi kantor desa.', 404)
+        if (catatKodeSalah(desa.id, sekarang)) return balasGalat('RATE_LIMITED', PESAN_VERIFIKASI_TERKUNCI, 429)
+        return balasGalat('NOT_FOUND', PESAN_KODE_TIDAK_DITEMUKAN, 404)
       }
       const jenis = db.jenisSurat.find((j) => j.id === p.jenisId)
       // Nama orang yang diterangkan surat: bayi atau almarhum bila ada, selain itu pemohon.

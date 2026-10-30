@@ -30,9 +30,14 @@ import { rutePenduduk } from './modul/penduduk/rute'
 import { ruteStatistik } from './modul/statistik/rute'
 import { ruteJenisSurat } from './modul/jenis-surat/rute'
 import { efekSuratBawaan, type EfekSurat } from './modul/permohonan/efek-surat'
+import { acakAman } from './modul/permohonan/dokumen'
+import { buatPengirimSimulator, type Pengirim } from './modul/permohonan/pengirim'
+import { buatPenandatanganSimulator, type Penandatangan } from './modul/permohonan/penandatangan'
 import { rutePermohonan } from './modul/permohonan/rute'
 import { rutePenomoran, ruteTataLetakSurat } from './modul/pengaturan-surat/rute'
 import { ruteWilayah } from './modul/wilayah/rute'
+import { rutePassphrase } from './modul/passphrase/rute'
+import { rutePublik } from './modul/publik/rute'
 import { ruteSesi } from './modul/sesi/rute'
 import { ruteWarga } from './modul/warga/rute'
 import type { Waktu } from './waktu'
@@ -49,6 +54,12 @@ export type DepsApp = {
   efekSilang?: EfekSilang
   /** Efek aksi surat ke modul lain (notifikasi, 8G); bawaannya tidak melakukan apa pun. */
   efekSurat?: EfekSurat
+  /** Colokan tanda tangan (SPEC-V0.3 §6.4); bawaan simulator yang belum tersertifikasi. Uji menyuntik sendiri. */
+  penandatangan?: Penandatangan
+  /** Colokan pengirim WhatsApp; bawaan simulator yang tidak mengirim apa pun. */
+  pengirim?: Pengirim
+  /** Sumber acak [0, 1) untuk kode verifikasi surat; bawaan `crypto.randomInt`. Uji menyuntik untuk memaksa bentrok. */
+  acak?: () => number
 }
 
 /** Batas badan permintaan untuk /api/v1; rute yang butuh lebih (unggahan) menyetel batasnya sendiri. */
@@ -122,6 +133,10 @@ export function buatApp(deps: DepsApp): Hono<LingkunganApp> {
   const ipKlien = deps.ipKlien ?? ipSoket
   app.route('/api/v1/alamat', ruteAlamat())
   app.route('/api/v1/sesi', ruteSesi({ konfigurasi, penyandi, batasIp, ipKlien }))
+  app.route('/api/v1/sesi/passphrase-tanda-tangan', rutePassphrase({ penyandi }))
+  // Verifikasi surat tanpa sesi: 30 permintaan per menit per IP (SPEC-V0.3 §7.7); pengunci per desa ada di basis data.
+  const batasVerifikasi = buatBatasLaju({ maks: 30, jendelaMs: 60_000, waktu })
+  app.route('/api/v1/publik', rutePublik({ batasIp: batasVerifikasi, ipKlien }))
   app.route('/api/v1/kabupaten', ruteKabupaten({ konfigurasi, penyandi, batasIp, ipKlien }))
   app.route('/api/v1/konsol', ruteKonsol({ konfigurasi, penyandi, batasIp, ipKlien }))
   app.route('/api/v1/warga', ruteWarga({ konfigurasi, penyandi, batasIp, batasLupaPin, ipKlien }))
@@ -134,7 +149,13 @@ export function buatApp(deps: DepsApp): Hono<LingkunganApp> {
   app.route('/api/v1/cari', ruteCari({ penyandi }))
   app.route('/api/v1/impor', ruteImpor({ penyandi }))
   app.route('/api/v1/jenis-surat', ruteJenisSurat())
-  app.route('/api/v1/permohonan', rutePermohonan({ penyandi, efek: deps.efekSurat ?? efekSuratBawaan }))
+  app.route('/api/v1/permohonan', rutePermohonan({
+    penyandi,
+    efek: deps.efekSurat ?? efekSuratBawaan,
+    penandatangan: deps.penandatangan ?? buatPenandatanganSimulator(penyandi),
+    pengirim: deps.pengirim ?? buatPengirimSimulator(),
+    acak: deps.acak ?? acakAman,
+  }))
   app.route('/api/v1/surat/tata-letak', ruteTataLetakSurat())
   app.route('/api/v1/pengaturan/penomoran', rutePenomoran())
   app.route('/api/v1/pengaturan/wilayah', ruteWilayah())

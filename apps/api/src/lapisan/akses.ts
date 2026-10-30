@@ -10,6 +10,7 @@ type Konteks = Context<LingkunganApp>
 
 export const PESAN_SESI_BERAKHIR = 'Sesi Anda sudah berakhir. Silakan masuk lagi.'
 export const PESAN_DESA_TIDAK_ADA = 'Desa tidak ditemukan.'
+export const PESAN_WEBSITE_TIDAK_ADA = 'Website desa tidak ditemukan.'
 export const PESAN_TIDAK_BERHAK = 'Peran Anda tidak berhak melakukan ini.'
 /** Sama dengan pesan API tiruan (SPEC-V0.2 §10.5). */
 export const PESAN_PANEL_DITANGGUHKAN = 'Langganan desa ditangguhkan. Panel hanya bisa dilihat.'
@@ -124,6 +125,18 @@ export function butuhAkses(c: Konteks, kemampuan: Kemampuan, pesanTolak: string 
     throw new GalatApp('FORBIDDEN', PESAN_PANEL_DITANGGUHKAN, 403)
   }
   return { db, pelaku, desa }
+}
+
+/**
+ * Pintu rute publik tanpa sesi (verifikasi surat, 8F2b): `db` dari transaksi peran `publik` dan desa pemilik alamat. Hanya di
+ * alamat desa; selain itu 404. Desa Persiapan belum punya website sehingga juga 404 (SPEC-V0.2 §4.1). Peran `publik` tidak punya
+ * hak tabel apa pun, jadi rute publik menjangkau data hanya lewat fungsi SQL yang sempit.
+ */
+export function dbPublik(c: Konteks): { db: Db; desa: DesaRekam } {
+  const desa = c.get('alamat').desa
+  const db = c.get('dbTransaksi')
+  if (!desa || !db || desa.desa.status === 'Persiapan') throw new GalatApp('NOT_FOUND', PESAN_WEBSITE_TIDAK_ADA, 404)
+  return { db, desa }
 }
 
 /**

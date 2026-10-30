@@ -7,6 +7,8 @@ import { butuhAkses, PESAN_PANEL_DITANGGUHKAN } from '../../lapisan/akses'
 import type { LingkunganApp } from '../../lapisan/konteks'
 import { antreanTandaTangan, cariPermohonan, daftarPermohonan, detailPermohonan, jumlahPermohonan, permohonanPerPenduduk, type KonteksPermohonan } from './layanan'
 import type { EfekSurat } from './efek-surat'
+import type { Pengirim } from './pengirim'
+import type { Penandatangan } from './penandatangan'
 import { buatPermohonan, jalankanAksi, PESAN_AKSI_TIDAK_DIKENAL, ubahPermohonan } from './layanan-tulis'
 import { saranSurat } from './saran'
 
@@ -21,7 +23,7 @@ const kueri = (c: Context<LingkunganApp>) => Object.fromEntries(new URL(c.req.ur
  * `/api/v1/permohonan`: permohonan surat desa (SPEC §7.4). Rute berjalan dipasang sebelum `/:id` supaya `jumlah` dan
  * `antrian-ttd` tidak terbaca sebagai ID. Membuat dari loket dan menyunting butuh `surat.proses`; membaca butuh `surat.lihat`.
  */
-export function rutePermohonan(deps: { penyandi: Penyandi; efek: EfekSurat }): Hono<LingkunganApp> {
+export function rutePermohonan(deps: { penyandi: Penyandi; efek: EfekSurat; penandatangan: Penandatangan; pengirim: Pengirim; acak: () => number }): Hono<LingkunganApp> {
   const rute = new Hono<LingkunganApp>()
   const baca = (c: Context<LingkunganApp>): KonteksPermohonan => {
     const { db, pelaku } = butuhAkses(c, 'surat.lihat', TIDAK_BOLEH_LIHAT)
@@ -77,7 +79,7 @@ export function rutePermohonan(deps: { penyandi: Penyandi; efek: EfekSurat }): H
     const { db, pelaku, desa } = butuhAkses(c, 'surat.lihat', TIDAK_BOLEH_LIHAT)
     if (desa.desa.status === 'Ditangguhkan') throw new GalatApp('FORBIDDEN', PESAN_PANEL_DITANGGUHKAN, 403)
     const badan = (await c.req.json().catch(() => null)) ?? {}
-    return c.json(await jalankanAksi({ db, penyandi: deps.penyandi, pelaku, desa: desa.desa, sekarang: c.get('waktu')(), efek: deps.efek }, c.req.param('id'), aksi, badan))
+    return c.json(await jalankanAksi({ db, penyandi: deps.penyandi, pelaku, desa: desa.desa, sekarang: c.get('waktu')(), efek: deps.efek, penandatangan: deps.penandatangan, pengirim: deps.pengirim, acak: deps.acak }, c.req.param('id'), aksi, badan))
   })
 
   rute.get('/penduduk/:id', async (c) => c.json(await permohonanPerPenduduk(baca(c), c.req.param('id'))))

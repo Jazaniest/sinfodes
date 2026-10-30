@@ -15,6 +15,20 @@ export class GalatApp extends Error {
   }
 }
 
+/**
+ * Galat yang keluar sebagai jawaban 4xx tetapi **tidak membatalkan** transaksi permintaan, supaya tulisan pencatat (hitungan
+ * percobaan, jejak audit) tetap tersimpan. Pola yang sama dengan "kembalikan, jangan lempar" di `POST /sesi/masuk`, namun bisa
+ * dilempar dari lapisan layanan. Aturan pakai: lempar hanya SEBELUM ada tulis domain apa pun selain pencatat percobaan dan
+ * jejak audit; sesudah tulis domain, galat biasa (`GalatApp`) yang membatalkan semuanya. `lapisanTransaksi` mengenalinya, dan
+ * status 5xx tetap membatalkan.
+ */
+export class GalatDisimpan extends GalatApp {
+  constructor(kode: KodeGalat, pesan: string, status: number, fields?: Record<string, string>) {
+    super(kode, pesan, status, fields)
+    this.name = 'GalatDisimpan'
+  }
+}
+
 /** Badan jawaban galat: `{ error: { code, message, fields? } }`. */
 export const badanGalat = (kode: KodeGalat, pesan: string, fields?: Record<string, string>) => ({
   error: fields ? { code: kode, message: pesan, fields } : { code: kode, message: pesan },
