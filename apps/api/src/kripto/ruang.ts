@@ -21,6 +21,8 @@ export const ruang = {
   passphrasePengguna: (desaId: string): string => `passphrase.pengguna:${desaId}`,
   /** Tanda tangan simulator: indeks HMAC hash dokumen (v0.4 mengganti dengan penyedia TTE nyata). */
   tandaTangan: (desaId: string): string => `permohonan.ttd:${desaId}`,
+  /** Isi satu berkas surat (foto syarat atau pindaian); id baris ikut diautentikasi sehingga sandi tidak bisa dipindah ke baris lain. */
+  berkas: (desaId: string, id: string): string => `berkas_surat.isi:${desaId}:${id}`,
   /** Nomor WhatsApp akun warga, disandikan seperti telepon penduduk. */
   whatsapp: (desaId: string): string => `akun_warga.whatsapp:${desaId}`,
   /** Rahasia TOTP akun Konsol (lintas desa, jadi satu ruang tetap). */

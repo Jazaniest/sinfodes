@@ -1,4 +1,4 @@
-import { and, asc, eq, sql } from 'drizzle-orm'
+import { and, asc, desc, eq, sql } from 'drizzle-orm'
 import type { Db } from '../../basisdata/klien'
 import { laporanData } from '../../basisdata/skema'
 
@@ -57,3 +57,7 @@ export async function tandaiLaporan(
     .returning()
   return b
 }
+
+/** Laporan yang dikirim satu warga, terbaru dulu. RLS membatasi desa. */
+export const bacaLaporanPelapor = (db: Db, pendudukId: string): Promise<RekamLaporan[]> =>
+  db.select().from(laporanData).where(eq(laporanData.pelaporPendudukId, pendudukId)).orderBy(desc(laporanData.dibuatPada), asc(laporanData.id))

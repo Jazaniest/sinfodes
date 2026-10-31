@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { BOM, keCsv } from '../format/csv'
-import { barisCsvBukuAgenda, filterSuratKeluarSchema, isianSuratMasukSchema, labelPenandatangan, type BarisSuratKeluar } from './arsip'
+import { barisCsvBukuAgenda, filterSuratKeluarSchema, isianSuratMasukSchema, labelPenandatangan, namaScanAman, type BarisSuratKeluar } from './arsip'
+import { PESAN_CATATAN_NIK } from './permohonan'
 
 const BARIS: BarisSuratKeluar = {
   id: 'srt_a', nomor: '470/578/SS/IX/2026', urut: 578, tanggal: '2026-09-24',
@@ -47,4 +48,46 @@ describe('isian surat masuk', () => {
     expect(galat({ ...SAH, tanggalSurat: '2026-09-25' })).toEqual({ tanggalSurat: 'Tanggal surat tidak boleh sesudah tanggal terima' })
     expect(galat({ ...SAH, disposisiKepada: null })).toEqual({ disposisiKepada: 'Pilih tujuan disposisi untuk instruksi ini' })
   })
+})
+
+describe('isian surat masuk: tanpa NIK (8F3 Ruling 14, fokus review 9)', () => {
+  const SAH = {
+    diterima: '2026-09-23', nomor: '005/123/Kec-TM/2026', tanggalSurat: '2026-09-21', pengirim: 'Camat Teluk Meranti',
+    perihal: 'Undangan rapat koordinasi', disposisiKepada: 'Sekretaris Desa' as const, disposisiInstruksi: 'Hadiri dan laporkan.',
+  }
+  const galat = (isi: object) => {
+    const hasil = isianSuratMasukSchema.safeParse(isi)
+    return hasil.success ? {} : Object.fromEntries(hasil.error.issues.map((i) => [i.path.join('.'), i.message]))
+  }
+  it.each(['nomor', 'pengirim', 'perihal', 'disposisiInstruksi'] as const)('16 angka berurutan di %s ditolak dengan pesan catatan NIK', (kolom) => {
+    expect(galat({ ...SAH, [kolom]: `ref 3175010101010001 selesai` })).toEqual({ [kolom]: PESAN_CATATAN_NIK })
+  })
+  it('15 angka dan 16 angka yang bersambung angka lain (17 angka) lolos', () => {
+    expect(isianSuratMasukSchema.safeParse({ ...SAH, nomor: '317501010101000' }).success).toBe(true)
+    expect(isianSuratMasukSchema.safeParse({ ...SAH, nomor: '31750101010100012' }).success).toBe(true)
+  })
+})
+
+describe('namaScanAman (8F3 Ruling 2)', () => {
+  it('membuang jalur Windows dan POSIX, menyisakan nama berkas', () => {
+    expect(namaScanAman('C:\\kantor\\Surat Undangan.pdf')).toBe('Surat Undangan.pdf')
+    expect(namaScanAman('/home/op/surat/Undangan Camat.PDF')).toBe('Undangan Camat.PDF')
+  })
+  it('membuang karakter kontrol dan pemisah baris', () => {
+    expect(namaScanAman('Surat\u0000 \r\nMasuk\u0007.jpg')).toBe('Surat Masuk.jpg')
+  })
+  it('lebih dari 100 karakter dipotong dan ekstensi tetap', () => {
+    const hasil = namaScanAman(`${'a'.repeat(150)}.pdf`)
+    expect(hasil).toHaveLength(100)
+    expect(hasil.endsWith('.pdf')).toBe(true)
+  })
+  it('memuat 16 angka berurutan: diganti scan + ekstensi', () => {
+    expect(namaScanAman('KTP 3175010101010001.jpg')).toBe('scan.jpg')
+  })
+  it('kosong atau hanya spasi/jalur: scan', () => {
+    expect(namaScanAman('')).toBe('scan')
+    expect(namaScanAman('   ')).toBe('scan')
+    expect(namaScanAman('C:\\folder\\')).toBe('scan')
+  })
+  it('ekstensi tanpa nama: scan + ekstensi', () => expect(namaScanAman('.pdf')).toBe('scan.pdf'))
 })

@@ -2,7 +2,7 @@ import { z } from 'zod'
 import type { SelCsv } from '../format/csv'
 import { formatTanggal } from '../format/tanggal'
 import { pelakuSchema } from '../mutasi/schema'
-import { KANAL, LABEL_KANAL } from './permohonan'
+import { KANAL, LABEL_KANAL, PESAN_CATATAN_NIK, tanpaNik } from './permohonan'
 
 const bulanSchema = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/)
 const halaman = {
@@ -87,12 +87,12 @@ export type SuratMasuk = z.infer<typeof suratMasukSchema>
 export const isianSuratMasukSchema = z
   .object({
     diterima: z.iso.date('Tanggal terima wajib diisi'),
-    nomor: z.string().trim().min(1, 'Nomor surat wajib diisi').max(100, 'Nomor surat terlalu panjang'),
+    nomor: z.string().trim().min(1, 'Nomor surat wajib diisi').max(100, 'Nomor surat terlalu panjang').refine(tanpaNik, PESAN_CATATAN_NIK),
     tanggalSurat: z.iso.date('Tanggal surat wajib diisi'),
-    pengirim: z.string().trim().min(1, 'Pengirim wajib diisi').max(150, 'Nama pengirim terlalu panjang'),
-    perihal: z.string().trim().min(1, 'Perihal wajib diisi').max(300, 'Perihal terlalu panjang'),
+    pengirim: z.string().trim().min(1, 'Pengirim wajib diisi').max(150, 'Nama pengirim terlalu panjang').refine(tanpaNik, PESAN_CATATAN_NIK),
+    perihal: z.string().trim().min(1, 'Perihal wajib diisi').max(300, 'Perihal terlalu panjang').refine(tanpaNik, PESAN_CATATAN_NIK),
     disposisiKepada: z.enum(TUJUAN_DISPOSISI).nullable(),
-    disposisiInstruksi: z.string().trim().max(500, 'Instruksi terlalu panjang'),
+    disposisiInstruksi: z.string().trim().max(500, 'Instruksi terlalu panjang').refine(tanpaNik, PESAN_CATATAN_NIK),
   })
   .refine((x) => x.tanggalSurat <= x.diterima, { path: ['tanggalSurat'], message: 'Tanggal surat tidak boleh sesudah tanggal terima' })
   .refine((x) => x.disposisiKepada !== null || x.disposisiInstruksi === '', {
@@ -110,3 +110,17 @@ export type FilterSuratMasuk = z.infer<typeof filterSuratMasukSchema>
 
 export const BERKAS_SCAN = ['.pdf', '.jpg', '.jpeg', '.png'] as const
 export const MAKS_SCAN_MB = 5
+
+const MAKS_NAMA_SCAN = 100
+
+/**
+ * Nama pindaian yang aman disimpan dan ditampilkan: tanpa jalur folder, karakter kontrol atau pengarah teks, titik di awal,
+ * dan 16 angka berurutan (dugaan NIK). Paling banyak 100 karakter dengan ekstensi tetap; nama yang habis menjadi `scan`.
+ */
+export function namaScanAman(nama: string): string {
+  const berkas = (nama.split(/[\\/]/).pop() ?? '').replace(/[\p{Cc}\p{Cf}]/gu, '').trim()
+  const ekstensi = /\.[A-Za-z0-9]{1,8}$/.exec(berkas)?.[0] ?? ''
+  const batang = berkas.slice(0, berkas.length - ekstensi.length).replace(/^\.+/, '').trim()
+  const dipotong = [...batang].slice(0, MAKS_NAMA_SCAN - ekstensi.length).join('').trim()
+  return dipotong === '' || !tanpaNik(dipotong) ? `scan${ekstensi}` : `${dipotong}${ekstensi}`
+}

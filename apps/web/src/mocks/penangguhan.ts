@@ -1,12 +1,10 @@
+import { pesanLayananDitutup } from '@/domain/warga/ajukan'
 import type { StatusDesa } from '@/domain/wilayah/schema'
 import { ambilDb } from './db'
 import { balasGalat } from './http'
 
 /** Pesan API untuk tulis di panel desa yang Ditangguhkan (SPEC-V0.2 §10.5). */
 export const PESAN_PANEL_DITANGGUHKAN = 'Langganan desa ditangguhkan. Panel hanya bisa dilihat.'
-
-/** Pesan untuk warga: pengajuan surat dan pengaduan baru ditutup selama desa Ditangguhkan. */
-export const pesanLayananDitutup = (namaDesa: string): string => `Layanan pengajuan Desa ${namaDesa} sedang ditutup. Silakan datang ke kantor desa.`
 
 export const statusDesaDi = (desaId: string): StatusDesa => ambilDb().desa.find((d) => d.id === desaId)?.status ?? 'Aktif'
 

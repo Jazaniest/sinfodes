@@ -6,6 +6,10 @@ import {
 import { awalPeriode } from '@sinfodes/kontrak/surat/waktu'
 import { kataCukup, cocokPenduduk } from '@sinfodes/kontrak/penduduk/cari'
 import { cakupanDusun } from '@sinfodes/kontrak/pengguna/hak-akses'
+import { z } from 'zod'
+import { bacaBerkas } from '../../berkas/layanan'
+import { PESAN_BERKAS_TIDAK_TERSIMPAN } from '../../berkas/jawab'
+import type { TipeBerkas } from '../../berkas/periksa'
 import { GalatApp } from '../../galat'
 import { ruang } from '../../kripto/ruang'
 import { bacaMutasiSatu } from '../mutasi/repositori'
@@ -130,4 +134,27 @@ export async function permohonanPerPenduduk(k: KonteksPermohonan, pendudukId: st
   const baris = await bacaBaris(k.db, syaratPerPenduduk(pendudukId, cakupanDusun(k.pelaku)), urutanPerPenduduk())
   const data = baris.map((b) => bentukBaris(b, k.penyandi))
   return { data, meta: { page: 1, pageSize: Math.max(data.length, 1), total: data.length } }
+}
+
+const lampiranTersimpanSchema = z.array(z.object({ id: z.string(), berkas: z.string() }))
+
+export const PESAN_LAMPIRAN_TIDAK_ADA = 'Lampiran tidak ditemukan.'
+
+/**
+ * Isi satu lampiran permohonan untuk dibuka petugas. Permohonan dibaca dengan cakupan dusun lebih dulu (di luar cakupan = 404
+ * seperti tidak ada), lampiran dicocokkan dengan daftar lampiran permohonan itu sendiri, baru isinya dibuka. Lampiran dari data
+ * contoh hanya punya nama dan ukuran, tanpa isi: dijawab 404 "Berkas tidak tersimpan." (8F3 Ruling 10).
+ */
+export async function bukaLampiran(
+  k: Pick<KonteksLayanan, 'db' | 'penyandi' | 'pelaku'>, permohonanId: string, lampiranId: string,
+): Promise<{ tipe: TipeBerkas; nama: string; bita: Buffer }> {
+  const rekam = await bacaPermohonanSatu(k.db, permohonanId, cakupanDusun(k.pelaku))
+  if (!rekam) throw permohonanTidakAda()
+  const daftar = lampiranTersimpanSchema.safeParse(rekam.lampiran)
+  if (!daftar.success) throw dataTidakUtuh()
+  const lampiran = daftar.data.find((l) => l.id === lampiranId)
+  if (!lampiran) throw new GalatApp('NOT_FOUND', PESAN_LAMPIRAN_TIDAK_ADA, 404)
+  const isi = await bacaBerkas(k.db, k.penyandi, { id: lampiran.id, permohonanId: rekam.id })
+  if (!isi) throw new GalatApp('NOT_FOUND', PESAN_BERKAS_TIDAK_TERSIMPAN, 404)
+  return { tipe: isi.tipe, nama: lampiran.berkas, bita: isi.bita }
 }

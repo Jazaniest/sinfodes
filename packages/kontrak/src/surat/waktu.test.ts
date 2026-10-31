@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { awalPeriode, berlakuSampai, hariKerjaBerlalu, lamaMenunggu } from './waktu'
+import { awalPeriode, berlakuSampai, hariKerjaBerlalu, lamaMenunggu, rataHariKerja } from './waktu'
 
 // Kamis, 24 September 2026 pukul 09.00 WIB.
 const SEKARANG = new Date('2026-09-24T02:00:00Z')
@@ -67,4 +67,21 @@ describe('berlakuSampai (SPEC §7.3, §7.6)', () => {
   })
   it('tanggal surat dibaca menurut WIB', () => expect(berlakuSampai('2026-09-23T20:00:00Z', 3)).toBe('2026-12-24'))
   it('tanpa batas → null', () => expect(berlakuSampai('2026-09-24', null)).toBeNull())
+})
+
+describe('rataHariKerja (perkiraan layanan warga, 8F3 Ruling 13)', () => {
+  it('tanpa contoh: null', () => expect(rataHariKerja([])).toBeNull())
+  it('rata-rata hari kerja dibulatkan: 1 dan 4 hari menjadi 3', () => {
+    const contoh = [
+      { masukPada: '2026-09-21T09:00:00+07:00', terbitPada: '2026-09-22T09:00:00+07:00' },
+      { masukPada: '2026-09-21T09:00:00+07:00', terbitPada: '2026-09-25T09:00:00+07:00' },
+    ]
+    expect(rataHariKerja(contoh)).toBe(3)
+  })
+  it('akhir pekan tidak dihitung: masuk Jumat, terbit Senin = 1 hari kerja', () => {
+    expect(rataHariKerja([{ masukPada: '2026-09-25T16:00:00+07:00', terbitPada: '2026-09-28T08:00:00+07:00' }])).toBe(1)
+  })
+  it('masuk dan terbit di hari yang sama = 0', () => {
+    expect(rataHariKerja([{ masukPada: '2026-09-24T08:00:00+07:00', terbitPada: '2026-09-24T14:00:00+07:00' }])).toBe(0)
+  })
 })

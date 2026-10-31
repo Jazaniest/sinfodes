@@ -1,10 +1,12 @@
-import { bigint, boolean, date, integer, jsonb, numeric, pgTable, primaryKey, smallint, text, timestamp } from 'drizzle-orm/pg-core'
+import { bigint, boolean, customType, date, integer, jsonb, numeric, pgTable, primaryKey, smallint, text, timestamp } from 'drizzle-orm/pg-core'
 
 /**
  * Definisi tabel untuk kueri bertipe. Bentuk sebenarnya ditetapkan migrasi SQL (`migrasi/`); uji meta membandingkan
  * nama kolom di sini dengan `information_schema` supaya keduanya tidak berpisah jalan.
  */
 const waktu = (nama: string) => timestamp(nama, { withTimezone: true, mode: 'date' })
+/** Kolom `bytea` sebagai `Buffer` (driver postgres.js mengirim dan mengembalikan Buffer apa adanya). */
+const bita = customType<{ data: Buffer; driverData: Buffer }>({ dataType: () => 'bytea' })
 
 export const desa = pgTable('desa', {
   id: text('id').primaryKey(),
@@ -369,6 +371,8 @@ export const kunciIdempotensi = pgTable(
     jalur: text('jalur').notNull(),
     sidikIsi: text('sidik_isi').notNull(),
     mutasiId: text('mutasi_id'),
+    /** Rujukan hasil pengajuan warga (8F3); paling banyak satu dari `mutasiId` dan `permohonanId` terisi. */
+    permohonanId: text('permohonan_id'),
     dibuat: waktu('dibuat').notNull(),
   },
   (t) => [primaryKey({ columns: [t.desaId, t.penggunaId, t.kunci] })],
@@ -518,6 +522,38 @@ export const percobaanVerifikasi = pgTable('percobaan_verifikasi', {
   terkunciSampai: waktu('terkunci_sampai'),
 })
 
+/** Register surat masuk (8F3); hanya tambah. Metadata pindaian di sini, isinya di `berkas_surat`. */
+export const suratMasuk = pgTable('surat_masuk', {
+  id: text('id').primaryKey(),
+  desaId: text('desa_id').notNull(),
+  tahun: integer('tahun').notNull(),
+  noAgenda: integer('no_agenda').notNull(),
+  diterima: date('diterima', { mode: 'string' }).notNull(),
+  nomor: text('nomor').notNull(),
+  tanggalSurat: date('tanggal_surat', { mode: 'string' }).notNull(),
+  pengirim: text('pengirim').notNull(),
+  perihal: text('perihal').notNull(),
+  disposisiKepada: text('disposisi_kepada'),
+  disposisiInstruksi: text('disposisi_instruksi').notNull(),
+  scanNama: text('scan_nama'),
+  scanUkuranKb: integer('scan_ukuran_kb'),
+  dicatatOleh: jsonb('dicatat_oleh').notNull().$type<Record<string, unknown>>(),
+  dicatatPada: waktu('dicatat_pada').notNull(),
+})
+
+/** Isi foto syarat dan pindaian (8F3), disandikan; hanya tambah. */
+export const berkasSurat = pgTable('berkas_surat', {
+  id: text('id').primaryKey(),
+  desaId: text('desa_id').notNull(),
+  jenis: text('jenis').notNull(),
+  permohonanId: text('permohonan_id'),
+  suratMasukId: text('surat_masuk_id'),
+  tipe: text('tipe').notNull(),
+  ukuranByte: integer('ukuran_byte').notNull(),
+  isi: bita('isi').notNull(),
+  dibuat: waktu('dibuat').notNull(),
+})
+
 export const TABEL_SKEMA = {
   desa, alias_alamat: aliasAlamat, kunci_data: kunciData, dusun, pengguna, keluarga, penduduk, sesi, jejak_audit: jejakAudit,
   akun_warga: akunWarga, sesi_warga: sesiWarga, kunci_masuk_desa: kunciMasukDesa, kabupaten_mitra: kabupatenMitra,
@@ -527,4 +563,5 @@ export const TABEL_SKEMA = {
   riwayat_penduduk: riwayatPenduduk, aktivitas, mutasi, mutasi_penduduk: mutasiPenduduk, laporan_data: laporanData,
   kunci_idempotensi: kunciIdempotensi, impor_penduduk: imporPenduduk, jenis_surat: jenisSurat, pengaturan_surat: pengaturanSurat,
   permohonan, riwayat_surat: riwayatSurat, passphrase_tanda_tangan: passphraseTandaTangan, percobaan_verifikasi: percobaanVerifikasi,
+  surat_masuk: suratMasuk, berkas_surat: berkasSurat,
 } as const

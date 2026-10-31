@@ -20,6 +20,16 @@ export function hariKerjaBerlalu(mulai: string, sampai: string): number {
   return jumlah
 }
 
+/**
+ * Rata-rata hari kerja dari masuk sampai terbit (dibulatkan); null bila belum ada contoh. Dipakai perkiraan waktu layanan
+ * warga dan website desa: pemanggil memilih contohnya (surat Selesai 90 hari terakhir per jenis), fungsi ini hanya menghitung.
+ */
+export function rataHariKerja(contoh: readonly { masukPada: string; terbitPada: string }[]): number | null {
+  if (contoh.length === 0) return null
+  const lama = contoh.map((c) => hariKerjaBerlalu(c.masukPada, c.terbitPada))
+  return Math.round(lama.reduce((a, b) => a + b, 0) / lama.length)
+}
+
 /** Tanggal pertama periode (YYYY-MM-DD WIB): 14 hari terakhir berarti hari ini dan 13 hari sebelumnya. */
 export const awalPeriode = (hari: number, sekarang: Date): string =>
   tanggalIsoWib(new Date(sekarang.getTime() - (hari - 1) * HARI_MS))

@@ -12,6 +12,12 @@ export type Penyandi = {
   /** Sandi `v1.<kid>.<iv>.<teks>.<tag>`; `ruang` (mis. `penduduk.nik:<desaId>`) ikut diautentikasi tetapi tidak disimpan. */
   sandikan(nilai: string, ruang: string): string
   bukaSandi(sandi: string, ruang: string): string
+  /**
+   * Sandi biner untuk isi berkas (8F3): satu byte versi `0x01`, satu byte panjang `kid`, `kid`, IV 12 byte, tag 16 byte, lalu
+   * sandi. `ruang` (mis. `berkas_surat.isi:<desaId>:<id>`) ikut diautentikasi sehingga sandi tidak bisa dipindah ke baris lain.
+   */
+  sandikanBita(bita: Buffer, ruang: string): Buffer
+  bukaBita(sandi: Buffer, ruang: string): Buffer
   /** Indeks HMAC untuk pencarian persis dan keunikan per ruang; tidak bergantung pada kunci utama. */
   indeks(nilai: string, ruang: string): string
 }
@@ -23,6 +29,10 @@ export class GalatKripto extends Error {
     this.name = 'GalatKripto'
   }
 }
+
+const VERSI_BITA = 0x01
+const PANJANG_IV = 12
+const PANJANG_TAG = 16
 
 const b64 = (b: Buffer): string => b.toString('base64url')
 const dariB64 = (s: string): Buffer => Buffer.from(s, 'base64url')
@@ -76,6 +86,21 @@ export function buatPenyandi(kunciUtama: Buffer, barisKunci: BarisKunciData[], k
       const kunci = kunciData.get(bagian[1])
       if (!kunci) throw new GalatKripto()
       return bukaDengan(kunci, dariB64(bagian[2]), dariB64(bagian[3]), dariB64(bagian[4]), ruang).toString('utf8')
+    },
+    sandikanBita(bita, ruang) {
+      const kid = Buffer.from(kidAktif, 'utf8')
+      if (kid.length > 255) throw new GalatKripto()
+      const { iv, isi, tag } = sandikanDengan(aktif, bita, ruang)
+      return Buffer.concat([Buffer.from([VERSI_BITA, kid.length]), kid, iv, tag, isi])
+    },
+    bukaBita(sandi, ruang) {
+      if (sandi.length < 2 || sandi[0] !== VERSI_BITA) throw new GalatKripto()
+      const awalIv = 2 + sandi[1]
+      const awalIsi = awalIv + PANJANG_IV + PANJANG_TAG
+      if (sandi.length < awalIsi) throw new GalatKripto()
+      const kunci = kunciData.get(sandi.toString('utf8', 2, awalIv))
+      if (!kunci) throw new GalatKripto()
+      return bukaDengan(kunci, sandi.subarray(awalIv, awalIv + PANJANG_IV), sandi.subarray(awalIsi), sandi.subarray(awalIv + PANJANG_IV, awalIsi), ruang)
     },
     indeks(nilai, ruang) {
       const turunan = Buffer.from(hkdfSync('sha256', kunciIndeks, Buffer.alloc(0), `indeks:${ruang}`, 32))

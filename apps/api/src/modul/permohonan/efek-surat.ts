@@ -29,6 +29,16 @@ export type EfekSurat = {
     nomor: string,
     oleh: Pelaku,
   ): Promise<void>
+  /**
+   * Permohonan baru masuk dari layanan warga: petugas yang berhak memprosesnya diberi tahu lewat notifikasi (tabelnya ada di
+   * 8G). `pemohon` adalah orang yang namanya tertera di permohonan, bukan selalu warga yang mengajukan.
+   */
+  permohonanMasukDariWarga(
+    db: Db,
+    permohonan: { id: string; desaId: string; dusunId: string },
+    jenis: Pick<JenisSurat, 'id' | 'kode'>,
+    pemohon: { id: string; nama: string },
+  ): Promise<void>
 }
 
 export const efekSuratBawaan: EfekSurat = {
@@ -36,6 +46,9 @@ export const efekSuratBawaan: EfekSurat = {
     // Menunggu tabel notifikasi (8G).
   },
   async suratDitandatangani() {
+    // Menunggu tabel notifikasi (8G).
+  },
+  async permohonanMasukDariWarga() {
     // Menunggu tabel notifikasi (8G).
   },
 }

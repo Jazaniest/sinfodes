@@ -1,10 +1,10 @@
 import { LABEL_KONDISI } from '@/domain/aset/schema'
 import { formatAngka } from '@/domain/format/angka'
-import { formatTanggal } from '@/domain/format/tanggal'
+import { susunBukuAgenda } from '@/domain/buku/agenda'
 import { teksMasaBakti } from '@/domain/lembaga/schema'
 import { namaDusun } from '@/domain/wilayah/alamat'
 import type { DbDemo } from '@sinfodes/demo/tipe-db'
-import { konteksWilayah, waktuTerakhir, type PenyusunBuku } from './tipe'
+import { konteksWilayah, type PenyusunBuku } from './tipe'
 
 const asetDesa = (db: DbDemo, desaId: string) => db.aset.filter((a) => a.desaId === desaId).sort((a, b) => a.kode.localeCompare(b.kode))
 
@@ -47,22 +47,16 @@ export const bukuAparat: PenyusunBuku = (db, desaId) => {
 export const bukuAgenda: PenyusunBuku = (db, desaId) => {
   const nama = new Map(db.penduduk.map((p) => [p.id, p.nama]))
   const jenis = new Map(db.jenisSurat.map((j) => [j.id, j.nama]))
-  const keluar = db.permohonan.flatMap((p) =>
-    p.desaId === desaId && p.terbit
-      ? [{
-          tanggal: p.terbit.pada.slice(0, 10),
-          waktu: p.terbit.pada,
-          isi: ['Keluar', p.terbit.nomor, formatTanggal(p.terbit.pada), nama.get(p.pemohonId) ?? '', jenis.get(p.jenisId) ?? ''],
-        }]
-      : [],
-  )
-  const masuk = db.suratMasuk
-    .filter((s) => s.desaId === desaId)
-    .map((s) => ({ tanggal: s.diterima, waktu: s.dicatat.pada, isi: ['Masuk', s.nomor, formatTanggal(s.tanggalSurat), s.pengirim, s.perihal] }))
-  const semua = [...keluar, ...masuk].sort((a, b) => a.tanggal.localeCompare(b.tanggal) || a.waktu.localeCompare(b.waktu))
-  return {
-    kolom: ['No', 'Tanggal dicatat', 'Surat', 'Nomor surat', 'Tanggal surat', 'Kepada/Dari', 'Isi singkat'],
-    baris: semua.map((b, i) => [String(i + 1), formatTanggal(b.tanggal), ...b.isi]),
-    diperbarui: waktuTerakhir(semua.map((b) => b.waktu)),
-  }
+  return susunBukuAgenda({
+    keluar: db.permohonan.flatMap((p) =>
+      p.desaId === desaId && p.terbit
+        ? [{ terbitPada: p.terbit.pada, nomor: p.terbit.nomor, pemohon: nama.get(p.pemohonId) ?? '', jenis: jenis.get(p.jenisId) ?? '' }]
+        : [],
+    ),
+    masuk: db.suratMasuk
+      .filter((s) => s.desaId === desaId)
+      .map((s) => ({
+        diterima: s.diterima, dicatatPada: s.dicatat.pada, nomor: s.nomor, tanggalSurat: s.tanggalSurat, pengirim: s.pengirim, perihal: s.perihal,
+      })),
+  })
 }

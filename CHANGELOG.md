@@ -4,6 +4,18 @@ Semua perubahan penting Sinfodes dicatat di sini. Formatnya mengikuti [Keep a Ch
 
 ## [Belum dirilis]
 
+### Ditambahkan (tahap 8F3)
+
+- **Layanan warga di server nyata.** `GET /warga/jenis-surat` (jenis online yang dilayani beserta perkiraan lama proses dari surat Selesai 90 hari terakhir), `GET /warga/keluarga` (anggota Hidup KK dengan NIK dan telepon terbuka dari sandi, beserta laporan perbaikan milik warga), `GET /warga/permohonan` dan `GET /warga/permohonan/:id` (hanya miliknya sebagai pemohon atau pengaju; milik orang lain, desa lain, dan id tak ada dijawab 404 yang sama; catatan antarpetugas tidak dikirim, lembar surat hanya bila Selesai).
+- **Pengajuan surat dari HP.** `POST /warga/permohonan` (multipart: `data` JSON dan foto `lampiran`). Jenis, anggota keluarga, isian, dan syarat diperiksa seperti API tiruan; isi foto diperiksa dari byte, metadatanya dibuang, lalu disimpan tersandi. Kunci kirim (`kunci`) membuat kirim ulang menjawab 200 dengan `id` dan tiket yang sama, serentak pun hanya satu pengajuan. Satu warga paling banyak punya lima pengajuan Menunggu (409 bila lebih; beda sengaja dari tiruan). Pengajuan loket dan warga berbagi satu antrean nomor urut lewat inti `sisipkanPermohonanBaru`.
+- **Foto syarat dan pindaian di PostgreSQL.** Tabel `berkas_surat` (sandi biner AES-256-GCM, hanya tambah) dan `GET /permohonan/:id/lampiran/:lampiranId` untuk petugas yang berhak. Berkas disajikan dengan tipe tetap hasil periksa, `nosniff`, dan CSP yang menggantikan CSP global; sesi bantuan Tim Sinfodes ditolak. Berkas dari data contoh tidak punya isi (404 "Berkas tidak tersimpan.").
+- **Arsip surat.** `GET /surat-keluar` (bulan WIB, jenis, jabatan penanda tangan, `semua=1` untuk Buku Agenda CSV; yang dibatalkan ikut), `GET` dan `POST /surat-masuk` (nomor agenda per desa dan tahun terima di bawah kunci penasihat; pindaian opsional), `GET /surat-masuk/:id/scan`. Tabel `surat_masuk` disemai dari dunia demo.
+- **Buku Agenda.** Buku `agenda` kini berisi surat keluar terbit (termasuk Dibatalkan) dan seluruh surat masuk desa, disusun fungsi murni `susunBukuAgenda` di kontrak tanpa memuat penduduk atau membuka sandi.
+- **Basis data.** Migrasi `0014`: `surat_masuk`, `berkas_surat`, kolom `kunci_idempotensi.permohonan_id`, dan indeks `permohonan_desa_terbit`.
+- **Kontrak bersama.** `MAKS_PENGAJUAN_MENUNGGU`, pesan layanan ditutup, `rataHariKerja`, `namaScanAman`, aturan 16 angka pada teks surat masuk, dan `susunBukuAgenda` ditarik ke `packages/kontrak`; API tiruan memakainya dari sana.
+- **Web.** Di mode nyata, daftar lampiran di ruang kerja surat dan pindaian di laci Surat masuk punya tautan "Buka" ke tab baru; mode demo tetap hanya menampilkan nama dan ukuran.
+- **Uji.** Meta basis data (RLS, hak, CHECK), semai, sandi biner, pemeriksa isi dan pembuang metadata dengan berkas buatan, idempotensi umum, inti pembuatan permohonan, layanan warga, pengajuan, lampiran, arsip, Buku Agenda, dan skenario "warga mengajukan sampai Agenda"; bukti mutasi untuk kunci pengajuan warga, kunci nomor urut bersama, kunci nomor agenda, dan predikat kepemilikan warga.
+
 ### Ditambahkan (tahap 8F2b)
 
 - **Tanda tangan surat di server nyata.** `POST /permohonan/:id/tandatangani` untuk Kepala Desa, atau Sekretaris Desa atas nama bila jenis suratnya mengizinkan. Surat mendapat nomor (satu kunci per desa dan tahun untuk kedua mode urutan; tahun menurut WIB) dan kode verifikasi (sumber acak aman, dicek ganda), lembar, tata letak, dan kop dibekukan dari keadaan saat itu, dan hash dokumen beserta tanda tangan simulator disimpan. Tidak ada nomor ganda atau berlubang pada tanda tangan serentak.

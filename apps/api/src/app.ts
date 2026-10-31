@@ -40,6 +40,8 @@ import { rutePassphrase } from './modul/passphrase/rute'
 import { rutePublik } from './modul/publik/rute'
 import { ruteSesi } from './modul/sesi/rute'
 import { ruteWarga } from './modul/warga/rute'
+import { JALUR_AJUKAN_WARGA, ruteWargaSurat } from './modul/warga/rute-surat'
+import { JALUR_CATAT_SURAT_MASUK, ruteArsip } from './modul/arsip/rute'
 import type { Waktu } from './waktu'
 
 export type DepsApp = {
@@ -102,7 +104,8 @@ export function buatApp(deps: DepsApp): Hono<LingkunganApp> {
     h.set('Referrer-Policy', 'no-referrer')
     h.set('Cross-Origin-Resource-Policy', 'same-origin')
     h.set('Cross-Origin-Opener-Policy', 'same-origin')
-    h.set('Content-Security-Policy', "default-src 'none'; frame-ancestors 'none'")
+    // Rute berkas menyetel CSP-nya sendiri agar gambar tampil (berkas/jawab.ts); yang lain mendapat yang paling ketat.
+    if (!h.has('Content-Security-Policy')) h.set('Content-Security-Policy', "default-src 'none'; frame-ancestors 'none'")
     h.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
     if (new URL(c.req.url).pathname.startsWith('/api/v1')) h.set('Cache-Control', 'no-store')
     const aman = konfigurasi.lingkungan === 'produksi' || konfigurasi.lingkungan === 'staging' || new URL(c.req.url).protocol === 'https:'
@@ -113,8 +116,9 @@ export function buatApp(deps: DepsApp): Hono<LingkunganApp> {
     maxSize: BATAS_BADAN_BAWAAN,
     onError: (c) => c.json(badanGalat('VALIDATION', 'Isi permintaan terlalu besar.'), 413),
   })
-  // Unggahan berkas impor menyetel batasnya sendiri di rutenya (modul/impor/rute.ts); semua rute lain tetap 1 MB.
-  app.use('/api/v1/*', (c, next) => (c.req.method === 'POST' && c.req.path === JALUR_UNGGAH_IMPOR ? next() : batasBawaan(c, next)))
+  // Unggahan berkas menyetel batasnya sendiri di rutenya (impor penduduk dan pengajuan warga); semua rute lain tetap 1 MB.
+  const jalurUnggah = new Set([JALUR_UNGGAH_IMPOR, JALUR_AJUKAN_WARGA, JALUR_CATAT_SURAT_MASUK])
+  app.use('/api/v1/*', (c, next) => (c.req.method === 'POST' && jalurUnggah.has(c.req.path) ? next() : batasBawaan(c, next)))
 
   // Lapisan SPEC-V0.3 §6.2. CSRF diletakkan sebelum transaksi: permintaan lintas asal ditolak tanpa menyentuh basis data.
   app.use(
@@ -140,6 +144,8 @@ export function buatApp(deps: DepsApp): Hono<LingkunganApp> {
   app.route('/api/v1/kabupaten', ruteKabupaten({ konfigurasi, penyandi, batasIp, ipKlien }))
   app.route('/api/v1/konsol', ruteKonsol({ konfigurasi, penyandi, batasIp, ipKlien }))
   app.route('/api/v1/warga', ruteWarga({ konfigurasi, penyandi, batasIp, batasLupaPin, ipKlien }))
+  app.route('/api/v1/warga', ruteWargaSurat({ penyandi, efek: deps.efekSurat ?? efekSuratBawaan }))
+  app.route('/api/v1', ruteArsip({ penyandi }))
   app.route('/api/v1/penduduk', rutePenduduk({ penyandi }))
   app.route('/api/v1/keluarga', ruteKeluarga({ penyandi }))
   app.route('/api/v1/mutasi', ruteMutasi({ penyandi, efek: deps.efekSilang ?? efekSilangBawaan }))

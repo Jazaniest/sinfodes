@@ -38,6 +38,9 @@ const efekUji: EfekSurat = {
   async suratDitandatangani() {
     // Dipakai uji tanda tangan (tandatangan.test.ts).
   },
+  async permohonanMasukDariWarga() {
+    // Dipakai uji pengajuan warga (warga/ajukan.test.ts).
+  },
 }
 beforeAll(async () => {
   uji = await buatDbUji()

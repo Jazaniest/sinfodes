@@ -1,11 +1,12 @@
 import { AKSI_SURAT, cariPermohonanSchema, filterPermohonanSchema } from '@sinfodes/kontrak/surat/permohonan'
 import { Hono, type Context } from 'hono'
+import { jawabBerkas, PESAN_BERKAS_BANTUAN } from '../../berkas/jawab'
 import { GalatApp } from '../../galat'
 import { galatIsian } from '../../galat-isian'
 import type { Penyandi } from '../../kripto/penyandi'
 import { butuhAkses, PESAN_PANEL_DITANGGUHKAN } from '../../lapisan/akses'
 import type { LingkunganApp } from '../../lapisan/konteks'
-import { antreanTandaTangan, cariPermohonan, daftarPermohonan, detailPermohonan, jumlahPermohonan, permohonanPerPenduduk, type KonteksPermohonan } from './layanan'
+import { antreanTandaTangan, bukaLampiran, cariPermohonan, daftarPermohonan, detailPermohonan, jumlahPermohonan, permohonanPerPenduduk, type KonteksPermohonan } from './layanan'
 import type { EfekSurat } from './efek-surat'
 import type { Pengirim } from './pengirim'
 import type { Penandatangan } from './penandatangan'
@@ -80,6 +81,15 @@ export function rutePermohonan(deps: { penyandi: Penyandi; efek: EfekSurat; pena
     if (desa.desa.status === 'Ditangguhkan') throw new GalatApp('FORBIDDEN', PESAN_PANEL_DITANGGUHKAN, 403)
     const badan = (await c.req.json().catch(() => null)) ?? {}
     return c.json(await jalankanAksi({ db, penyandi: deps.penyandi, pelaku, desa: desa.desa, sekarang: c.get('waktu')(), efek: deps.efek, penandatangan: deps.penandatangan, pengirim: deps.pengirim, acak: deps.acak }, c.req.param('id'), aksi, badan))
+  })
+
+  // Isi foto syarat: sesi bantuan Tim Sinfodes ditolak (foto KTP/KK memuat NIK sebagai piksel) walau hanya membaca; jejak aksesnya
+  // sudah dicatat lapisan bantuan sebelum sampai di sini. Tidak ada jejak baca untuk petugas desa (8F3 Ruling 8).
+  rute.get('/:id/lampiran/:lampiranId', async (c) => {
+    const k = baca(c)
+    if (k.pelaku.bantuan) throw new GalatApp('FORBIDDEN', PESAN_BERKAS_BANTUAN, 403)
+    const { tipe, nama, bita } = await bukaLampiran(k, c.req.param('id'), c.req.param('lampiranId'))
+    return jawabBerkas(tipe, nama, bita)
   })
 
   rute.get('/penduduk/:id', async (c) => c.json(await permohonanPerPenduduk(baca(c), c.req.param('id'))))

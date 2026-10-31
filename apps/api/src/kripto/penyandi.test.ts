@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto'
 import { describe, expect, it } from 'vitest'
 import { buatKunciDataBaru, buatPenyandi, GalatKripto } from './penyandi'
 
@@ -108,5 +109,79 @@ describe('penyandi: indeks pencarian persis', () => {
 
   it('tidak memuat nilai asli', () => {
     expect(rakit().indeks('1405095203918002', 'r')).not.toContain('1405095203918002')
+  })
+})
+
+describe('penyandi: sandi biner untuk berkas (8F3 Ruling 1)', () => {
+  const RUANG = 'berkas_surat.isi:desa_a:bk_1'
+
+  it('pulang-pergi identik untuk 0 byte sampai 3 MB acak', () => {
+    const p = rakit()
+    for (const ukuran of [0, 1, 17, 4096, 3 * 1024 * 1024]) {
+      const bita = randomBytes(ukuran)
+      expect(Buffer.compare(p.bukaBita(p.sandikanBita(bita, RUANG), RUANG), bita), `${ukuran} byte`).toBe(0)
+    }
+  })
+
+  it('format: versi 0x01, panjang kid, kid, IV 12 byte, tag 16 byte, lalu sandi sepanjang masukan', () => {
+    const p = rakit('k1')
+    const bita = randomBytes(100)
+    const sandi = p.sandikanBita(bita, RUANG)
+    expect(sandi[0]).toBe(0x01)
+    expect(sandi[1]).toBe(2)
+    expect(sandi.toString('latin1', 2, 4)).toBe('k1')
+    expect(sandi.length).toBe(2 + 2 + 12 + 16 + 100)
+  })
+
+  it('ruang berbeda (id baris lain atau desa lain) tidak bisa membuka', () => {
+    const p = rakit()
+    const sandi = p.sandikanBita(randomBytes(64), RUANG)
+    expect(() => p.bukaBita(sandi, 'berkas_surat.isi:desa_a:bk_2')).toThrow(GalatKripto)
+    expect(() => p.bukaBita(sandi, 'berkas_surat.isi:desa_b:bk_1')).toThrow(GalatKripto)
+  })
+
+  it('satu byte diubah di posisi mana pun ditolak dengan galat netral', () => {
+    const p = rakit()
+    const sandi = p.sandikanBita(randomBytes(64), RUANG)
+    for (const posisi of [0, 1, 2, 5, 14, 20, 31, 40, sandi.length - 1]) {
+      const rusak = Buffer.from(sandi)
+      rusak[posisi] ^= 0x01
+      expect(() => p.bukaBita(rusak, RUANG), `byte ${posisi}`).toThrow(GalatKripto)
+    }
+  })
+
+  it('terpotong, terlalu pendek, atau berversi lain ditolak', () => {
+    const p = rakit()
+    const sandi = p.sandikanBita(randomBytes(64), RUANG)
+    expect(() => p.bukaBita(sandi.subarray(0, sandi.length - 1), RUANG)).toThrow(GalatKripto)
+    expect(() => p.bukaBita(Buffer.alloc(0), RUANG)).toThrow(GalatKripto)
+    expect(() => p.bukaBita(Buffer.from([0x01]), RUANG)).toThrow(GalatKripto)
+    expect(() => p.bukaBita(Buffer.concat([Buffer.from([0x02]), sandi.subarray(1)]), RUANG)).toThrow(GalatKripto)
+  })
+
+  it('dua sandikan atas masukan sama berbeda (IV acak) dan keluaran tidak memuat urutan byte masukan', () => {
+    const p = rakit()
+    const bita = randomBytes(256)
+    const a = p.sandikanBita(bita, RUANG)
+    const b = p.sandikanBita(bita, RUANG)
+    expect(a.equals(b)).toBe(false)
+    expect(a.includes(bita.subarray(0, 32))).toBe(false)
+    expect(a.includes(bita.subarray(100, 132))).toBe(false)
+  })
+
+  it('kid ikut sandi: sandi dari kunci lama terbuka setelah kunci aktif diganti', () => {
+    const k1 = buatKunciDataBaru(UTAMA, 'k1')
+    const k2 = buatKunciDataBaru(UTAMA, 'k2')
+    const bita = randomBytes(128)
+    const sandiLama = buatPenyandi(UTAMA, [k1], 'k1', INDEKS).sandikanBita(bita, RUANG)
+    const baru = buatPenyandi(UTAMA, [k1, k2], 'k2', INDEKS)
+    expect(Buffer.compare(baru.bukaBita(sandiLama, RUANG), bita)).toBe(0)
+    expect(baru.sandikanBita(bita, RUANG).toString('latin1', 2, 4)).toBe('k2')
+    expect(() => buatPenyandi(UTAMA, [k2], 'k2', INDEKS).bukaBita(sandiLama, RUANG)).toThrow(GalatKripto)
+  })
+
+  it('sandi teks lama tetap bekerja berdampingan', () => {
+    const p = rakit()
+    expect(p.bukaSandi(p.sandikan('1405095203918002', 'x'), 'x')).toBe('1405095203918002')
   })
 })

@@ -185,7 +185,7 @@ const isianSchema = z.record(z.string(), z.string().max(500))
 export const PESAN_CATATAN_NIK = 'Jangan menulis NIK atau nomor 16 angka di catatan.'
 /** Harus sama persis dengan CHECK `permohonan` di migrasi 0012: 16 angka berurutan yang tidak bersambung angka lain. */
 const POLA_NIK_DI_CATATAN = /(?<!\d)\d{16}(?!\d)/
-const tanpaNik = (teks: string) => !POLA_NIK_DI_CATATAN.test(teks)
+export const tanpaNik = (teks: string) => !POLA_NIK_DI_CATATAN.test(teks)
 
 export const alasanSchema = z.object({ alasan: teksWajib('Alasan wajib diisi').refine(tanpaNik, PESAN_CATATAN_NIK) })
 export const catatanKembaliSchema = z.object({

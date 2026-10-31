@@ -4,6 +4,7 @@ import type { DbDemo } from '@sinfodes/demo/tipe-db'
 import { SEKARANG_UJI } from '@sinfodes/demo/uji-akun'
 import { waktuIsoWib } from '@sinfodes/kontrak/format/tanggal'
 import { jenisSuratSchema } from '@sinfodes/kontrak/surat/jenis'
+import { suratMasukSchema } from '@sinfodes/kontrak/surat/arsip'
 import { permohonanSchema, type Permohonan } from '@sinfodes/kontrak/surat/permohonan'
 import { tataLetakSuratSchema } from '@sinfodes/kontrak/surat/tata-letak'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
@@ -447,5 +448,48 @@ describe('semai permohonan surat (rencana 8F2a Tugas 3)', () => {
     expect([await hitung('permohonan'), await hitung('riwayat_surat')]).toEqual(jumlah)
     const [sesudah] = await uji.sqlMigrasi`select id, isian_sandi from permohonan where id = ${sebelum.id}`
     expect(sesudah.isian_sandi).toBe(sebelum.isian_sandi)
+  })
+})
+
+describe('semai surat masuk (rencana 8F3 Tugas 2)', () => {
+  it('jumlah baris surat_masuk sama dengan dunia demo per desa; ringkasan memuatnya; tidak ada isi berkas yang disemai', async () => {
+    expect(dunia.suratMasuk.length).toBeGreaterThan(0)
+    expect(await hitung('surat_masuk')).toBe(dunia.suratMasuk.length)
+    for (const desa of dunia.desa) {
+      const [b] = await uji.sqlMigrasi`select count(*)::int as n from surat_masuk where desa_id = ${desa.id}`
+      expect(b.n, desa.id).toBe(dunia.suratMasuk.filter((s) => s.desaId === desa.id).length)
+    }
+    expect(await hitung('berkas_surat')).toBe(0)
+    const ringkasan = await semaiDunia(uji.sqlMigrasi, penyandi, SEKARANG_UJI, opsiUji())
+    expect(ringkasan).toMatchObject({ suratMasuk: dunia.suratMasuk.length })
+  })
+
+  it('setiap baris, dibentuk ulang, lolos suratMasukSchema dan sama persis dengan dunia demo', async () => {
+    const baris = await uji.sqlMigrasi`select *, diterima::text as terima, tanggal_surat::text as tgl_surat from surat_masuk order by id`
+    const dariId = new Map(dunia.suratMasuk.map((s) => [s.id, s]))
+    expect(baris.length).toBe(dunia.suratMasuk.length)
+    for (const b of baris) {
+      const bentuk = suratMasukSchema.parse({
+        id: b.id, desaId: b.desa_id, noAgenda: b.no_agenda, diterima: b.terima, nomor: b.nomor, tanggalSurat: b.tgl_surat, pengirim: b.pengirim,
+        perihal: b.perihal,
+        scan: b.scan_nama ? { berkas: b.scan_nama, ukuranKb: b.scan_ukuran_kb } : null,
+        disposisi: b.disposisi_kepada ? { kepada: b.disposisi_kepada, instruksi: b.disposisi_instruksi } : null,
+        dicatat: { oleh: b.dicatat_oleh, pada: waktuIsoWib(b.dicatat_pada as Date) },
+      })
+      expect(bentuk, b.id as string).toEqual(dariId.get(b.id as string))
+    }
+  })
+
+  it('nomor agenda unik per desa dan tahun, dan tahun = tahun tanggal terima', async () => {
+    const ganda = await uji.sqlMigrasi`select desa_id, tahun, no_agenda from surat_masuk group by desa_id, tahun, no_agenda having count(*) > 1`
+    expect(ganda).toEqual([])
+    const salah = await uji.sqlMigrasi`select id from surat_masuk where tahun <> extract(year from diterima)::int`
+    expect(salah).toEqual([])
+  })
+
+  it('semai kedua dengan acuan yang sama tidak menambah baris', async () => {
+    const sebelum = await hitung('surat_masuk')
+    await semaiDunia(uji.sqlMigrasi, penyandi, SEKARANG_UJI, opsiUji())
+    expect(await hitung('surat_masuk')).toBe(sebelum)
   })
 })

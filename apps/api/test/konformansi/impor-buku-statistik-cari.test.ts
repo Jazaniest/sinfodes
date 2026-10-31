@@ -137,11 +137,12 @@ describe('Buku Administrasi (SPEC §8)', () => {
     expect(daftar).toHaveLength(24)
     expect(daftar.find((b) => b.kode === 'kas-umum')).toMatchObject({ sumber: null, jumlah: null, diperbarui: null })
     expect(daftar.find((b) => b.kode === 'induk-penduduk')).toMatchObject({ sumber: 'Kependudukan', jumlah: 2812 })
-    // Perbedaan sengaja: tiruan sudah mengisi 15 buku; server baru memiliki lima buku penduduk, sepuluh buku lain menunggu 8F-8G.
+    // Perbedaan sengaja: tiruan sudah mengisi 15 buku; server memiliki lima buku penduduk dan Agenda (8F3), sembilan buku lain menunggu 8G.
     expect(daftar.filter((b) => b.sumber !== null && b.jumlah !== null).map((b) => b.kode).sort()).toEqual([
-      'induk-penduduk', 'ktp-kk', 'mutasi-penduduk', 'penduduk-sementara', 'rekapitulasi-penduduk',
+      'agenda', 'induk-penduduk', 'ktp-kk', 'mutasi-penduduk', 'penduduk-sementara', 'rekapitulasi-penduduk',
     ])
-    expect(daftar.find((b) => b.kode === 'agenda')).toMatchObject({ sumber: 'Layanan Surat (surat keluar dan masuk)', jumlah: null, diperbarui: null })
+    expect(daftar.find((b) => b.kode === 'agenda')).toMatchObject({ sumber: 'Layanan Surat (surat keluar dan masuk)' })
+    expect(daftar.find((b) => b.kode === 'agenda')?.jumlah).toBeGreaterThan(0)
   })
 
   it('Kaur Keuangan hanya buku keuangan; Buku Induk yang berisi NIK ditolak; Kepala Dusun ditolak (fokus review 1)', async () => {
