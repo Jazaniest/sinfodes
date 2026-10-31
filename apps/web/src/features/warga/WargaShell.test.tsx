@@ -11,6 +11,15 @@ function pasang(jalur: string) {
   )
 }
 
+describe('WargaShell saat dicetak', () => {
+  it('kepala dan navigasi bawah tidak ikut tercetak, dan isi tidak dibatasi lebar HP', () => {
+    pasang('/warga/riwayat')
+    expect(screen.getByRole('banner')).toHaveClass('print:hidden')
+    expect(screen.getByRole('navigation', { name: 'Menu layanan warga' })).toHaveClass('print:hidden')
+    expect(screen.getByRole('main')).toHaveClass('print:max-w-none', 'print:p-0')
+  })
+})
+
 describe('WargaShell dengan tema desa (rencana 7E-1 Tugas 5)', () => {
   const tampilan = { warnaUtama: '#2F5D3A', logo: null, fotoLatar: null, sambutan: null, huruf: 'fraunces' as const }
   it('wadah memasang warna utama desa; warna status Register tidak ditimpa', () => {

@@ -73,7 +73,12 @@ describe('Riwayat warga (SPEC §10)', () => {
     const nomor = ambilDb().permohonan.find((p) => p.id === id)?.terbit?.nomor ?? '?'
     await userEvent.setup().click(await screen.findByRole('button', { name: 'Unduh PDF' }))
     expect(cetak).toHaveBeenCalledTimes(1)
-    expect(screen.getByRole('region', { name: 'Lembar cetak' })).toHaveTextContent(nomor)
+    const lembar = screen.getByRole('region', { name: 'Lembar cetak' })
+    expect(lembar).toHaveTextContent(nomor)
+    // Saat dicetak hanya lembar yang keluar: rincian dan perjalanan disembunyikan, lembar tidak.
+    expect(lembar.closest('.print\\:hidden')).toBeNull()
+    expect(screen.getByRole('heading', { level: 1 }).closest('.print\\:hidden')).not.toBeNull()
+    expect(screen.getByRole('list', { name: 'Riwayat permohonan' }).closest('.print\\:hidden')).not.toBeNull()
     cetak.mockRestore()
   })
   it('Selesai tanda tangan basah: ambil di kantor desa beserta jam layanan, tanpa Unduh PDF', async () => {

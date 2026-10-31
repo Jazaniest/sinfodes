@@ -16,6 +16,10 @@ Semua perubahan penting Sinfodes dicatat di sini. Formatnya mengikuti [Keep a Ch
 - **Web.** Di mode nyata, daftar lampiran di ruang kerja surat dan pindaian di laci Surat masuk punya tautan "Buka" ke tab baru; mode demo tetap hanya menampilkan nama dan ukuran.
 - **Uji.** Meta basis data (RLS, hak, CHECK), semai, sandi biner, pemeriksa isi dan pembuang metadata dengan berkas buatan, idempotensi umum, inti pembuatan permohonan, layanan warga, pengajuan, lampiran, arsip, Buku Agenda, dan skenario "warga mengajukan sampai Agenda"; bukti mutasi untuk kunci pengajuan warga, kunci nomor urut bersama, kunci nomor agenda, dan predikat kepemilikan warga.
 
+### Diperbaiki (tahap 8F3)
+
+- **Unduh PDF di layanan warga.** Dialog cetak sebelumnya ikut mencetak seluruh halaman (kepala desa, rincian, perjalanan, navigasi bawah) di atas lembar surat. Kini kepala, navigasi bawah, dan isi detail disembunyikan saat dicetak sehingga hanya lembar surat yang keluar, selebar kertas.
+
 ### Ditambahkan (tahap 8F2b)
 
 - **Tanda tangan surat di server nyata.** `POST /permohonan/:id/tandatangani` untuk Kepala Desa, atau Sekretaris Desa atas nama bila jenis suratnya mengizinkan. Surat mendapat nomor (satu kunci per desa dan tahun untuk kedua mode urutan; tahun menurut WIB) dan kode verifikasi (sumber acak aman, dicek ganda), lembar, tata letak, dan kop dibekukan dari keadaan saat itu, dan hash dokumen beserta tanda tangan simulator disimpan. Tidak ada nomor ganda atau berlubang pada tanda tangan serentak.
