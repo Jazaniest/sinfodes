@@ -46,6 +46,15 @@ export async function alokasiNoUrut(db: Db, desaId: string, tahun: number): Prom
 }
 
 /**
+ * Kunci penasihat pengajuan seorang warga: penghitungan pengajuan Menunggu dan sisipnya berjalan satu per satu, jadi lima
+ * pengajuan serentak pun tidak melampaui batas (8F3 Ruling 4). Urutan kunci tetap: jenis (FOR SHARE), kunci ini, lalu nomor urut.
+ * Dilepas saat transaksi selesai.
+ */
+export async function kunciPengajuanWarga(db: Db, desaId: string, pendudukId: string): Promise<void> {
+  await db.execute(sql`select pg_advisory_xact_lock(hashtextextended(${`ajukan-warga:${desaId}:${pendudukId}`}, 0))`)
+}
+
+/**
  * Kunci penasihat nomor surat terbit untuk desa dan tahun itu, dilepas saat transaksi selesai. Satu kunci menutup kedua mode
  * urutan: `per-tahun` menghitung semua jenis, `per-jenis` satu jenis (rencana 8F2b Ruling 6). Urutan kunci tetap: baris
  * permohonan, kunci pengguna (passphrase), lalu kunci ini.

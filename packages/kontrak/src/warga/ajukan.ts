@@ -14,6 +14,16 @@ export const jenisSuratWargaSchema = z.object({
 })
 export type JenisSuratWarga = z.infer<typeof jenisSuratWargaSchema>
 
+/**
+ * Batas pengajuan yang masih Menunggu per warga (sebagai pemohon atau pengaju). Berkas tersimpan di basis data, jadi satu akun
+ * tidak boleh membanjirinya; handler tiruan lama tidak punya batas ini (8F3 Ruling 4).
+ */
+export const MAKS_PENGAJUAN_MENUNGGU = 5
+export const PESAN_PENGAJUAN_PENUH = `Anda masih punya ${MAKS_PENGAJUAN_MENUNGGU} pengajuan yang menunggu diperiksa petugas desa. Tunggu sampai diproses.`
+
+/** Pesan untuk warga: pengajuan surat dan pengaduan baru ditutup selama desa Ditangguhkan. */
+export const pesanLayananDitutup = (namaDesa: string): string => `Layanan pengajuan Desa ${namaDesa} sedang ditutup. Silakan datang ke kantor desa.`
+
 /** Kunci acak dari HP: Kirim ulang dengan kunci yang sama tidak membuat data ganda (fokus review 1). */
 export const kunciKirimSchema = z.string().min(8).max(64)
 

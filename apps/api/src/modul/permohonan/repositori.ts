@@ -1,5 +1,6 @@
 import { STATUS_TERBUKA, type StatusPermohonan } from '@sinfodes/kontrak/surat/permohonan'
-import { and, asc, desc, eq, inArray, or, sql, type SQL } from 'drizzle-orm'
+import { and, asc, desc, eq, gte, inArray, or, sql, type SQL } from 'drizzle-orm'
+import { alias } from 'drizzle-orm/pg-core'
 import type { Db } from '../../basisdata/klien'
 import { jenisSurat, penduduk, permohonan, riwayatSurat } from '../../basisdata/skema'
 
@@ -208,3 +209,84 @@ export async function bacaPendudukIds(db: Db, ids: readonly string[]): Promise<(
 /** Seluruh anggota satu KK, termasuk yang sudah tidak aktif. */
 export const bacaAnggotaKeluarga = (db: Db, keluargaId: string): Promise<(typeof penduduk.$inferSelect)[]> =>
   db.select().from(penduduk).where(eq(penduduk.keluargaId, keluargaId))
+
+/**
+ * Permohonan milik seorang warga: dia pemohonnya, atau dia yang mengajukan lewat layanan warga (riwayat `diajukan` atas
+ * namanya). Sama dengan `milikWarga` di kontrak; kepemilikan ditegakkan di SQL supaya milik orang lain tidak pernah terbaca.
+ */
+export const syaratMilikWarga = (pendudukId: string): SQL =>
+  or(
+    eq(permohonan.pemohonId, pendudukId),
+    sql`exists (select 1 from ${riwayatSurat} where ${riwayatSurat.permohonanId} = ${permohonan.id} and ${riwayatSurat.kejadian} = 'diajukan' and ${riwayatSurat.oleh} ->> 'id' = ${pendudukId})`,
+  ) as SQL
+
+/** Satu permohonan milik warga; bukan miliknya, milik desa lain (RLS), atau tidak ada = undefined (jawabannya sama, 8F3 Ruling 12). */
+export async function bacaPermohonanMilikWarga(db: Db, id: string, pendudukId: string): Promise<RekamPermohonan | undefined> {
+  const [b] = await db.select().from(permohonan).where(and(eq(permohonan.id, id), syaratMilikWarga(pendudukId))).limit(1)
+  return b
+}
+
+/** Baris ringkasan permohonan untuk warga: jenis dan nama orang yang diterangkan surat, tanpa membuka sandi. */
+export type RekamRingkasWarga = {
+  id: string
+  noUrut: number
+  status: string
+  tahap: string | null
+  dikembalikan: boolean
+  diambil: boolean
+  masukPada: Date
+  ditutupPada: Date | null
+  nomor: string | null
+  mode: string | null
+  jenisKode: string
+  jenisNama: string
+  untukId: string
+  untukNama: string | null
+}
+
+/** Permohonan milik warga, terbaru masuk dulu (id memutus seri). */
+export function bacaRingkasWarga(db: Db, pendudukId: string): Promise<RekamRingkasWarga[]> {
+  const untuk = alias(penduduk, 'untuk')
+  const untukId = sql<string>`coalesce(${permohonan.subjekId}, ${permohonan.pemohonId})`
+  return db
+    .select({
+      id: permohonan.id,
+      noUrut: permohonan.noUrut,
+      status: permohonan.status,
+      tahap: permohonan.tahap,
+      dikembalikan: sql<boolean>`(${permohonan.dikembalikan} is not null)`,
+      diambil: sql<boolean>`(${permohonan.diambil} is not null)`,
+      masukPada: permohonan.masukPada,
+      ditutupPada: permohonan.ditutupPada,
+      nomor: permohonan.terbitNomor,
+      mode: permohonan.terbitMode,
+      jenisKode: jenisSurat.kode,
+      jenisNama: jenisSurat.nama,
+      untukId,
+      untukNama: untuk.nama,
+    })
+    .from(permohonan)
+    .innerJoin(jenisSurat, eq(jenisSurat.id, permohonan.jenisId))
+    .leftJoin(untuk, sql`${untuk.id} = ${untukId}`)
+    .where(syaratMilikWarga(pendudukId))
+    .orderBy(desc(permohonan.masukPada), asc(permohonan.id))
+}
+
+/** Surat Selesai (bukan yang kemudian dibatalkan) yang terbit pada atau sesudah `sejak`: bahan perkiraan lama proses per jenis. */
+export async function bacaContohSelesai(db: Db, sejak: Date): Promise<{ jenisId: string; masukPada: Date; terbitPada: Date }[]> {
+  const baris = await db
+    .select({ jenisId: permohonan.jenisId, masukPada: permohonan.masukPada, terbitPada: permohonan.terbitPada })
+    .from(permohonan)
+    .where(and(eq(permohonan.status, 'selesai'), gte(permohonan.terbitPada, sejak)))
+  // Surat Selesai selalu punya waktu terbit (CHECK permohonan_terbit_sesuai); yang tidak punya dilewati, bukan ditebak.
+  return baris.flatMap((b) => (b.terbitPada === null ? [] : [{ jenisId: b.jenisId, masukPada: b.masukPada, terbitPada: b.terbitPada }]))
+}
+
+/** Jumlah permohonan berstatus Menunggu milik warga (pemohon atau pengaju); dasar batas pengajuan per warga. */
+export async function hitungMenungguWarga(db: Db, pendudukId: string): Promise<number> {
+  const [{ n }] = await db
+    .select({ n: sql<number>`count(*)`.mapWith(Number) })
+    .from(permohonan)
+    .where(and(eq(permohonan.status, 'menunggu'), syaratMilikWarga(pendudukId)))
+  return n
+}

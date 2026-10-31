@@ -3,6 +3,8 @@ import { galatSchema } from '@/domain/api'
 import { GalatApi } from './galat'
 
 const BASE = import.meta.env.VITE_API_BASE || '/api/v1'
+/** Basis alamat API untuk tautan langsung (mis. membuka berkas di tab baru), sama dengan yang dipakai `panggilApi`. */
+export const BASE_API = BASE
 /** Panel admin, layanan warga, Konsol, dan dasbor kabupaten punya sesi sendiri; semuanya bisa aktif di satu peramban. */
 export type BagianSesi = 'admin' | 'warga' | 'konsol' | 'kabupaten'
 /**

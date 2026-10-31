@@ -48,6 +48,9 @@ export const GOLONGAN_TABEL: Readonly<Record<string, Golongan>> = {
   // Passphrase tanda tangan dan pencacah verifikasi publik (8F2b): hash argon2id saja; pencacah hanya ditulis fungsi verifikasi_surat.
   passphrase_tanda_tangan: 'desa-privat',
   percobaan_verifikasi: 'desa-privat',
+  // Register surat masuk dan isi berkas (8F3): berkas tersandi AES-256-GCM sebagai bytea; keduanya hanya bertambah.
+  surat_masuk: 'desa-privat',
+  berkas_surat: 'desa-privat',
   jejak_audit: 'audit',
   jejak_bantuan: 'audit',
   jejak_audit_platform: 'audit',

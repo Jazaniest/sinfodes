@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'vitest'
-import { calonUntuk, namaSyarat, nomorTiket, syaratWajib, teksPerkiraan } from './ajukan'
+import { calonUntuk, MAKS_PENGAJUAN_MENUNGGU, namaSyarat, nomorTiket, PESAN_PENGAJUAN_PENUH, pesanLayananDitutup, syaratWajib, teksPerkiraan } from './ajukan'
+
+describe('batas dan pesan pengajuan warga (8F3 Ruling 4 dan 11)', () => {
+  it('lima pengajuan menunggu per warga, pesannya menyebut batas itu', () => {
+    expect(MAKS_PENGAJUAN_MENUNGGU).toBe(5)
+    expect(PESAN_PENGAJUAN_PENUH).toBe('Anda masih punya 5 pengajuan yang menunggu diperiksa petugas desa. Tunggu sampai diproses.')
+  })
+  it('layanan ditutup saat desa Ditangguhkan, memakai nama desa', () => {
+    expect(pesanLayananDitutup('Sungai Sialang')).toBe('Layanan pengajuan Desa Sungai Sialang sedang ditutup. Silakan datang ke kantor desa.')
+  })
+})
 
 describe('ajukan surat dari layanan warga (SPEC §10)', () => {
   it('syarat bertanda "(opsional)" boleh dilewati; namanya tampil tanpa tanda itu', () => {

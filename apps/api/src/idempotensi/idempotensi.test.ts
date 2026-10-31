@@ -5,6 +5,8 @@ import { buatNik } from '@sinfodes/kontrak/penduduk/nik'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { buatDbUji, penyandiUji, type DbUji } from '../../test/basisdata'
 import { kirimJson, masukLewatRute, rakitApp } from '../../test/rakit-app'
+import { GalatApp } from '../galat'
+import { denganIdempotensi, type Rujukan } from './idempotensi'
 
 const SS = 'http://sungaisialang.sinfodes.localhost'
 
@@ -204,7 +206,7 @@ describe('Idempotency-Key pada POST /mutasi/* (SPEC-V0.3 §5.4 butir 4, rencana 
 })
 
 describe('tabel kunci_idempotensi', () => {
-  it('desa-privat: desa hanya SELECT, INSERT, dan UPDATE kolom mutasi_id; peran lain tanpa hak', async () => {
+  it('desa-privat: desa hanya SELECT, INSERT, dan UPDATE kolom rujukan (mutasi_id, permohonan_id); peran lain tanpa hak', async () => {
     const punya = async (peran: string, hak: string) => (await uji.sqlMigrasi`select has_table_privilege(${peran}, 'kunci_idempotensi', ${hak}) as ada`)[0].ada as boolean
     expect(await punya('sinfodes_desa', 'SELECT')).toBe(true)
     expect(await punya('sinfodes_desa', 'INSERT')).toBe(true)
@@ -213,10 +215,108 @@ describe('tabel kunci_idempotensi', () => {
     const kolom = (await uji.sqlMigrasi`select column_name from information_schema.columns where table_name = 'kunci_idempotensi'`).map((b) => b.column_name as string)
     for (const k of kolom) {
       const [b] = await uji.sqlMigrasi`select has_column_privilege('sinfodes_desa', 'kunci_idempotensi', ${k}, 'UPDATE') as ada`
-      expect(b.ada, k).toBe(k === 'mutasi_id')
+      expect(b.ada, k).toBe(k === 'mutasi_id' || k === 'permohonan_id')
     }
     for (const peran of ['sinfodes_kabupaten', 'sinfodes_konsol', 'sinfodes_publik']) {
       for (const hak of ['SELECT', 'INSERT', 'UPDATE', 'DELETE']) expect(await punya(peran, hak), `${peran} ${hak}`).toBe(false)
     }
+  })
+})
+
+describe('denganIdempotensi umum: rujukan permohonan (rencana 8F3 Tugas 4)', () => {
+  const PELAKU = 'pdk_siti_rahmah'
+  const permohonanBaru = async (urut: number): Promise<string> => {
+    const [pdk] = await uji.sqlMigrasi`select dusun_id from penduduk where id = ${PELAKU}`
+    const [jenis] = await uji.sqlMigrasi`select id from jenis_surat where desa_id = ${ID_SUNGAI_SIALANG} limit 1`
+    const id = `srt_idem_${urut}`
+    await uji.sqlMigrasi`insert into permohonan (id, desa_id, dusun_id, tahun, no_urut, jenis_id, kanal, pemohon_id, isian_sandi, status, masuk_pada)
+      values (${id}, ${ID_SUNGAI_SIALANG}, ${pdk.dusun_id}, 2099, ${urut}, ${jenis.id}, 'online', ${PELAKU}, 'v1.abc', 'menunggu', now())`
+    return id
+  }
+  const jalankanDi = <T>(f: (k: Parameters<typeof denganIdempotensi>[0]) => Promise<T>, pelakuId = PELAKU): Promise<T> =>
+    uji.klien.dalamTransaksi('desa', { desaId: ID_SUNGAI_SIALANG }, (db) => f({ db, pelakuId, desaId: ID_SUNGAI_SIALANG, sekarang: new Date('2026-10-31T10:00:00+07:00') }))
+  const barisKunci = async (kunci: string) => (await uji.sqlMigrasi`select mutasi_id, permohonan_id, jalur from kunci_idempotensi where kunci = ${kunci}`)[0]
+
+  it('hasil dengan rujukan permohonan mengisi kolom permohonan_id (mutasi_id kosong); kirim ulang memulihkan lewat rujukan yang sama', async () => {
+    const id = await permohonanBaru(1)
+    const kunci = kunciBaru('perm')
+    let dijalankan = 0
+    const pulih: Rujukan[] = []
+    const parameter = {
+      kunci, jalur: 'warga/permohonan', isi: { a: 1 },
+      jalankan: async () => {
+        dijalankan++
+        return { hasil: 'pertama', rujukan: { permohonanId: id } }
+      },
+      pulihkan: async (r: Rujukan) => {
+        pulih.push(r)
+        return 'ulang'
+      },
+    }
+    expect(await jalankanDi((k) => denganIdempotensi(k, parameter))).toEqual({ hasil: 'pertama', diulang: false })
+    expect(await barisKunci(kunci)).toMatchObject({ mutasi_id: null, permohonan_id: id, jalur: 'warga/permohonan' })
+    expect(await jalankanDi((k) => denganIdempotensi(k, parameter))).toEqual({ hasil: 'ulang', diulang: true })
+    expect(dijalankan).toBe(1)
+    expect(pulih).toEqual([{ permohonanId: id }])
+  })
+
+  it('kunci yang sama dengan isi atau jalur berbeda: 409 dan jalankan tidak dipanggil lagi', async () => {
+    const id = await permohonanBaru(2)
+    const kunci = kunciBaru('perm')
+    const buat = (isi: unknown, jalur = 'warga/permohonan') => ({
+      kunci, jalur, isi, jalankan: async () => ({ hasil: 'x', rujukan: { permohonanId: id } }), pulihkan: async () => 'ulang',
+    })
+    await jalankanDi((k) => denganIdempotensi(k, buat({ a: 1 })))
+    for (const parameter of [buat({ a: 2 }), buat({ a: 1 }, 'warga/lain')]) {
+      const galat = await jalankanDi((k) => denganIdempotensi(k, parameter)).catch((e) => e)
+      expect(galat).toBeInstanceOf(GalatApp)
+      expect(galat).toMatchObject({ kode: 'CONFLICT', status: 409, message: 'Kunci idempotensi ini sudah dipakai untuk isian yang berbeda.' })
+    }
+  })
+
+  it('rujukan mutasi tetap mengisi mutasi_id (tidak permohonan_id)', async () => {
+    const kunci = kunciBaru('mut')
+    const [m] = await uji.sqlMigrasi`select id from mutasi where desa_id = ${ID_SUNGAI_SIALANG} limit 1`
+    await jalankanDi((k) =>
+      denganIdempotensi(k, { kunci, jalur: 'mutasi/lahir', isi: null, jalankan: async () => ({ hasil: 1, rujukan: { mutasiId: m.id as string } }), pulihkan: async () => 2 }),
+    )
+    expect(await barisKunci(kunci)).toMatchObject({ mutasi_id: m.id, permohonan_id: null })
+  })
+
+  it('dua pemanggil serentak dengan kunci sama menjalankan jalankan tepat sekali; yang kedua menunggu lalu memulihkan', async () => {
+    const id = await permohonanBaru(3)
+    const kunci = kunciBaru('perm')
+    let dijalankan = 0
+    const parameter = {
+      kunci, jalur: 'warga/permohonan', isi: { serentak: true },
+      jalankan: async () => {
+        dijalankan++
+        await tunggu(200)
+        return { hasil: 'satu', rujukan: { permohonanId: id } }
+      },
+      pulihkan: async () => 'satu',
+    }
+    const hasil = await Promise.all([jalankanDi((k) => denganIdempotensi(k, parameter)), tunggu(50).then(() => jalankanDi((k) => denganIdempotensi(k, parameter)))])
+    expect(dijalankan).toBe(1)
+    expect(hasil.map((h) => h.hasil)).toEqual(['satu', 'satu'])
+    expect(hasil.map((h) => h.diulang).sort()).toEqual([false, true])
+  })
+
+  it('pemanggil pertama yang gagal membatalkan kunci: tidak ada baris tertinggal dan pemanggil berikutnya menjalankan', async () => {
+    const kunci = kunciBaru('perm')
+    const gagal = await jalankanDi((k) =>
+      denganIdempotensi(k, { kunci, jalur: 'warga/permohonan', isi: 1, jalankan: async () => Promise.reject(new Error('uji gagal')), pulihkan: async () => 'x' }),
+    ).catch((e) => e)
+    expect((gagal as Error).message).toBe('uji gagal')
+    expect(await barisKunci(kunci)).toBeUndefined()
+  })
+
+  it('tanpa kunci jalankan dipanggil biasa dan tidak ada baris', async () => {
+    let n = 0
+    const hasil = await jalankanDi((k) =>
+      denganIdempotensi(k, { kunci: undefined, jalur: 'warga/permohonan', isi: 1, jalankan: async () => (n++, { hasil: 'a', rujukan: { permohonanId: 'tidak-dipakai' } }), pulihkan: async () => 'x' }),
+    )
+    expect(hasil).toEqual({ hasil: 'a', diulang: false })
+    expect(n).toBe(1)
   })
 })

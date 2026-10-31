@@ -37,7 +37,7 @@ export function WargaShell({ sesi, jalur, tampilan = null, children }: Props) {
 
   return (
     <div className="skala-warga min-h-dvh bg-kertas text-teks text-tinta" style={tampilan ? (gayaWarga(tampilan.warnaUtama) as CSSProperties) : undefined}>
-      <header className={cn('border-b-[1.5px] border-tinta', tampilan && 'border-t-[3px] border-t-biru')}>
+      <header className={cn('border-b-[1.5px] border-tinta print:hidden', tampilan && 'border-t-[3px] border-t-biru')}>
         <div className="mx-auto flex max-w-lg items-center gap-3 px-4 py-3">
           <LambangDesa nama={sesi.desa.nama} gambar={tampilan?.logo ?? sesi.desa.lambang} />
           <div className="min-w-0">
@@ -51,10 +51,10 @@ export function WargaShell({ sesi, jalur, tampilan = null, children }: Props) {
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-lg px-4 pt-5 pb-28 [html[data-demo-toolbar]_&]:pb-40">{children}</main>
+      <main className="mx-auto max-w-lg px-4 pt-5 pb-28 [html[data-demo-toolbar]_&]:pb-40 print:max-w-none print:p-0">{children}</main>
       <nav
         aria-label="Menu layanan warga"
-        className="fixed inset-x-0 bottom-0 z-30 border-t border-garis bg-lembar [html[data-demo-toolbar]_&]:pb-14"
+        className="fixed inset-x-0 bottom-0 z-30 border-t border-garis bg-lembar [html[data-demo-toolbar]_&]:pb-14 print:hidden"
       >
         <ul className="mx-auto grid max-w-lg auto-cols-fr grid-flow-col">
           {MENU_WARGA.map((m) => {

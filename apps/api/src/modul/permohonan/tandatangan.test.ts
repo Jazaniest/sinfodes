@@ -32,6 +32,7 @@ const efekUji: EfekSurat = {
     efek.panggilan.push(args)
     if (efek.gagal) throw new Error('efek gagal')
   },
+  async permohonanMasukDariWarga() {},
 }
 
 /** Jenis uji: kode -> pengaturan. TTA hanya Kepala Desa dan berlaku 3 bulan; yang lain boleh atas nama. */

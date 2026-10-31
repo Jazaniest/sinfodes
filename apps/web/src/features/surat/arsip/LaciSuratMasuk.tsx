@@ -1,8 +1,10 @@
+import { bisaBukaBerkas, urlBerkasScan } from '@/api/berkas'
 import { formatAngka } from '@/domain/format/angka'
 import { formatTanggal, formatWaktuLog } from '@/domain/format/tanggal'
 import type { SuratMasuk } from '@/domain/surat/arsip'
 import { DescriptionList } from '@/ui/data/DescriptionList'
 import { Drawer } from '@/ui/lapisan/Drawer'
+import { Tautan } from '@/ui/navigasi/Tautan'
 
 /** Rincian satu surat masuk: register lengkap dan disposisinya. */
 export function LaciSuratMasuk({ surat, onTutup }: { surat: SuratMasuk | null; onTutup: () => void }) {
@@ -33,7 +35,21 @@ export function LaciSuratMasuk({ surat, onTutup }: { surat: SuratMasuk | null; o
                 'Tanpa disposisi'
               ),
             },
-            { label: 'Scan', nilai: surat.scan ? `${surat.scan.berkas} · ${formatAngka(surat.scan.ukuranKb)} KB` : 'Tidak ada scan' },
+            {
+              label: 'Scan',
+              nilai: surat.scan ? (
+                <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                  <span>{`${surat.scan.berkas} · ${formatAngka(surat.scan.ukuranKb)} KB`}</span>
+                  {bisaBukaBerkas() && (
+                    <Tautan href={urlBerkasScan(surat.id)} target="_blank" rel="noopener noreferrer" aria-label="Buka pindaian">
+                      Buka
+                    </Tautan>
+                  )}
+                </span>
+              ) : (
+                'Tidak ada scan'
+              ),
+            },
             { label: 'Dicatat', nilai: `${surat.dicatat.oleh.nama} · ${formatWaktuLog(surat.dicatat.pada)}` },
           ]}
         />

@@ -38,60 +38,63 @@ function IsiDetail({ d, sesi }: { d: DetailPermohonanWarga; sesi: SesiWarga }) {
   ]
   const jam = sesi.desa.jamLayanan.map((j) => `${j.hari} ${j.buka}-${j.tutup}`).join('; ')
   return (
-    <article className="flex flex-col gap-6">
-      <Tautan href="/warga/riwayat" className="self-start">
-        ← Semua riwayat
-      </Tautan>
-      <header className="flex flex-col gap-2">
-        <h1 className="font-serif text-judul-halaman font-medium">{namaJenisLengkap(p.jenis)}</h1>
-        <p className="flex flex-wrap items-center gap-2">
-          <Cap varian={p.status} />
-          <span className="text-tinta-2">{kalimat(p.posisi)}</span>
-        </p>
-      </header>
-
-      {lembar && terbit && (
-        <section className="flex flex-col gap-3">
-          <Banner nada="berhasil" judul="Surat sudah ditandatangani secara elektronik">
-            Nomor {terbit.nomor}. Di jendela cetak, pilih "Simpan sebagai PDF".
+    <article>
+      {/* Saat dicetak hanya lembar surat (CetakSurat) yang keluar; sisanya disembunyikan. */}
+      <div className="flex flex-col gap-6 print:hidden">
+        <Tautan href="/warga/riwayat" className="self-start">
+          ← Semua riwayat
+        </Tautan>
+        <header className="flex flex-col gap-2">
+          <h1 className="font-serif text-judul-halaman font-medium">{namaJenisLengkap(p.jenis)}</h1>
+          <p className="flex flex-wrap items-center gap-2">
+            <Cap varian={p.status} />
+            <span className="text-tinta-2">{kalimat(p.posisi)}</span>
+          </p>
+        </header>
+  
+        {lembar && terbit && (
+          <section className="flex flex-col gap-3">
+            <Banner nada="berhasil" judul="Surat sudah ditandatangani secara elektronik">
+              Nomor {terbit.nomor}. Di jendela cetak, pilih "Simpan sebagai PDF".
+            </Banner>
+            <Tombol varian="utama" ikon={<DownloadSimple aria-hidden size={18} />} onPress={() => setCetak(true)}>
+              Unduh PDF
+            </Tombol>
+          </section>
+        )}
+        {p.status === 'selesai' && terbit?.mode === 'basah' && p.diambilPada === null && (
+          <Banner nada="info" judul="Ambil di kantor desa, bawa KTP asli">
+            Jam layanan: {jam}.
           </Banner>
-          <Tombol varian="utama" ikon={<DownloadSimple aria-hidden size={18} />} onPress={() => setCetak(true)}>
-            Unduh PDF
-          </Tombol>
+        )}
+        {p.status === 'ditolak' && (
+          <section className="flex flex-col gap-3">
+            <Banner nada="peringatan" judul="Permohonan ditolak">
+              {p.alasanDitolak ?? 'Hubungi kantor desa untuk penjelasannya.'}
+            </Banner>
+            <TautanTombol href={`/warga/ajukan?ulang=${p.id}`} varian="utama">
+              Ajukan ulang
+            </TautanTombol>
+          </section>
+        )}
+  
+        <DescriptionList judul="Rincian" items={rincian} />
+  
+        <section aria-labelledby="judul-perjalanan" className="flex flex-col gap-3">
+          <h2 id="judul-perjalanan" className={judulBagian}>
+            Perjalanan permohonan
+          </h2>
+          <Timeline
+            label="Riwayat permohonan"
+            entri={[...p.riwayat].reverse().map((r) => ({
+              id: r.id,
+              waktu: formatWaktuLog(r.waktu),
+              judul: JUDUL_KEJADIAN[r.kejadian],
+              keterangan: [r.oleh.nama, r.catatan].filter(Boolean).join(' · '),
+            }))}
+          />
         </section>
-      )}
-      {p.status === 'selesai' && terbit?.mode === 'basah' && p.diambilPada === null && (
-        <Banner nada="info" judul="Ambil di kantor desa, bawa KTP asli">
-          Jam layanan: {jam}.
-        </Banner>
-      )}
-      {p.status === 'ditolak' && (
-        <section className="flex flex-col gap-3">
-          <Banner nada="peringatan" judul="Permohonan ditolak">
-            {p.alasanDitolak ?? 'Hubungi kantor desa untuk penjelasannya.'}
-          </Banner>
-          <TautanTombol href={`/warga/ajukan?ulang=${p.id}`} varian="utama">
-            Ajukan ulang
-          </TautanTombol>
-        </section>
-      )}
-
-      <DescriptionList judul="Rincian" items={rincian} />
-
-      <section aria-labelledby="judul-perjalanan" className="flex flex-col gap-3">
-        <h2 id="judul-perjalanan" className={judulBagian}>
-          Perjalanan permohonan
-        </h2>
-        <Timeline
-          label="Riwayat permohonan"
-          entri={[...p.riwayat].reverse().map((r) => ({
-            id: r.id,
-            waktu: formatWaktuLog(r.waktu),
-            judul: JUDUL_KEJADIAN[r.kejadian],
-            keterangan: [r.oleh.nama, r.catatan].filter(Boolean).join(' · '),
-          }))}
-        />
-      </section>
+      </div>
       {cetak && lembar && <CetakSurat lembar={lembar} onSelesai={() => setCetak(false)} />}
     </article>
   )

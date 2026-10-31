@@ -20,15 +20,19 @@ describe('registri Buku Administrasi (rencana 8E3 Ruling 12)', () => {
     }
   })
 
-  it('kode yang terdaftar semuanya dikenal, dan tahap penunggu hanya 8F atau 8G', () => {
+  it('kode yang terdaftar semuanya dikenal, dan tahap penunggu hanya 8G (8F3 memindahkan Agenda ke susunan)', () => {
     const kode = new Set(DAFTAR_BUKU.map((b) => b.kode as string))
     for (const k of [...Object.keys(SUSUNAN_BUKU), ...Object.keys(BUKU_MENUNGGU)]) expect(kode.has(k), k).toBe(true)
-    expect(new Set(Object.values(BUKU_MENUNGGU))).toEqual(new Set(['8F', '8G']))
+    expect(new Set(Object.values(BUKU_MENUNGGU))).toEqual(new Set(['8G']))
   })
 
-  it('tahap 8E3: lima buku punya susunan dan sepuluh menunggu', () => {
-    expect(Object.keys(SUSUNAN_BUKU).sort()).toEqual(['induk-penduduk', 'ktp-kk', 'mutasi-penduduk', 'penduduk-sementara', 'rekapitulasi-penduduk'])
-    expect(Object.keys(BUKU_MENUNGGU)).toHaveLength(10)
-    expect(BUKU_MENUNGGU.agenda).toBe('8F')
+  it('tahap 8F3: enam buku punya susunan (lima penduduk dan Agenda) dan sembilan menunggu', () => {
+    expect(Object.keys(SUSUNAN_BUKU).sort()).toEqual(['agenda', 'induk-penduduk', 'ktp-kk', 'mutasi-penduduk', 'penduduk-sementara', 'rekapitulasi-penduduk'])
+    expect(Object.keys(BUKU_MENUNGGU)).toHaveLength(9)
+    expect('agenda' in BUKU_MENUNGGU).toBe(false)
+  })
+
+  it('bahan susunan: lima buku penduduk memakai bahan penduduk, Agenda memakai bahan surat', () => {
+    for (const [kode, susunan] of Object.entries(SUSUNAN_BUKU)) expect(susunan?.bahan, kode).toBe(kode === 'agenda' ? 'agenda' : 'penduduk')
   })
 })

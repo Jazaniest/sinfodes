@@ -51,9 +51,13 @@ export function ruteMutasi(deps: { penyandi: Penyandi; efek: EfekSilang }): Hono
         isi: mentah,
         jalankan: async () => {
           const h = await jalankan(k, mentah)
-          return { hasil: h, mutasiId: h.mutasi.id }
+          return { hasil: h, rujukan: { mutasiId: h.mutasi.id } }
         },
-        pulihkan: (id) => pulihkanHasilMutasi(k, id),
+        pulihkan: (rujukan) => {
+          // Sidik isi memuat jalur, jadi kunci mutasi tidak pernah ketemu rujukan permohonan; bila terjadi, perlakukan seperti kunci bentrok.
+          if (!('mutasiId' in rujukan)) throw new GalatApp('CONFLICT', 'Kunci idempotensi ini sudah dipakai untuk isian yang berbeda.', 409)
+          return pulihkanHasilMutasi(k, rujukan.mutasiId)
+        },
       },
     )
     if (diulang) c.header('Idempotency-Replayed', 'true')

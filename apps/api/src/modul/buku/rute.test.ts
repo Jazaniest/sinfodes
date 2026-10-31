@@ -4,11 +4,13 @@ import type { DbDemo } from '@sinfodes/demo/tipe-db'
 import { SEKARANG_UJI } from '@sinfodes/demo/uji-akun'
 import { galatSchema } from '@sinfodes/kontrak/api'
 import { DAFTAR_BUKU, isiBukuSchema, ringkasBukuSchema, UKURAN_SEMUA_BARIS } from '@sinfodes/kontrak/buku/schema'
+import { susunBukuAgenda, type BahanBukuAgenda } from '@sinfodes/kontrak/buku/agenda'
 import { KODE_BUKU_PENDUDUK, susunBukuPenduduk, type BahanBukuPenduduk } from '@sinfodes/kontrak/buku/penduduk'
 import type { BarisPenduduk } from '@sinfodes/kontrak/penduduk/schema'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { z } from 'zod'
 import { buatDbUji, penyandiUji, type DbUji } from '../../../test/basisdata'
+import { sisipkanDesaContoh } from '../../../test/data-contoh'
 import { ambil, masukLewatRute, rakitApp } from '../../../test/rakit-app'
 import { BUKU_MENUNGGU } from './susunan'
 
@@ -151,5 +153,90 @@ describe('GET /buku-administrasi/:kode', () => {
     const harapan = dunia.mutasi.filter((m) => m.desaId === ID_SUNGAI_SIALANG).reduce((t, m) => t + m.pendudukIds.length, 0)
     expect(hasil.meta.total).toBe(harapan)
     expect(hasil.baris).toHaveLength(harapan)
+  })
+})
+
+/** Bahan Buku Agenda dari dunia demo, seperti penghubung tiruan: pembanding independen untuk isi buku dari server. */
+function bahanAgendaDemo(): BahanBukuAgenda {
+  const nama = new Map(dunia.penduduk.map((p) => [p.id, p.nama]))
+  const jenis = new Map(dunia.jenisSurat.map((j) => [j.id, j.nama]))
+  return {
+    keluar: dunia.permohonan.flatMap((p) =>
+      p.desaId === ID_SUNGAI_SIALANG && p.terbit
+        ? [{ terbitPada: p.terbit.pada, nomor: p.terbit.nomor, pemohon: nama.get(p.pemohonId) ?? '', jenis: jenis.get(p.jenisId) ?? '' }]
+        : [],
+    ),
+    masuk: dunia.suratMasuk
+      .filter((s) => s.desaId === ID_SUNGAI_SIALANG)
+      .map((s) => ({ diterima: s.diterima, dicatatPada: s.dicatat.pada, nomor: s.nomor, tanggalSurat: s.tanggalSurat, pengirim: s.pengirim, perihal: s.perihal })),
+  }
+}
+
+describe('Buku Agenda dari server (rencana 8F3 Ruling 16)', () => {
+  it('daftar buku memuat jumlah dan waktu pembaruan Agenda, sama dengan susunan atas bahan demo', async () => {
+    const harapan = susunBukuAgenda(bahanAgendaDemo())
+    expect(harapan.baris.length).toBeGreaterThan(100)
+    const buku = z.array(ringkasBukuSchema).parse(await (await daftar()).json())
+    expect(buku.find((b) => b.kode === 'agenda')).toMatchObject({ sumber: 'Layanan Surat (surat keluar dan masuk)', jumlah: harapan.baris.length, diperbarui: harapan.diperbarui })
+  })
+
+  it('isi Agenda: kolom dan semua baris sama dengan susunan atas surat terbit (termasuk Dibatalkan) dan seluruh surat masuk desa', async () => {
+    const harapan = susunBukuAgenda(bahanAgendaDemo())
+    const r = await isi('agenda', `?pageSize=${UKURAN_SEMUA_BARIS}`)
+    expect(r.status).toBe(200)
+    const hasil = isiBukuSchema.parse(await r.json())
+    expect(hasil.kolom).toEqual([...harapan.kolom])
+    expect(hasil.baris).toEqual(harapan.baris)
+    expect(hasil.meta.total).toBe(harapan.baris.length)
+    expect(hasil.buku).toMatchObject({ kode: 'agenda', jumlah: harapan.baris.length, diperbarui: harapan.diperbarui })
+    const dibatalkan = dunia.permohonan.filter((p) => p.desaId === ID_SUNGAI_SIALANG && p.status === 'dibatalkan' && p.terbit)
+    expect(dibatalkan.length).toBeGreaterThan(0)
+    for (const p of dibatalkan) expect(hasil.baris.some((b) => b[3] === p.terbit?.nomor && b[2] === 'Keluar')).toBe(true)
+  })
+
+  it('Kepada/Dari surat keluar = nama pemohon dan Isi singkat = nama jenis; surat masuk memakai pengirim dan perihal', async () => {
+    const hasil = isiBukuSchema.parse(await (await isi('agenda', `?pageSize=${UKURAN_SEMUA_BARIS}`)).json())
+    const p = dunia.permohonan.find((x) => x.desaId === ID_SUNGAI_SIALANG && x.terbit)!
+    const baris = hasil.baris.find((b) => b[2] === 'Keluar' && b[3] === p.terbit?.nomor)!
+    expect(baris[5]).toBe(dunia.penduduk.find((x) => x.id === p.pemohonId)?.nama)
+    expect(baris[6]).toBe(dunia.jenisSurat.find((j) => j.id === p.jenisId)?.nama)
+    const s = dunia.suratMasuk.find((x) => x.desaId === ID_SUNGAI_SIALANG)!
+    const masuk = hasil.baris.find((b) => b[2] === 'Masuk' && b[3] === s.nomor && b[5] === s.pengirim)!
+    expect(masuk[6]).toBe(s.perihal)
+  })
+
+  it('halaman dan jumlah benar; desa lain tidak ikut', async () => {
+    await sisipkanDesaContoh(uji.sqlMigrasi, 'desa_uji_lain', 2)
+    await uji.sqlMigrasi`insert into surat_masuk (id, desa_id, tahun, no_agenda, diterima, nomor, tanggal_surat, pengirim, perihal, dicatat_oleh, dicatat_pada)
+      values ('sm_uji_lain', 'desa_uji_lain', 2026, 1, '2026-09-01', 'LAIN/1', '2026-09-01', 'Pengirim Desa Lain', 'Tidak boleh tampil', '{"id":"u","nama":"Op"}'::jsonb, now())`
+    const harapan = susunBukuAgenda(bahanAgendaDemo())
+    const dua = isiBukuSchema.parse(await (await isi('agenda', '?page=2&pageSize=25')).json())
+    expect(dua.meta).toEqual({ page: 2, pageSize: 25, total: harapan.baris.length })
+    expect(dua.baris).toEqual(harapan.baris.slice(25, 50))
+    const semua = isiBukuSchema.parse(await (await isi('agenda', `?pageSize=${UKURAN_SEMUA_BARIS}`)).json())
+    expect(semua.baris.some((b) => b.includes('Pengirim Desa Lain'))).toBe(false)
+  })
+
+  it('hak: Kades boleh membuka; Kaur Keuangan dan Kepala Dusun 403; tanpa sesi 401', async () => {
+    expect((await isi('agenda', '', kuki.kades)).status).toBe(200)
+    for (const k of [kuki.kaur, kuki.kadus]) {
+      const r = await isi('agenda', '', k)
+      expect(r.status).toBe(403)
+      expect((await galat(r)).message).toBe('Peran Anda tidak berhak membuka buku ini.')
+    }
+    expect((await isi('agenda', '', null)).status).toBe(401)
+  })
+
+  it('membuka Agenda tidak membuka satu pun sandi (tidak memuat seluruh penduduk); Buku Induk tetap membukanya', async () => {
+    const dasar = await penyandiUji(uji.sqlMigrasi)
+    let dibuka = 0
+    const hitung = { ...dasar, bukaSandi: (...a: Parameters<typeof dasar.bukaSandi>) => (dibuka++, dasar.bukaSandi(...a)) }
+    const { app: aplikasi } = rakitApp({ klien: uji.klien, penyandi: hitung })
+    const masuk = (await masukLewatRute(aplikasi, SS, 'rosmiati@sungaisialang.desa.id', 'demo', '10.9.0.9')).kuki as string
+    dibuka = 0
+    expect((await ambil(aplikasi, `${SS}/api/v1/buku-administrasi/agenda?pageSize=${UKURAN_SEMUA_BARIS}`, masuk)).status).toBe(200)
+    expect(dibuka).toBe(0)
+    expect((await ambil(aplikasi, `${SS}/api/v1/buku-administrasi/induk-penduduk?pageSize=25`, masuk)).status).toBe(200)
+    expect(dibuka).toBeGreaterThan(1000)
   })
 })

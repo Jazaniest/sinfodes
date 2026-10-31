@@ -10,14 +10,16 @@ export const POLA_KUNCI = /^[A-Za-z0-9_-]{8,64}$/
 export const sidikIsi = (jalur: string, isi: unknown): string => createHash('sha256').update(`${jalur}\n${JSON.stringify(isi ?? null)}`).digest('hex')
 
 type Konteks = { db: Db; pelakuId: string; desaId: string; sekarang: Date }
+/** Apa yang tercipta oleh permintaan pertama: sebuah mutasi (8E2) atau sebuah permohonan (pengajuan warga, 8F3). */
+export type Rujukan = { mutasiId: string } | { permohonanId: string }
 type Parameter<T> = {
   /** Nilai header `Idempotency-Key`; tanpa header, `jalankan` dijalankan seperti biasa. */
   kunci: string | undefined
   jalur: string
   isi: unknown
-  jalankan: () => Promise<{ hasil: T; mutasiId: string }>
-  /** Membentuk jawaban dari mutasi yang sudah tersimpan (kunci terpakai oleh permintaan yang sudah selesai). */
-  pulihkan: (mutasiId: string) => Promise<T>
+  jalankan: () => Promise<{ hasil: T; rujukan: Rujukan }>
+  /** Membentuk jawaban dari yang sudah tersimpan (kunci terpakai oleh permintaan yang sudah selesai). */
+  pulihkan: (rujukan: Rujukan) => Promise<T>
 }
 
 /**
@@ -39,16 +41,17 @@ export async function denganIdempotensi<T>(k: Konteks, p: Parameter<T>): Promise
     const jalan = await p.jalankan()
     await k.db
       .update(kunciIdempotensi)
-      .set({ mutasiId: jalan.mutasiId })
+      .set('mutasiId' in jalan.rujukan ? { mutasiId: jalan.rujukan.mutasiId } : { permohonanId: jalan.rujukan.permohonanId })
       .where(and(eq(kunciIdempotensi.desaId, k.desaId), eq(kunciIdempotensi.penggunaId, k.pelakuId), eq(kunciIdempotensi.kunci, p.kunci)))
     return { hasil: jalan.hasil, diulang: false }
   }
   const [ada] = await k.db
-    .select({ sidikIsi: kunciIdempotensi.sidikIsi, mutasiId: kunciIdempotensi.mutasiId })
+    .select({ sidikIsi: kunciIdempotensi.sidikIsi, mutasiId: kunciIdempotensi.mutasiId, permohonanId: kunciIdempotensi.permohonanId })
     .from(kunciIdempotensi)
     .where(and(eq(kunciIdempotensi.desaId, k.desaId), eq(kunciIdempotensi.penggunaId, k.pelakuId), eq(kunciIdempotensi.kunci, p.kunci)))
-  if (!ada || ada.sidikIsi !== sidik || ada.mutasiId === null) {
+  const rujukan: Rujukan | null = ada?.mutasiId ? { mutasiId: ada.mutasiId } : ada?.permohonanId ? { permohonanId: ada.permohonanId } : null
+  if (!ada || ada.sidikIsi !== sidik || rujukan === null) {
     throw new GalatApp('CONFLICT', 'Kunci idempotensi ini sudah dipakai untuk isian yang berbeda.', 409)
   }
-  return { hasil: await p.pulihkan(ada.mutasiId), diulang: true }
+  return { hasil: await p.pulihkan(rujukan), diulang: true }
 }

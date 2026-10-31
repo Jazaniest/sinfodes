@@ -1,14 +1,12 @@
-import { tanggalIsoWib, waktuIsoWib } from '@sinfodes/kontrak/format/tanggal'
+import { waktuIsoWib } from '@sinfodes/kontrak/format/tanggal'
 import { cakupanDusun } from '@sinfodes/kontrak/pengguna/hak-akses'
 import { peranMengizinkan, statusMengizinkan, tahapAwalTtd } from '@sinfodes/kontrak/surat/alur'
-import { dilayani, periksaIsian, samaIsian, saringIsian } from '@sinfodes/kontrak/surat/jenis'
+import { periksaIsian, samaIsian, saringIsian } from '@sinfodes/kontrak/surat/jenis'
 import { periksaPemohon } from '@sinfodes/kontrak/surat/pemohon'
 import {
   ajukanTtdSchema, alasanSchema, buatPermohonanSchema, catatanKembaliSchema, ubahPermohonanSchema, type AksiSurat, type DetailPermohonan, type Permohonan,
 } from '@sinfodes/kontrak/surat/permohonan'
 import type { Desa } from '@sinfodes/kontrak/wilayah/schema'
-import { randomUUID } from 'node:crypto'
-import { pelanggaranKunciAsing } from '../../basisdata/galat-pg'
 import type { Db } from '../../basisdata/klien'
 import { GalatApp } from '../../galat'
 import { galatField, galatIsian } from '../../galat-isian'
@@ -29,13 +27,13 @@ import { terbitkanSurat } from './layanan-terbit'
 import type { Pengirim } from './pengirim'
 import type { Penandatangan } from './penandatangan'
 import { catatRiwayatSurat } from './riwayat-surat'
+import { kunciJenisDilayani, sisipkanPermohonanBaru } from './sisip-baru'
 import { bacaPermohonanSatu } from './repositori'
-import { alokasiNoUrut, KENDALA_JENIS, sisipPermohonan, ubahKolomPermohonan, type KolomUbahPermohonan } from './repositori-tulis'
+import { ubahKolomPermohonan, type KolomUbahPermohonan } from './repositori-tulis'
 
 export type KonteksTulisSurat = { db: Db; penyandi: Penyandi; pelaku: PelakuPanel; desa: Desa; sekarang: Date }
 
-export const PESAN_JENIS_TIDAK_ADA = 'Jenis surat tidak ditemukan.'
-export const PESAN_JENIS_TIDAK_TERSEDIA = 'Jenis surat ini tidak tersedia.'
+export { PESAN_JENIS_TIDAK_ADA, PESAN_JENIS_TIDAK_TERSEDIA } from './sisip-baru'
 export const PESAN_ISIAN_BELUM_LENGKAP = 'Isian surat belum lengkap.'
 export const PESAN_ISIAN_HANYA_DIPROSES = 'Isian hanya bisa diubah saat permohonan berstatus Diproses.'
 const dataTidakUtuh = () => new GalatApp('SERVER', PESAN_DATA_TIDAK_UTUH, 500)
@@ -47,18 +45,14 @@ export const galatIsianSurat = (galat: Record<string, string>): GalatApp =>
 /**
  * Membuat permohonan dari loket (SPEC §7.4 layar 2-3): disimpan sebagai draf (Diproses) atau langsung diajukan untuk tanda
  * tangan. Urutan kunci tetap: baris jenis dikunci bersama (FOR SHARE) lalu keadaannya diperiksa, kunci penasihat nomor urut,
- * baru sisip. Arsip, penonaktifan, atau hapus jenis yang serentak jadi menunggu transaksi ini, atau sudah selesai lebih dulu
- * dan terbaca di sini; permohonan tidak pernah menunjuk jenis yang sudah mati dan tidak ada permohonan yatim.
+ * baru sisip (inti bersama dengan pengajuan warga: `sisipkanPermohonanBaru`).
  */
 export async function buatPermohonan(k: KonteksTulisSurat, mentah: unknown): Promise<DetailPermohonan> {
   const masukan = buatPermohonanSchema.safeParse(mentah)
   if (!masukan.success) throw galatIsian(masukan.error)
   const m = masukan.data
 
-  const jenis = await bacaJenisSatu(k.db, m.jenisId, { bagi: true })
-  if (!jenis) throw galatField('jenisId', PESAN_JENIS_TIDAK_ADA)
-  // Jenis mati atau diarsipkan hanya menutup permohonan baru; yang sudah berjalan tetap diproses (fokus review 1 tiruan).
-  if (!dilayani(jenis)) throw galatField('jenisId', PESAN_JENIS_TIDAK_TERSEDIA, 'CONFLICT')
+  const jenis = await kunciJenisDilayani(k.db, m.jenisId)
 
   const pemohon = await bacaPendudukSatu(k.db, m.pemohonId, null)
   if (!pemohon) throw galatField('pemohonId', 'Pemohon tidak ditemukan.')
@@ -77,44 +71,23 @@ export async function buatPermohonan(k: KonteksTulisSurat, mentah: unknown): Pro
     if (Object.keys(galat).length > 0) throw galatIsianSurat(galat)
   }
 
-  const tahun = Number(tanggalIsoWib(k.sekarang).slice(0, 4))
-  const noUrut = await alokasiNoUrut(k.db, k.desa.id, tahun)
-  const id = `srt_${randomUUID()}`
-  try {
-    await sisipPermohonan(k.db, {
-      id,
-      desaId: k.desa.id,
-      dusunId: pemohon.dusunId,
-      tahun,
-      noUrut,
-      jenisId: jenis.id,
-      kanal: 'loket',
-      pemohonId: pemohon.id,
+  const { id } = await sisipkanPermohonanBaru(
+    { db: k.db, penyandi: k.penyandi, desaId: k.desa.id, sekarang: k.sekarang },
+    {
+      jenis,
+      pemohon: { id: pemohon.id, nama: pemohon.nama, dusunId: pemohon.dusunId },
       subjekId: subjek?.id ?? null,
       mutasiId: mutasi?.id ?? null,
-      isianSandi: k.penyandi.sandikan(JSON.stringify(isian), ruang.permohonanIsian(k.desa.id)),
+      isian,
+      kanal: 'loket',
       status: m.ajukan ? 'perlu-ttd' : 'diproses',
       tahap: m.ajukan ? tahapAwalTtd(jenis) : null,
-      masukPada: k.sekarang,
       lampiran: [],
-    })
-  } catch (e) {
-    // Lapis kedua: kunci bersama di atas sudah mencegahnya, tetapi basis data tetap menolak permohonan ke jenis yang lenyap.
-    if (pelanggaranKunciAsing(e, KENDALA_JENIS)) throw galatField('jenisId', PESAN_JENIS_TIDAK_TERSEDIA, 'CONFLICT')
-    throw e
-  }
-  const oleh = pelakuKontrak(k.pelaku)
-  await catatRiwayatSurat(k.db, { id, desaId: k.desa.id }, 'dibuat', oleh, k.sekarang)
-  if (m.ajukan) await catatRiwayatSurat(k.db, { id, desaId: k.desa.id }, 'ajukan-ttd', oleh, k.sekarang)
-  await catatAktivitas(k.db, {
-    desaId: k.desa.id,
-    dusunId: pemohon.dusunId,
-    waktu: k.sekarang.toISOString(),
-    jenis: 'permohonan-masuk',
-    ringkasan: `Permohonan ${jenis.kode} · ${pemohon.nama} (loket)`,
-    oleh,
-    rujukan: { jenis: 'permohonan', id },
-  })
+      riwayat: m.ajukan ? ['dibuat', 'ajukan-ttd'] : ['dibuat'],
+      oleh: pelakuKontrak(k.pelaku),
+      ringkasanAktivitas: `Permohonan ${jenis.kode} · ${pemohon.nama} (loket)`,
+    },
+  )
   const rekam = await bacaPermohonanSatu(k.db, id, null)
   if (!rekam) throw dataTidakUtuh()
   return bentukDetail(k, rekam)
